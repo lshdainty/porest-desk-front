@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { assetKeys, expenseKeys, expenseSplitKeys } from "@/shared/config";
+import { expenseKeys, invalidateFor } from "@/shared/config";
 import { expenseApi } from "../api/expenseApi";
 import type { ExpenseListParams, ExpenseSearchParams } from "../api/expenseApi";
 import type { ExpenseFormValues } from "@/entities/expense";
@@ -16,11 +16,7 @@ export const useCreateExpense = () => {
 
   return useMutation({
     mutationFn: (data: ExpenseFormValues) => expenseApi.createExpense(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -30,13 +26,7 @@ export const useUpdateExpense = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: ExpenseFormValues }) =>
       expenseApi.updateExpense(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      // 분할 동시 수정(splits 전달)으로 분할 내역이 교체될 수 있음 — 분할 쿼리도 무효화.
-      queryClient.invalidateQueries({ queryKey: expenseSplitKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -45,19 +35,15 @@ export const useUpdateExpense = () => {
  *
  * 무효화 범위가 이 훅의 핵심이다. **원거래가 다른 달일 수 있다** — 이 거래의 달만
  * 무효화하면 원거래가 있는 달 목록이 옛 환불 배지·환불액을 들고 남는다. 그래서
- * `expenseKeys.all` 로 통째로 턴다(수정·삭제와 같은 범위).
- *
- * 자산 잔액은 안 건드린다 — 금액도 자산도 그대로고 종류(수입)도 안 바뀐다. 바뀌는 건
- * 통계에서 이 수입이 지출을 상계하느냐뿐이고, 그 집계는 전부 `expenseKeys` 아래다.
+ * 다른 거래 변경과 같은 범위(`"ledger"`)로 통째로 턴다. 잔액은 안 움직이지만
+ * 환불 상계는 카드 실적·홈 합계까지 타므로, 범위를 여기서 좁히지 않는다.
  */
 export const useUnlinkRefund = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: number) => expenseApi.unlinkRefund(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -66,11 +52,7 @@ export const useDeleteExpense = () => {
 
   return useMutation({
     mutationFn: (id: number) => expenseApi.deleteExpense(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 

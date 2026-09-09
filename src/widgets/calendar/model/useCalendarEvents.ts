@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { calendarKeys } from "@/shared/config";
+import { calendarKeys, invalidateFor } from "@/shared/config";
 import { calendarApi } from "../api/calendarApi";
 import type { CalendarEventFormValues } from "@/entities/calendar";
 
@@ -17,9 +17,7 @@ export const useCreateEvent = () => {
   return useMutation({
     mutationFn: (data: CalendarEventFormValues) =>
       calendarApi.createEvent(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "calendar-event"),
   });
 };
 
@@ -29,9 +27,7 @@ export const useUpdateEvent = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: CalendarEventFormValues }) =>
       calendarApi.updateEvent(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "calendar-event"),
   });
 };
 
@@ -40,8 +36,6 @@ export const useDeleteEvent = () => {
 
   return useMutation({
     mutationFn: (id: number) => calendarApi.deleteEvent(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "calendar-event"),
   });
 };

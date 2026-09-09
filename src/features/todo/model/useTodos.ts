@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
 import { useHoldIds } from "@/shared/lib/porest/use-hold-ids";
-import { constellationKeys, todoKeys } from "@/shared/config";
+import { invalidateFor, todoKeys } from "@/shared/config";
 import { todoApi } from "../api/todoApi";
 import type { TodoListParams } from "../api/todoApi";
 import type { Todo, TodoFormValues } from "@/entities/todo";
@@ -26,9 +26,7 @@ export const useCreateTodo = () => {
 
   return useMutation({
     mutationFn: (data: TodoFormValues) => todoApi.createTodo(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo"),
   });
 };
 
@@ -38,9 +36,7 @@ export const useUpdateTodo = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: TodoFormValues }) =>
       todoApi.updateTodo(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo"),
   });
 };
 
@@ -94,9 +90,7 @@ export const useToggleTodoStatus = () => {
     },
     onSettled: (_data, _error, id) => {
       end(id);
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-      // 별자리 게이미피케이션 — 완료 토글은 별빛 적립/회수의 부수효과를 가지므로 함께 갱신
-      queryClient.invalidateQueries({ queryKey: constellationKeys.all });
+      invalidateFor(queryClient, "todo-status");
     },
   });
   /** pendingIds — 진행 중인 항목 id. 그 항목만 스피너·잠금(낙관 갱신과 별개로 "아직 서버 확인 전"을 보인다).
@@ -111,9 +105,7 @@ export const useReorderTodos = () => {
   return useMutation({
     mutationFn: (items: { todoId: number; sortOrder: number }[]) =>
       todoApi.reorderTodos(items),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo"),
   });
 };
 
@@ -122,9 +114,7 @@ export const useDeleteTodo = () => {
 
   return useMutation({
     mutationFn: (id: number) => todoApi.deleteTodo(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo"),
   });
 };
 
@@ -142,9 +132,7 @@ export const useUpdateTodoTags = () => {
   return useMutation({
     mutationFn: ({ todoId, tagIds }: { todoId: number; tagIds: number[] }) =>
       todoApi.updateTags(todoId, tagIds),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo"),
   });
 };
 
@@ -153,9 +141,7 @@ export const useToggleTodoPin = () => {
 
   return useMutation({
     mutationFn: (id: number) => todoApi.togglePin(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo"),
   });
 };
 

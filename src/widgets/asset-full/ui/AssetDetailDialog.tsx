@@ -429,7 +429,7 @@ function CardDetailBody({
   const limitWarn = limitPct >= 80;
 
   const paymentDay = billing?.paymentDay ?? asset.paymentDay ?? null;
-  const cancelPayment = useCancelCardPayment(asset.rowId);
+  const cancelPayment = useCancelCardPayment();
   const installmentPayoff = useInstallmentPayoff(asset.rowId);
   // 정리/되돌리기 확인 대상 — null 이면 닫힘. undo 는 이미 상환된 회차의 되돌리기.
   const [payoffTarget, setPayoffTarget] = useState<{

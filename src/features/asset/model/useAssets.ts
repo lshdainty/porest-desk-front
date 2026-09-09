@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { assetKeys } from "@/shared/config";
+import { assetKeys, invalidateFor } from "@/shared/config";
 import { assetApi } from "../api/assetApi";
 import type { TransferListParams } from "../api/assetApi";
 import type {
@@ -57,9 +57,7 @@ export const useCreateAsset = () => {
 
   return useMutation({
     mutationFn: (data: AssetFormValues) => assetApi.createAsset(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "asset"),
   });
 };
 
@@ -69,9 +67,7 @@ export const useUpdateAsset = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: AssetUpdateFormValues }) =>
       assetApi.updateAsset(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "asset"),
   });
 };
 
@@ -80,9 +76,8 @@ export const useDeleteAsset = () => {
 
   return useMutation({
     mutationFn: (id: number) => assetApi.deleteAsset(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    // 자산만 사라지는 게 아니다 — 그 자산의 거래도 함께 사라진다.
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -108,29 +103,22 @@ export const usePayCard = () => {
       /** 결제할 회차의 결제일 — 다음 회차를 미리 낼 때 넘긴다. 없으면 다가오는 회차. */
       paymentDate?: string;
     }) => assetApi.payCard(id, amount, paymentDate),
-    onSuccess: (_data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      queryClient.invalidateQueries({ queryKey: assetKeys.billing(id) });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
-/** 카드 결제 취소 — 잔액·청구·가계부가 함께 되돌아가므로 셋 다 비운다. */
-export const useCancelCardPayment = (cardRowId: number) => {
+/** 카드 결제 취소 — 잔액·청구·가계부·실적이 함께 되돌아간다. */
+export const useCancelCardPayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (billingRowId: number) =>
       assetApi.cancelCardPayment(billingRowId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      queryClient.invalidateQueries({ queryKey: assetKeys.billing(cardRowId) });
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
-/** 할부 중도 전액 상환/취소 — 예정액이 바뀌므로 청구를 비운다. */
+/** 할부 중도 전액 상환/취소 — 예정액과 함께 잔액·가계부 할부 표시도 움직인다. */
 export const useInstallmentPayoff = (cardRowId: number) => {
   const queryClient = useQueryClient();
 
@@ -139,9 +127,7 @@ export const useInstallmentPayoff = (cardRowId: number) => {
       undo
         ? assetApi.cancelInstallmentPayoff(cardRowId, expenseId)
         : assetApi.payoffInstallment(cardRowId, expenseId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.billing(cardRowId) });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -150,9 +136,7 @@ export const useReorderAssets = () => {
 
   return useMutation({
     mutationFn: (items: ReorderItem[]) => assetApi.reorderAssets(items),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "asset"),
   });
 };
 
@@ -169,42 +153,32 @@ export const useCreateTransfer = () => {
   return useMutation({
     mutationFn: (data: AssetTransferFormValues) =>
       assetApi.createTransfer(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      // 이자가 있는 이체는 지출 거래를 하나 만든다 — 가계부를 안 비우면 새로고침
-      // 전까지 그 거래도, 월 지출 합계도 안 바뀐다.
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-    },
+    // 이자가 있는 이체는 지출 거래를 하나 만든다.
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
-/** 이체 수정 — 서버가 이자 지출·잔액 이력을 다시 만들므로 가계부도 함께 비운다. */
+/** 이체 수정 — 서버가 이자 지출·잔액 이력을 다시 만든다. */
 export const useUpdateTransfer = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: AssetTransferFormValues }) =>
       assetApi.updateTransfer(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
 /**
  * 매수·매도 등록 — 예수금·보유 수량·원가·실현손익이 함께 움직인다.
- * 실현손익이 거래로 잡히므로 가계부 쿼리까지 무효화한다.
+ * 실현손익이 거래로 잡히므로 가계부까지 늙는다.
  */
 export const useCreateTrade = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: AssetTradeFormValues) => assetApi.createTrade(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -239,10 +213,7 @@ export const useDeleteTrade = () => {
 
   return useMutation({
     mutationFn: (id: number) => assetApi.deleteTrade(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -251,10 +222,7 @@ export const useDeleteTransfer = () => {
 
   return useMutation({
     mutationFn: (id: number) => assetApi.deleteTransfer(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-      // 이자 지출도 함께 사라진다 — 가계부를 안 비우면 유령처럼 남아 보인다.
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-    },
+    // 이자 지출도 함께 사라진다 — 안 비우면 유령처럼 남아 보인다.
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
