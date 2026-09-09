@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { assetKeys, expenseKeys } from "@/shared/config";
+import { invalidateFor } from "@/shared/config";
 import { commitSms, type SmsCommitRequest } from "../api/smsApi";
 
 /**
@@ -14,10 +14,6 @@ export const useCommitSms = () => {
 
   return useMutation({
     mutationFn: (request: SmsCommitRequest) => commitSms(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-      // 거래는 자산 잔액에 영향 — 자산 잔액/상세/추이도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
