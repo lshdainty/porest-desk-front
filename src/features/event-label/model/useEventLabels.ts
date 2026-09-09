@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { eventLabelKeys, calendarKeys } from "@/shared/config";
+import { eventLabelKeys, invalidateFor } from "@/shared/config";
 import { eventLabelApi } from "../api/eventLabelApi";
 import type { EventLabelFormValues } from "@/entities/event-label";
 
@@ -15,9 +15,7 @@ export const useCreateEventLabel = () => {
 
   return useMutation({
     mutationFn: (data: EventLabelFormValues) => eventLabelApi.createLabel(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: eventLabelKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "event-label"),
   });
 };
 
@@ -27,10 +25,7 @@ export const useUpdateEventLabel = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: EventLabelFormValues }) =>
       eventLabelApi.updateLabel(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: eventLabelKeys.all });
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "event-label-usage"),
   });
 };
 
@@ -39,9 +34,6 @@ export const useDeleteEventLabel = () => {
 
   return useMutation({
     mutationFn: (id: number) => eventLabelApi.deleteLabel(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: eventLabelKeys.all });
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "event-label-usage"),
   });
 };

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { subscriptionKeys } from "@/shared/config";
+import { invalidateFor, subscriptionKeys } from "@/shared/config";
 import { subscriptionApi } from "../api/subscriptionApi";
 
 const SECURITIES = "SECURITIES";
@@ -33,22 +33,18 @@ export const useMySubscription = () =>
   });
 
 export const useSubscribe = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (planCode: string) => subscriptionApi.subscribe(planCode),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "subscription"),
   });
 };
 
 export const useCancelSubscription = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (reason?: string) => subscriptionApi.cancelSubscription(reason),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "subscription"),
   });
 };
 
@@ -73,13 +69,8 @@ export const useBrokerConnections = (enabled = true) =>
     enabled,
   });
 
-const invalidateBrokers = (qc: ReturnType<typeof useQueryClient>) => {
-  qc.invalidateQueries({ queryKey: subscriptionKeys.brokerConnections() });
-  qc.invalidateQueries({ queryKey: subscriptionKeys.myFeatures() });
-};
-
 export const useRegisterBrokerCredential = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       broker,
@@ -90,23 +81,23 @@ export const useRegisterBrokerCredential = () => {
       apiKey: string;
       apiSecret: string;
     }) => subscriptionApi.registerBrokerCredential(broker, apiKey, apiSecret),
-    onSuccess: () => invalidateBrokers(qc),
+    onSuccess: () => invalidateFor(queryClient, "broker-connection"),
   });
 };
 
 export const useDisconnectBrokerCredential = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (broker: string) =>
       subscriptionApi.disconnectBrokerCredential(broker),
-    onSuccess: () => invalidateBrokers(qc),
+    onSuccess: () => invalidateFor(queryClient, "broker-connection"),
   });
 };
 
 export const useSetPrimaryBroker = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (broker: string) => subscriptionApi.setPrimaryBroker(broker),
-    onSuccess: () => invalidateBrokers(qc),
+    onSuccess: () => invalidateFor(queryClient, "broker-connection"),
   });
 };

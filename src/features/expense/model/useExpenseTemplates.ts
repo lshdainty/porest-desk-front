@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { expenseKeys } from "@/shared/config";
+import { expenseKeys, invalidateFor } from "@/shared/config";
 import { expenseTemplateApi } from "../api/expenseTemplateApi";
 import type { ExpenseTemplateFormValues } from "@/entities/expense-template";
 
@@ -11,18 +11,16 @@ export const useExpenseTemplates = () => {
 };
 
 export const useCreateExpenseTemplate = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ExpenseTemplateFormValues) =>
       expenseTemplateApi.createTemplate(data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: expenseKeys.templates() });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-template"),
   });
 };
 
 export const useUpdateExpenseTemplate = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       id,
@@ -31,28 +29,22 @@ export const useUpdateExpenseTemplate = () => {
       id: number;
       data: ExpenseTemplateFormValues;
     }) => expenseTemplateApi.updateTemplate(id, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: expenseKeys.templates() });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-template"),
   });
 };
 
 export const useDeleteExpenseTemplate = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => expenseTemplateApi.deleteTemplate(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: expenseKeys.templates() });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-template"),
   });
 };
 
 export const useTouchExpenseTemplate = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => expenseTemplateApi.touchTemplate(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: expenseKeys.templates() });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-template"),
   });
 };

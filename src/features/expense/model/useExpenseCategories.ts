@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { expenseKeys } from "@/shared/config";
+import { expenseKeys, invalidateFor } from "@/shared/config";
 import { expenseCategoryApi } from "../api/expenseCategoryApi";
 import type {
   ExpenseCategory,
@@ -25,9 +25,7 @@ export const useCreateExpenseCategory = () => {
   return useMutation({
     mutationFn: (data: ExpenseCategoryFormValues) =>
       expenseCategoryApi.createCategory(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -42,9 +40,7 @@ export const useUpdateExpenseCategory = () => {
       id: number;
       data: ExpenseCategoryFormValues;
     }) => expenseCategoryApi.updateCategory(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -53,9 +49,7 @@ export const useDeleteExpenseCategory = () => {
 
   return useMutation({
     mutationFn: (id: number) => expenseCategoryApi.deleteCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -70,10 +64,9 @@ export const useMoveCategoryTransactions = () => {
       id: number;
       targetCategoryRowId: number;
     }) => expenseCategoryApi.moveTransactions(id, targetCategoryRowId),
-    onSuccess: () => {
-      // 거래의 카테고리가 바뀌므로 목록·통계까지 전부 무효화한다.
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    // 분류만 손대는 게 아니라 거래의 분류가 실제로 바뀐다 — 목록·통계가 함께 늙으므로
+    // 분류 목록만 비우는 좁은 이름을 쓰지 않는다.
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -90,9 +83,7 @@ export const useSplitCategoryIntoChild = () => {
       icon: string;
       color: string;
     }) => expenseCategoryApi.splitIntoChild(id, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -127,8 +118,6 @@ export const useReorderExpenseCategories = () => {
       if (ctx?.prev)
         queryClient.setQueryData(expenseKeys.categories(), ctx.prev);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.categories() });
-    },
+    onSettled: () => invalidateFor(queryClient, "expense-category-order"),
   });
 };

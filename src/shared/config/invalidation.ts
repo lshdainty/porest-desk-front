@@ -5,11 +5,21 @@ import {
   cardKeys,
   constellationKeys,
   dashboardKeys,
+  deviceSessionKeys,
   dutchPayKeys,
+  eventLabelKeys,
   expenseKeys,
   expenseSplitKeys,
   memoKeys,
+  memoTagKeys,
+  notificationKeys,
+  oauthKeys,
+  recurringTransactionKeys,
+  savingGoalKeys,
+  stockKeys,
+  subscriptionKeys,
   todoKeys,
+  todoTagKeys,
   userCalendarKeys,
 } from "./queryKeys";
 
@@ -68,6 +78,77 @@ export const INVALIDATION_MAP = {
    * 캘린더를 못 찾아 색·이름을 옛것으로 그린다.
    */
   "user-calendar-scope": [userCalendarKeys.all, calendarKeys.all],
+
+  /**
+   * 이름표가 바뀐다 — 일정 라벨·메모 태그·할 일 태그.
+   *
+   * 세 쌍(`*-usage`)이 따로 있는 건 **만들 때와 고칠 때가 다르기 때문**이다. 새로
+   * 만든 이름표는 아직 아무것도 달고 있지 않아 목록 하나만 늙는다. 반대로 개명·삭제는
+   * 서버가 **그걸 달고 있던 것까지** 손댄다 — 메모 태그는 `memo.tag` 문자열이 새 이름으로
+   * 옮겨 가거나 비워지고, 라벨·할 일 태그도 같은 식이다. 그래서 고칠 때만 옆 도메인이
+   * 딸려 늙는다.
+   */
+  "event-label": [eventLabelKeys.all],
+  /** 일정 라벨을 고치거나 지운다 — 그 라벨을 단 일정의 색·이름이 함께 바뀐다. */
+  "event-label-usage": [eventLabelKeys.all, calendarKeys.all],
+  /** 메모 태그를 새로 만든다. 아직 아무 메모도 달고 있지 않다. */
+  "memo-tag": [memoTagKeys.all],
+  /** 메모 태그를 고치거나 지운다 — 그 태그를 쓰던 메모의 태그 문자열이 서버에서 바뀐다. */
+  "memo-tag-usage": [memoTagKeys.all, memoKeys.all],
+  /** 할 일 태그를 새로 만든다. 아직 아무 할 일도 달고 있지 않다. */
+  "todo-tag": [todoTagKeys.all],
+  /** 할 일 태그를 고치거나 지운다 — 그 태그를 쓰던 할 일이 함께 바뀐다. */
+  "todo-tag-usage": [todoTagKeys.all, todoKeys.all],
+
+  /**
+   * 가계부의 밑바탕이 바뀐다 — 분류·예산.
+   *
+   * 거래 행 자체는 그대로지만 목록·통계·예산·달성률이 전부 그 위에 서 있어 접두 하나로
+   * 통째로 비운다. 분류 이동(`moveTransactions`)·쪼개기는 거래의 분류를 실제로 바꾼다.
+   * 옆 도메인은 안 건드린다 — 금액이 안 움직이므로 자산·카드·홈 합계는 그대로다.
+   */
+  "expense-meta": [expenseKeys.all],
+  /** 분류 순서만 바뀐다. 낙관적 업데이트 뒤 서버 순서로 맞추는 자리라 분류 목록만 비운다. */
+  "expense-category-order": [expenseKeys.categories()],
+  /** 지출 프리셋이 바뀐다 — 추가·수정·삭제·최근 사용. 거래는 안 만들어진다. */
+  "expense-template": [expenseKeys.templates()],
+
+  /**
+   * 더치페이가 바뀐다 — 등록·수정·삭제·참가자 정산.
+   *
+   * 거래는 안 움직인다. 서버는 원거래를 연결만 하고 정산은 참가자 상태만 바꾼다.
+   */
+  "dutch-pay": [dutchPayKeys.all],
+  /**
+   * 저축목표가 바뀐다 — 추가·수정·적립·삭제·정렬.
+   *
+   * 적립도 목표의 모은 금액만 올린다. 서버가 거래·잔액을 안 건드리므로 가계부는 그대로다.
+   */
+  "saving-goal": [savingGoalKeys.all],
+  /** 반복 거래 예약이 바뀐다 — 추가·수정·삭제·켜고 끄기. 실제 거래는 예정일에 생긴다. */
+  "recurring-transaction": [recurringTransactionKeys.all],
+
+  /** 알림이 바뀐다 — 읽음·모두 읽음·삭제. 목록과 안 읽은 개수가 한 접두다. */
+  notification: [notificationKeys.all],
+  /** 소셜 계정 연동이 바뀐다 — 연동 해제. provider 목록이 연동 여부를 함께 들고 있다. */
+  "oauth-link": [oauthKeys.all],
+  /** 로그인한 기기 목록이 바뀐다 — 개별 기기 끊기. */
+  "device-session": [deviceSessionKeys.all],
+  /** 관심목록이 바뀐다 — 그룹 추가·개명·삭제, 종목 담기·빼기. 그룹 하나에 항목이 딸려 온다. */
+  "stock-watchlist": [stockKeys.watchGroups()],
+  /** 구독이 바뀐다 — 가입·해지. 기능권한·구독 정보가 한 접두다. */
+  subscription: [subscriptionKeys.all],
+  /**
+   * 증권사 연결이 바뀐다 — 등록·해제·대표 지정.
+   *
+   * 연결 목록만이 아니라 기능권한(`myFeatures`)도 같이 늙는다 — 메뉴 게이트와 사이드바가
+   * 연결된 증권사를 거기서 읽는다. 구독 접두 전체를 비우지는 않는다(요금제·구독 정보는
+   * 그대로다).
+   */
+  "broker-connection": [
+    subscriptionKeys.brokerConnections(),
+    subscriptionKeys.myFeatures(),
+  ],
 } as const satisfies Record<string, readonly QueryKey[]>;
 
 /** 서버 상태를 바꾸는 변경의 이름. 뮤테이션은 이 중 하나를 고른다. */

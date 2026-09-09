@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { dutchPayKeys } from "@/shared/config";
+import { dutchPayKeys, invalidateFor } from "@/shared/config";
 import { dutchPayApi } from "../api/dutchPayApi";
 import type { DutchPayFormValues } from "@/entities/dutch-pay";
 
@@ -23,9 +23,7 @@ export const useCreateDutchPay = () => {
 
   return useMutation({
     mutationFn: (data: DutchPayFormValues) => dutchPayApi.createDutchPay(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dutchPayKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "dutch-pay"),
   });
 };
 
@@ -35,9 +33,7 @@ export const useUpdateDutchPay = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: DutchPayFormValues }) =>
       dutchPayApi.updateDutchPay(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dutchPayKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "dutch-pay"),
   });
 };
 
@@ -46,9 +42,7 @@ export const useDeleteDutchPay = () => {
 
   return useMutation({
     mutationFn: (id: number) => dutchPayApi.deleteDutchPay(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dutchPayKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "dutch-pay"),
   });
 };
 
@@ -63,9 +57,7 @@ export const useMarkParticipantPaid = () => {
       dutchPayId: number;
       participantId: number;
     }) => dutchPayApi.markParticipantPaid(dutchPayId, participantId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dutchPayKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "dutch-pay"),
   });
 };
 
@@ -74,8 +66,6 @@ export const useSettleAll = () => {
 
   return useMutation({
     mutationFn: (id: number) => dutchPayApi.settleAll(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dutchPayKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "dutch-pay"),
   });
 };

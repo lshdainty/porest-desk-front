@@ -1,10 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deviceSessionKeys, invalidateFor } from "@/shared/config";
 import { sessionApi } from "../api/sessionApi";
 import type { DeviceSession } from "../api/sessionApi";
-
-export const deviceSessionKeys = {
-  all: ["deviceSessions"] as const,
-};
 
 export const useDeviceSessions = () =>
   useQuery<DeviceSession[]>({
@@ -18,9 +15,7 @@ export const useRevokeDeviceMutation = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
     mutationFn: (sessionId: string) => sessionApi.revoke(sessionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: deviceSessionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "device-session"),
   });
 };
 
