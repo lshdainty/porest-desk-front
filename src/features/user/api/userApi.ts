@@ -61,9 +61,15 @@ export interface UserPreferences {
 
 export const userApi = {
   changePassword: async (data: ChangePasswordReq): Promise<void> => {
+    // 실패는 다이얼로그가 desk 문구로 보여준다 — 전역 토스트를 타면 desk-back 이
+    // relay 한 **SSO 문장**("현재 비밀번호가 올바르지 않습니다")이 그대로 나간다
+    // (QA #128). 아래 `verifyPassword` 와 같은 이유·같은 방식이다.
     const resp: ApiResponse = await apiClient.patch(
       "/v1/users/me/password",
       data,
+      { silent: true } as import("axios").AxiosRequestConfig & {
+        silent?: boolean;
+      },
     );
     if (!resp.success) throw new Error(resp.message);
   },

@@ -216,7 +216,7 @@ todo,empty.week,이번 주는 한가해요,A light week ahead
 todo,empty.done,아직 완료된 일이 없어요,Nothing completed yet
 todo,empty.all,할 일이 없어요,No to-dos
 todo,emptyDesc.done,할 일을 완료하면 여기에 모입니다.,Completed to-dos gather here.
-todo,emptyDesc.default,위 입력칸으로 빠르게 추가해보세요.,Quickly add one in the field above.
+todo,emptyDesc.default,오른쪽 위 '할 일 추가' 버튼으로 추가해보세요.,Add one with the 'Add todo' button at the top right.
 todo,tagDistribution,태그별 분포,Tag distribution
 todo,editTitlePlaceholder,할 일을 적어주세요,Write a to-do
 todo,form.memo,메모,Note
@@ -1245,10 +1245,11 @@ notification,popover.unread,읽지 않은 알림 <b>{{count}}</b>개,<b>{{count}
 notification,popover.noNew,새 알림이 없어요,No new notifications
 notification,popover.empty,아직 알림이 없어요,No notifications yet
 user,passwordChange,비밀번호 변경,Change password
-user,passwordChangeDescription,현재 비밀번호를 확인 후 새 비밀번호로 변경합니다,Verify your current password and set a new one
+user,passwordChangeDescription,현재 비밀번호를 확인한 뒤 새 비밀번호로 바꿔요,Verify your current password and set a new one
 user,currentPassword,현재 비밀번호,Current Password
 user,currentPasswordPlaceholder,현재 비밀번호를 입력하세요,Enter your current password
 user,currentPasswordRequired,현재 비밀번호를 입력해 주세요,Current password is required
+user,currentPasswordInvalid,현재 비밀번호가 맞지 않아요,That current password doesn't match
 user,newPassword,새 비밀번호,New Password
 user,newPasswordPlaceholder,새 비밀번호를 입력하세요,Enter your new password
 user,newPasswordRequired,새 비밀번호를 입력해 주세요,New password is required
@@ -1256,13 +1257,13 @@ user,confirmPassword,새 비밀번호 확인,Confirm New Password
 user,confirmPasswordPlaceholder,새 비밀번호를 다시 입력하세요,Re-enter your new password
 user,confirmPasswordRequired,새 비밀번호 확인을 입력해 주세요,Password confirmation is required
 user,passwordMismatch,새 비밀번호가 일치하지 않아요,New passwords do not match
-user,passwordMatched,새 비밀번호가 일치합니다,New passwords match
+user,passwordMatched,새 비밀번호가 일치해요,New passwords match
 user,passwordRuleLength,8자 이상,At least 8 characters
 user,passwordRuleSpecial,특수문자 1자 이상,At least 1 special character
 user,passwordPolicyUnmet,비밀번호 조건을 모두 충족해 주세요,Password does not meet the requirements
 user,passwordSameAsCurrent,현재 비밀번호와 다른 비밀번호를 입력해 주세요,New password must be different from the current one
-user,passwordChangeSuccess,비밀번호가 성공적으로 변경되었습니다,Password changed successfully
-user,passwordChangeError,비밀번호 변경에 실패했습니다,Failed to change password
+user,passwordChangeSuccess,비밀번호를 바꿨어요,Password changed successfully
+user,passwordChangeError,비밀번호를 바꾸지 못했어요. 잠시 뒤 다시 시도해 주세요,Couldn't change your password. Please try again shortly
 budget,add,추가,Add
 budget,copy,복사,Copy
 budget,copyLastMonth,지난달 복사,Copy Last Month
@@ -1586,6 +1587,9 @@ expense,transferWithdrawn,출금 합계,Total withdrawn
 expense,transferDeleted,이체를 삭제했어요,Transfer deleted
 expense,addTx.optional,선택 사항,Optional
 expense,addTx.amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
+expense,addTx.refundOverCap,환불은 {{max}}까지만 넣을 수 있어요,A refund can be at most {{max}}
+expense,addTx.refundRemaining,이미 {{refunded}} 환불했어요. {{max}}까지 더 넣을 수 있어요,{{refunded}} already refunded. You can add up to {{max}} more
+expense,addTx.refundFullyDone,이미 전액 환불한 거래예요. 더 환불할 금액이 없어요,This transaction is already fully refunded. Nothing left to refund
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
 expense,addTx.deleteRefundWarn,이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요,{{count}} linked refund(s) ({{amount}} KRW) will also be deleted
 expense,txDetail.refundLinked,환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요,{{count}} refund(s) · {{amount}} KRW linked to this transaction

@@ -5,7 +5,10 @@ import { z } from "zod";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useChangePasswordMutation } from "@/features/user";
+import {
+  passwordChangeErrorKey,
+  useChangePasswordMutation,
+} from "@/features/user";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { useIsMobile } from "@/shared/hooks";
@@ -163,7 +166,23 @@ export const PasswordChangeDialog = ({
           });
           onOpenChange(false);
         },
-        // onError: 전역 axios 인터셉터(base.ts)가 server message를 toast.error로 노출 — 중복 방지로 로컬 onError 제거
+        // 실패 문구는 여기서 정한다 — 요청이 `silent` 라 전역 토스트를 안 탄다.
+        // 예전엔 전역 인터셉터가 서버 message 를 그대로 띄웠고, 그 문장은 desk 가
+        // 아니라 **SSO 가 쓴 것**이었다(QA #128).
+        onError: (e) => {
+          const key = passwordChangeErrorKey(e);
+          // 현재 비밀번호가 틀린 건 그 칸의 문제다 — 토스트로 띄우면 어느 칸을
+          // 고쳐야 하는지 안 보인다. 칸 밑에 붙인다.
+          if (key === "currentPasswordInvalid") {
+            form.setError("currentPassword", {
+              type: "server",
+              message: t("currentPasswordInvalid"),
+            });
+            form.setFocus("currentPassword");
+            return;
+          }
+          toast.error(t(key), { id: "password-change-error" });
+        },
       },
     );
   };

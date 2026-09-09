@@ -2,6 +2,10 @@ export { useCurrentUser } from "./model/useCurrentUser";
 export { useChangePasswordMutation } from "./model/useChangePasswordMutation";
 export { useVerifyPasswordMutation } from "./model/useVerifyPasswordMutation";
 export {
+  passwordChangeErrorKey,
+  PASSWORD_CHANGE_FAILED_CODE,
+} from "./lib/password-change-error";
+export {
   useUserPreferences,
   useUpdateUserPreferences,
   useDefaultCurrency,
