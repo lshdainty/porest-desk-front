@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronRight,
   Eye,
@@ -12,6 +13,11 @@ import {
 } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  assetKeys,
+  recurringTransactionKeys,
+  savingGoalKeys,
+} from "@/shared/config";
 import { isIconName, tileRadius } from "@/shared/lib";
 import {
   KRW,
@@ -1815,6 +1821,7 @@ function SummaryCard({
 }
 
 function useAssetGroups() {
+  const queryClient = useQueryClient();
   const assetsQ = useAssets();
   const summaryQ = useAssetSummary();
   // 연동 보유가 있는 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다(프로+토스 연결 시에만, 그 외 빈 맵).
@@ -1899,9 +1906,17 @@ function useAssetGroups() {
     hasLastMonth: lastMonth !== 0,
     isLoading: assetsQ.isLoading || summaryQ.isLoading,
     isFetching: assetsQ.isFetching || summaryQ.isFetching,
+    // 이 화면이 읽는 건 목록·요약만이 아니다. 순자산 추이(assetKeys.netWorthTrend) ·
+    // 저축목표 · 예정 결제(반복 거래)가 같은 화면에 있는데, 목록·요약만 refetch 하던
+    // 탓에 새로고침을 눌러도 아래 셋은 옛 값 그대로였다(QA #149).
+    // 자산 세 쿼리는 루트 키 하나로 묶이고, 나머지 둘은 자기 루트 키로 비운다.
+    //
+    // 여기 없는 둘 — 라이브 시세(useLivePrices)는 10초마다 스스로 폴링하고,
+    // 종목명(stockKeys.symbolName)은 변하지 않는 마스터 데이터다. 다시 부를 이유가 없다.
     refetch: () => {
-      assetsQ.refetch();
-      summaryQ.refetch();
+      queryClient.invalidateQueries({ queryKey: assetKeys.all });
+      queryClient.invalidateQueries({ queryKey: savingGoalKeys.all });
+      queryClient.invalidateQueries({ queryKey: recurringTransactionKeys.all });
     },
   };
 }
