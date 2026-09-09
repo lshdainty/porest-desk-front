@@ -32,6 +32,7 @@ import type {
   CalendarEventFormValues,
 } from "@/entities/calendar";
 import type { EventLabel } from "@/entities/event-label";
+import type { UserCalendar } from "@/entities/user-calendar";
 import { useUserCalendars } from "@/features/user-calendar";
 import { format } from "date-fns";
 
@@ -56,6 +57,11 @@ interface EventFormProps {
 
 // 기본 일정 색 = 팔레트 blue #2c70bf (캘린더 기본색 미지정 시 fallback).
 const DEFAULT_EVENT_COLOR = CHART_PAIRS.find((p) => p.key === "blue")!.base;
+
+/** 보임 판정 — `calendar-provider.tsx` 의 `isCalendarVisible` 과 **같은 규칙**이다.
+ *  못 찾으면 보임(`?? true`). 앱도 같은 규칙으로 맞춰 뒀다. */
+const isCalendarVisible = (cal: UserCalendar | undefined) =>
+  cal?.isVisible ?? true;
 
 type RecurrenceOption = "none" | "daily" | "weekly" | "monthly" | "yearly";
 
@@ -123,8 +129,22 @@ export const EventForm = ({
     ? format(selectedEndDate, "yyyy-MM-dd")
     : defaultDate;
 
+  /**
+   * 고를 수 있는 캘린더 — **숨긴 캘린더는 뺀다.** 캘린더 목록에서 껐다는 건
+   * "지금 안 본다" 는 뜻이라, 새 일정을 거기 넣을 이유가 없다.
+   *
+   * 예외가 하나 있다 — **편집 중인 일정이 이미 숨긴 캘린더에 있으면 그 캘린더 하나는 남긴다.**
+   * 안 그러면 그 일정을 여는 순간 목록에 없는 값이 선택돼 있다가, 캘린더 칸을 건드리지도
+   * 않았는데 저장 때 다른 캘린더로 옮겨진다. 사용자가 안 건드린 값이 조용히 바뀌는 게 제일 나쁘다.
+   */
+  const selectableCalendars = userCalendars.filter(
+    (c) => isCalendarVisible(c) || c.rowId === event?.calendarRowId,
+  );
+
+  // 기본 선택도 **같은 목록에서** 고른다. 목록만 거르고 여기를 두면 기본 캘린더가 숨겨져 있을 때
+  // 목록에 없는 값이 선택돼 있는 상태가 된다.
   const defaultCalendar =
-    userCalendars.find((c) => c.isDefault) ?? userCalendars[0];
+    selectableCalendars.find((c) => c.isDefault) ?? selectableCalendars[0];
 
   // 반복·알림은 `event` 에서 시드한다. 마운트는 초기값으로, 이후 `event` 가 바뀌면
   // 렌더 중 조정으로 다시 맞춘다 — effect 안에서 setState 하면 커밋을 한 번 더 태운다.
@@ -181,16 +201,13 @@ export const EventForm = ({
 
   // Update default calendar when userCalendars load
   useEffect(() => {
-    if (userCalendars.length > 0 && !selectedCalendarRowId) {
-      const defCal = userCalendars.find((c) => c.isDefault) ?? userCalendars[0];
-      if (defCal) {
-        setValue("calendarRowId", defCal.rowId);
-        if (!event) {
-          setValue("color", defCal.color);
-        }
+    if (defaultCalendar && !selectedCalendarRowId) {
+      setValue("calendarRowId", defaultCalendar.rowId);
+      if (!event) {
+        setValue("color", defaultCalendar.color);
       }
     }
-  }, [userCalendars, selectedCalendarRowId, setValue, event]);
+  }, [defaultCalendar, selectedCalendarRowId, setValue, event]);
 
   useEffect(() => {
     if (event) {
@@ -326,7 +343,7 @@ export const EventForm = ({
           </div>
 
           {/* Calendar selector */}
-          {userCalendars.length > 0 && (
+          {selectableCalendars.length > 0 && (
             <div className="flex flex-col gap-2">
               <Label>{t("form.calendar")}</Label>
               <Select
@@ -336,7 +353,9 @@ export const EventForm = ({
                     : undefined
                 }
                 onValueChange={(v) => {
-                  const cal = userCalendars.find((c) => String(c.rowId) === v);
+                  const cal = selectableCalendars.find(
+                    (c) => String(c.rowId) === v,
+                  );
                   if (cal) {
                     setValue("calendarRowId", cal.rowId, { shouldDirty: true });
                     setValue("color", cal.color, { shouldDirty: true });
@@ -347,7 +366,7 @@ export const EventForm = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {userCalendars.map((cal) => (
+                  {selectableCalendars.map((cal) => (
                     <SelectItem key={cal.rowId} value={String(cal.rowId)}>
                       <span className="flex items-center gap-2">
                         <span
