@@ -1,10 +1,13 @@
 // 가져오기 완료 화면은 "건너뜀 20 · 실패 2" 숫자만 보여 줬다 — 서버는 어느 행이 왜
 // 실패했는지 이미 내려주는데 화면이 안 읽었다(QA #61). 매핑 단계는 새 카테고리가
 // 몇 개 생길지 말해 주지 않아 오타가 그대로 카테고리가 됐다(QA #59).
-// 여기서 고정하는 건 그 두 화면이 서버 응답을 실제로 그린다는 것과, 모르는 사유 코드가
-// 사용자 눈에 영문으로 새지 않는다는 것이다.
+// 가져오기는 거래를 수백 건 만들면서 쿼리를 하나도 안 비웠다(QA #144).
+// 여기서 고정하는 건 그 두 화면이 서버 응답을 실제로 그린다는 것, 모르는 사유 코드가
+// 사용자 눈에 영문으로 새지 않는다는 것, 그리고 가져오기가 만든 데이터를 읽는 화면들의
+// 캐시가 실제로 비워진다는 것이다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   ImportAnalyzeResult,
@@ -52,9 +55,12 @@ const { DataImportSection } = await import("./DataImportSection");
 
 let container: HTMLDivElement;
 let root: Root;
+let queryClient: QueryClient;
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  queryClient = new QueryClient();
+  vi.spyOn(queryClient, "invalidateQueries");
   state.analyze = { ...analysis };
   state.execute = null;
   if (!window.matchMedia) {
@@ -89,10 +95,20 @@ const btn = (needle: string) =>
     (b.textContent ?? "").includes(needle),
   );
 
+/** 무효화된 루트 키들 — 호출 순서와 무관하게 본다. */
+const invalidatedKeys = () =>
+  vi
+    .mocked(queryClient.invalidateQueries)
+    .mock.calls.map((c) => JSON.stringify(c[0]?.queryKey));
+
 /** 파일 선택 → 분석까지. 매핑 단계에 선다. */
 async function toMapping() {
   await act(async () => {
-    root.render(<DataImportSection mobile={false} />);
+    root.render(
+      <QueryClientProvider client={queryClient}>
+        <DataImportSection mobile={false} />
+      </QueryClientProvider>,
+    );
   });
   const input =
     container.querySelector<HTMLInputElement>('input[type="file"]')!;
@@ -240,5 +256,41 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       (autoCat as HTMLElement).click();
     });
     expect(container.textContent).not.toContain("import.newCatTitle");
+  });
+});
+
+describe("가져오기 성공 — 캐시 비우기 (QA #144)", () => {
+  // 가져오기는 거래를 수백 건 만든다. 캐시를 안 비우면 가계부·통계·예산·자산·홈이
+  // 전부 옛 값이라, 방금 수백 건을 넣은 사용자가 화면마다 새로고침을 눌러야 했다.
+  it("가계부·자산·카드·홈 캐시를 전부 비운다", async () => {
+    await toDone(baseResult);
+    const keys = invalidatedKeys();
+    expect(keys).toContain(JSON.stringify(["expenses"]));
+    expect(keys).toContain(JSON.stringify(["assets"]));
+    expect(keys).toContain(JSON.stringify(["cards"]));
+    expect(keys).toContain(JSON.stringify(["dashboard"]));
+  });
+
+  it("한 건도 안 들어와도 비운다 — 건너뛴 게 있으면 중복 판정이 이미 바뀌었다", async () => {
+    await toDone({ ...baseResult, imported: 0 });
+    expect(invalidatedKeys()).toContain(JSON.stringify(["expenses"]));
+  });
+
+  it("실행 전에는 아무것도 안 비운다", async () => {
+    state.execute = baseResult;
+    await toMapping();
+    expect(queryClient.invalidateQueries).not.toHaveBeenCalled();
+  });
+
+  it("실행이 실패하면 비우지 않는다 — 만들어진 게 없다", async () => {
+    // 떠 있는 rejected promise 를 만들지 않으려고 thenable 로 거절한다.
+    state.execute = {
+      then: (_ok: unknown, fail: (e: Error) => void) => fail(new Error("boom")),
+    };
+    await toMapping();
+    await act(async () => {
+      btn("import.doImport")!.click();
+    });
+    expect(queryClient.invalidateQueries).not.toHaveBeenCalled();
   });
 });
