@@ -140,12 +140,6 @@ export interface ExpenseBudgetFormValues {
   budgetMonth: number;
 }
 
-export interface DailySummary {
-  date: string;
-  totalIncome: number;
-  totalExpense: number;
-}
-
 export interface RangeSummary {
   startDate: string;
   endDate: string;
@@ -213,13 +207,6 @@ export interface BudgetVsActualItem {
 
 export interface MerchantSummary {
   merchant: string;
-  totalAmount: number;
-  count: number;
-}
-
-export interface AssetExpenseSummary {
-  assetRowId: number;
-  assetName: string;
   totalAmount: number;
   count: number;
 }

@@ -3,11 +3,9 @@ import type { ApiResponse } from "@/shared/types";
 import type {
   Expense,
   ExpenseFormValues,
-  DailySummary,
   RangeSummary,
   MonthlyTrend,
   MerchantSummary,
-  AssetExpenseSummary,
   HeatmapCell,
 } from "@/entities/expense";
 
@@ -86,14 +84,6 @@ export const expenseApi = {
     return resp.data;
   },
 
-  getDailySummary: async (date: string): Promise<DailySummary> => {
-    const resp: ApiResponse<DailySummary> = await apiClient.get(
-      "/v1/expenses/summary/daily",
-      { params: { date } },
-    );
-    return resp.data;
-  },
-
   getRangeSummary: async (
     startDate: string,
     endDate: string,
@@ -125,17 +115,6 @@ export const expenseApi = {
     return resp.data;
   },
 
-  getAssetSummary: async (
-    startDate?: string,
-    endDate?: string,
-  ): Promise<{ assets: AssetExpenseSummary[] }> => {
-    const resp: ApiResponse<{ assets: AssetExpenseSummary[] }> =
-      await apiClient.get("/v1/expenses/summary/by-asset", {
-        params: { startDate, endDate },
-      });
-    return resp.data;
-  },
-
   getHeatmap: async (
     startDate: string,
     endDate: string,
@@ -151,20 +130,6 @@ export const expenseApi = {
     const resp: ApiResponse<{ expenses: Expense[] }> = await apiClient.get(
       "/v1/expenses/search",
       { params },
-    );
-    return resp.data.expenses;
-  },
-
-  getExpensesByCalendarEvent: async (eventId: number): Promise<Expense[]> => {
-    const resp: ApiResponse<{ expenses: Expense[] }> = await apiClient.get(
-      `/v1/calendar/event/${eventId}/expenses`,
-    );
-    return resp.data.expenses;
-  },
-
-  getExpensesByTodo: async (todoId: number): Promise<Expense[]> => {
-    const resp: ApiResponse<{ expenses: Expense[] }> = await apiClient.get(
-      `/v1/todo/${todoId}/expenses`,
     );
     return resp.data.expenses;
   },

@@ -3,11 +3,6 @@ export const authKeys = {
   check: () => [...authKeys.all, "check"] as const,
 };
 
-export const userKeys = {
-  all: ["user"] as const,
-  me: () => [...userKeys.all, "me"] as const,
-};
-
 export const oauthKeys = {
   all: ["oauth"] as const,
   providers: () => [...oauthKeys.all, "providers"] as const,
@@ -23,11 +18,6 @@ export const todoKeys = {
   stats: () => [...todoKeys.all, "stats"] as const,
 };
 
-export const todoProjectKeys = {
-  all: ["todo-projects"] as const,
-  list: () => [...todoProjectKeys.all, "list"] as const,
-};
-
 export const todoTagKeys = {
   all: ["todo-tags"] as const,
   list: () => [...todoTagKeys.all, "list"] as const,
@@ -37,8 +27,6 @@ export const calendarKeys = {
   all: ["calendar"] as const,
   events: <T = Record<string, unknown>>(params?: T) =>
     [...calendarKeys.all, "events", params] as const,
-  aggregate: <T = Record<string, unknown>>(params?: T) =>
-    [...calendarKeys.all, "aggregate", params] as const,
 };
 
 export const holidayKeys = {
@@ -78,10 +66,7 @@ export const expenseKeys = {
     [...expenseKeys.all, "budgets", params] as const,
   budgetCompliance: (months: number) =>
     [...expenseKeys.all, "budget-compliance", months] as const,
-  recurring: () => [...expenseKeys.all, "recurring"] as const,
   templates: () => [...expenseKeys.all, "templates"] as const,
-  dailySummary: (date: string) =>
-    [...expenseKeys.all, "daily-summary", date] as const,
   // assetId 를 키에 넣는다 — 안 넣으면 자산 필터를 걸었다 풀어도 캐시가 그대로다.
   rangeSummary: (startDate: string, endDate: string, assetId?: number | null) =>
     [
@@ -97,13 +82,8 @@ export const expenseKeys = {
     [...expenseKeys.all, "merchant-summary", params] as const,
   heatmap: (startDate: string, endDate: string) =>
     [...expenseKeys.all, "heatmap", startDate, endDate] as const,
-  assetSummary: <T = Record<string, unknown>>(params?: T) =>
-    [...expenseKeys.all, "asset-summary", params] as const,
   search: <T = Record<string, unknown>>(params?: T) =>
     [...expenseKeys.all, "search", params] as const,
-  byCalendarEvent: (eventId: number) =>
-    [...expenseKeys.all, "by-calendar-event", eventId] as const,
-  byTodo: (todoId: number) => [...expenseKeys.all, "by-todo", todoId] as const,
 };
 
 export const assetKeys = {
@@ -137,13 +117,6 @@ export const cardKeys = {
   performance: (assetRowId: number, yearMonth: string) =>
     [...cardKeys.all, "performance", assetRowId, yearMonth] as const,
   benefitMappings: () => [...cardKeys.all, "benefit-mappings"] as const,
-  availableBenefits: (cardRowId: number, expenseCategoryRowId: number) =>
-    [
-      ...cardKeys.all,
-      "available-benefits",
-      cardRowId,
-      expenseCategoryRowId,
-    ] as const,
 };
 
 export const recurringTransactionKeys = {
@@ -170,16 +143,9 @@ export const expenseSplitKeys = {
     [...expenseSplitKeys.all, "list", expenseId] as const,
 };
 
-export const fileKeys = {
-  all: ["files"] as const,
-  byReference: (referenceType: string, referenceRowId: number) =>
-    [...fileKeys.all, "by-reference", referenceType, referenceRowId] as const,
-};
-
 export const dashboardKeys = {
   all: ["dashboard"] as const,
   summary: () => [...dashboardKeys.all, "summary"] as const,
-  layout: () => [...dashboardKeys.all, "layout"] as const,
 };
 
 export const subscriptionKeys = {

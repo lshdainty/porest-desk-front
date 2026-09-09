@@ -56,14 +56,6 @@ export const useDeleteExpense = () => {
   });
 };
 
-export const useDailySummary = (date: string) => {
-  return useQuery({
-    queryKey: expenseKeys.dailySummary(date),
-    queryFn: () => expenseApi.getDailySummary(date),
-    enabled: !!date,
-  });
-};
-
 export const useRangeSummary = (
   startDate: string,
   endDate: string,
@@ -99,36 +91,10 @@ export const useExpenseHeatmap = (startDate: string, endDate: string) => {
   });
 };
 
-export const useAssetExpenseSummary = (
-  startDate?: string,
-  endDate?: string,
-) => {
-  return useQuery({
-    queryKey: expenseKeys.assetSummary({ startDate, endDate }),
-    queryFn: () => expenseApi.getAssetSummary(startDate, endDate),
-  });
-};
-
 export const useSearchExpenses = (params: ExpenseSearchParams) => {
   return useQuery({
     queryKey: expenseKeys.search(params),
     queryFn: () => expenseApi.searchExpenses(params),
     enabled: Object.values(params).some((v) => v !== undefined && v !== ""),
-  });
-};
-
-export const useExpensesByCalendarEvent = (eventId: number) => {
-  return useQuery({
-    queryKey: expenseKeys.byCalendarEvent(eventId),
-    queryFn: () => expenseApi.getExpensesByCalendarEvent(eventId),
-    enabled: eventId > 0,
-  });
-};
-
-export const useExpensesByTodo = (todoId: number) => {
-  return useQuery({
-    queryKey: expenseKeys.byTodo(todoId),
-    queryFn: () => expenseApi.getExpensesByTodo(todoId),
-    enabled: todoId > 0,
   });
 };

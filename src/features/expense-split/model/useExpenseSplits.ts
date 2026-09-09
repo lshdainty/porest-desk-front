@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { assetKeys, expenseSplitKeys, expenseKeys } from "@/shared/config";
+import { expenseSplitKeys, invalidateFor } from "@/shared/config";
 import { expenseSplitApi } from "../api/expenseSplitApi";
 import type { ExpenseSplitFormValue } from "@/entities/expense-split";
 
@@ -15,6 +15,14 @@ export const useExpenseSplits = (expenseId: number | null | undefined) => {
   });
 };
 
+/**
+ * 분할 저장·삭제는 **거래 변경과 파급이 같다**(`"ledger"`).
+ *
+ * 분할은 거래 하나를 쪼개는 것이므로 움직이는 금액이 거래를 고칠 때와 다르지 않다.
+ * 예전엔 분할 목록·가계부·자산만 손으로 비웠는데, 그러면 카드 실적과 홈 합계가
+ * 옛 값으로 남는다 — 비우는 자리를 호출처마다 손으로 나열하다 빠뜨린, #141 과
+ * 같은 종류의 누락이다. 어느 도메인이 딸려 늙는지는 `INVALIDATION_MAP` 이 안다.
+ */
 export const useReplaceExpenseSplits = () => {
   const queryClient = useQueryClient();
 
@@ -26,14 +34,7 @@ export const useReplaceExpenseSplits = () => {
       expenseId: number;
       splits: ExpenseSplitFormValue[];
     }) => expenseSplitApi.replaceSplits(expenseId, splits),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: expenseSplitKeys.list(variables.expenseId),
-      });
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-      // 분할은 실제 금액(자산 잔액)에 영향 — 자산 쿼리도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
@@ -43,13 +44,6 @@ export const useDeleteAllExpenseSplits = () => {
   return useMutation({
     mutationFn: (expenseId: number) =>
       expenseSplitApi.deleteAllSplits(expenseId),
-    onSuccess: (_data, expenseId) => {
-      queryClient.invalidateQueries({
-        queryKey: expenseSplitKeys.list(expenseId),
-      });
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-      // 분할은 실제 금액(자산 잔액)에 영향 — 자산 쿼리도 무효화.
-      queryClient.invalidateQueries({ queryKey: assetKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };

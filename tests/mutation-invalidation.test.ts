@@ -60,6 +60,7 @@ vi.mock("@/shared/lib/porest/use-hold-ids", () => ({
 
 const expenses = await import("@/features/expense/model/useExpenses");
 const sms = await import("@/features/sms/model/useCommitSms");
+const splits = await import("@/features/expense-split/model/useExpenseSplits");
 const assets = await import("@/features/asset/model/useAssets");
 const todos = await import("@/features/todo/model/useTodos");
 const memos = await import("@/features/memo/model/useMemos");
@@ -69,6 +70,7 @@ const calendars =
 
 const EXPENSES = "src/features/expense/model/useExpenses.ts";
 const SMS = "src/features/sms/model/useCommitSms.ts";
+const SPLITS = "src/features/expense-split/model/useExpenseSplits.ts";
 const ASSETS = "src/features/asset/model/useAssets.ts";
 const TODOS = "src/features/todo/model/useTodos.ts";
 const MEMOS = "src/features/memo/model/useMemos.ts";
@@ -119,6 +121,19 @@ const ROWS: Row[] = [
     hook: "useCommitSms",
     change: "ledger",
     call: () => sms.useCommitSms(),
+  },
+  // 분할 — 거래를 쪼개는 것이므로 거래 변경과 파급이 같다.
+  {
+    file: SPLITS,
+    hook: "useReplaceExpenseSplits",
+    change: "ledger",
+    call: () => splits.useReplaceExpenseSplits(),
+  },
+  {
+    file: SPLITS,
+    hook: "useDeleteAllExpenseSplits",
+    change: "ledger",
+    call: () => splits.useDeleteAllExpenseSplits(),
   },
   // 자산·카드
   {
