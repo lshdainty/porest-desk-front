@@ -32,7 +32,7 @@ import type {
   CalendarEventFormValues,
 } from "@/entities/calendar";
 import type { EventLabel } from "@/entities/event-label";
-import type { UserCalendar } from "@/entities/user-calendar";
+import { isCalendarShown } from "@/entities/user-calendar";
 import { useUserCalendars } from "@/features/user-calendar";
 import { format } from "date-fns";
 
@@ -57,11 +57,6 @@ interface EventFormProps {
 
 // 기본 일정 색 = 팔레트 blue #2c70bf (캘린더 기본색 미지정 시 fallback).
 const DEFAULT_EVENT_COLOR = CHART_PAIRS.find((p) => p.key === "blue")!.base;
-
-/** 보임 판정 — `calendar-provider.tsx` 의 `isCalendarVisible` 과 **같은 규칙**이다.
- *  못 찾으면 보임(`?? true`). 앱도 같은 규칙으로 맞춰 뒀다. */
-const isCalendarVisible = (cal: UserCalendar | undefined) =>
-  cal?.isVisible ?? true;
 
 type RecurrenceOption = "none" | "daily" | "weekly" | "monthly" | "yearly";
 
@@ -138,7 +133,7 @@ export const EventForm = ({
    * 않았는데 저장 때 다른 캘린더로 옮겨진다. 사용자가 안 건드린 값이 조용히 바뀌는 게 제일 나쁘다.
    */
   const selectableCalendars = userCalendars.filter(
-    (c) => isCalendarVisible(c) || c.rowId === event?.calendarRowId,
+    (c) => isCalendarShown(c) || c.rowId === event?.calendarRowId,
   );
 
   // 기본 선택도 **같은 목록에서** 고른다. 목록만 거르고 여기를 두면 기본 캘린더가 숨겨져 있을 때
