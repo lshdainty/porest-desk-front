@@ -252,25 +252,37 @@ describe("편집할 때 — 그 일정이 든 숨긴 캘린더 하나는 남는�
   });
 });
 
-describe("기본 선택도 보이는 것 중에서 고른다", () => {
-  it("기본 캘린더가 숨겨져 있으면 보이는 캘린더가 잡힌다", () => {
+describe("기본 캘린더는 꺼져 있어도 고를 수 있다", () => {
+  // 규칙은 `entities/user-calendar` 의 `isCalendarShown` 하나다 — 목록·필터·이 폼이 같이 쓴다.
+  // 기본 캘린더를 못 숨기게 막은 뒤로도 `isVisible='N'` 인 옛 행이 남아 있을 수 있는데,
+  // 그 행을 여기서만 빼면 달력엔 보이는 캘린더가 일정 폼에선 사라진다.
+  it("꺼져 있는 기본 캘린더도 목록에 남는다", () => {
     mocks.calendars = [
       calendar(1, "업무", { isDefault: true, isVisible: false }),
       PRIVATE,
     ];
     render(null);
-    expect(triggerText()).toContain("개인");
-    expect(checkedOptionText()).toContain("개인");
+    expect(optionTexts().join("|")).toContain("업무");
   });
 
-  it("숨긴 기본 캘린더는 저장 본문에도 안 실린다", async () => {
+  it("꺼져 있어도 기본 캘린더가 기본 선택으로 잡힌다", () => {
+    mocks.calendars = [
+      calendar(1, "업무", { isDefault: true, isVisible: false }),
+      PRIVATE,
+    ];
+    render(null);
+    expect(triggerText()).toContain("업무");
+    expect(checkedOptionText()).toContain("업무");
+  });
+
+  it("저장 본문에도 그 기본 캘린더가 실린다", async () => {
     mocks.calendars = [
       calendar(1, "업무", { isDefault: true, isVisible: false }),
       PRIVATE,
     ];
     render(null);
     typeTitle("새 일정");
-    expect((await save()).calendarRowId).toBe(3);
+    expect((await save()).calendarRowId).toBe(1);
   });
 });
 
