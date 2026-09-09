@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { savingGoalKeys } from "@/shared/config";
+import { invalidateFor, savingGoalKeys } from "@/shared/config";
 import { savingGoalApi } from "../api/savingGoalApi";
 import type {
   SavingGoalFormValues,
@@ -29,9 +29,7 @@ export const useCreateSavingGoal = () => {
   return useMutation({
     mutationFn: (data: SavingGoalFormValues) =>
       savingGoalApi.createSavingGoal(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: savingGoalKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "saving-goal"),
   });
 };
 
@@ -46,9 +44,7 @@ export const useUpdateSavingGoal = () => {
       id: number;
       data: SavingGoalUpdateFormValues;
     }) => savingGoalApi.updateSavingGoal(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: savingGoalKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "saving-goal"),
   });
 };
 
@@ -63,9 +59,7 @@ export const useContributeSavingGoal = () => {
       id: number;
       data: SavingGoalContributeValues;
     }) => savingGoalApi.contributeSavingGoal(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: savingGoalKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "saving-goal"),
   });
 };
 
@@ -74,9 +68,7 @@ export const useDeleteSavingGoal = () => {
 
   return useMutation({
     mutationFn: (id: number) => savingGoalApi.deleteSavingGoal(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: savingGoalKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "saving-goal"),
   });
 };
 
@@ -86,8 +78,6 @@ export const useReorderSavingGoals = () => {
   return useMutation({
     mutationFn: (items: SavingGoalReorderItem[]) =>
       savingGoalApi.reorderSavingGoals(items),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: savingGoalKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "saving-goal"),
   });
 };

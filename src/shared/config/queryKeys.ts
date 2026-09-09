@@ -8,6 +8,10 @@ export const oauthKeys = {
   providers: () => [...oauthKeys.all, "providers"] as const,
 };
 
+export const deviceSessionKeys = {
+  all: ["deviceSessions"] as const,
+};
+
 export const todoKeys = {
   all: ["todos"] as const,
   list: <T = Record<string, unknown>>(filters?: T) =>

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { recurringTransactionKeys } from "@/shared/config";
+import { invalidateFor, recurringTransactionKeys } from "@/shared/config";
 import { recurringTransactionApi } from "../api/recurringTransactionApi";
 import type { RecurringTransactionFormValues } from "@/entities/recurring-transaction";
 
@@ -22,9 +22,7 @@ export const useCreateRecurringTransaction = () => {
   return useMutation({
     mutationFn: (data: RecurringTransactionFormValues) =>
       recurringTransactionApi.createRecurring(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: recurringTransactionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "recurring-transaction"),
   });
 };
 
@@ -39,9 +37,7 @@ export const useUpdateRecurringTransaction = () => {
       id: number;
       data: RecurringTransactionFormValues;
     }) => recurringTransactionApi.updateRecurring(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: recurringTransactionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "recurring-transaction"),
   });
 };
 
@@ -50,9 +46,7 @@ export const useDeleteRecurringTransaction = () => {
 
   return useMutation({
     mutationFn: (id: number) => recurringTransactionApi.deleteRecurring(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: recurringTransactionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "recurring-transaction"),
   });
 };
 
@@ -61,8 +55,6 @@ export const useToggleRecurringTransaction = () => {
 
   return useMutation({
     mutationFn: (id: number) => recurringTransactionApi.toggleActive(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: recurringTransactionKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "recurring-transaction"),
   });
 };

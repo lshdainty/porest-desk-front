@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { memoTagKeys, memoKeys } from "@/shared/config";
+import { invalidateFor, memoTagKeys } from "@/shared/config";
 import { memoTagApi } from "../api/memoTagApi";
 import type { MemoTagFormValues } from "@/entities/memo-tag";
 
@@ -15,9 +15,7 @@ export const useCreateMemoTag = () => {
 
   return useMutation({
     mutationFn: (data: MemoTagFormValues) => memoTagApi.createTag(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: memoTagKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "memo-tag"),
   });
 };
 
@@ -32,10 +30,7 @@ export const useUpdateMemoTag = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: MemoTagFormValues }) =>
       memoTagApi.updateTag(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: memoTagKeys.all });
-      queryClient.invalidateQueries({ queryKey: memoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "memo-tag-usage"),
   });
 };
 
@@ -45,9 +40,6 @@ export const useDeleteMemoTag = () => {
 
   return useMutation({
     mutationFn: (id: number) => memoTagApi.deleteTag(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: memoTagKeys.all });
-      queryClient.invalidateQueries({ queryKey: memoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "memo-tag-usage"),
   });
 };

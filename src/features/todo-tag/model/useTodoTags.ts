@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { todoTagKeys, todoKeys } from "@/shared/config";
+import { invalidateFor, todoTagKeys } from "@/shared/config";
 import { todoTagApi } from "../api/todoTagApi";
 import type { TodoTagFormValues } from "@/entities/todo-tag";
 
@@ -15,9 +15,7 @@ export const useCreateTodoTag = () => {
 
   return useMutation({
     mutationFn: (data: TodoTagFormValues) => todoTagApi.createTag(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoTagKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo-tag"),
   });
 };
 
@@ -27,10 +25,7 @@ export const useUpdateTodoTag = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: TodoTagFormValues }) =>
       todoTagApi.updateTag(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoTagKeys.all });
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo-tag-usage"),
   });
 };
 
@@ -39,9 +34,6 @@ export const useDeleteTodoTag = () => {
 
   return useMutation({
     mutationFn: (id: number) => todoTagApi.deleteTag(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: todoTagKeys.all });
-      queryClient.invalidateQueries({ queryKey: todoKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "todo-tag-usage"),
   });
 };

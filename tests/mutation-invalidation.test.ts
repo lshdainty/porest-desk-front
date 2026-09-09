@@ -67,6 +67,25 @@ const memos = await import("@/features/memo/model/useMemos");
 const events = await import("@/widgets/calendar/model/useCalendarEvents");
 const calendars =
   await import("@/features/user-calendar/model/useUserCalendars");
+const budgets = await import("@/features/expense/model/useExpenseBudgets");
+const categories =
+  await import("@/features/expense/model/useExpenseCategories");
+const templates = await import("@/features/expense/model/useExpenseTemplates");
+const dutchPays = await import("@/features/dutch-pay/model/useDutchPay");
+const savingGoals = await import("@/features/savingGoal/model/useSavingGoals");
+const recurrings =
+  await import("@/features/recurring-transaction/model/useRecurringTransactions");
+const memoTags = await import("@/features/memo-tag/model/useMemoTags");
+const todoTags = await import("@/features/todo-tag/model/useTodoTags");
+const eventLabels = await import("@/features/event-label/model/useEventLabels");
+const notifications =
+  await import("@/features/notification/model/useNotifications");
+const oauthLink = await import("@/features/oauth-link/model/useOAuthLink");
+const deviceSessions =
+  await import("@/features/session/model/useDeviceSessions");
+const watchlist = await import("@/features/stock/api/watchlistApi");
+const subscriptions =
+  await import("@/features/subscription/model/useSubscription");
 
 const EXPENSES = "src/features/expense/model/useExpenses.ts";
 const SMS = "src/features/sms/model/useCommitSms.ts";
@@ -76,6 +95,21 @@ const TODOS = "src/features/todo/model/useTodos.ts";
 const MEMOS = "src/features/memo/model/useMemos.ts";
 const EVENTS = "src/widgets/calendar/model/useCalendarEvents.ts";
 const CALENDARS = "src/features/user-calendar/model/useUserCalendars.ts";
+const BUDGETS = "src/features/expense/model/useExpenseBudgets.ts";
+const CATEGORIES = "src/features/expense/model/useExpenseCategories.ts";
+const TEMPLATES = "src/features/expense/model/useExpenseTemplates.ts";
+const DUTCH_PAY = "src/features/dutch-pay/model/useDutchPay.ts";
+const SAVING_GOALS = "src/features/savingGoal/model/useSavingGoals.ts";
+const RECURRINGS =
+  "src/features/recurring-transaction/model/useRecurringTransactions.ts";
+const MEMO_TAGS = "src/features/memo-tag/model/useMemoTags.ts";
+const TODO_TAGS = "src/features/todo-tag/model/useTodoTags.ts";
+const EVENT_LABELS = "src/features/event-label/model/useEventLabels.ts";
+const NOTIFICATIONS = "src/features/notification/model/useNotifications.ts";
+const OAUTH_LINK = "src/features/oauth-link/model/useOAuthLink.ts";
+const DEVICE_SESSIONS = "src/features/session/model/useDeviceSessions.ts";
+const WATCHLIST = "src/features/stock/api/watchlistApi.ts";
+const SUBSCRIPTIONS = "src/features/subscription/model/useSubscription.ts";
 
 type MutationLike = {
   onSuccess?: (...args: unknown[]) => void;
@@ -344,6 +378,319 @@ const ROWS: Row[] = [
     change: "user-calendar-scope",
     call: () => calendars.useJoinCalendar(),
   },
+
+  // 가계부의 밑바탕 — 예산·분류·프리셋. 금액이 안 움직이니 옆 도메인은 안 늙는다.
+  {
+    file: BUDGETS,
+    hook: "useCreateExpenseBudget",
+    change: "expense-meta",
+    call: () => budgets.useCreateExpenseBudget(),
+  },
+  {
+    file: BUDGETS,
+    hook: "useUpdateExpenseBudget",
+    change: "expense-meta",
+    call: () => budgets.useUpdateExpenseBudget(),
+  },
+  {
+    file: BUDGETS,
+    hook: "useDeleteExpenseBudget",
+    change: "expense-meta",
+    call: () => budgets.useDeleteExpenseBudget(),
+  },
+  {
+    file: CATEGORIES,
+    hook: "useCreateExpenseCategory",
+    change: "expense-meta",
+    call: () => categories.useCreateExpenseCategory(),
+  },
+  {
+    file: CATEGORIES,
+    hook: "useUpdateExpenseCategory",
+    change: "expense-meta",
+    call: () => categories.useUpdateExpenseCategory(),
+  },
+  {
+    file: CATEGORIES,
+    hook: "useDeleteExpenseCategory",
+    change: "expense-meta",
+    call: () => categories.useDeleteExpenseCategory(),
+  },
+  {
+    file: CATEGORIES,
+    hook: "useMoveCategoryTransactions",
+    change: "expense-meta",
+    call: () => categories.useMoveCategoryTransactions(),
+  },
+  {
+    file: CATEGORIES,
+    hook: "useSplitCategoryIntoChild",
+    change: "expense-meta",
+    call: () => categories.useSplitCategoryIntoChild(),
+  },
+  {
+    file: CATEGORIES,
+    hook: "useReorderExpenseCategories",
+    change: "expense-category-order",
+    call: () => categories.useReorderExpenseCategories(),
+  },
+  {
+    file: TEMPLATES,
+    hook: "useCreateExpenseTemplate",
+    change: "expense-template",
+    call: () => templates.useCreateExpenseTemplate(),
+  },
+  {
+    file: TEMPLATES,
+    hook: "useUpdateExpenseTemplate",
+    change: "expense-template",
+    call: () => templates.useUpdateExpenseTemplate(),
+  },
+  {
+    file: TEMPLATES,
+    hook: "useDeleteExpenseTemplate",
+    change: "expense-template",
+    call: () => templates.useDeleteExpenseTemplate(),
+  },
+  {
+    file: TEMPLATES,
+    hook: "useTouchExpenseTemplate",
+    change: "expense-template",
+    call: () => templates.useTouchExpenseTemplate(),
+  },
+  // 더치페이 — 서버가 원거래를 연결만 하고 정산은 참가자 상태만 바꾼다.
+  {
+    file: DUTCH_PAY,
+    hook: "useCreateDutchPay",
+    change: "dutch-pay",
+    call: () => dutchPays.useCreateDutchPay(),
+  },
+  {
+    file: DUTCH_PAY,
+    hook: "useUpdateDutchPay",
+    change: "dutch-pay",
+    call: () => dutchPays.useUpdateDutchPay(),
+  },
+  {
+    file: DUTCH_PAY,
+    hook: "useDeleteDutchPay",
+    change: "dutch-pay",
+    call: () => dutchPays.useDeleteDutchPay(),
+  },
+  {
+    file: DUTCH_PAY,
+    hook: "useMarkParticipantPaid",
+    change: "dutch-pay",
+    call: () => dutchPays.useMarkParticipantPaid(),
+  },
+  {
+    file: DUTCH_PAY,
+    hook: "useSettleAll",
+    change: "dutch-pay",
+    call: () => dutchPays.useSettleAll(),
+  },
+  // 저축목표 — 적립도 목표의 모은 금액만 올린다. 거래·잔액은 그대로다.
+  {
+    file: SAVING_GOALS,
+    hook: "useCreateSavingGoal",
+    change: "saving-goal",
+    call: () => savingGoals.useCreateSavingGoal(),
+  },
+  {
+    file: SAVING_GOALS,
+    hook: "useUpdateSavingGoal",
+    change: "saving-goal",
+    call: () => savingGoals.useUpdateSavingGoal(),
+  },
+  {
+    file: SAVING_GOALS,
+    hook: "useContributeSavingGoal",
+    change: "saving-goal",
+    call: () => savingGoals.useContributeSavingGoal(),
+  },
+  {
+    file: SAVING_GOALS,
+    hook: "useDeleteSavingGoal",
+    change: "saving-goal",
+    call: () => savingGoals.useDeleteSavingGoal(),
+  },
+  {
+    file: SAVING_GOALS,
+    hook: "useReorderSavingGoals",
+    change: "saving-goal",
+    call: () => savingGoals.useReorderSavingGoals(),
+  },
+  // 반복 거래 — 예약만 바뀐다. 실제 거래는 예정일에 서버가 만든다.
+  {
+    file: RECURRINGS,
+    hook: "useCreateRecurringTransaction",
+    change: "recurring-transaction",
+    call: () => recurrings.useCreateRecurringTransaction(),
+  },
+  {
+    file: RECURRINGS,
+    hook: "useUpdateRecurringTransaction",
+    change: "recurring-transaction",
+    call: () => recurrings.useUpdateRecurringTransaction(),
+  },
+  {
+    file: RECURRINGS,
+    hook: "useDeleteRecurringTransaction",
+    change: "recurring-transaction",
+    call: () => recurrings.useDeleteRecurringTransaction(),
+  },
+  {
+    file: RECURRINGS,
+    hook: "useToggleRecurringTransaction",
+    change: "recurring-transaction",
+    call: () => recurrings.useToggleRecurringTransaction(),
+  },
+  // 이름표 — 만들 때는 목록만, 고치거나 지울 때는 그걸 달고 있던 것까지.
+  {
+    file: MEMO_TAGS,
+    hook: "useCreateMemoTag",
+    change: "memo-tag",
+    call: () => memoTags.useCreateMemoTag(),
+  },
+  {
+    file: MEMO_TAGS,
+    hook: "useUpdateMemoTag",
+    change: "memo-tag-usage",
+    call: () => memoTags.useUpdateMemoTag(),
+  },
+  {
+    file: MEMO_TAGS,
+    hook: "useDeleteMemoTag",
+    change: "memo-tag-usage",
+    call: () => memoTags.useDeleteMemoTag(),
+  },
+  {
+    file: TODO_TAGS,
+    hook: "useCreateTodoTag",
+    change: "todo-tag",
+    call: () => todoTags.useCreateTodoTag(),
+  },
+  {
+    file: TODO_TAGS,
+    hook: "useUpdateTodoTag",
+    change: "todo-tag-usage",
+    call: () => todoTags.useUpdateTodoTag(),
+  },
+  {
+    file: TODO_TAGS,
+    hook: "useDeleteTodoTag",
+    change: "todo-tag-usage",
+    call: () => todoTags.useDeleteTodoTag(),
+  },
+  {
+    file: EVENT_LABELS,
+    hook: "useCreateEventLabel",
+    change: "event-label",
+    call: () => eventLabels.useCreateEventLabel(),
+  },
+  {
+    file: EVENT_LABELS,
+    hook: "useUpdateEventLabel",
+    change: "event-label-usage",
+    call: () => eventLabels.useUpdateEventLabel(),
+  },
+  {
+    file: EVENT_LABELS,
+    hook: "useDeleteEventLabel",
+    change: "event-label-usage",
+    call: () => eventLabels.useDeleteEventLabel(),
+  },
+  // 계정·구독·증권
+  {
+    file: NOTIFICATIONS,
+    hook: "useMarkRead",
+    change: "notification",
+    call: () => notifications.useMarkRead(),
+  },
+  {
+    file: NOTIFICATIONS,
+    hook: "useMarkAllRead",
+    change: "notification",
+    call: () => notifications.useMarkAllRead(),
+  },
+  {
+    file: NOTIFICATIONS,
+    hook: "useDeleteNotification",
+    change: "notification",
+    call: () => notifications.useDeleteNotification(),
+  },
+  {
+    file: OAUTH_LINK,
+    hook: "useUnlinkOAuth",
+    change: "oauth-link",
+    call: () => oauthLink.useUnlinkOAuth(),
+  },
+  {
+    file: DEVICE_SESSIONS,
+    hook: "useRevokeDeviceMutation",
+    change: "device-session",
+    call: () => deviceSessions.useRevokeDeviceMutation(),
+  },
+  {
+    file: WATCHLIST,
+    hook: "useCreateWatchGroup",
+    change: "stock-watchlist",
+    call: () => watchlist.useCreateWatchGroup(),
+  },
+  {
+    file: WATCHLIST,
+    hook: "useRenameWatchGroup",
+    change: "stock-watchlist",
+    call: () => watchlist.useRenameWatchGroup(),
+  },
+  {
+    file: WATCHLIST,
+    hook: "useDeleteWatchGroup",
+    change: "stock-watchlist",
+    call: () => watchlist.useDeleteWatchGroup(),
+  },
+  {
+    file: WATCHLIST,
+    hook: "useAddWatchItem",
+    change: "stock-watchlist",
+    call: () => watchlist.useAddWatchItem(),
+  },
+  {
+    file: WATCHLIST,
+    hook: "useRemoveWatchItem",
+    change: "stock-watchlist",
+    call: () => watchlist.useRemoveWatchItem(),
+  },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useSubscribe",
+    change: "subscription",
+    call: () => subscriptions.useSubscribe(),
+  },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useCancelSubscription",
+    change: "subscription",
+    call: () => subscriptions.useCancelSubscription(),
+  },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useRegisterBrokerCredential",
+    change: "broker-connection",
+    call: () => subscriptions.useRegisterBrokerCredential(),
+  },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useDisconnectBrokerCredential",
+    change: "broker-connection",
+    call: () => subscriptions.useDisconnectBrokerCredential(),
+  },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useSetPrimaryBroker",
+    change: "broker-connection",
+    call: () => subscriptions.useSetPrimaryBroker(),
+  },
 ];
 
 /** 표가 비우는 접두 — 표를 고치면 여기도 고쳐야 한다. */
@@ -363,6 +710,27 @@ const EXPECTED_MAP: Record<ChangeKind, string[]> = {
   memo: ["memos", "dashboard"],
   "user-calendar": ["user-calendars"],
   "user-calendar-scope": ["user-calendars", "calendar"],
+  "event-label": ["event-labels"],
+  "event-label-usage": ["event-labels", "calendar"],
+  "memo-tag": ["memo-tags"],
+  "memo-tag-usage": ["memo-tags", "memos"],
+  "todo-tag": ["todo-tags"],
+  "todo-tag-usage": ["todo-tags", "todos"],
+  "expense-meta": ["expenses"],
+  "expense-category-order": ["expenses/categories"],
+  "expense-template": ["expenses/templates"],
+  "dutch-pay": ["dutch-pay"],
+  "saving-goal": ["saving-goals"],
+  "recurring-transaction": ["recurring-transactions"],
+  notification: ["notifications"],
+  "oauth-link": ["oauth"],
+  "device-session": ["deviceSessions"],
+  "stock-watchlist": ["stocks/watch-groups"],
+  subscription: ["subscription"],
+  "broker-connection": [
+    "subscription/securities-credentials",
+    "subscription/features",
+  ],
 };
 
 // 레포 루트 기준으로 읽는다. `import.meta.url` 은 안 쓴다 — 테스트 러너 안에서는

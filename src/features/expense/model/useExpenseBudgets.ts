@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { expenseKeys } from "@/shared/config";
+import { expenseKeys, invalidateFor } from "@/shared/config";
 import { expenseBudgetApi } from "../api/expenseBudgetApi";
 import type { BudgetListParams } from "../api/expenseBudgetApi";
 import type { ExpenseBudgetFormValues } from "@/entities/expense";
@@ -18,9 +18,7 @@ export const useCreateExpenseBudget = () => {
   return useMutation({
     mutationFn: (data: ExpenseBudgetFormValues) =>
       expenseBudgetApi.createBudget(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -30,9 +28,7 @@ export const useUpdateExpenseBudget = () => {
   return useMutation({
     mutationFn: ({ id, budgetAmount }: { id: number; budgetAmount: number }) =>
       expenseBudgetApi.updateBudget(id, { budgetAmount }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
@@ -41,9 +37,7 @@ export const useDeleteExpenseBudget = () => {
 
   return useMutation({
     mutationFn: (id: number) => expenseBudgetApi.deleteBudget(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expenseKeys.all });
-    },
+    onSuccess: () => invalidateFor(queryClient, "expense-meta"),
   });
 };
 
