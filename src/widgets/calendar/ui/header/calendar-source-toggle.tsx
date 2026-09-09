@@ -21,6 +21,7 @@ import {
   DrawerTitle,
   DrawerBody,
 } from "@/shared/ui/drawer";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 import { cn } from "@/shared/lib";
@@ -31,13 +32,25 @@ import type {
   IBuiltinSource,
   TCalendarSourceType,
 } from "@/widgets/calendar/model/types";
-import type { UserCalendar } from "@/entities/user-calendar";
+import { isCalendarShown, type UserCalendar } from "@/entities/user-calendar";
 
 const SOURCE_ICONS: Record<TCalendarSourceType, React.ElementType> = {
   holiday: Flag,
   expense: Receipt,
   todo: ListTodo,
 };
+
+const CheckMark = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+    <path
+      d="M8.5 2.5L3.5 7.5L1.5 5.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const CheckboxIndicator = ({
   checked,
@@ -56,24 +69,58 @@ const CheckboxIndicator = ({
     }}
   >
     {checked && (
-      <svg
-        width="10"
-        height="10"
-        viewBox="0 0 10 10"
-        fill="none"
-        style={{ color: "var(--swatch-check)" }}
-      >
-        <path
-          d="M8.5 2.5L3.5 7.5L1.5 5.5"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <span style={{ color: "var(--swatch-check)", display: "inline-flex" }}>
+        <CheckMark />
+      </span>
     )}
   </span>
 );
+
+/** 끌 수 없는 캘린더의 표식 — 네모(체크박스) 없이 체크만. 누르는 자리가 아니다. */
+const AlwaysShownMark = ({ color }: { color: string }) => (
+  <span
+    className="flex size-4 shrink-0 items-center justify-center"
+    style={{ color }}
+  >
+    <CheckMark />
+  </span>
+);
+
+/** 캘린더 이름 왼쪽의 색 점 — 두 행이 같은 자리에 같은 크기로 둔다. */
+const CalendarDot = ({ color }: { color: string }) => (
+  <span
+    className="size-2.5 shrink-0 rounded-full"
+    style={{ backgroundColor: color }}
+  />
+);
+
+/**
+ * 기본 캘린더 행 — **표시 스위치를 두지 않는다.**
+ *
+ * 기본 캘린더는 서버가 자동으로 대입하는 자리라 숨기면 방금 만든 일정이 곧바로 안 보인다.
+ * 서버도 이 캘린더의 표시 토글을 400 으로 막으므로 스위치를 남겨 두면 누르는 순간 에러만
+ * 난다. 회색으로 잠근 스위치도 두지 않는다 — 누를 수 없는 컨트롤은 "왜 안 되지" 를 만든다.
+ * 대신 늘 켜진 표식과 `기본` 표를 둬서 이 행이 왜 다른지 그 자리에서 읽히게 한다.
+ */
+const DefaultCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
+  const { t } = useTranslation("calendar");
+  const color = getPaletteByColor(calendar.color).color;
+
+  return (
+    <div className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm">
+      <AlwaysShownMark color={color} />
+      <CalendarDot color={color} />
+      <span className="truncate">{calendar.calendarName}</span>
+      <Badge
+        variant="secondary"
+        className="ml-auto shrink-0 font-bold"
+        title={t("cannotHideDefault")}
+      >
+        {t("default")}
+      </Badge>
+    </div>
+  );
+};
 
 const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
   const { toggleCalendarVisibility, pendingCalendarIds } = useCalendar();
@@ -99,10 +146,7 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
           color={getPaletteByColor(calendar.color).color}
         />
       )}
-      <span
-        className="size-2.5 shrink-0 rounded-full"
-        style={{ backgroundColor: getPaletteByColor(calendar.color).color }}
-      />
+      <CalendarDot color={getPaletteByColor(calendar.color).color} />
       <span className="truncate">{calendar.calendarName}</span>
     </button>
   );
@@ -156,9 +200,13 @@ const CalendarSourceContent = ({ onManage }: { onManage: () => void }) => {
           {t("title")}
         </span>
         <div className="space-y-0.5">
-          {userCalendars.map((calendar) => (
-            <UserCalendarItem key={calendar.rowId} calendar={calendar} />
-          ))}
+          {userCalendars.map((calendar) =>
+            calendar.isDefault ? (
+              <DefaultCalendarItem key={calendar.rowId} calendar={calendar} />
+            ) : (
+              <UserCalendarItem key={calendar.rowId} calendar={calendar} />
+            ),
+          )}
           {userCalendars.length === 0 && (
             <p className="px-2 py-1.5 text-xs text-muted-foreground">-</p>
           )}
@@ -210,7 +258,7 @@ const CalendarSourceToggle = () => {
   // 다크모드 light 변형 swap 이 안 돼 앱과 색이 어긋나던 버그 fix (앱 solidSwatchColor 정합).
   const dotColors = [
     ...userCalendars
-      .filter((c) => c.isVisible)
+      .filter((c) => isCalendarShown(c))
       .map((c) => getPaletteByColor(c.color).color),
     ...builtinSources
       .filter((s) => s.enabled)
@@ -218,7 +266,7 @@ const CalendarSourceToggle = () => {
   ].slice(0, 3);
 
   const totalCount =
-    userCalendars.filter((c) => c.isVisible).length +
+    userCalendars.filter((c) => isCalendarShown(c)).length +
     builtinSources.filter((s) => s.enabled).length;
 
   const triggerButton = (

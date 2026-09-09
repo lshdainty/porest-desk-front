@@ -14,6 +14,7 @@ import {
   useUserCalendars,
   useToggleCalendarVisibility,
 } from "@/features/user-calendar";
+import { isCalendarShown } from "@/entities/user-calendar";
 import { CalendarContext, type CalendarContextValue } from "./calendar-context";
 
 interface CalendarProviderProps {
@@ -80,11 +81,12 @@ export const CalendarProvider = ({
     [builtinSources],
   );
 
+  // 보임 판정은 `entities/user-calendar` 의 `isCalendarShown` 하나로 모은다 —
+  // 필터(여기)와 목록(캘린더 소스 드롭다운)이 갈리면 켜진 것으로 보이는 캘린더의
+  // 일정이 화면에서 빠지는 상태가 생긴다.
   const isCalendarVisible = useCallback(
-    (calendarRowId: number) => {
-      const cal = userCalendars.find((c) => c.rowId === calendarRowId);
-      return cal?.isVisible ?? true;
-    },
+    (calendarRowId: number) =>
+      isCalendarShown(userCalendars.find((c) => c.rowId === calendarRowId)),
     [userCalendars],
   );
 

@@ -4,3 +4,4 @@ export type {
   CalendarRole,
   CalendarMember,
 } from "./model/types";
+export { isCalendarShown } from "./lib/visibility";
