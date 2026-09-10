@@ -60,8 +60,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // 사이를 뚫고 같은 요청을 한 번 더 보냈다(거래 2건 저장, QA 2026-09-02). 렌더와
     // 무관하게 동기적으로 짧은 창(더블클릭 간격) 안의 재클릭을 버린다. 창이 지나면
     // 부모의 loading/disabled 가 이어받는다.
+    //
+    // 막아야 하는 창은 딱 "클릭 → 다음 렌더" 사이다. 그래서 **비동기 작업이 실제로
+    // 시작된 클릭만** 창을 물려받는다 — 검증에 걸려 onClick 이 아무것도 안 걸고 빠져나온
+    // 클릭까지 시각을 들고 있으면, 사용자가 안내를 읽고 고쳐서 다시 누른 진짜 저장이
+    // 통째로 버려졌다("제목을 입력해 주세요" 뒤 0.6초 안의 재저장이 무반응, QA #160).
     const lastClickAt = React.useRef(0);
     const isAsyncAction = loading !== undefined;
+    // 되돌림 판정은 **최신 loading** 을 봐야 한다. guardedClick 클로저에 잡힌 loading 은
+    // 클릭 시점 값이라, 클릭이 걸어 놓은 작업 때문에 true 로 바뀐 걸 못 본다.
+    const loadingRef = React.useRef(loading);
+    React.useLayoutEffect(() => {
+      loadingRef.current = loading;
+    });
+    const revertTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+    React.useEffect(() => () => clearTimeout(revertTimer.current), []);
     const guardedClick = React.useCallback(
       (e: React.MouseEvent<HTMLButtonElement>) => {
         if (isAsyncAction) {
@@ -71,12 +84,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             return;
           }
           lastClickAt.current = now;
+          // 이 클릭이 정말 뭔가를 걸었는지는 이벤트가 끝나고 렌더가 반영된 뒤에야 안다.
+          // 0ms 타이머는 그 커밋 다음에 돈다 — 같은 프레임 안의 두 번째 클릭보다는 뒤,
+          // 사람이 안내를 읽고 다시 누르는 것(실측 최단 57ms)보다는 앞이다.
+          clearTimeout(revertTimer.current);
+          revertTimer.current = setTimeout(() => {
+            if (!loadingRef.current) lastClickAt.current = 0;
+          }, 0);
         }
         onClick?.(e);
       },
       [isAsyncAction, onClick],
     );
     if (asChild) {
+      // asChild 는 가드를 지나지 않는다 — Slot 은 `loading` 과 함께 쓰지 않는 경로라
+      // (단일 child 제약, 위 JSDoc) isAsyncAction 이 늘 false 다. 지금 호출처도 전부
+      // 링크(`<a>`/`<Link>`)라 막을 요청이 없다.
       return (
         <Slot
           className={cn(buttonVariants({ variant, size, flush, className }))}
