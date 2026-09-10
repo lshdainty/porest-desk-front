@@ -1,6 +1,7 @@
 import axios from "axios";
 import type {
   AxiosInstance,
+  AxiosRequestConfig,
   InternalAxiosRequestConfig,
   AxiosResponse,
 } from "axios";
@@ -22,6 +23,30 @@ export const getToken = (): string | null =>
   isAuthenticated() ? "cookie" : null;
 export const removeToken = () => clearAuthenticated();
 export const hasToken = (): boolean => isAuthenticated();
+
+/**
+ * 전역 토스트를 끌 수 있는 요청 설정.
+ *
+ * - `silent` — 이 요청의 실패는 **전부** 호출처가 직접 처리한다.
+ * - `silentStatuses` — 적어 둔 상태 코드만 "예상된 답" 으로 보고 넘긴다. 나머지 실패는
+ *   그대로 뜬다. 하위 자원 조회의 404(`/v1/expense/{id}/splits` — 부모 거래가 이미
+ *   지워졌다)처럼 **서버가 제대로 답한 것**을 사용자에게 오류로 옮길 이유가 없는
+ *   자리에 쓴다. `silent` 로 통째로 끄면 그 요청의 5xx 까지 조용해진다.
+ */
+export type QuietRequestConfig = AxiosRequestConfig & {
+  silent?: boolean;
+  silentStatuses?: readonly number[];
+};
+
+/**
+ * 이 실패가 그 상태 코드인가.
+ *
+ * `silentStatuses` 로 넘긴 응답을 호출처가 알아보고 도메인 값(빈 목록 등)으로
+ * 옮기는 자리에서 쓴다.
+ */
+export const isHttpStatus = (error: unknown, status: number): boolean =>
+  (error as { response?: { status?: number } } | null | undefined)?.response
+    ?.status === status;
 
 const apiBaseUrl = `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_URL}`;
 
@@ -101,8 +126,14 @@ apiClient.interceptors.response.use(
       }
       return Promise.reject(error);
     }
+    const reqConfig = error.config as QuietRequestConfig | undefined;
     // silent flag 가 있으면 호출처에서 직접 처리 — 전역 toast skip
-    if (error.config?.silent === true) {
+    if (reqConfig?.silent === true) {
+      return Promise.reject(error);
+    }
+    // 이 요청에서는 오류가 아니라고 미리 밝혀 둔 상태 코드 — 나머지는 그대로 띄운다.
+    const status = error.response?.status;
+    if (status != null && reqConfig?.silentStatuses?.includes(status)) {
       return Promise.reject(error);
     }
     // 구독 게이트(SUBS_001) 403 은 토스트 제외 — 미구독 기능은 UI 가 이미 숨기므로
