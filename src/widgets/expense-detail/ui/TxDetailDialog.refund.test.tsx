@@ -206,3 +206,16 @@ describe("누르면 확인을 받는다", () => {
     expect(banner()).not.toBeNull();
   });
 });
+
+// 환불 행의 **금액**은 편집 시트에서 잠겼다(`AddTxSheet.refundEditLock.test.tsx`) —
+// "금액이 틀렸으면 지우고 다시 넣는다" 가 사용자가 쓸 길이라, 삭제가 여기 남아 있어야
+// 그 길이 뚫려 있다. 삭제까지 막으면 잘못 적은 환불이 영구히 남는 막다른 길이 된다.
+describe("환불 행도 삭제는 열려 있다", () => {
+  it("환불 거래에 삭제 버튼이 남아 있다", () => {
+    render(baseExpense);
+
+    const del = buttonsWith("delete")[0];
+    expect(del).toBeDefined();
+    expect(del!.disabled).toBe(false);
+  });
+});
