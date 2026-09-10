@@ -1590,6 +1590,7 @@ expense,addTx.amountTooLarge,금액은 100억원까지 입력할 수 있어요,A
 expense,addTx.refundOverCap,환불은 {{max}}까지만 넣을 수 있어요,A refund can be at most {{max}}
 expense,addTx.refundRemaining,이미 {{refunded}} 환불했어요. {{max}}까지 더 넣을 수 있어요,{{refunded}} already refunded. You can add up to {{max}} more
 expense,addTx.refundFullyDone,이미 전액 환불한 거래예요. 더 환불할 금액이 없어요,This transaction is already fully refunded. Nothing left to refund
+expense,addTx.refundAmountLocked,환불 금액은 고칠 수 없어요. 금액이 틀렸으면 이 환불을 지우고 다시 넣어 주세요,"A refund amount cannot be edited. If it is wrong, delete this refund and add it again"
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
 expense,addTx.deleteRefundWarn,이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요,{{count}} linked refund(s) ({{amount}} KRW) will also be deleted
 expense,txDetail.refundLinked,환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요,{{count}} refund(s) · {{amount}} KRW linked to this transaction
