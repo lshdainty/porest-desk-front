@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { PorestSidebar } from "./PorestSidebar";
 import { PorestTopBar } from "./PorestTopBar";
@@ -12,6 +13,7 @@ import { EventForm } from "@/widgets/calendar/ui/EventForm";
 import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
 import { useHideCardsSync } from "@/features/hide-amounts";
+import { fabFor } from "../model/fab";
 
 // money group 4 페이지 — 진입 시 MoneyTabBar 표시 (← / 가계부 / 자산 / 통계 / 예산).
 const MONEY_PATHS = [
@@ -20,7 +22,6 @@ const MONEY_PATHS = [
   "/desk/stats",
   "/desk/budget",
 ];
-const CALENDAR_PATH = "/desk/calendar";
 // 모바일 풀스크린 페이지 — 전역 헤더/탭바 없이 페이지 자체 ← 헤더로 렌더 (앱 push 화면 미러).
 const FULLSCREEN_PATHS = [
   "/desk/memo",
@@ -48,6 +49,7 @@ const CalendarEventAddForm = ({ onClose }: { onClose: () => void }) => {
 
 export const AppLayout = () => {
   const size = useDeviceSize();
+  const { t } = useTranslation(["layout", "calendar"]);
   const [addOpen, setAddOpen] = useState(false);
   const [calendarAddOpen, setCalendarAddOpen] = useState(false);
   const location = useLocation();
@@ -56,13 +58,16 @@ export const AppLayout = () => {
 
   if (size === "mobile") {
     const isMoney = MONEY_PATHS.some((p) => location.pathname.startsWith(p));
-    const isCalendar = location.pathname.startsWith(CALENDAR_PATH);
     const isFullscreen = FULLSCREEN_PATHS.some((p) =>
       location.pathname.startsWith(p),
     );
-    const handleAdd = isCalendar
-      ? () => setCalendarAddOpen(true)
-      : () => setAddOpen(true);
+    // + 가 여는 것과 그걸 부르는 이름은 한 자리에서 나온다 — 동작만 화면별로 갈리고
+    // 이름이 굳어 있어 캘린더에서 낭독기가 "거래 추가" 를 읽었다(QA #159).
+    const fab = fabFor(location.pathname);
+    const handleAdd =
+      fab.target === "event"
+        ? () => setCalendarAddOpen(true)
+        : () => setAddOpen(true);
 
     // 풀스크린 페이지 — 페이지가 자체 헤더(← 뒤로 + 타이틀)를 렌더 (앱과 동일).
     if (isFullscreen) {
@@ -94,7 +99,11 @@ export const AppLayout = () => {
             />
           </SwipeActionsProvider>
         </div>
-        <AppTabBar mode={isMoney ? "money" : "default"} onAdd={handleAdd} />
+        <AppTabBar
+          mode={isMoney ? "money" : "default"}
+          onAdd={handleAdd}
+          addLabel={t(fab.labelKey)}
+        />
         {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
         {calendarAddOpen && (
           <CalendarEventAddForm onClose={() => setCalendarAddOpen(false)} />
