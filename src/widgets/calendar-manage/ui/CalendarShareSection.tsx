@@ -981,8 +981,16 @@ function CalendarJoinDialog({
   const { t } = useTranslation("calendar");
   const [code, setCode] = useState("");
   const valid = code.trim().length > 0;
+  /**
+   * **연타 가드는 문이 아니라 여기 있어야 한다.**
+   *
+   * 저장 버튼에만 걸면 Enter 는 그 문을 안 지난다 — 코드를 넣고 Enter 를 다섯 번
+   * 누르면 참여 요청이 다섯 번 나갔다(QA #134). 입구는 버튼·Enter 둘이고 앞으로 더
+   * 늘 수 있으니, "이미 나가 있으면 무시" 는 입구마다가 아니라 나가는 함수가 든다
+   * (`shared/lib/porest/enter-save.ts` 주석 · 할 일 빠른 추가 #122 와 같은 자리).
+   */
   const submit = () => {
-    if (!valid) return;
+    if (!valid || submitting) return;
     onJoin(code.trim().toUpperCase(), onClose);
   };
 
@@ -1003,15 +1011,15 @@ function CalendarJoinDialog({
       size="md"
       footer={Footer}
       mobile={mobile}
+      // Enter 로 참여 — 손으로 단 `onKeyDown` 대신 껍데기의 문을 지난다. 한글 조합
+      // 중 Enter·포털 안의 칸을 거르는 규칙(`isEnterSave`)이 거기 하나에 있다.
+      onEnterSave={submit}
     >
       <Field>
         <FieldLabel>{t("inviteCode")}</FieldLabel>
         <Input
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submit();
-          }}
           placeholder={t("shareSection.joinCodePlaceholder")}
           autoFocus
         />
