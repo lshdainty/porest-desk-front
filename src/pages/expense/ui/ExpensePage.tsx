@@ -15,7 +15,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { KRW, formatDay, isEn } from "@/shared/lib/porest/format";
+import { KRW, formatDay, isEn, minusOf } from "@/shared/lib/porest/format";
 import {
   INSIGHT_SAME_MAX,
   insightDiffAmount,
@@ -454,7 +454,13 @@ export const ExpensePage = () => {
   return mobile ? <ExpenseMobile onAddTx={onAddTx} /> : <ExpenseDesktop />;
 };
 
-function Summary({
+/**
+ * 월 네비 + 수입·지출·합계 세 칸.
+ *
+ * `export` 는 테스트가 이 카드만 떼어 그리려고 붙였다 — 지출 칸의 부호가 값을 따르는지는
+ * 페이지 전체를 세우지 않고도 확인할 수 있어야 한다(`ExpensePage.expenseSign.test.tsx`).
+ */
+export function Summary({
   month,
   onMonthChange,
   mobile,
@@ -563,7 +569,8 @@ function Summary({
               "—"
             ) : (
               <MaskAmount card="ledger.monthSummary" kind="expense">
-                −{KRW(monthOut)}
+                {minusOf(monthOut)}
+                {KRW(Math.abs(monthOut))}
               </MaskAmount>
             )}
           </div>
@@ -791,8 +798,9 @@ function DayDetailDialog({
                 </span>
                 <span className="num text-[length:var(--text-body-sm)] font-bold text-[var(--fg-expense)]">
                   <MaskAmount card="ledger.txList" kind="expense">
-                    −{wonPre()}
-                    {KRW(expenseTotal)}
+                    {minusOf(expenseTotal)}
+                    {wonPre()}
+                    {KRW(Math.abs(expenseTotal))}
                   </MaskAmount>
                   <WonUnit card="ledger.txList" kind="expense" />
                 </span>
@@ -1828,6 +1836,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     return m;
   }, [expenses]);
 
+  // 툴팁이 가리키는 날의 합계 — 한 번만 집는다. 값을 자리마다 다시 꺼내면
+  // 부호를 붙이는 자리와 숫자를 그리는 자리가 갈려 어긋나기 쉽다.
+  const tipDay = cellTip ? byDay[cellTip.ds] : undefined;
+
   // 캘린더 주(week) 구성.
   const weeks = useMemo(() => {
     const [y = 0, m = 1] = month.split("-").map(Number);
@@ -1997,8 +2009,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   <span>{t("expense")}</span>
                   <span className="num" style={{ color: "var(--fg-expense)" }}>
                     <MaskAmount card="ledger.txList" kind="expense">
-                      −{wonPre()}
-                      {KRW(monthOut)}
+                      {minusOf(monthOut)}
+                      {wonPre()}
+                      {KRW(Math.abs(monthOut))}
                     </MaskAmount>
                     <WonUnit card="ledger.txList" kind="expense" />
                   </span>
@@ -2117,7 +2130,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               aria-label={expanded ? t("viewCalendar") : t("viewList")}
             />
             {/* 차트형 셀 툴팁 — 통계 PorestChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
-            {cellTip && byDay[cellTip.ds] && (
+            {cellTip && tipDay && (
               <LedgerCellTip
                 left={cellTip.left}
                 top={cellTip.top}
@@ -2134,8 +2147,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                     value: (
                       <>
                         <MaskAmount card="ledger.txList" kind="expense">
-                          −{wonPre()}
-                          {KRW(byDay[cellTip.ds]?.out ?? 0)}
+                          {minusOf(tipDay.out)}
+                          {wonPre()}
+                          {KRW(Math.abs(tipDay.out))}
                         </MaskAmount>
                         <WonUnit card="ledger.txList" kind="expense" />
                       </>
@@ -2148,7 +2162,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                       <>
                         <MaskAmount card="ledger.txList" kind="income">
                           +{wonPre()}
-                          {KRW(byDay[cellTip.ds]?.inn ?? 0)}
+                          {KRW(tipDay.inn)}
                         </MaskAmount>
                         <WonUnit card="ledger.txList" kind="income" />
                       </>

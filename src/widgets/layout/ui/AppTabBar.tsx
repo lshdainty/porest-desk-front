@@ -24,9 +24,17 @@ import {
 export function AppTabBar({
   mode,
   onAdd,
+  addLabel,
 }: {
   mode: "default" | "money";
   onAdd: () => void;
+  /**
+   * `+` 의 접근성 라벨 — **부모가 `onAdd` 와 짝지어 넘긴다**(`fabFor`).
+   *
+   * 여기서 `t("addTransaction")` 로 박아 두면 캘린더처럼 다른 것을 여는 화면에서
+   * 낭독기·자동화가 속는다(QA #159). 무엇을 여는지 아는 쪽이 이름도 짓는다.
+   */
+  addLabel: string;
 }) {
   const { t } = useTranslation("layout");
   const location = useLocation();
@@ -64,7 +72,7 @@ export function AppTabBar({
           onClick={() => navigate("/desk/asset")}
         />
       ) : (
-        <TabBarFab aria-label={t("addTransaction")} onClick={onAdd} />
+        <TabBarFab aria-label={addLabel} onClick={onAdd} />
       )}
       {mode === "money" ? (
         <TabBarItem
