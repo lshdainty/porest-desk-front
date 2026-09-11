@@ -87,9 +87,19 @@ export function SubscriptionDialog({
   // 두 화면이 다른 날짜를 말하지 않는다.
   // 못 읽는 값이면 원문 앞 10자로 떨어뜨린다 — 앱(subscription_sheet.dart·account_screen.dart)과
   // 같은 폴백이다. null 로 두면 날짜가 통째로 사라져 앱은 날짜를 보여 주는데 웹만 안 보여 준다.
-  const nextBill = sub?.currentPeriodEnd
+  const periodEnd = sub?.currentPeriodEnd
     ? (toLocalDateKey(sub.currentPeriodEnd) ??
       sub.currentPeriodEnd.slice(0, 10))
+    : null;
+  // 해지해도 서버는 자동갱신만 끄고 **기간 끝까지 Pro 를 유지한다**(desk-back #332).
+  // 그래서 유예 기간에도 이 배너는 Pro 로 서고 날짜도 그대로 남는데, 그날은 더 이상
+  // 결제일이 아니라 **종료일**이다 — "다음 결제 10-11" 은 있지도 않은 결제를 예고한다.
+  // 자동갱신이 꺼져 있을 때만 종료일로 말하고, 켜져 있으면(=정상 구독) 종전 문구가 맞다.
+  // `=== false` 로 좁히는 건 값이 안 왔을 때(undefined) 기존 동작을 그대로 두려는 것이다.
+  const periodLabel = periodEnd
+    ? sub?.autoRenew === false
+      ? t("activeUntil", { date: periodEnd })
+      : t("nextBill", { date: periodEnd })
     : null;
   const upgradePlan = plansQ.data?.[0];
 
@@ -192,8 +202,8 @@ export function SubscriptionDialog({
             }}
           >
             {isPro
-              ? nextBill
-                ? `${t("nextBill", { date: nextBill })} · ${money(proMonthly)}`
+              ? periodLabel
+                ? `${periodLabel} · ${money(proMonthly)}`
                 : `${money(proMonthly)}`
               : t("freeLocked")}
           </div>
@@ -497,7 +507,7 @@ export function SubscriptionDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>{t("cancelConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("cancelConfirmDesc", { date: nextBill ?? t("expiryDate") })}
+              {t("cancelConfirmDesc", { date: periodEnd ?? t("expiryDate") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
