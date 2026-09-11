@@ -2301,7 +2301,7 @@ subscription,comparisonTitle,기능 비교,Feature comparison
 subscription,colFeature,기능,Feature
 subscription,feature.core,가계부 · 자산 관리,Budget and asset management
 subscription,feature.budget,예산 · 저축 목표 · 캘린더,Budget · savings goals · calendar
-subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 평가,Securities link · real-time quotes · asset valuation
+subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 실시간 금액,Securities link · real-time quotes · real-time asset value
 subscription,toast.subscribed,Porest Pro 구독이 시작되었어요,Porest Pro subscription started
 subscription,toast.subscribeFailed,구독에 실패했어요,Subscription failed
 subscription,toast.canceled,구독을 해지했어요,Subscription canceled
