@@ -2285,7 +2285,7 @@ subscription,cancelSub,구독 해지,Cancel subscription
 subscription,proInUse,Porest Pro 이용 중,Using Porest Pro
 subscription,freeInUse,Free 플랜 이용 중,On the Free plan
 subscription,nextBill,다음 결제 {{date}},Next billing {{date}}
-subscription,freeLocked,증권·가져오기 등 Pro 기능이 잠겨 있어요,Pro features like securities and import are locked
+subscription,freeLocked,증권 연동 · 실시간 시세가 잠겨 있어요,Securities link and real-time quotes are locked
 subscription,spotlightTitle,증권 투자는 Pro 전용이에요,Securities investing is Pro-only
 subscription,spotlightDesc,"실시간 시세·호가, 국내외 종목 검색, 관심종목, 보유 손익까지 — Pro를 구독하면 증권 탭이 바로 열려요.","Real-time quotes and order book, domestic and overseas search, watchlist, holdings P&L — subscribe to Pro and the Securities tab opens right away."
 subscription,cycleMonthly,월간,Monthly
@@ -2300,13 +2300,7 @@ subscription,comparisonTitle,기능 비교,Feature comparison
 subscription,colFeature,기능,Feature
 subscription,feature.core,가계부 · 자산 관리,Budget and asset management
 subscription,feature.budget,예산 · 저축 목표 · 캘린더,Budget · savings goals · calendar
-subscription,feature.txLog,월 거래 기록,Monthly transaction records
-subscription,feature.txFree,100건,100
-subscription,feature.txUnlimited,무제한,Unlimited
-subscription,feature.securities,증권 — 실시간 시세 · 종목 검색 · 관심종목,Securities — real-time quotes · search · watchlist
-subscription,feature.importExport,CSV · Excel 가져오기 / 내보내기,CSV · Excel import / export
-subscription,feature.multiCalendar,다중 캘린더 공유,Multi-calendar sharing
-subscription,feature.cardBenefit,카드 혜택 추천,Card benefit recommendations
+subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 평가,Securities link · real-time quotes · asset valuation
 subscription,toast.subscribed,Porest Pro 구독이 시작되었어요,Porest Pro subscription started
 subscription,toast.subscribeFailed,구독에 실패했어요,Subscription failed
 subscription,toast.canceled,구독을 해지했어요,Subscription canceled
