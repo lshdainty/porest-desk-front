@@ -29,34 +29,23 @@ import {
 
 interface SubFeature {
   labelKey: string;
-  free: boolean | string;
-  pro: boolean | string;
+  free: boolean;
+  pro: boolean;
   star?: boolean;
 }
 
-// free/pro 의 string 값은 i18n 키 (FeatureCell 렌더 시 t 로 해석)
+// Pro 가 실제로 더 주는 것은 증권 하나다 — 플랜 features 는 `["SECURITIES"]` 뿐이고
+// 서버·웹 게이트도 증권 API·시세 스냅샷·증권 탭·자산 실시간 평가에만 걸려 있다.
+// 거래 건수·가져오기/내보내기·캘린더 공유·카드 혜택에는 어떤 제한도 없으므로
+// 여기에 적지 않는다 — 표에만 있는 제한은 광고가 된다(QA #161).
 const SUB_FEATURES: SubFeature[] = [
   { labelKey: "feature.core", free: true, pro: true },
   { labelKey: "feature.budget", free: true, pro: true },
-  {
-    labelKey: "feature.txLog",
-    free: "feature.txFree",
-    pro: "feature.txUnlimited",
-  },
   { labelKey: "feature.securities", free: false, pro: true, star: true },
-  { labelKey: "feature.importExport", free: false, pro: true },
-  { labelKey: "feature.multiCalendar", free: false, pro: true },
-  { labelKey: "feature.cardBenefit", free: false, pro: true },
 ];
 
-function FeatureCell({
-  val,
-  accent,
-}: {
-  val: boolean | string;
-  accent?: boolean;
-}) {
-  if (val === true)
+function FeatureCell({ val, accent }: { val: boolean; accent?: boolean }) {
+  if (val)
     return (
       <Check
         size={15}
@@ -65,19 +54,7 @@ function FeatureCell({
         }}
       />
     );
-  if (val === false)
-    return <Minus size={15} style={{ color: "var(--fg-disabled)" }} />;
-  return (
-    <span
-      style={{
-        fontSize: "var(--text-caption)",
-        fontWeight: 700,
-        color: accent ? "var(--fg-brand)" : "var(--fg-secondary)",
-      }}
-    >
-      {val}
-    </span>
-  );
+  return <Minus size={15} style={{ color: "var(--fg-disabled)" }} />;
 }
 
 /**
@@ -499,9 +476,7 @@ export function SubscriptionDialog({
                 alignItems: "center",
               }}
             >
-              <FeatureCell
-                val={typeof f.free === "string" ? t(f.free) : f.free}
-              />
+              <FeatureCell val={f.free} />
             </span>
             <span
               style={{
@@ -510,10 +485,7 @@ export function SubscriptionDialog({
                 alignItems: "center",
               }}
             >
-              <FeatureCell
-                val={typeof f.pro === "string" ? t(f.pro) : f.pro}
-                accent={f.star}
-              />
+              <FeatureCell val={f.pro} accent={f.star} />
             </span>
           </div>
         ))}
