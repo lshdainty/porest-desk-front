@@ -1922,6 +1922,7 @@ settings,account.withdrawConfirm.desc,회원 탈퇴 시 모든 데이터가 영�
 settings,account.withdrawConfirm.confirm,탈퇴하기,Delete Account
 settings,account.comingSoon,다음 단계에서 구현,Coming in a future update
 settings,account.sub.proActiveBill,다음 결제 {{date}} · Pro 이용 중,Next billing {{date}} · On Pro
+settings,account.sub.proActiveUntil,{{date}}까지 이용 · Pro 이용 중,Access until {{date}} · On Pro
 settings,account.sub.proActive,Pro 이용 중,On Pro
 settings,account.sub.proPromo,증권 투자는 Pro 전용 · 지금 시작하기,Securities investing is Pro-only · Start now
 settings,account.sub.proStart,Pro 시작,Start Pro
@@ -2301,7 +2302,7 @@ subscription,comparisonTitle,기능 비교,Feature comparison
 subscription,colFeature,기능,Feature
 subscription,feature.core,가계부 · 자산 관리,Budget and asset management
 subscription,feature.budget,예산 · 저축 목표 · 캘린더,Budget · savings goals · calendar
-subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 평가,Securities link · real-time quotes · asset valuation
+subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 실시간 금액,Securities link · real-time quotes · real-time asset value
 subscription,toast.subscribed,Porest Pro 구독이 시작되었어요,Porest Pro subscription started
 subscription,toast.subscribeFailed,구독에 실패했어요,Subscription failed
 subscription,toast.canceled,구독을 해지했어요,Subscription canceled

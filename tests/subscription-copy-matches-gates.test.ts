@@ -50,6 +50,26 @@ describe("구독 문구는 실제 게이트만 말한다", () => {
     expect(featureKeys()).toContain("feature.securities");
   });
 
+  it("증권 줄은 '평가' 로 말하지 않는다 — 설명서가 그 말을 다른 뜻으로 쓴다", () => {
+    const line = csv().find((l) =>
+      l.startsWith("subscription,feature.securities,"),
+    )!;
+    const [ko, en] = line.split(",").slice(2);
+
+    // 설명서는 '자산 평가(액)' 을 **하루 한 번 오후 4시 종가 스냅샷**으로 쓴다
+    // (docs/asset/overview.md · docs/stocks/stocks.md). Pro 게이트가 여는 건 그게
+    // 아니라 **자산 상세·편집의 실시간 금액 조회**다 — 겹치는 단어가 '평가' 라,
+    // 그대로 두면 사용자가 순자산 추이 그래프 쪽으로 읽는다.
+    expect(ko).not.toContain("평가");
+    expect(en.toLowerCase()).not.toContain("valuation");
+
+    // 앱·설명서와 **글자 그대로** 같아야 한다 — 세 레포가 같은 줄을 말한다.
+    expect(ko).toBe("증권사 연동 · 실시간 시세 · 자산 실시간 금액");
+    expect(en).toBe(
+      "Securities link · real-time quotes · real-time asset value",
+    );
+  });
+
   it("비교표가 안 쓰는 `feature.*` 키가 CSV 에 남지 않는다", () => {
     const used = readFileSync(DIALOG, "utf-8");
     const orphans = featureKeys().filter((k) => !used.includes(`"${k}"`));

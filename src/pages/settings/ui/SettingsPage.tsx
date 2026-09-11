@@ -1190,6 +1190,7 @@ function AccountSection({
           mobile={mobile}
           isPro={isPro}
           nextBill={nextBill}
+          autoRenew={subQ.data?.autoRenew}
           onClick={() => setSubOpen(true)}
         />
       </AccountGroup>
@@ -1459,19 +1460,34 @@ function AccountRow({
 // ─── SubscriptionRow (구독·결제) ───────────────────────────────
 // 앱 account_screen 구독 행 정합 — generic AccountRow(가로 desc)는 긴 부제에서
 // 제목이 글자단위로 깨져, 40 브랜드 칩 + 제목/부제 세로 스택 + 우측 가격/배지로 분리.
-function SubscriptionRow({
+export function SubscriptionRow({
   isPro,
   nextBill,
+  autoRenew,
   onClick,
   mobile,
 }: {
   isPro: boolean;
   nextBill: string | null;
+  /**
+   * 구독의 자동갱신 여부. 조회가 아직 안 왔으면 `undefined` — 그땐 종전대로 말한다.
+   */
+  autoRenew?: boolean;
   onClick: () => void;
   /** 모바일=플랫(좌우 inset 0) / 데스크톱=카드 내부라 좌우 inset 필요. */
   mobile?: boolean;
 }) {
   const { t } = useTranslation("settings");
+  // 해지해도 서버는 자동갱신만 끄고 **기간 끝까지 Pro 를 유지한다**(desk-back #332).
+  // 그래서 이 줄은 유예 기간에도 Pro 로 서고 날짜도 그대로 남는데, 그날은 더 이상
+  // 결제일이 아니라 **종료일**이다. 구독 배너는 이미 그렇게 말하므로(#384) 설정
+  // 화면만 '다음 결제'로 남으면 **같은 날짜를 두 화면이 다르게 부른다.**
+  // `=== false` 로 좁히는 건 값이 안 왔을 때(undefined) 기존 동작을 그대로 두려는 것이다.
+  const periodLabel = nextBill
+    ? autoRenew === false
+      ? t("account.sub.proActiveUntil", { date: nextBill })
+      : t("account.sub.proActiveBill", { date: nextBill })
+    : t("account.sub.proActive");
   return (
     <button
       onClick={onClick}
@@ -1532,11 +1548,7 @@ function SubscriptionRow({
             textOverflow: "ellipsis",
           }}
         >
-          {isPro
-            ? nextBill
-              ? t("account.sub.proActiveBill", { date: nextBill })
-              : t("account.sub.proActive")
-            : t("account.sub.proPromo")}
+          {isPro ? periodLabel : t("account.sub.proPromo")}
         </div>
       </div>
       {isPro ? (
