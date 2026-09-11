@@ -1922,6 +1922,7 @@ settings,account.withdrawConfirm.desc,회원 탈퇴 시 모든 데이터가 영�
 settings,account.withdrawConfirm.confirm,탈퇴하기,Delete Account
 settings,account.comingSoon,다음 단계에서 구현,Coming in a future update
 settings,account.sub.proActiveBill,다음 결제 {{date}} · Pro 이용 중,Next billing {{date}} · On Pro
+settings,account.sub.proActiveUntil,{{date}}까지 이용 · Pro 이용 중,Access until {{date}} · On Pro
 settings,account.sub.proActive,Pro 이용 중,On Pro
 settings,account.sub.proPromo,증권 투자는 Pro 전용 · 지금 시작하기,Securities investing is Pro-only · Start now
 settings,account.sub.proStart,Pro 시작,Start Pro
