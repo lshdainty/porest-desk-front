@@ -542,8 +542,12 @@ export function LedgerRow({
       className={cn(
         // 좌우는 페이지가 쥔다. 행이 여기서 더 얹으면 그만큼 날짜 헤더와 어긋난다 —
         // 미세하지만 목록 전체가 헤더보다 오른쪽으로 밀려 보인다.
-        // hover 배경은 음수 margin 으로 넓혀 둔다(행 여백 밖까지 눌리는 느낌).
-        "flex items-center gap-3 rounded-lg px-1 -mx-1 py-3",
+        //
+        // 그래서 좌우는 **아무것도 안 준다**. 예전에는 `px-1 -mx-1` 로 4 를 주고
+        // 같은 만큼 빼서 상쇄했는데(hover 배경만 4 넓히려던 것), 정렬과 무관한
+        // 트릭이 정렬 코드처럼 읽혀 앱이 따라 하다 10 을 얹는 일이 있었다
+        // (porest-desk-app #362). 배경 4 보다 "좌우 0" 이 읽히는 편이 낫다.
+        "flex items-center gap-3 rounded-lg py-3",
         "transition-[background] duration-[var(--motion-duration-fast)]",
         interactive &&
           "cursor-pointer hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]",
