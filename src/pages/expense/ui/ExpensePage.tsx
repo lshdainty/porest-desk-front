@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import {
@@ -103,7 +103,9 @@ import type { AssetTransfer } from "@/entities/asset";
 import type { Expense, ExpenseType, ExpenseCategory } from "@/entities/expense";
 import { FilterDialog } from "@/features/expense/ui/FilterDialog";
 import {
-  DEFAULT_FILTER,
+  activeConditionCount,
+  filterSpan,
+  matchesFilter,
   type FilterValue,
 } from "@/features/expense/model/filter";
 import {
@@ -1010,34 +1012,18 @@ function ExpenseList({
   );
 }
 
-function computeFilterRange(
-  period: FilterValue["period"],
+/**
+ * 필터가 볼 바깥 범위. v2 는 기간이 여러 칸이라 **최소 시작 ~ 최대 종료**를 한 번
+ * 조회하고 칸별 판정은 클라이언트(`matchesFilter`)가 한다 — 칸마다 따로 부르면
+ * 같은 거래가 두 번 오고 합계가 부풀어 오른다.
+ */
+function rangeOf(
+  filterValue: FilterValue | null,
   monthKey: string,
-  customStart?: string,
-  customEnd?: string,
 ): { startDate: string; endDate: string } {
-  if (period === "custom") {
-    if (customStart && customEnd)
-      return { startDate: customStart, endDate: customEnd };
-    return monthRange(monthKey);
-  }
-  if (period === "month") return monthRange(monthKey);
-  const today = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  if (period === "week") {
-    const dow = today.getDay(); // 0=Sun
-    const mondayOffset = dow === 0 ? -6 : 1 - dow;
-    const start = new Date(today);
-    start.setDate(today.getDate() + mondayOffset);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    return { startDate: fmt(start), endDate: fmt(end) };
-  }
-  // '3m' — 3개월 전 1일 ~ 오늘
-  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-  return { startDate: fmt(start), endDate: fmt(today) };
+  const span = filterValue ? filterSpan(filterValue) : null;
+  if (!span) return monthRange(monthKey);
+  return { startDate: span.start, endDate: span.end };
 }
 
 function useExpenseData(
@@ -1047,17 +1033,10 @@ function useExpenseData(
   assetId?: number,
   categories?: ExpenseCategory[] | null,
 ) {
-  const { startDate, endDate } = useMemo(() => {
-    if (filterValue) {
-      return computeFilterRange(
-        filterValue.period,
-        month,
-        filterValue.startDate,
-        filterValue.endDate,
-      );
-    }
-    return monthRange(month);
-  }, [month, filterValue]);
+  const { startDate, endDate } = useMemo(
+    () => rangeOf(filterValue, month),
+    [month, filterValue],
+  );
 
   const [yStr, mStr] = month.split("-");
   const year = Number(yStr);
@@ -1086,48 +1065,54 @@ function useExpenseData(
   // 자산 필터를 합계에도 건다 — 목록·캘린더만 걸러지고 상단 수입/지출은 전체 값이었다.
   const monthlyQ = useRangeSummary(monthStart, monthEnd, assetId ?? null);
 
-  // 선택한 부모 카테고리의 자식 rowId까지 모두 허용 집합에 추가
-  const allowedCatIds = useMemo(() => {
-    if (!filterValue || filterValue.categoryIds.length === 0) return null;
-    const set = new Set<number>(filterValue.categoryIds);
-    for (const cat of categories ?? []) {
-      if (
-        cat.parentRowId != null &&
-        filterValue.categoryIds.includes(cat.parentRowId)
-      ) {
-        set.add(cat.rowId);
+  // 부모 카테고리를 고르면 자식 rowId 까지 함께 본다 — **빼고(exclude)에도 같이** 건다.
+  // 한쪽만 펼치면 "식비 빼고" 가 하위 '카페' 를 못 걸러 낸다.
+  const expandCats = useCallback(
+    (ids: number[]): number[] => {
+      if (ids.length === 0) return ids;
+      const set = new Set<number>(ids);
+      for (const cat of categories ?? []) {
+        if (cat.parentRowId != null && ids.includes(cat.parentRowId)) {
+          set.add(cat.rowId);
+        }
       }
-    }
-    return set;
-  }, [filterValue, categories]);
+      return [...set];
+    },
+    [categories],
+  );
+
+  /** 화면에서 쓰는 필터 — 카테고리를 자식까지 펼쳐 둔 것. */
+  const effective = useMemo<FilterValue | null>(() => {
+    if (!filterValue) return null;
+    return {
+      ...filterValue,
+      categories: {
+        include: expandCats(filterValue.categories.include),
+        exclude: expandCats(filterValue.categories.exclude),
+      },
+    };
+  }, [filterValue, expandCats]);
 
   const filtered = useMemo(() => {
-    let list = expensesQ.data ?? [];
-    if (filterValue) {
-      if (filterValue.types.length > 0 && filterValue.types.length < 2) {
-        list = list.filter((e) => filterValue.types.includes(e.expenseType));
-      }
-      if (allowedCatIds) {
-        // split-aware: 거래 카테고리 또는 분할 항목 카테고리 중 하나라도 선택 집합에 들면 노출(전액).
-        list = list.filter(
-          (e) =>
-            allowedCatIds.has(e.categoryRowId) ||
-            (e.splitCategoryRowIds ?? []).some((id) => allowedCatIds.has(id)),
-        );
-      }
-      if (filterValue.assetIds.length > 0) {
-        list = list.filter(
-          (e) =>
-            e.assetRowId != null && filterValue.assetIds.includes(e.assetRowId),
-        );
-      }
-      const minN = filterValue.min ? Number(filterValue.min) : null;
-      const maxN = filterValue.max ? Number(filterValue.max) : null;
-      if (minN != null) list = list.filter((e) => e.amount >= minN);
-      if (maxN != null) list = list.filter((e) => e.amount <= maxN);
-    }
-    return list;
-  }, [expensesQ.data, filterValue, allowedCatIds]);
+    const list = expensesQ.data ?? [];
+    if (!effective) return list;
+    return list.filter((e) =>
+      matchesFilter(
+        {
+          date: (e.expenseDate ?? "").slice(0, 10),
+          amount: e.amount,
+          type: e.expenseType,
+          // 분할 항목 카테고리까지 넣는다 — 포함은 "하나라도", 제외는 "하나라도 걸리면".
+          categoryIds: [
+            e.categoryRowId,
+            ...(e.splitCategoryRowIds ?? []),
+          ].filter((x): x is number => x != null),
+          assetIds: e.assetRowId != null ? [e.assetRowId] : [],
+        },
+        effective,
+      ),
+    );
+  }, [expensesQ.data, effective]);
 
   // 이체는 지출/수입이 아니라 자산 간 이동이라 expense 목록에 섞여 오지 않는다(별도 테이블).
   // 목록에 함께 보여주기 위해 같은 기간으로 따로 받아 화면 단에서만 합친다 —
@@ -1136,44 +1121,50 @@ function useExpenseData(
 
   const filteredTransfers = useMemo(() => {
     let list = transfersQ.data?.transfers ?? [];
-    // 카테고리·유형·거래처 필터는 이체에 해당 개념이 없다 → 필터가 걸리면 이체는 대상에서 빠진다.
-    if (serverType || allowedCatIds) return [];
-    if (
-      filterValue &&
-      filterValue.types.length > 0 &&
-      filterValue.types.length < 2
-    )
-      return [];
-    // 자산 필터는 보내는 쪽·받는 쪽 둘 다 매칭(한 건이 자산 두 개에 걸침).
+    // 자산 필터(칩)는 보내는 쪽·받는 쪽 둘 다 매칭 — 한 건이 자산 두 개에 걸친다.
     if (assetId != null) {
       list = list.filter(
         (t) => t.fromAssetRowId === assetId || t.toAssetRowId === assetId,
       );
     }
-    if (filterValue && filterValue.assetIds.length > 0) {
-      list = list.filter(
-        (t) =>
-          filterValue.assetIds.includes(t.fromAssetRowId) ||
-          filterValue.assetIds.includes(t.toAssetRowId),
-      );
-    }
-    if (filterValue) {
-      const minN = filterValue.min ? Number(filterValue.min) : null;
-      const maxN = filterValue.max ? Number(filterValue.max) : null;
-      if (minN != null) list = list.filter((t) => t.amount >= minN);
-      if (maxN != null) list = list.filter((t) => t.amount <= maxN);
-    }
-    return list;
-  }, [transfersQ.data, filterValue, allowedCatIds, serverType, assetId]);
+    // 상단 칩으로 지출/수입을 고른 상태면 이체는 그 개념이 아니라 빠진다.
+    if (serverType) return [];
+    if (!effective) return list;
+    // v1 은 카테고리를 고르면 여기서 통째로 빠져나갔다(`return []`). v2 는 그 판정을
+    // 술어 하나에 맡긴다 — "모두 일치" 면 카테고리 조건에서 자연히 걸러지고,
+    // "하나라도" 면 계좌·금액으로 이체가 남는다.
+    return list.filter((t) =>
+      matchesFilter(
+        {
+          date: (t.transferDate ?? "").slice(0, 10),
+          amount: t.amount,
+          type: null,
+          categoryIds: [],
+          assetIds: [t.fromAssetRowId, t.toAssetRowId].filter(
+            (x): x is number => x != null,
+          ),
+        },
+        effective,
+      ),
+    );
+  }, [transfersQ.data, effective, serverType, assetId]);
 
-  const monthIn = monthlyQ.data?.totalIncome ?? 0;
-  const monthOut = monthlyQ.data?.totalExpense ?? 0;
+  // 요약 — 필터가 걸려 있으면 **걸러진 목록으로** 다시 센다(환불 상계·예정 제외는
+  // incomeSum/expenseSum 이 그대로 지킨다). 필터가 없으면 서버 월 요약을 쓴다.
+  const filterActive = filterValue != null;
+  const monthIn = filterActive
+    ? incomeSum(filtered)
+    : (monthlyQ.data?.totalIncome ?? 0);
+  const monthOut = filterActive
+    ? expenseSum(filtered)
+    : (monthlyQ.data?.totalExpense ?? 0);
 
   return {
     expenses: filtered,
     transfers: filteredTransfers,
     monthIn,
     monthOut,
+    filterActive,
     isLoadingList: expensesQ.isLoading || transfersQ.isLoading,
     isLoadingSummary: monthlyQ.isLoading,
   };
@@ -1225,72 +1216,113 @@ function FilterChipsRow({
     });
   }
   if (v) {
-    if (v.period !== DEFAULT_FILTER.period) {
-      const label =
-        v.period === "week"
-          ? t("filter.period.week")
-          : v.period === "month"
-            ? t("filter.period.month")
-            : tStats("stats.period3m");
+    // v2 는 조건이 여러 칸이라 항목마다 칩을 세우면 줄이 넘친다.
+    // **칸 단위 요약 칩**으로 줄이고, × 는 그 칸을 통째로 비운다.
+    if (activeConditionCount(v) > 1 && v.match === "any") {
       chips.push({
-        key: "period",
-        label,
-        onRemove: () =>
-          onChange({ ...v, period: "custom", startDate: "", endDate: "" }),
-      });
-    } else if (v.startDate && v.endDate) {
-      chips.push({
-        key: "range",
-        label: `${v.startDate.slice(5).replace("-", ".")}~${v.endDate.slice(5).replace("-", ".")}`,
-        onRemove: () => onChange({ ...v, startDate: "", endDate: "" }),
+        key: "match",
+        label: t("filter.matchAny"),
+        onRemove: () => onChange({ ...v, match: "all" }),
       });
     }
-    if (v.types.length !== DEFAULT_FILTER.types.length) {
-      const only = v.types[0];
+    if (v.periods.length > 1) {
+      chips.push({
+        key: "periods",
+        label: t("filter.chipPeriods", { count: v.periods.length }),
+        onRemove: () => onChange({ ...v, periods: v.periods.slice(0, 1) }),
+      });
+    } else if (v.periods.length === 1 && v.periods[0]) {
+      const p = v.periods[0];
+      chips.push({
+        key: "period",
+        label:
+          p.preset === "week"
+            ? t("filter.period.week")
+            : p.preset === "month"
+              ? t("filter.period.month")
+              : p.preset === "3m"
+                ? tStats("stats.period3m")
+                : `${p.start.slice(5).replace("-", ".")}~${p.end.slice(5).replace("-", ".")}`,
+        onRemove: () => onChange({ ...v, periods: [] }),
+      });
+    }
+    if (v.types.length === 1) {
       chips.push({
         key: "type",
-        label: only === "EXPENSE" ? t("expense") : t("income"),
+        label: v.types[0] === "EXPENSE" ? t("expense") : t("income"),
         onRemove: () => onChange({ ...v, types: ["EXPENSE", "INCOME"] }),
       });
     }
-    for (const id of v.categoryIds) {
-      const name =
-        categories.find((c) => c.rowId === id)?.categoryName ?? String(id);
-      chips.push({
-        key: `cat${id}`,
-        label: name,
-        onRemove: () =>
-          onChange({
-            ...v,
-            categoryIds: v.categoryIds.filter((x) => x !== id),
+    for (const [key, picked, all, nameOf] of [
+      [
+        "cat",
+        v.categories,
+        categories,
+        (id: number) =>
+          categories.find((c) => c.rowId === id)?.categoryName ?? String(id),
+      ],
+      [
+        "asset",
+        v.assets,
+        assets,
+        (id: number) =>
+          assets.find((a) => a.rowId === id)?.assetName ?? String(id),
+      ],
+    ] as const) {
+      void all;
+      if (picked.include.length === 1 && picked.include[0] != null) {
+        const id = picked.include[0];
+        chips.push({
+          key: `${key}-in`,
+          label: nameOf(id),
+          onRemove: () =>
+            onChange({
+              ...v,
+              [key === "cat" ? "categories" : "assets"]: {
+                ...picked,
+                include: [],
+              },
+            }),
+        });
+      } else if (picked.include.length > 1) {
+        chips.push({
+          key: `${key}-in`,
+          label: t(key === "cat" ? "filter.chipCats" : "filter.chipAssets", {
+            count: picked.include.length,
           }),
-      });
+          onRemove: () =>
+            onChange({
+              ...v,
+              [key === "cat" ? "categories" : "assets"]: {
+                ...picked,
+                include: [],
+              },
+            }),
+        });
+      }
+      if (picked.exclude.length > 0) {
+        chips.push({
+          key: `${key}-ex`,
+          label:
+            picked.exclude.length === 1 && picked.exclude[0] != null
+              ? t("filter.chipExcludeOne", { name: nameOf(picked.exclude[0]) })
+              : t("filter.excluded", { count: picked.exclude.length }),
+          onRemove: () =>
+            onChange({
+              ...v,
+              [key === "cat" ? "categories" : "assets"]: {
+                ...picked,
+                exclude: [],
+              },
+            }),
+        });
+      }
     }
-    for (const id of v.assetIds) {
-      const name = assets.find((a) => a.rowId === id)?.assetName ?? String(id);
+    if (v.amountRanges.length > 0) {
       chips.push({
-        key: `asset${id}`,
-        label: name,
-        onRemove: () =>
-          onChange({ ...v, assetIds: v.assetIds.filter((x) => x !== id) }),
-      });
-    }
-    if (v.min) {
-      chips.push({
-        key: "min",
-        label: t("filter.chipMin", {
-          amount: `${wonPre()}${KRW(Number(v.min))}${isEn() ? "" : "원"}`,
-        }),
-        onRemove: () => onChange({ ...v, min: "" }),
-      });
-    }
-    if (v.max) {
-      chips.push({
-        key: "max",
-        label: t("filter.chipMax", {
-          amount: `${wonPre()}${KRW(Number(v.max))}${isEn() ? "" : "원"}`,
-        }),
-        onRemove: () => onChange({ ...v, max: "" }),
+        key: "amount",
+        label: t("filter.chipAmountRanges", { count: v.amountRanges.length }),
+        onRemove: () => onChange({ ...v, amountRanges: [] }),
       });
     }
   }
@@ -1389,16 +1421,20 @@ function AssetFilterBadge({
   );
 }
 
+/**
+ * 필터 버튼 배지 — **켜진 포함 조건의 수**다(`activeConditionCount`).
+ *
+ * 기간은 항상 걸려 있고 '빼고' 는 포함 조건이 아니라서 세지 않는다. 다만 사람 눈에는
+ * 그 둘도 "필터가 걸린 상태" 이므로, 조건이 0 이어도 기간이 여러 칸이거나 '빼고' 가
+ * 있으면 1 로 쳐서 배지를 띄운다.
+ */
 function filterActiveCount(v: FilterValue | null): number {
   if (!v) return 0;
-  let n = 0;
-  if (v.period !== DEFAULT_FILTER.period) n += 1;
-  if (v.types.length !== DEFAULT_FILTER.types.length) n += 1;
-  if (v.categoryIds.length > 0) n += 1;
-  if (v.assetIds.length > 0) n += 1;
-  if (v.min) n += 1;
-  if (v.max) n += 1;
-  return n;
+  const n = activeConditionCount(v);
+  if (n > 0) return n;
+  const hasExclude =
+    v.categories.exclude.length > 0 || v.assets.exclude.length > 0;
+  return v.periods.length > 1 || hasExclude ? 1 : 0;
 }
 
 /** 행 클릭 → 상세 TxDetailDialog → 편집 버튼 → AddTxSheet. Desktop/Mobile 공용. */
