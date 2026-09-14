@@ -11,7 +11,7 @@ export function SearchPage() {
     <div
       className="m-scroll"
       style={{
-        padding: "24px 20px",
+        padding: "24px 24px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
