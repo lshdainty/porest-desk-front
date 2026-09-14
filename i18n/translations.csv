@@ -1664,6 +1664,22 @@ expense,filter.countSelected,{{count}}개 선택,{{count}} selected
 expense,filter.amountRange,금액 범위,Amount range
 expense,filter.minAmount,최소 금액,Min amount
 expense,filter.maxAmount,최대 금액,Max amount
+expense,filter.match,조건 맞추기,Condition matching
+expense,filter.matchAll,모두 일치,Match all
+expense,filter.matchAny,하나라도 일치,Match any
+expense,filter.matchHint,조건이 두 개 이상일 때 고를 수 있어요.,You can choose this once two or more conditions are set.
+expense,filter.addPeriod,+ 기간 추가,+ Add period
+expense,filter.addAmountRange,+ 구간 추가,+ Add range
+expense,filter.periodAlwaysAnd,기간은 항상 함께 적용돼요.,Periods always apply on top of the other conditions.
+expense,filter.removeRow,이 줄 지우기,Remove this row
+expense,filter.chipLegend,한 번 더 누르면 '빼고'가 돼요.,Tap again to exclude it.
+expense,filter.excluded,{{count}}개 빼고,{{count}} excluded
+expense,filter.summaryFiltered,필터 적용,Filtered
+expense,filter.chipPeriods,기간 {{count}},{{count}} periods
+expense,filter.chipCats,카테고리 {{count}},{{count}} categories
+expense,filter.chipAssets,계좌·카드 {{count}},{{count}} accounts
+expense,filter.chipExcludeOne,{{name}} 빼고,Excluding {{name}}
+expense,filter.chipAmountRanges,금액 {{count}}구간,{{count}} amount ranges
 expense,subtitle,모든 거래 내역,All transactions
 expense,chip.all,전체,All
 expense,dayCount,{{count}}건,{{count}} items

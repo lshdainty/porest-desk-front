@@ -18,6 +18,11 @@ export interface CategoryTileProps {
   /** lucide icon 이름 또는 fallback 한 글자. */
   icon?: string | null;
   active: boolean;
+  /**
+   * "빼고" 상태 — 필터에서만 쓴다(칩 3상태: 고름 → 빼고 → 해제).
+   * `active` 와 동시에 참일 수 없다. 취소선과 붉은 테두리로 "이건 뺀다" 를 말한다.
+   */
+  excluded?: boolean;
   onClick: () => void;
 }
 
@@ -26,6 +31,7 @@ export function CategoryTile({
   color,
   icon,
   active,
+  excluded = false,
   onClick,
 }: CategoryTileProps) {
   const palette = getPaletteByColor(color);
@@ -39,11 +45,17 @@ export function CategoryTile({
         alignItems: "center",
         gap: 4,
         padding: "10px 4px",
-        background: active ? "var(--bg-brand-subtle)" : "transparent",
+        background: excluded
+          ? "var(--status-danger-subtle)"
+          : active
+            ? "var(--bg-brand-subtle)"
+            : "transparent",
         // 비활성 보더 제거(design 신판) — transparent 로 두어 active 전환 시 1px 시프트 방지.
-        border: active
-          ? "1px solid var(--border-brand)"
-          : "1px solid transparent",
+        border: excluded
+          ? "1px solid var(--status-danger)"
+          : active
+            ? "1px solid var(--border-brand)"
+            : "1px solid transparent",
         borderRadius: "var(--radius-tile)",
         cursor: "pointer",
         fontFamily: "inherit",
@@ -57,6 +69,7 @@ export function CategoryTile({
           // getPaletteByColor: 팔레트 base hex → --color-cat-* alias(다크 자동 light swap) + 18% bg.
           background: palette.bg,
           color: palette.color,
+          opacity: excluded ? 0.45 : 1,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
@@ -67,8 +80,13 @@ export function CategoryTile({
       <span
         style={{
           fontSize: "var(--text-badge)",
-          fontWeight: active ? 700 : 500,
-          color: active ? "var(--fg-brand-strong)" : "var(--fg-secondary)",
+          fontWeight: active || excluded ? 700 : 500,
+          color: excluded
+            ? "var(--fg-expense)"
+            : active
+              ? "var(--fg-brand-strong)"
+              : "var(--fg-secondary)",
+          textDecoration: excluded ? "line-through" : undefined,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
