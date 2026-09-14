@@ -124,7 +124,7 @@ export function NotificationsPage() {
     !isLoading && unreadCount > 0 ? (
       <div
         style={{
-          padding: "12px 20px 8px",
+          padding: mobile ? "12px 24px 8px" : "12px 20px 8px",
           display: "flex",
           alignItems: "center",
           gap: 8,
@@ -154,6 +154,11 @@ export function NotificationsPage() {
     <div
       style={{
         padding: "10px 14px",
+        // 바닥에 고정되므로 홈 인디케이터에 가리지 않게 인셋을 보상한다
+        // (앱은 SafeArea(top: false) 가 같은 일을 한다).
+        paddingBottom: mobile
+          ? "calc(10px + env(safe-area-inset-bottom))"
+          : undefined,
         borderTop: "1px solid var(--border-subtle)",
         /* 앱 footer(bg-page-dark) 정합 — sunken(input,더밝음) 대신 canvas */
         background: "var(--bg-canvas)",
@@ -171,14 +176,20 @@ export function NotificationsPage() {
     </div>
   );
 
-  // ── 모바일 — 풀스크린(← 헤더 + 우측 '모두 읽음'). 본문 스크롤 후 footer 고정. ──────────
+  // ── 모바일 — 풀스크린(← 헤더 + 우측 '모두 읽음'). 가운데 목록만 스크롤. ──────────
+  //
+  // 바깥을 통째로 m-scroll(flex:1 + overflow-y:auto) 로 두면 footer 까지 같이
+  // 흘러가 목록 끝에 붙어 버린다 — 주석은 "footer 고정" 인데 실제로는 안 그랬다.
+  // 그래서 바깥은 flex column 으로 두고 **목록에만** m-scroll 을 준다.
   if (mobile) {
     return (
       <>
         <MobileBackHeader title={t("title")} trailing={markAllButton} />
-        <div className="m-scroll" style={{ padding: 0 }}>
+        <div className="notif-mobile">
           {unreadSub}
-          {body}
+          <div className="m-scroll notif-mobile__body" style={{ padding: 0 }}>
+            {body}
+          </div>
           {footer}
         </div>
       </>
