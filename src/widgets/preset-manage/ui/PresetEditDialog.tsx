@@ -12,6 +12,11 @@ import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import {
+  TransferAccountFields,
+  isLoanTarget,
+  transferPartiesReady,
+} from "@/features/asset-transfer";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -38,7 +43,7 @@ import type {
   ExpenseTemplate,
   ExpenseTemplateFormValues,
 } from "@/entities/expense-template";
-import type { ExpenseType } from "@/entities/expense";
+import type { TxKind } from "@/entities/expense";
 
 /** 프리셋 이름 상한 — 카테고리·라벨·태그와 같은 12자. 목록 행에 한 줄로 들어간다. */
 const PRESET_NAME_MAX = 12;
@@ -76,9 +81,7 @@ export function PresetEditDialog({
   const categories = useMemo(() => categoriesQ.data ?? [], [categoriesQ.data]);
   const assets = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data]);
 
-  const [type, setType] = useState<ExpenseType>(
-    preset?.expenseType ?? "EXPENSE",
-  );
+  const [type, setType] = useState<TxKind>(preset?.expenseType ?? "EXPENSE");
   const [name, setName] = useState(preset?.templateName ?? "");
   const [categoryRowId, setCategoryRowId] = useState<number | null>(
     preset?.categoryRowId ?? null,
@@ -91,17 +94,36 @@ export function PresetEditDialog({
   const [assetRowId, setAssetRowId] = useState<number | null>(
     preset?.assetRowId ?? null,
   );
+  // 이체 전용 — 보내는 계좌는 위 assetRowId 를 그대로 쓴다(서버도 같은 컬럼이다).
+  const [toAssetRowId, setToAssetRowId] = useState<number | null>(
+    preset?.toAssetRowId ?? null,
+  );
+  const [fee, setFee] = useState(preset?.fee ? String(preset.fee) : "");
+  const [interest, setInterest] = useState(
+    preset?.interestAmount ? String(preset.interestAmount) : "",
+  );
   const [lockAmount, setLockAmount] = useState(preset?.lockAmount === "Y");
   const [amount, setAmount] = useState(
     preset?.amount != null ? String(preset.amount) : "",
   );
 
-  // 타입이 바뀌면 해당 타입의 카테고리가 아닌 경우 초기화
+  const isTransfer = type === "TRANSFER";
+  const showInterest = isTransfer && isLoanTarget(assets, toAssetRowId);
+
+  // 타입이 바뀌면 해당 타입의 카테고리가 아닌 경우 초기화.
+  // 이체에는 카테고리가 없다 — 남겨 두면 저장할 때 서버가 거절한다.
   // (한 번 비우면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다)
   if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    if (!cat || cat.expenseType !== type) setCategoryRowId(null);
+    if (isTransfer || !cat || cat.expenseType !== type) setCategoryRowId(null);
   }
+  // 이체가 아니게 되면 남아 있던 이체 칸을 지운다 — 실려 나가면 서버가 거절한다.
+  if (!isTransfer && (toAssetRowId != null || fee || interest)) {
+    setToAssetRowId(null);
+    setFee("");
+    setInterest("");
+  }
+  if (!showInterest && interest) setInterest("");
 
   const topCategories = useMemo(
     () =>
@@ -153,7 +175,10 @@ export function PresetEditDialog({
   // 고정 금액을 켰을 때만 값이 있어야 한다(불러오는 거래가 그 값을 그대로 받는다).
   const canSave =
     issue == null &&
-    categoryRowId != null &&
+    // 이체는 카테고리가 없는 대신 양쪽 계좌가 있어야 성립한다.
+    (isTransfer
+      ? transferPartiesReady(assetRowId, toAssetRowId)
+      : categoryRowId != null) &&
     !amountTooLarge &&
     (!lockAmount || amountNumber > 0);
   const submitting = createMut.isPending || updateMut.isPending;
@@ -169,6 +194,10 @@ export function PresetEditDialog({
       // 폼이 필수로 강제한다 — 비면 저장 버튼이 안 눌린다(`canSave`). 그래서 여기로
       // null 이 내려올 일이 없고, 서버도 안 보낸 요청의 카테고리를 지키게 됐다(#325).
       categoryRowId,
+      // 이체 칸도 이 화면의 칸이다 — 지출·수입으로 바꿔 저장하면 `null` 로 지워진다.
+      toAssetRowId: isTransfer ? toAssetRowId : null,
+      fee: isTransfer && fee ? Number(fee) : null,
+      interestAmount: showInterest && interest ? Number(interest) : null,
       // 아래 넷은 이 다이얼로그가 그리는 칸이다 — 비운 채 저장하면 지워져야 한다.
       // `undefined` 로 키를 빼면 새 서버가 "안 고침" 으로 읽어, 화면만 지워진 척 닫히고
       // 옛 계좌·거래처·메모·결제수단이 서버에 그대로 남았다.
@@ -178,13 +207,13 @@ export function PresetEditDialog({
       // 고정을 끄면 서버가 실린 금액을 버리므로(`resolveAmount`) 키를 빼도 옛 금액이
       // 남지 않는다. 금액칸 자체가 고정을 켰을 때만 그려지니 규칙과도 어긋나지 않는다.
       amount: lockAmount ? amountNumber : undefined,
-      merchant: merchant.trim() || null,
+      merchant: isTransfer ? null : merchant.trim() || null,
       // 메모도 이제 이 화면의 칸이다(D2). 종전엔 칸이 없고 읽어 온 값도 안 들고 있어서
       // 무엇을 실어도 지어낸 값이라 **키를 뺐다** — 서버를 `Optional` 로 옮긴(#325)
       // 계기가 이 칸이다. 칸이 생겼으니 지운 메모는 실제로 지워져야 하고, 그러려면
       // 키를 빼는 게 아니라 `null` 을 실어야 한다. 앱도 같다(desk-app #330).
       description: description.trim() || null,
-      paymentMethod: paymentMethod || null,
+      paymentMethod: isTransfer ? null : paymentMethod || null,
       lockAmount: lockAmount ? "Y" : "N",
     };
     if (preset) {
@@ -218,7 +247,7 @@ export function PresetEditDialog({
       {/* 타입 segment */}
       <Tabs
         value={type}
-        onValueChange={(v) => v && setType(v as "EXPENSE" | "INCOME")}
+        onValueChange={(v) => v && setType(v as TxKind)}
         className="mb-4"
       >
         <TabsList variant="pill" size="sm" className="w-full">
@@ -227,6 +256,9 @@ export function PresetEditDialog({
           </TabsTrigger>
           <TabsTrigger value="INCOME" className="flex-1">
             {t("income")}
+          </TabsTrigger>
+          <TabsTrigger value="TRANSFER" className="flex-1">
+            {t("addTx.transfer")}
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -248,82 +280,149 @@ export function PresetEditDialog({
         />
       </Field>
 
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("category")}</FieldLabel>
-        {categoriesQ.isLoading ? (
-          <CategoryGrid>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <SkeletonBase key={i} className="h-16 w-full rounded-md" />
-            ))}
-          </CategoryGrid>
-        ) : (
-          <CategoryGrid>
-            {topCategories.map((c) => (
-              <CategoryTile
-                key={c.rowId}
-                name={c.categoryName}
-                color={c.color ?? undefined}
-                icon={c.icon}
-                active={selectedParentId === c.rowId}
-                onClick={() => {
-                  const firstChild = childrenByParent.get(c.rowId)?.[0];
-                  setCategoryRowId(firstChild ? firstChild.rowId : c.rowId);
-                }}
-              />
-            ))}
-          </CategoryGrid>
-        )}
-        {/* 세부 카테고리 — 반복거래 추가와 동일 패턴: 자식이 있으면 상위/세부 Select 로 변경 가능 */}
-        {!categoriesQ.isLoading &&
-          selectedParentId != null &&
-          (childrenByParent.get(selectedParentId)?.length ?? 0) > 0 && (
-            <div style={{ marginTop: 10 }}>
+      {isTransfer ? (
+        <TransferAccountFields
+          assets={assets}
+          fromAssetRowId={assetRowId}
+          toAssetRowId={toAssetRowId}
+          fee={fee}
+          interest={interest}
+          amountNumber={amountNumber}
+          onFromChange={setAssetRowId}
+          onToChange={setToAssetRowId}
+          onFeeChange={setFee}
+          onInterestChange={setInterest}
+        />
+      ) : (
+        <>
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>{t("category")}</FieldLabel>
+            {categoriesQ.isLoading ? (
+              <CategoryGrid>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SkeletonBase key={i} className="h-16 w-full rounded-md" />
+                ))}
+              </CategoryGrid>
+            ) : (
+              <CategoryGrid>
+                {topCategories.map((c) => (
+                  <CategoryTile
+                    key={c.rowId}
+                    name={c.categoryName}
+                    color={c.color ?? undefined}
+                    icon={c.icon}
+                    active={selectedParentId === c.rowId}
+                    onClick={() => {
+                      const firstChild = childrenByParent.get(c.rowId)?.[0];
+                      setCategoryRowId(firstChild ? firstChild.rowId : c.rowId);
+                    }}
+                  />
+                ))}
+              </CategoryGrid>
+            )}
+            {/* 세부 카테고리 — 반복거래 추가와 동일 패턴: 자식이 있으면 상위/세부 Select 로 변경 가능 */}
+            {!categoriesQ.isLoading &&
+              selectedParentId != null &&
+              (childrenByParent.get(selectedParentId)?.length ?? 0) > 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <Select
+                    value={categoryRowId != null ? String(categoryRowId) : ""}
+                    onValueChange={(v) => setCategoryRowId(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("addTx.subCategoryPlaceholder")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>{t("addTx.parent")}</SelectLabel>
+                        <SelectItem value={String(selectedParentId)}>
+                          {categories.find((c) => c.rowId === selectedParentId)
+                            ?.categoryName ?? t("addTx.parent")}
+                        </SelectItem>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>{t("addTx.detail")}</SelectLabel>
+                        {(childrenByParent.get(selectedParentId) ?? []).map(
+                          (child) => (
+                            <SelectItem
+                              key={child.rowId}
+                              value={String(child.rowId)}
+                            >
+                              {child.categoryName}
+                            </SelectItem>
+                          ),
+                        )}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+          </Field>
+
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>{t("preset.defaultMerchant")}</FieldLabel>
+            <Input
+              value={merchant}
+              onChange={(e) =>
+                setMerchant(e.target.value.slice(0, MERCHANT_MAX))
+              }
+              placeholder={t("preset.merchantPlaceholder")}
+              maxLength={MERCHANT_MAX}
+            />
+          </Field>
+
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>{t("paymentMethodLabel")}</FieldLabel>
+            <Select
+              value={paymentMethod || "__none__"}
+              onValueChange={(v) => setPaymentMethod(v === "__none__" ? "" : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t("selectNone")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{t("selectNone")}</SelectItem>
+                {PAYMENT_METHODS.map((pm) => (
+                  <SelectItem key={pm.v} value={pm.v}>
+                    {t(pm.lKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>{t("accountCard")}</FieldLabel>
+            {assetsQ.isLoading ? (
+              <SkeletonBase className="h-9 w-full rounded-md" />
+            ) : (
               <Select
-                value={categoryRowId != null ? String(categoryRowId) : ""}
-                onValueChange={(v) => setCategoryRowId(Number(v))}
+                value={assetRowId != null ? String(assetRowId) : "__none__"}
+                onValueChange={(v) =>
+                  setAssetRowId(v === "__none__" ? null : Number(v))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("addTx.subCategoryPlaceholder")}
-                  />
+                  <SelectValue placeholder={t("selectNone")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>{t("addTx.parent")}</SelectLabel>
-                    <SelectItem value={String(selectedParentId)}>
-                      {categories.find((c) => c.rowId === selectedParentId)
-                        ?.categoryName ?? t("addTx.parent")}
+                  <SelectItem value="__none__">{t("selectNone")}</SelectItem>
+                  {assets.map((a) => (
+                    <SelectItem key={a.rowId} value={String(a.rowId)}>
+                      {a.institution
+                        ? `${a.institution} · ${a.assetName}`
+                        : a.assetName}
                     </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>{t("addTx.detail")}</SelectLabel>
-                    {(childrenByParent.get(selectedParentId) ?? []).map(
-                      (child) => (
-                        <SelectItem
-                          key={child.rowId}
-                          value={String(child.rowId)}
-                        >
-                          {child.categoryName}
-                        </SelectItem>
-                      ),
-                    )}
-                  </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
-          )}
-      </Field>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("preset.defaultMerchant")}</FieldLabel>
-        <Input
-          value={merchant}
-          onChange={(e) => setMerchant(e.target.value.slice(0, MERCHANT_MAX))}
-          placeholder={t("preset.merchantPlaceholder")}
-          maxLength={MERCHANT_MAX}
-        />
-      </Field>
+            )}
+          </Field>
+        </>
+      )}
 
       {/* 메모 — 불러오면 거래의 메모로 들어간다. 자리는 앱과 같다(기본 내역 ↔ 결제 수단
           사이, desk-app #330). 컨트롤·상한은 그 값이 흘러 들어가는 거래 시트의 메모 칸과
@@ -337,54 +436,6 @@ export function PresetEditDialog({
           placeholder={t("addTx.optional")}
           style={{ minHeight: 64 }}
         />
-      </Field>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("paymentMethodLabel")}</FieldLabel>
-        <Select
-          value={paymentMethod || "__none__"}
-          onValueChange={(v) => setPaymentMethod(v === "__none__" ? "" : v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t("selectNone")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">{t("selectNone")}</SelectItem>
-            {PAYMENT_METHODS.map((pm) => (
-              <SelectItem key={pm.v} value={pm.v}>
-                {t(pm.lKey)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("accountCard")}</FieldLabel>
-        {assetsQ.isLoading ? (
-          <SkeletonBase className="h-9 w-full rounded-md" />
-        ) : (
-          <Select
-            value={assetRowId != null ? String(assetRowId) : "__none__"}
-            onValueChange={(v) =>
-              setAssetRowId(v === "__none__" ? null : Number(v))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t("selectNone")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">{t("selectNone")}</SelectItem>
-              {assets.map((a) => (
-                <SelectItem key={a.rowId} value={String(a.rowId)}>
-                  {a.institution
-                    ? `${a.institution} · ${a.assetName}`
-                    : a.assetName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
       </Field>
 
       <div

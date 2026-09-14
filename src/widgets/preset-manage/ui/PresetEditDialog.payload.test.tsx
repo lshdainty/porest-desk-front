@@ -55,7 +55,10 @@ vi.mock("@/features/expense", () => ({
   }),
 }));
 vi.mock("@/features/asset", () => ({
-  useAssets: () => ({ data: { assets: [asset] }, isLoading: false }),
+  useAssets: () => ({
+    data: { assets: [asset, savings, card] },
+    isLoading: false,
+  }),
 }));
 
 const category: ExpenseCategory = {
@@ -100,6 +103,10 @@ const basePreset: ExpenseTemplate = {
   categoryName: "식비",
   assetRowId: 3,
   assetName: "주거래",
+  toAssetRowId: null,
+  toAssetName: null,
+  fee: null,
+  interestAmount: null,
   expenseType: "EXPENSE",
   amount: null,
   description: "회사 근처 단골",
@@ -111,6 +118,24 @@ const basePreset: ExpenseTemplate = {
   lastUsedAt: null,
   createAt: "2026-01-01T00:00:00",
   modifyAt: "2026-01-01T00:00:00",
+};
+
+/** 받는 계좌 후보. */
+const savings: Asset = {
+  ...asset,
+  rowId: 4,
+  assetName: "청약",
+  assetType: "SAVINGS",
+  institution: "국민",
+};
+
+/** 이체 후보에서 빠져야 하는 카드. */
+const card: Asset = {
+  ...asset,
+  rowId: 5,
+  assetName: "체크",
+  assetType: "CHECK_CARD",
+  institution: "국민",
 };
 
 const { PresetEditDialog } = await import("./PresetEditDialog");
@@ -337,5 +362,87 @@ describe("새로 만들 때도 같은 본문이다", () => {
     expect(sent.create!.description).toBeNull();
     // 등록 경로는 `Optional` 이 아니라 값을 그대로 받는다 — null 과 키 없음이 같은 뜻이다.
     expect(sent.update).toBeNull();
+  });
+});
+
+describe("이체 프리셋", () => {
+  /**
+   * 탭을 옮긴다 — 라벨은 t() 가 키를 그대로 흘린다.
+   * radix Tabs 는 `mousedown` 에서 바꾼다. `click` 만 쏘면 아무 일도 안 일어난다.
+   */
+  function switchTab(label: string) {
+    const tab = byText<HTMLButtonElement>("button", label);
+    if (!tab) throw new Error(`탭을 찾지 못했다: ${label}`);
+    act(() =>
+      tab.dispatchEvent(new MouseEvent("mousedown", { bubbles: true })),
+    );
+  }
+
+  it("보내는·받는 계좌와 수수료가 본문에 실린다", () => {
+    render(null);
+    switchTab("addTx.transfer");
+    setValue(byValue("")!, "적금 이체"); // 첫 input = 이름
+    pickOption("addTx.selectPlaceholder", "국민 · 주거래");
+    pickOption("addTx.selectPlaceholder", "국민 · 청약");
+    const feeBox = [
+      ...document.body.querySelectorAll<HTMLInputElement>("input"),
+    ].find((el) => el.placeholder === "0");
+    setValue(feeBox!, "500");
+    clickSave("add");
+
+    expect(sent.create).not.toBeNull();
+    expect(sent.create!.expenseType).toBe("TRANSFER");
+    expect(sent.create!.assetRowId).toBe(3);
+    expect(sent.create!.toAssetRowId).toBe(4);
+    expect(sent.create!.fee).toBe(500);
+    // 이체에는 카테고리가 없다 — 서버도 실려 오면 거절한다.
+    expect(sent.create!.categoryRowId).toBeNull();
+  });
+
+  it("카드는 이체 상대 목록에 없다 — 서버도 400 으로 막는다", () => {
+    render(null);
+    switchTab("addTx.transfer");
+    const trigger = byText<HTMLButtonElement>(
+      "button",
+      "addTx.selectPlaceholder",
+    );
+    act(() => {
+      trigger!.focus();
+      trigger!.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    const options = [...document.body.querySelectorAll("[role='option']")].map(
+      (el) => el.textContent?.trim(),
+    );
+    expect(options).toContain("국민 · 주거래");
+    expect(options).toContain("국민 · 청약");
+    expect(options).not.toContain("국민 · 체크");
+  });
+
+  it("이체를 지출로 바꿔 저장하면 이체 칸이 null 로 지워진다", () => {
+    render({
+      ...basePreset,
+      expenseType: "TRANSFER",
+      categoryRowId: null,
+      categoryName: null,
+      toAssetRowId: 4,
+      toAssetName: "청약",
+      fee: 500,
+    });
+    switchTab("expense");
+    // 지출에는 카테고리가 필요하다 — 타일을 눌러 고른다(타일 글자는 머리글자+이름).
+    const tile = [
+      ...document.body.querySelectorAll<HTMLButtonElement>("button"),
+    ].find((el) => el.textContent?.includes("식비"));
+    if (!tile) throw new Error("카테고리 타일을 찾지 못했다");
+    act(() => tile.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    clickSave();
+
+    const body = wire(sent.update);
+    expect(body).toHaveProperty("toAssetRowId");
+    expect(sent.update!.toAssetRowId).toBeNull();
+    expect(sent.update!.fee).toBeNull();
+    expect(sent.update!.expenseType).toBe("EXPENSE");
   });
 });

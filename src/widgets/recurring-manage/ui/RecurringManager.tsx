@@ -30,6 +30,8 @@ import type { RecurringTransaction } from "@/entities/recurring-transaction";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import {
   displayTitle,
+  recurringAmountTone,
+  recurringSubtitle,
   recurringSummary,
   startOfDay,
 } from "@/features/recurring-transaction/lib/recurring-format";
@@ -46,7 +48,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
  */
 const EMPTY_ITEMS: RecurringTransaction[] = [];
 
-type FilterKey = "all" | "expense" | "income" | "paused";
+type FilterKey = "all" | "expense" | "income" | "transfer" | "paused";
 
 // 모바일 카드 다이어트 — CardContent 조건부: 모바일은 패딩 없는 평문, 데스크톱은 CardContent.
 function MaybeContent({
@@ -112,12 +114,16 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       const isActive = it.isActive === "Y";
       if (filter === "expense") return it.expenseType === "EXPENSE" && isActive;
       if (filter === "income") return it.expenseType === "INCOME" && isActive;
+      if (filter === "transfer")
+        return it.expenseType === "TRANSFER" && isActive;
       if (filter === "paused") return !isActive;
       return true;
     });
   }, [items, filter]);
 
   const stats = useMemo(() => {
+    // 월 고정 지출·수입에는 이체가 안 들어간다 — 아래 필터가 종류를 못 박고 있다.
+    // 이체는 내 돈이 자리를 옮기는 것이라 쓴 돈도 번 돈도 아니다.
     const active = items.filter((i) => i.isActive === "Y");
     const monthlyExpense = active
       .filter((i) => i.expenseType === "EXPENSE" && i.frequency === "MONTHLY")
@@ -151,6 +157,9 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       ).length,
       income: items.filter(
         (i) => i.expenseType === "INCOME" && i.isActive === "Y",
+      ).length,
+      transfer: items.filter(
+        (i) => i.expenseType === "TRANSFER" && i.isActive === "Y",
       ).length,
       paused: items.filter((i) => i.isActive !== "Y").length,
     }),
@@ -187,6 +196,11 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
     { k: "all", label: t("filterAll"), count: counts.all },
     { k: "expense", label: tExpense("expense"), count: counts.expense },
     { k: "income", label: tExpense("income"), count: counts.income },
+    {
+      k: "transfer",
+      label: tExpense("addTx.transfer"),
+      count: counts.transfer,
+    },
     { k: "paused", label: t("paused"), count: counts.paused },
   ];
 
@@ -366,7 +380,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   (c) => c.rowId === it.categoryRowId,
                 );
                 const palette = getPaletteByColor(cat?.color);
-                const isExpense = it.expenseType === "EXPENSE";
+                const tone = recurringAmountTone(it);
                 return (
                   <div
                     key={it.rowId}
@@ -450,13 +464,11 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       style={{
                         fontSize: "var(--text-body-sm)",
                         fontWeight: "700",
-                        color: isExpense
-                          ? "var(--fg-expense)"
-                          : "var(--fg-income)",
+                        color: tone.color,
                       }}
                     >
                       <MaskAmount card="etc.recurring">
-                        {isExpense ? "−" : "+"}
+                        {tone.sign}
                         {KRW(Math.abs(it.amount))}
                       </MaskAmount>
                     </div>
@@ -612,7 +624,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             )}
             {filtered.map((it, idx) => {
               const isActive = it.isActive === "Y";
-              const isExpense = it.expenseType === "EXPENSE";
+              const tone = recurringAmountTone(it);
               const cat = categories.find((c) => c.rowId === it.categoryRowId);
               const palette = getPaletteByColor(cat?.color);
               // 밀면 일시정지·수정·삭제가 바로 나온다. ⋮ 메뉴는 그대로 둔다 —
@@ -777,7 +789,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                         }}
                       >
                         {recurringSummary(it, t)} ·{" "}
-                        {it.assetName ?? t("noAccount")} ·{" "}
+                        {recurringSubtitle(it, it.assetName ?? t("noAccount"))}{" "}
+                        ·{" "}
                         {t("nextDate", {
                           date: it.nextExecutionDate.slice(5).replace("-", "/"),
                         })}
@@ -789,16 +802,14 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                         style={{
                           fontSize: "var(--text-body-sm)",
                           fontWeight: "700",
-                          color: isExpense
-                            ? "var(--fg-expense)"
-                            : "var(--fg-income)",
+                          color: tone.color,
                           textAlign: "right",
                           minWidth: 110,
                           opacity: isActive ? 1 : 0.55,
                         }}
                       >
                         <MaskAmount card="etc.recurring">
-                          {isExpense ? "−" : "+"}
+                          {tone.sign}
                           {KRW(Math.abs(it.amount))}
                         </MaskAmount>
                       </div>
@@ -817,16 +828,14 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                             style={{
                               fontSize: "var(--text-label-sm)",
                               fontWeight: "700",
-                              color: isExpense
-                                ? "var(--fg-expense)"
-                                : "var(--fg-income)",
+                              color: tone.color,
                               marginRight: 4,
                               flexShrink: 0,
                               opacity: isActive ? 1 : 0.55,
                             }}
                           >
                             <MaskAmount card="etc.recurring">
-                              {isExpense ? "−" : "+"}
+                              {tone.sign}
                               {KRW(Math.abs(it.amount))}
                             </MaskAmount>
                           </span>

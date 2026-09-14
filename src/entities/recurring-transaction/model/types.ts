@@ -1,5 +1,5 @@
 import type { YNType } from "@/shared/types";
-import type { ExpenseType } from "@/entities/expense";
+import type { TxKind } from "@/entities/expense";
 
 export type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
@@ -10,8 +10,15 @@ export interface RecurringTransaction {
   categoryName: string | null;
   assetRowId: number | null;
   assetName: string | null;
+  /** 이체일 때 받는 자산. 지출·수입이면 null. */
+  toAssetRowId: number | null;
+  toAssetName: string | null;
+  /** 이체 수수료. 지출·수입이면 null. */
+  fee: number | null;
+  /** 이체 이자 — 받는 자산이 대출일 때만 값이 있다. */
+  interestAmount: number | null;
   sourceExpenseRowId: number | null;
-  expenseType: ExpenseType;
+  expenseType: TxKind;
   amount: number;
   description: string | null;
   merchant: string | null;
@@ -37,9 +44,14 @@ export interface RecurringTransaction {
 
 export interface RecurringTransactionFormValues {
   categoryRowId?: number;
+  /** 이체면 <b>보내는</b> 자산. */
   assetRowId?: number;
+  /** 이체면 <b>받는</b> 자산 — 이체가 아닐 때는 싣지 않는다(서버가 거절한다). */
+  toAssetRowId?: number;
+  fee?: number;
+  interestAmount?: number;
   sourceExpenseRowId?: number;
-  expenseType: ExpenseType;
+  expenseType: TxKind;
   amount: number;
   description?: string;
   merchant?: string;

@@ -19,7 +19,12 @@ import {
   previewNextDates,
   formatKoreanMonthDay,
 } from "@/features/recurring-transaction/lib/recurring-date";
-import { displayTitle, recurringSummary } from "../lib/recurring-format";
+import {
+  displayTitle,
+  recurringAmountTone,
+  recurringSubtitle,
+  recurringSummary,
+} from "../lib/recurring-format";
 
 /**
  * 반복 거래 상세 — 행 탭 → 읽기 전용 상세 → footer 에서 삭제·수정·일시정지.
@@ -48,7 +53,7 @@ export function RecurringDetailDialog({
   const { t } = useTranslation("recurring");
   const { t: tCommon } = useTranslation("common");
 
-  const isExpense = item.expenseType === "EXPENSE";
+  const tone = recurringAmountTone(item);
   const isActive = item.isActive === "Y";
   const cat = categories.find((c) => c.rowId === item.categoryRowId);
   const palette = getPaletteByColor(cat?.color);
@@ -112,11 +117,11 @@ export function RecurringDetailDialog({
         <span
           className="num"
           style={{
-            color: isExpense ? "var(--fg-expense)" : "var(--fg-income)",
+            color: tone.color,
           }}
         >
           <MaskAmount card="etc.recurring">
-            {isExpense ? "−" : "+"}
+            {tone.sign}
             {KRW(Math.abs(item.amount))}
           </MaskAmount>
         </span>
@@ -124,7 +129,7 @@ export function RecurringDetailDialog({
 
       <DetailFieldGroup>
         <DetailField label={t("categoryLabel")}>
-          {item.categoryName ?? "-"}
+          {recurringSubtitle(item, item.categoryName ?? "-")}
         </DetailField>
         <DetailField label={t("assetLabel")}>
           {item.assetName ?? t("noAccount")}

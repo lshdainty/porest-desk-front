@@ -67,6 +67,7 @@ import type {
 import type { AssetTransfer } from "@/entities/asset";
 import type { Asset, AssetType } from "@/entities/asset";
 import type { ExpenseTemplate } from "@/entities/expense-template";
+import type { TxKind } from "@/entities/expense";
 import type { ExpenseSplitFormValue } from "@/entities/expense-split";
 import {
   CURRENCIES,
@@ -74,6 +75,11 @@ import {
   formatOriginalAmount,
 } from "@/shared/lib/porest/currency";
 import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
+import {
+  TransferAccountFields,
+  isLoanTarget,
+  transferPartiesReady,
+} from "@/features/asset-transfer";
 
 /** 결제 수단 → 허용 자산 타입. null이면 전체 허용. */
 const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {
@@ -340,9 +346,17 @@ export function AddTxSheet({
   // 하나만 통과한다. 예전엔 `${Math.floor(v / 1000)}k` 로 직접 줄여 12,900 이
   // `12k`(−7%), 1,290,000 이 `1290k` 가 됐다 — `k` 는 한국어 화면에서 쓰기로 한
   // 단위(만·억·조)에도 없다.
+  //
+  // **지금 탭의 종류만** 보여 준다. 종전엔 종류와 무관하게 사용 많은 순 8개라, 지출
+  // 탭에서 수입 프리셋을 누르면 탭이 통째로 바뀌었다 — 고르는 사람은 "지출 하나를
+  // 빨리 넣으려고" 누른 것이다.
   const topPresets = useMemo(
-    () => [...templates].sort((a, b) => b.useCount - a.useCount).slice(0, 8),
-    [templates],
+    () =>
+      templates
+        .filter((p) => p.expenseType === type)
+        .sort((a, b) => b.useCount - a.useCount)
+        .slice(0, 8),
+    [templates, type],
   );
 
   const clearPresetMark = () => {
@@ -358,6 +372,12 @@ export function AddTxSheet({
     setPaymentMethod(p.paymentMethod ?? "");
     setInstallmentMonths("");
     setDescription(p.description ?? "");
+    // 이체 프리셋은 보내는·받는 계좌와 수수료·이자를 함께 들고 온다.
+    // 보내는 계좌는 assetRowId 한 칸을 지출·수입과 같이 쓴다(서버도 같은 컬럼이다).
+    setFromAssetRowId(p.expenseType === "TRANSFER" ? p.assetRowId : null);
+    setToAssetRowId(p.toAssetRowId ?? null);
+    setFee(p.fee != null ? String(p.fee) : "");
+    setInterest(p.interestAmount != null ? String(p.interestAmount) : "");
     setActivePresetId(p.rowId);
   };
 
@@ -392,20 +412,6 @@ export function AddTxSheet({
     ? (selectedCategory.parentRowId ?? selectedCategory.rowId)
     : null;
 
-  // 이체 대상에서 카드는 뺀다.
-  //   체크카드 — 잔액을 들지 않는다(긁는 즉시 연결 계좌에서 빠진다). 걸면 카드에
-  //     있을 수 없는 잔액이 생긴다.
-  //   신용카드 — 대금 결제는 전용 기능(자산 상세 → 결제)이 담당한다. 그쪽은 이체와
-  //     함께 card_billing 을 남기고, 자동 결제의 멱등 체크가 그 기록으로 걸린다.
-  //     손으로 이체하면 기록이 없어 결제일에 자동 결제가 또 돌아 이중 차감된다.
-  const transferAssets = useMemo(
-    () =>
-      assets.filter(
-        (a) => a.assetType !== "CHECK_CARD" && a.assetType !== "CREDIT_CARD",
-      ),
-    [assets],
-  );
-
   // 결제 수단 + 거래 타입으로 계좌·카드 목록 필터.
   //
   // 지출에선 예·적금(SAVINGS: 청약·정기예금·정기적금)을 뺀다 — 만기 전까지 묶인 돈이라
@@ -427,12 +433,9 @@ export function AddTxSheet({
     [assets, allowAsset],
   );
 
-  // 이자는 대출 상환에만 — 입금 대상이 대출 자산일 때만 의미가 있다.
-  // (원금은 부채가 줄어드는 자산 이동이지만 이자는 은행으로 아예 나가는 비용이다)
-  const showInterest = useMemo(() => {
-    if (type !== "TRANSFER" || toAssetRowId == null) return false;
-    return assets.find((a) => a.rowId === toAssetRowId)?.assetType === "LOAN";
-  }, [type, toAssetRowId, assets]);
+  // 이자는 대출 상환에만 — 규칙은 이체를 그리는 세 화면이 한 벌을 쓴다.
+  const isTransfer = type === "TRANSFER";
+  const showInterest = isTransfer && isLoanTarget(assets, toAssetRowId);
 
   // 대출이 아니게 되면 남아 있던 이자를 지운다(저장 시 흘러들지 않도록).
   if (!showInterest && interest) setInterest("");
@@ -547,6 +550,14 @@ export function AddTxSheet({
   const unlock = () => {
     savingRef.current = false;
   };
+  // 프리셋으로 저장할 수 있는 조건 — 종류마다 있어야 하는 칸이 다르다.
+  // 지출·수입은 카테고리가, 이체는 양쪽 계좌가 프리셋의 뼈대다.
+  const canSavePreset =
+    amountNumber > 0 &&
+    (type === "TRANSFER"
+      ? transferPartiesReady(fromAssetRowId, toAssetRowId)
+      : !!categoryRowId);
+
   const submitting =
     createMut.isPending ||
     updateMut.isPending ||
@@ -784,8 +795,8 @@ export function AddTxSheet({
         </TabsList>
       </Tabs>
 
-      {/* 프리셋 불러오기 — 신규 추가일 때만 노출, TRANSFER 제외 */}
-      {!isEdit && type !== "TRANSFER" && (
+      {/* 프리셋 불러오기 — 신규 추가일 때만 노출. 이체 탭에도 이체 프리셋이 뜬다. */}
+      {!isEdit && (
         <div style={{ marginBottom: 20 }}>
           <div
             style={{
@@ -826,19 +837,17 @@ export function AddTxSheet({
             <button
               type="button"
               onClick={() => setSavePresetOpen(true)}
-              disabled={amountNumber <= 0 || !categoryRowId}
+              disabled={!canSavePreset}
               style={{
                 background: "transparent",
                 border: 0,
                 padding: 0,
                 fontSize: "var(--text-caption)",
-                color:
-                  amountNumber > 0 && categoryRowId
-                    ? "var(--fg-brand-strong)"
-                    : "var(--fg-tertiary)",
+                color: canSavePreset
+                  ? "var(--fg-brand-strong)"
+                  : "var(--fg-tertiary)",
                 fontWeight: "600",
-                cursor:
-                  amountNumber > 0 && categoryRowId ? "pointer" : "not-allowed",
+                cursor: canSavePreset ? "pointer" : "not-allowed",
                 display: "flex",
                 alignItems: "center",
                 gap: 3,
@@ -1500,95 +1509,18 @@ export function AddTxSheet({
           )}
         </>
       ) : (
-        <>
-          {/* 이체: 출금 → 입금 */}
-          <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t("addTx.fromAccount")}</FieldLabel>
-            <Select
-              value={fromAssetRowId != null ? String(fromAssetRowId) : ""}
-              onValueChange={(v) => setFromAssetRowId(v ? Number(v) : null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("addTx.selectPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {transferAssets.map((a) => (
-                  <SelectItem key={a.rowId} value={String(a.rowId)}>
-                    {a.institution
-                      ? `${a.institution} · ${a.assetName}`
-                      : a.assetName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t("addTx.depositAccount")}</FieldLabel>
-            <Select
-              value={toAssetRowId != null ? String(toAssetRowId) : ""}
-              onValueChange={(v) => setToAssetRowId(v ? Number(v) : null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("addTx.selectPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {transferAssets
-                  .filter((a) => a.rowId !== fromAssetRowId)
-                  .map((a) => (
-                    <SelectItem key={a.rowId} value={String(a.rowId)}>
-                      {a.institution
-                        ? `${a.institution} · ${a.assetName}`
-                        : a.assetName}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t("addTx.fee")}</FieldLabel>
-            <Input
-              className="num"
-              value={fee}
-              onChange={(e) => setFee(sanitizeAmountInput(e.target.value))}
-              onKeyDown={blockNonDigitKey}
-              placeholder="0"
-              inputMode="numeric"
-            />
-          </Field>
-
-          {/* 이자 — 대출 상환에만. 상환액 중 이자는 부채를 줄이지 않고 지출로 잡힌다. */}
-          {showInterest && (
-            <Field style={{ marginBottom: 14 }}>
-              <FieldLabel>{t("addTx.interest")}</FieldLabel>
-              <Input
-                className="num"
-                value={interest}
-                onChange={(e) =>
-                  setInterest(sanitizeAmountInput(e.target.value))
-                }
-                onKeyDown={blockNonDigitKey}
-                placeholder="0"
-                inputMode="numeric"
-              />
-              <div
-                style={{
-                  fontSize: "var(--text-caption)",
-                  color: "var(--fg-tertiary)",
-                  marginTop: 4,
-                }}
-              >
-                {interest && amountNumber > 0
-                  ? t("addTx.interestSplit", {
-                      principal: KRW(
-                        Math.max(0, amountNumber - Number(interest)),
-                      ),
-                      interest: KRW(Number(interest)),
-                    })
-                  : t("addTx.interestHint")}
-              </div>
-            </Field>
-          )}
-        </>
+        <TransferAccountFields
+          assets={assets}
+          fromAssetRowId={fromAssetRowId}
+          toAssetRowId={toAssetRowId}
+          fee={fee}
+          interest={interest}
+          amountNumber={amountNumber}
+          onFromChange={setFromAssetRowId}
+          onToChange={setToAssetRowId}
+          onFeeChange={setFee}
+          onInterestChange={setInterest}
+        />
       )}
 
       {/* 날짜·시간 — 이체도 동일(백엔드 transferDate 가 DATETIME).
@@ -1629,15 +1561,27 @@ export function AddTxSheet({
           mobile={mobile}
           onClose={() => setSavePresetOpen(false)}
           seed={{
-            expenseType: type === "TRANSFER" ? "EXPENSE" : type,
+            expenseType: type,
             amount: amountNumber,
-            categoryRowId,
-            categoryName: selectedCategory?.categoryName ?? null,
-            assetRowId,
+            // 이체는 카테고리·거래처·결제수단이 없다 — 지금 화면에 칸 자체가 없다.
+            categoryRowId: isTransfer ? null : categoryRowId,
+            categoryName: isTransfer
+              ? null
+              : (selectedCategory?.categoryName ?? null),
+            assetRowId: isTransfer ? fromAssetRowId : assetRowId,
             assetName:
-              assets.find((a) => a.rowId === assetRowId)?.assetName ?? null,
-            merchant,
-            paymentMethod,
+              assets.find(
+                (a) => a.rowId === (isTransfer ? fromAssetRowId : assetRowId),
+              )?.assetName ?? null,
+            toAssetRowId: isTransfer ? toAssetRowId : null,
+            toAssetName: isTransfer
+              ? (assets.find((a) => a.rowId === toAssetRowId)?.assetName ??
+                null)
+              : null,
+            fee: isTransfer && fee ? Number(fee) : null,
+            interestAmount: showInterest && interest ? Number(interest) : null,
+            merchant: isTransfer ? "" : merchant,
+            paymentMethod: isTransfer ? "" : paymentMethod,
             description,
           }}
         />
@@ -1667,12 +1611,18 @@ export function AddTxSheet({
 // SavePresetDialog — 현재 입력값을 프리셋으로 저장
 // =========================================================================
 type SavePresetSeed = {
-  expenseType: "EXPENSE" | "INCOME";
+  expenseType: TxKind;
   amount: number;
   categoryRowId: number | null;
   categoryName: string | null;
+  /** 이체면 <b>보내는</b> 자산. */
   assetRowId: number | null;
   assetName: string | null;
+  /** 이체일 때만 채워진다. */
+  toAssetRowId: number | null;
+  toAssetName: string | null;
+  fee: number | null;
+  interestAmount: number | null;
   merchant: string;
   paymentMethod: string;
   description: string;
@@ -1694,7 +1644,11 @@ function SavePresetDialog({
 
   const createMut = useCreateExpenseTemplate();
 
-  const canSave = name.trim().length > 0 && seed.categoryRowId != null;
+  const isTransfer = seed.expenseType === "TRANSFER";
+  // 이체 프리셋은 카테고리 대신 받는 계좌가 있어야 성립한다(서버도 같은 규칙).
+  const canSave =
+    name.trim().length > 0 &&
+    (isTransfer ? seed.toAssetRowId != null : seed.categoryRowId != null);
 
   const submit = () => {
     if (!canSave) return;
@@ -1703,6 +1657,9 @@ function SavePresetDialog({
         templateName: name.trim(),
         categoryRowId: seed.categoryRowId,
         assetRowId: seed.assetRowId ?? undefined,
+        toAssetRowId: seed.toAssetRowId ?? undefined,
+        fee: seed.fee ?? undefined,
+        interestAmount: seed.interestAmount ?? undefined,
         expenseType: seed.expenseType,
         amount: lockAmount ? seed.amount : undefined,
         description: seed.description || undefined,
@@ -1755,7 +1712,9 @@ function SavePresetDialog({
               whiteSpace: "nowrap",
             }}
           >
-            {seed.merchant || t("savePreset.noMerchant")}
+            {isTransfer
+              ? t("addTx.transfer")
+              : seed.merchant || t("savePreset.noMerchant")}
           </div>
           <div
             style={{
@@ -1764,8 +1723,10 @@ function SavePresetDialog({
               marginTop: 2,
             }}
           >
-            {seed.categoryName ?? t("savePreset.noCategory")}
-            {seed.assetName ? ` · ${seed.assetName}` : ""}
+            {isTransfer
+              ? `${seed.assetName ?? "-"} → ${seed.toAssetName ?? "-"}`
+              : (seed.categoryName ?? t("savePreset.noCategory"))}
+            {!isTransfer && seed.assetName ? ` · ${seed.assetName}` : ""}
           </div>
         </div>
         <div
