@@ -273,7 +273,8 @@ export function HideAmountsSection({
         />
         <div
           style={{
-            padding: "12px 20px 16px",
+            // 모바일 페이지 좌우 인셋 24 — 앱 hide_amounts_screen 정합(QA #164).
+            padding: "12px 24px 16px",
             display: "flex",
             flexDirection: "column",
             gap: "var(--spacing-md)",
@@ -290,7 +291,7 @@ export function HideAmountsSection({
             flex: 1,
             overflowY: "auto",
             minHeight: 0,
-            padding: "0 20px 24px",
+            padding: "0 24px 24px",
           }}
         >
           {grid}
@@ -298,7 +299,7 @@ export function HideAmountsSection({
         {/* 저장 — 화면 아래 고정. 고르는 동안에는 아무것도 반영되지 않으므로 여기까지 와야 끝난다. */}
         <div
           style={{
-            padding: "12px 20px",
+            padding: "12px 24px",
             paddingBottom: "calc(12px + env(safe-area-inset-bottom))",
             flexShrink: 0,
           }}
