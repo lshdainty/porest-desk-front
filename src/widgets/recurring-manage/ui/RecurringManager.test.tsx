@@ -13,6 +13,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MINUS } from "@/shared/lib/porest/format";
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
+import type { TxKind } from "@/entities/expense";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -60,7 +61,7 @@ afterEach(() => {
 
 const txOf = (
   amount: number,
-  expenseType: "EXPENSE" | "INCOME" = "EXPENSE",
+  expenseType: TxKind = "EXPENSE",
 ): RecurringTransaction => ({
   rowId: 1,
   userRowId: 1,
@@ -68,6 +69,10 @@ const txOf = (
   categoryName: null,
   assetRowId: null,
   assetName: null,
+  toAssetRowId: null,
+  toAssetName: null,
+  fee: null,
+  interestAmount: null,
   sourceExpenseRowId: null,
   expenseType,
   amount,

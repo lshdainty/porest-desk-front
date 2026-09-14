@@ -37,3 +37,34 @@ export function recurringSummary(
   const end = it.endDate ? `~${it.endDate}` : t("endNone");
   return `${core} · ${end}${it.notifyDayBefore ? ` · ${t("alarmTag")}` : ""}`;
 }
+
+/**
+ * 금액의 부호와 색 — 이체는 지출도 수입도 아니다.
+ *
+ * 이체는 내 돈이 자리를 옮기는 것이라 합계에 ±로 들어가지 않는다. 가계부 목록의 이체
+ * 행도 같은 규칙이다(`entities/asset/ui/transfer-row`) — 어느 계좌에서 보느냐가 정해져야
+ * 부호가 생기고, 그게 없으면 부호 없이 중립색으로 적는다. 반복 목록에는 볼 기준 계좌가
+ * 없으므로 언제나 중립이다.
+ */
+export function recurringAmountTone(it: RecurringTransaction): {
+  sign: string;
+  color: string;
+} {
+  if (it.expenseType === "TRANSFER") {
+    return { sign: "", color: "var(--fg-primary)" };
+  }
+  return it.expenseType === "EXPENSE"
+    ? { sign: "−", color: "var(--fg-expense)" }
+    : { sign: "+", color: "var(--fg-income)" };
+}
+
+/** 행 부제 — 이체는 카테고리가 없으니 "보내는 → 받는" 을 적는다. */
+export function recurringSubtitle(
+  it: RecurringTransaction,
+  fallback: string,
+): string {
+  if (it.expenseType === "TRANSFER") {
+    return `${it.assetName ?? "-"} → ${it.toAssetName ?? "-"}`;
+  }
+  return fallback;
+}

@@ -18,6 +18,11 @@ import { InputTimePicker } from "@/shared/ui/input-time-picker";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {
+  TransferAccountFields,
+  isLoanTarget,
+  transferPartiesReady,
+} from "@/features/asset-transfer";
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -85,7 +90,7 @@ const PAYMENT_ASSET_TYPES: Record<string, AssetType[] | null> = {
 };
 
 type EndMode = "NONE" | "COUNT" | "DATE";
-type TxType = "EXPENSE" | "INCOME";
+type TxType = "EXPENSE" | "INCOME" | "TRANSFER";
 
 type Props = {
   onClose: () => void;
@@ -97,6 +102,22 @@ type Props = {
    * 다음 실행분부터 적용되고 이미 만들어진 거래는 그대로다.
    */
   recurring?: RecurringTransaction;
+  /**
+   * **새로 만들되 값만 물려받는다** — 이체 상세의 "반복 설정" 이 쓴다.
+   *
+   * `recurring` 과 달리 수정 모드로 들어가지 않는다. 이미 일어난 이체와 앞으로 실행될
+   * 규칙은 별개라, 여기서 금액을 고쳐도 그 이체는 그대로여야 한다(사용자 결정).
+   * 거래와 규칙을 잇는 `sourceExpenseRowId` 같은 연결도 두지 않는다.
+   */
+  transferSeed?: {
+    fromAssetRowId: number | null;
+    toAssetRowId: number | null;
+    amount: number;
+    fee: number | null;
+    interestAmount: number | null;
+    description: string | null;
+    startDate: string;
+  };
   onSaved?: () => void;
   mobile: boolean;
 };
@@ -111,6 +132,7 @@ export function RecurringAddDialog({
   onClose,
   onCreated,
   recurring,
+  transferSeed,
   onSaved,
   mobile,
 }: Props) {
@@ -131,12 +153,15 @@ export function RecurringAddDialog({
     [assetsQ.data],
   );
 
-  // 거래 입력 (이체 제외 — 반복은 지출/수입만)
   const [type, setType] = useState<TxType>(
-    recurring?.expenseType === "INCOME" ? "INCOME" : "EXPENSE",
+    recurring?.expenseType ?? (transferSeed ? "TRANSFER" : "EXPENSE"),
   );
   const [amount, setAmount] = useState(
-    recurring ? String(Math.abs(recurring.amount)) : "",
+    recurring
+      ? String(Math.abs(recurring.amount))
+      : transferSeed
+        ? String(Math.abs(transferSeed.amount))
+        : "",
   );
   const [merchant, setMerchant] = useState(recurring?.merchant ?? "");
   const [paymentMethod, setPaymentMethod] = useState(
@@ -146,14 +171,30 @@ export function RecurringAddDialog({
     recurring?.categoryRowId ?? null,
   );
   const [assetRowId, setAssetRowId] = useState<number | null>(
-    recurring?.assetRowId ?? null,
+    recurring?.assetRowId ?? transferSeed?.fromAssetRowId ?? null,
   );
-  const [description, setDescription] = useState(recurring?.description ?? "");
+  const [description, setDescription] = useState(
+    recurring?.description ?? transferSeed?.description ?? "",
+  );
+  // 이체 전용 — 보내는 계좌는 위 assetRowId 를 그대로 쓴다(서버도 같은 컬럼이다).
+  const [toAssetRowId, setToAssetRowId] = useState<number | null>(
+    recurring?.toAssetRowId ?? transferSeed?.toAssetRowId ?? null,
+  );
+  const [fee, setFee] = useState(() => {
+    const v = recurring?.fee ?? transferSeed?.fee;
+    return v ? String(v) : "";
+  });
+  const [interest, setInterest] = useState(() => {
+    const v = recurring?.interestAmount ?? transferSeed?.interestAmount;
+    return v ? String(v) : "";
+  });
   // 날짜 = 반복 시작일 (공통)
   // 시작일은 다음 실행일 계산의 기준이라 로컬 '오늘' 이어야 한다 — UTC 날짜면 KST 새벽에
   // 앱과 웹의 첫 실행일이 하루 갈린다.
   const [startDate, setStartDate] = useState<string>(() =>
-    recurring?.startDate ? recurring.startDate.slice(0, 10) : todayLocalKey(),
+    recurring?.startDate
+      ? recurring.startDate.slice(0, 10)
+      : (transferSeed?.startDate ?? todayLocalKey()),
   );
 
   // 반복 설정 — 수정이면 저장값에서 복원
@@ -239,6 +280,9 @@ export function RecurringAddDialog({
     [assets, allowAsset],
   );
 
+  const isTransfer = type === "TRANSFER";
+  const showInterest = isTransfer && isLoanTarget(assets, toAssetRowId);
+
   // 결제 수단·거래 타입 변경 시 현재 선택 자산이 허용 목록에 없으면 리셋
   // (한 번 비우면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다)
   if (assetRowId != null) {
@@ -246,11 +290,21 @@ export function RecurringAddDialog({
     if (picked && !allowAsset(picked)) setAssetRowId(null);
   }
 
-  // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋
+  // 타입 전환 시 해당 타입에 속하지 않는 카테고리는 리셋.
+  // 이체에는 카테고리가 없다 — 남겨 두면 저장할 때 서버가 거절한다.
   if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    if (!cat || cat.expenseType !== type) setCategoryRowId(null);
+    if (isTransfer || !cat || cat.expenseType !== type) setCategoryRowId(null);
   }
+
+  // 이체가 아니게 되면 남아 있던 이체 칸을 지운다 — 실려 나가면 서버가 거절한다.
+  if (!isTransfer && (toAssetRowId != null || fee || interest)) {
+    setToAssetRowId(null);
+    setFee("");
+    setInterest("");
+  }
+  // 받는 계좌가 대출이 아니면 이자는 뜻이 없다.
+  if (!showInterest && interest) setInterest("");
 
   const nextDates = useMemo(
     () => previewNextDates(startDate, frequency, dayOfWeek, dayOfMonth, 3),
@@ -264,6 +318,8 @@ export function RecurringAddDialog({
     amountNumber > 0 &&
     !amountTooLarge &&
     !!startDate &&
+    // 이체는 양쪽 계좌가 있어야 성립한다 — 서버도 같은 규칙으로 거절한다.
+    (!isTransfer || transferPartiesReady(assetRowId, toAssetRowId)) &&
     (endMode !== "COUNT" || Number(endCount) > 0) &&
     (endMode !== "DATE" || !!endDate);
   const submitting = createMut.isPending || updateMut.isPending;
@@ -271,14 +327,18 @@ export function RecurringAddDialog({
   const handleSave = () => {
     if (!ready || submitting) return;
     const data: RecurringTransactionFormValues = {
-      categoryRowId: categoryRowId ?? undefined,
+      categoryRowId: isTransfer ? undefined : (categoryRowId ?? undefined),
       assetRowId: assetRowId ?? undefined,
+      // 이체 칸은 이체일 때만 싣는다 — 지출·수입에 실려 가면 서버가 거절한다.
+      toAssetRowId: isTransfer ? (toAssetRowId ?? undefined) : undefined,
+      fee: isTransfer && fee ? Number(fee) : undefined,
+      interestAmount: showInterest && interest ? Number(interest) : undefined,
       sourceExpenseRowId: undefined, // 처음부터 추가 — 원본 거래 없음
       expenseType: type,
       amount: amountNumber,
       description: description || undefined,
-      merchant: merchant || undefined,
-      paymentMethod: paymentMethod || undefined,
+      merchant: isTransfer ? undefined : merchant || undefined,
+      paymentMethod: isTransfer ? undefined : paymentMethod || undefined,
       frequency,
       intervalValue: 1,
       // 백엔드는 ISO 1=월~7=일. UI 0=일~6=토 → 변환.
@@ -316,8 +376,9 @@ export function RecurringAddDialog({
     });
   };
 
-  const amountColor =
-    type === "INCOME"
+  const amountColor = isTransfer
+    ? "var(--fg-primary)"
+    : type === "INCOME"
       ? "var(--fg-income, var(--fg-primary))"
       : "var(--fg-expense, var(--fg-primary))";
 
@@ -362,6 +423,9 @@ export function RecurringAddDialog({
             <TabsTrigger value="INCOME" className="flex-1">
               {tExpense("income")}
             </TabsTrigger>
+            <TabsTrigger value="TRANSFER" className="flex-1">
+              {tExpense("addTx.transfer")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </Section>
@@ -395,8 +459,8 @@ export function RecurringAddDialog({
         )}
       </Field>
 
-      {/* 카테고리 */}
-      {topCategories.length > 0 && (
+      {/* 카테고리 — 이체는 자산 간 이동이라 분류가 없다 */}
+      {!isTransfer && topCategories.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div
             style={{
@@ -467,77 +531,98 @@ export function RecurringAddDialog({
         </div>
       )}
 
-      {/* 거래처 */}
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>
-          {type === "INCOME"
-            ? tExpense("addTx.incomeSource")
-            : tExpense("form.merchant")}
-        </FieldLabel>
-        <Input
-          value={merchant}
-          onChange={(e) => setMerchant(e.target.value)}
-          placeholder={
-            type === "INCOME"
-              ? t("merchantPlaceholderIncome")
-              : t("merchantPlaceholderExpense")
-          }
+      {isTransfer ? (
+        <TransferAccountFields
+          assets={assets}
+          fromAssetRowId={assetRowId}
+          toAssetRowId={toAssetRowId}
+          fee={fee}
+          interest={interest}
+          amountNumber={amountNumber}
+          onFromChange={setAssetRowId}
+          onToChange={setToAssetRowId}
+          onFeeChange={setFee}
+          onInterestChange={setInterest}
         />
-      </Field>
+      ) : (
+        <>
+          {/* 거래처 */}
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>
+              {type === "INCOME"
+                ? tExpense("addTx.incomeSource")
+                : tExpense("form.merchant")}
+            </FieldLabel>
+            <Input
+              value={merchant}
+              onChange={(e) => setMerchant(e.target.value)}
+              placeholder={
+                type === "INCOME"
+                  ? t("merchantPlaceholderIncome")
+                  : t("merchantPlaceholderExpense")
+              }
+            />
+          </Field>
 
-      {/* 결제 수단 */}
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>
-          {type === "INCOME"
-            ? tExpense("addTx.incomeMethod")
-            : tExpense("paymentMethodLabel")}
-        </FieldLabel>
-        <Select
-          value={paymentMethod || "__none__"}
-          onValueChange={(v) => setPaymentMethod(v === "__none__" ? "" : v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={tExpense("selectNone")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">{tExpense("selectNone")}</SelectItem>
-            {PAYMENT_METHODS.map((pm) => (
-              <SelectItem key={pm.v} value={pm.v}>
-                {tExpense(pm.lKey)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+          {/* 결제 수단 */}
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>
+              {type === "INCOME"
+                ? tExpense("addTx.incomeMethod")
+                : tExpense("paymentMethodLabel")}
+            </FieldLabel>
+            <Select
+              value={paymentMethod || "__none__"}
+              onValueChange={(v) => setPaymentMethod(v === "__none__" ? "" : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={tExpense("selectNone")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">
+                  {tExpense("selectNone")}
+                </SelectItem>
+                {PAYMENT_METHODS.map((pm) => (
+                  <SelectItem key={pm.v} value={pm.v}>
+                    {tExpense(pm.lKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
 
-      {/* 계좌·카드 */}
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>
-          {type === "INCOME"
-            ? tExpense("addTx.depositAccount")
-            : tExpense("accountCard")}
-        </FieldLabel>
-        <Select
-          value={assetRowId != null ? String(assetRowId) : "__none__"}
-          onValueChange={(v) =>
-            setAssetRowId(v === "__none__" ? null : Number(v))
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={tExpense("selectNone")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">{tExpense("selectNone")}</SelectItem>
-            {filteredAssets.map((a) => (
-              <SelectItem key={a.rowId} value={String(a.rowId)}>
-                {a.institution
-                  ? `${a.institution} · ${a.assetName}`
-                  : a.assetName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+          {/* 계좌·카드 */}
+          <Field style={{ marginBottom: 14 }}>
+            <FieldLabel>
+              {type === "INCOME"
+                ? tExpense("addTx.depositAccount")
+                : tExpense("accountCard")}
+            </FieldLabel>
+            <Select
+              value={assetRowId != null ? String(assetRowId) : "__none__"}
+              onValueChange={(v) =>
+                setAssetRowId(v === "__none__" ? null : Number(v))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={tExpense("selectNone")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">
+                  {tExpense("selectNone")}
+                </SelectItem>
+                {filteredAssets.map((a) => (
+                  <SelectItem key={a.rowId} value={String(a.rowId)}>
+                    {a.institution
+                      ? `${a.institution} · ${a.assetName}`
+                      : a.assetName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </>
+      )}
 
       {/* 반복 시작일 */}
       <Field style={{ marginBottom: 14 }}>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Repeat } from "lucide-react";
 import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
 import {
@@ -8,7 +9,9 @@ import {
 } from "@/shared/lib/porest/hide-amounts-core";
 import { KRW, isEn } from "@/shared/lib/porest/format";
 import { formatMonthDayDow } from "@/shared/lib/date";
+import { DetailQuickAction } from "@/shared/ui/porest/detail";
 import { useDeleteTransfer } from "@/features/asset";
+import { RecurringAddDialog } from "@/features/recurring-transaction/ui/RecurringAddDialog";
 import type { AssetTransfer } from "@/entities/asset";
 
 /**
@@ -35,6 +38,7 @@ export function TransferDetailDialog({
   const { t } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [openRecurring, setOpenRecurring] = useState(false);
   const deleteMut = useDeleteTransfer();
 
   // 이체 상세는 지금까지 어떤 카드로도 가려지지 않았다 — 거래 상세와 같은 카드로 묶는다.
@@ -121,6 +125,18 @@ export function TransferDetailDialog({
               })}
             </div>
           )}
+          {/* 반복 설정 — 이 이체와 <b>같은 값으로 규칙을 새로 만든다</b>. 이 이체 자체는
+              건드리지 않는다: 이미 일어난 이체와 앞으로 실행될 규칙은 별개다(사용자 결정).
+              시스템이 만든 이체는 잠겨 있어 반복으로 옮길 대상이 아니다. */}
+          {!locked && (
+            <div style={{ marginBottom: 4 }}>
+              <DetailQuickAction
+                icon={Repeat}
+                label={t("txDetail.recurring")}
+                onClick={() => setOpenRecurring(true)}
+              />
+            </div>
+          )}
           {rows.map((r) => (
             <div
               key={r.label}
@@ -150,6 +166,23 @@ export function TransferDetailDialog({
           ))}
         </div>
       </ModalShell>
+
+      {openRecurring && (
+        <RecurringAddDialog
+          mobile={mobile}
+          transferSeed={{
+            fromAssetRowId: transfer.fromAssetRowId,
+            toAssetRowId: transfer.toAssetRowId,
+            amount: transfer.amount,
+            fee: transfer.fee,
+            interestAmount: transfer.interestAmount,
+            description: transfer.description,
+            // 이 이체가 일어난 날부터 반복한다 — 규칙은 이 거래를 본떠 만든 것이다.
+            startDate: transfer.transferDate.slice(0, 10),
+          }}
+          onClose={() => setOpenRecurring(false)}
+        />
+      )}
 
       {confirmDelete && (
         <ConfirmDialog

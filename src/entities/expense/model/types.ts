@@ -1,6 +1,16 @@
 import type { ExpenseSplitFormValue } from "@/entities/expense-split";
 
 export type ExpenseType = "INCOME" | "EXPENSE";
+
+/**
+ * 반복 거래·프리셋이 가리키는 거래 종류.
+ *
+ * `ExpenseType` 에 `TRANSFER` 를 끼우지 않는다 — 그 값은 거래·통계·예산이 전부 지나는
+ * 자리라, 이체를 넣으면 그 셋이 모두 "이체를 어느 쪽으로 셀 것인가" 를 답해야 한다.
+ * 이체는 지출/수입 어느 쪽으로도 집계되면 안 되는 값이다. 서버도 같은 이유로
+ * `ExpenseType` 을 그대로 두고 `TxKind` 를 따로 뒀다.
+ */
+export type TxKind = ExpenseType | "TRANSFER";
 export type PaymentMethod = "CASH" | "CARD" | "TRANSFER" | "OTHER";
 
 export interface ExpenseCategory {

@@ -76,6 +76,9 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
   const totalUses = items.reduce((s, p) => s + p.useCount, 0);
   const expenseCount = items.filter((p) => p.expenseType === "EXPENSE").length;
   const incomeCount = items.filter((p) => p.expenseType === "INCOME").length;
+  const transferCount = items.filter(
+    (p) => p.expenseType === "TRANSFER",
+  ).length;
 
   const categoryById = useMemo(() => {
     const m = new Map<number, (typeof categories)[number]>();
@@ -188,8 +191,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                 value={t("txDetail.countTimes", { count: totalUses })}
               />
               <PMStat
-                label={`${t("expense")} / ${t("income")}`}
-                value={`${expenseCount} / ${incomeCount}`}
+                label={`${t("expense")} / ${t("income")} / ${t("addTx.transfer")}`}
+                value={`${expenseCount} / ${incomeCount} / ${transferCount}`}
               />
             </>
           )}
@@ -378,6 +381,20 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                         >
                           {p.templateName}
                         </div>
+                        {p.expenseType === "TRANSFER" && (
+                          <span
+                            style={{
+                              fontSize: "var(--text-badge)",
+                              fontWeight: "700",
+                              padding: "1px 5px",
+                              background: "var(--bg-sunken)",
+                              color: "var(--fg-tertiary)",
+                              borderRadius: "var(--radius-xs)",
+                            }}
+                          >
+                            {t("addTx.transfer")}
+                          </span>
+                        )}
                         {p.expenseType === "INCOME" && (
                           <span
                             style={{
@@ -446,14 +463,23 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                         style={{
                           fontSize: mobile ? 12.5 : 14,
                           fontWeight: "700",
+                          // 이체는 지출도 수입도 아니다 — 가계부의 이체 행과 같이 중립색.
                           color:
-                            p.expenseType === "EXPENSE"
-                              ? "var(--fg-expense)"
-                              : "var(--fg-income)",
+                            p.expenseType === "TRANSFER"
+                              ? "var(--fg-primary)"
+                              : p.expenseType === "EXPENSE"
+                                ? "var(--fg-expense)"
+                                : "var(--fg-income)",
                         }}
                       >
                         {lock && p.amount != null
-                          ? `${p.expenseType === "EXPENSE" ? "−" : "+"}${amountDisplay}`
+                          ? `${
+                              p.expenseType === "TRANSFER"
+                                ? ""
+                                : p.expenseType === "EXPENSE"
+                                  ? "−"
+                                  : "+"
+                            }${amountDisplay}`
                           : "—"}
                       </div>
                       <div

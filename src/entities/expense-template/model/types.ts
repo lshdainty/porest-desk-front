@@ -1,4 +1,4 @@
-import type { ExpenseType } from "@/entities/expense";
+import type { TxKind } from "@/entities/expense";
 import type { YNType } from "@/shared/types";
 
 export interface ExpenseTemplate {
@@ -9,7 +9,13 @@ export interface ExpenseTemplate {
   categoryName: string | null;
   assetRowId: number | null;
   assetName: string | null;
-  expenseType: ExpenseType;
+  /** 이체일 때 받는 자산. 지출·수입이면 null. */
+  toAssetRowId: number | null;
+  toAssetName: string | null;
+  fee: number | null;
+  /** 이체 이자 — 받는 자산이 대출일 때만 값이 있다. */
+  interestAmount: number | null;
+  expenseType: TxKind;
   amount: number | null;
   description: string | null;
   merchant: string | null;
@@ -35,9 +41,13 @@ export interface ExpenseTemplate {
 export interface ExpenseTemplateFormValues {
   templateName: string;
   categoryRowId: number | null;
-  /** 결제 계좌·카드. `null` = 연결 해제('선택 안 함'). */
+  /** 결제 계좌·카드. 이체면 <b>보내는</b> 자산. `null` = 연결 해제('선택 안 함'). */
   assetRowId?: number | null;
-  expenseType: ExpenseType;
+  /** 이체면 <b>받는</b> 자산. 지출·수입으로 바꿀 때는 `null` 을 실어 지운다. */
+  toAssetRowId?: number | null;
+  fee?: number | null;
+  interestAmount?: number | null;
+  expenseType: TxKind;
   /**
    * 고정 금액. `lockAmount` 와 **한 쌍**이라 다른 칸과 계약이 다르다 — 서버가 둘을 함께
    * 보고 `lockAmount !== 'Y'` 면 실린 금액을 버린다(`ExpenseTemplateServiceImpl.resolveAmount`:

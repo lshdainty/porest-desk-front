@@ -41,6 +41,7 @@ export function PresetDetailDialog({
   const { t: tCommon } = useTranslation("common");
 
   const isExpense = preset.expenseType === "EXPENSE";
+  const isTransfer = preset.expenseType === "TRANSFER";
   const cat =
     preset.categoryRowId != null
       ? categories.find((c) => c.rowId === preset.categoryRowId)
@@ -92,29 +93,60 @@ export function PresetDetailDialog({
         <span
           className="num"
           style={{
-            color: locked
-              ? isExpense
-                ? "var(--fg-expense)"
-                : "var(--fg-income)"
-              : "var(--fg-tertiary)",
+            // 이체는 지출도 수입도 아니다 — 가계부의 이체 행과 같이 중립색·무부호.
+            color: !locked
+              ? "var(--fg-tertiary)"
+              : isTransfer
+                ? "var(--fg-primary)"
+                : isExpense
+                  ? "var(--fg-expense)"
+                  : "var(--fg-income)",
           }}
         >
           {locked && preset.amount != null
-            ? `${isExpense ? "−" : "+"}${KRW(preset.amount)}`
+            ? `${isTransfer ? "" : isExpense ? "−" : "+"}${KRW(preset.amount)}`
             : t("preset.amountEmpty")}
         </span>
       </DetailHero>
 
       <DetailFieldGroup>
         <DetailField label={t("preset.typeLabel")}>
-          {isExpense ? t("expense") : t("income")}
+          {isTransfer
+            ? t("addTx.transfer")
+            : isExpense
+              ? t("expense")
+              : t("income")}
         </DetailField>
-        <DetailField label={t("category")}>
-          {preset.categoryName ?? "-"}
-        </DetailField>
-        <DetailField label={t("accountCard")}>
-          {preset.assetName ?? "-"}
-        </DetailField>
+        {/* 이체에는 카테고리가 없다 — 대신 보내는·받는 계좌를 나눠 보여 준다. */}
+        {isTransfer ? (
+          <>
+            <DetailField label={t("addTx.fromAccount")}>
+              {preset.assetName ?? "-"}
+            </DetailField>
+            <DetailField label={t("addTx.depositAccount")}>
+              {preset.toAssetName ?? "-"}
+            </DetailField>
+            {preset.fee != null && preset.fee > 0 && (
+              <DetailField label={t("addTx.fee")}>
+                {KRW(preset.fee)}
+              </DetailField>
+            )}
+            {preset.interestAmount != null && preset.interestAmount > 0 && (
+              <DetailField label={t("addTx.interest")}>
+                {KRW(preset.interestAmount)}
+              </DetailField>
+            )}
+          </>
+        ) : (
+          <>
+            <DetailField label={t("category")}>
+              {preset.categoryName ?? "-"}
+            </DetailField>
+            <DetailField label={t("accountCard")}>
+              {preset.assetName ?? "-"}
+            </DetailField>
+          </>
+        )}
         {preset.merchant && (
           <DetailField label={t("preset.defaultMerchant")}>
             {preset.merchant}

@@ -1,5 +1,6 @@
 export type {
   ExpenseType,
+  TxKind,
   PaymentMethod,
   ExpenseCategory,
   ExpenseCategoryTreeNode,
