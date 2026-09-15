@@ -38,7 +38,8 @@ vi.mock("@/features/recurring-transaction/ui/RecurringAddDialog", () => ({
   RecurringAddDialog: () => null,
 }));
 vi.mock("@/features/recurring-transaction/ui/RecurringDetailDialog", () => ({
-  RecurringDetailDialog: () => null,
+  // 열렸는지만 본다 — 안의 내용은 이 다이얼로그의 자기 테스트가 본다.
+  RecurringDetailDialog: () => <div data-testid="recurring-detail" />,
 }));
 
 const { RecurringManager } = await import("./RecurringManager");
@@ -142,5 +143,34 @@ describe.each([
     state.items = [txOf(3_200_000, "INCOME")];
     const out = render(mobile);
     expect(out).toContain("+3,200,000");
+  });
+});
+
+describe("행을 눌러 상세를 연다 (#173)", () => {
+  /** 주석은 "행 탭 → 상세(WCAG 2.1.1 비제스처 경로)" 라고 적혀 있었는데 `setDetail(it)`
+   *  를 부르는 곳이 없어, 모바일 웹은 밀기 말고는 상세에 닿을 길이 없었다.
+   *  프리셋 관리(`PresetManager`)는 같은 자리가 이미 연결돼 있다. */
+  const row = () =>
+    [...container.querySelectorAll<HTMLElement>("[role='button']")].find((el) =>
+      el.textContent?.includes("구독"),
+    );
+
+  const detailOpen = () =>
+    document.body.querySelector("[data-testid='recurring-detail']") != null;
+
+  it("모바일 — 행을 누르면 상세가 열린다", () => {
+    state.items = [txOf(7000)];
+    render(true);
+    const r = row();
+    expect(r, "모바일 행이 누를 수 있는 요소가 아니다").toBeTruthy();
+    act(() => r!.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(detailOpen()).toBe(true);
+  });
+
+  it("데스크톱 — 행은 안 눌린다. 연필·일시정지·삭제가 행 안에 있다", () => {
+    state.items = [txOf(7000)];
+    render(false);
+    expect(row()).toBeUndefined();
+    expect(detailOpen()).toBe(false);
   });
 });

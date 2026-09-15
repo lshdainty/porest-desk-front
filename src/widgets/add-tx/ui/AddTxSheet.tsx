@@ -620,8 +620,16 @@ export function AddTxSheet({
         );
         return;
       }
+      const transferPresetId = activePresetId;
       createTransferMut.mutate(payload, {
-        onSuccess: onClose,
+        onSuccess: () => {
+          // 이체도 프리셋으로 채웠으면 사용 기록을 올린다 — 지출·수입(:710)과 같은 규칙.
+          // 종전엔 이 분기에만 빠져 있어 "사용 많은 순" 에서 이체 프리셋만 영영 0 이었다.
+          if (transferPresetId != null) {
+            touchPresetMut.mutate(transferPresetId);
+          }
+          onClose();
+        },
         onSettled: unlock,
       });
       return;
@@ -1660,7 +1668,12 @@ function SavePresetDialog({
         assetRowId: seed.assetRowId ?? undefined,
         toAssetRowId: seed.toAssetRowId ?? undefined,
         fee: seed.fee ?? undefined,
-        interestAmount: seed.interestAmount ?? undefined,
+        // 이자는 금액을 따라간다 — 금액을 안 저장하면 이자도 안 저장한다
+        // (사용자 결정 2026-09-15). 금액이 매달 다르면 이자도 매달 다르니, 박아 둔
+        // 이자는 불러올 때마다 틀린 값이 된다. 수수료는 계좌 짝의 성질이라 그대로 둔다.
+        interestAmount: lockAmount
+          ? (seed.interestAmount ?? undefined)
+          : undefined,
         expenseType: seed.expenseType,
         amount: lockAmount ? seed.amount : undefined,
         description: seed.description || undefined,
