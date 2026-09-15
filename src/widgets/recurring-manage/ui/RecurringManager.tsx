@@ -665,7 +665,14 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                   actions={swipeActions}
                 >
                   <div
+                    // 행 탭 → 상세. 모바일에만 건다 — 데스크톱은 hover 액션(연필·일시정지·
+                    // 삭제)이 행 안에 있고, 모바일은 그 자리가 금액뿐이라 겹치지 않는다.
+                    // 프리셋 관리(`PresetManager.tsx`)와 같은 모양이고, 밀기만으로는
+                    // 상세에 닿을 길이 없던 것을 되살린다(WCAG 2.1.1 비제스처 경로).
+                    onClick={mobile ? () => setDetail(it) : undefined}
+                    role={mobile ? "button" : undefined}
                     style={{
+                      cursor: mobile ? "pointer" : undefined,
                       display: "grid",
                       gridTemplateColumns: mobile
                         ? "36px 1fr auto"

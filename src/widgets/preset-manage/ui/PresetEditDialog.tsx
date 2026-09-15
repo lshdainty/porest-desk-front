@@ -108,7 +108,11 @@ export function PresetEditDialog({
   );
 
   const isTransfer = type === "TRANSFER";
-  const showInterest = isTransfer && isLoanTarget(assets, toAssetRowId);
+  // 이자는 **금액을 고정했을 때만** 받는다(사용자 결정 2026-09-15). 금액이 매달
+  // 다르면 이자도 매달 다르니, 박아 둔 이자는 불러올 때마다 틀린 값이 된다.
+  // 수수료는 그대로 둔다 — 계좌 짝의 성질이라 매번 같을 수 있다.
+  const showInterest =
+    isTransfer && lockAmount && isLoanTarget(assets, toAssetRowId);
 
   // 타입이 바뀌면 해당 타입의 카테고리가 아닌 경우 초기화.
   // 이체에는 카테고리가 없다 — 남겨 두면 저장할 때 서버가 거절한다.
@@ -292,6 +296,7 @@ export function PresetEditDialog({
           onToChange={setToAssetRowId}
           onFeeChange={setFee}
           onInterestChange={setInterest}
+          interestEnabled={lockAmount}
         />
       ) : (
         <>

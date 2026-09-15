@@ -29,6 +29,18 @@ interface Props {
   onToChange: (rowId: number | null) => void;
   onFeeChange: (value: string) => void;
   onInterestChange: (value: string) => void;
+  /**
+   * 이자 칸을 쓸 수 있는 화면인가 — **기본은 켜짐**.
+   *
+   * 이자는 받는 자산이 대출일 때만 뜨는데, 그 위에 화면마다 다른 조건이 하나 더 붙는
+   * 자리가 있다. 프리셋 폼은 <b>금액을 고정했을 때만</b> 이자를 받는다(금액이 매달
+   * 다르면 이자도 매달 달라서, 박아 둔 이자는 불러올 때마다 틀린 값이 된다).
+   *
+   * 그 조건을 여기 넣으면 안 된다 — 거래 시트와 반복 설정에는 "금액 고정" 이라는 게
+   * 없어서 이자 칸이 통째로 사라진다. 대출 상환 이체에 이자를 못 적으면 이자 지출이
+   * 안 생기고 원금이 과다 상환된 것으로 기록된다. 그래서 **조건은 호스트가 정한다.**
+   */
+  interestEnabled?: boolean;
 }
 
 /**
@@ -53,10 +65,11 @@ export function TransferAccountFields({
   onToChange,
   onFeeChange,
   onInterestChange,
+  interestEnabled = true,
 }: Props) {
   const { t } = useTranslation("expense");
   const eligible = transferEligible(assets);
-  const showInterest = isLoanTarget(assets, toAssetRowId);
+  const showInterest = interestEnabled && isLoanTarget(assets, toAssetRowId);
 
   const label = (a: Asset) =>
     a.institution ? `${a.institution} · ${a.assetName}` : a.assetName;

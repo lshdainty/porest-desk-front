@@ -56,7 +56,7 @@ vi.mock("@/features/expense", () => ({
 }));
 vi.mock("@/features/asset", () => ({
   useAssets: () => ({
-    data: { assets: [asset, savings, card] },
+    data: { assets: [asset, savings, card, loan] },
     isLoading: false,
   }),
 }));
@@ -127,6 +127,15 @@ const savings: Asset = {
   assetName: "청약",
   assetType: "SAVINGS",
   institution: "국민",
+};
+
+/** 이자 칸이 뜨는 유일한 조건 — 받는 자산이 대출. */
+const loan: Asset = {
+  ...asset,
+  rowId: 6,
+  assetName: "대출",
+  assetType: "LOAN",
+  institution: null,
 };
 
 /** 이체 후보에서 빠져야 하는 카드. */
@@ -444,5 +453,56 @@ describe("이체 프리셋", () => {
     expect(sent.update!.toAssetRowId).toBeNull();
     expect(sent.update!.fee).toBeNull();
     expect(sent.update!.expenseType).toBe("EXPENSE");
+  });
+});
+
+describe("이자는 금액을 따라간다 (2026-09-15 결정)", () => {
+  /** 대출 자산 — 이자 칸이 뜨는 유일한 조건. */
+  const loanPreset: ExpenseTemplate = {
+    ...basePreset,
+    expenseType: "TRANSFER",
+    categoryRowId: null,
+    categoryName: null,
+    assetRowId: 3,
+    toAssetRowId: 6,
+    toAssetName: "대출",
+    fee: 500,
+    interestAmount: 20000,
+    amount: 300000,
+    lockAmount: "Y",
+  };
+
+  it("고정 금액을 끄면 이자가 null 로 나간다 — 계좌·수수료는 남는다", () => {
+    const repo = render(loanPreset);
+    void repo;
+    // "고정 금액 사용" 체크를 끈다.
+    const check = [
+      ...document.body.querySelectorAll<HTMLElement>(
+        "[role='checkbox'], input",
+      ),
+    ].find(
+      (el) =>
+        el.getAttribute("role") === "checkbox" ||
+        (el as HTMLInputElement).type === "checkbox",
+    );
+    if (!check) throw new Error("고정 금액 체크를 찾지 못했다");
+    act(() => check.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    clickSave();
+
+    const body = wire(sent.update);
+    expect(body).toHaveProperty("interestAmount");
+    expect(sent.update!.interestAmount).toBeNull();
+    expect(sent.update!.lockAmount).toBe("N");
+    // 반대편 — 계좌 짝의 성질인 수수료는 그대로.
+    expect(sent.update!.toAssetRowId).toBe(6);
+    expect(sent.update!.fee).toBe(500);
+  });
+
+  it("고정 금액이 켜져 있으면 이자가 그대로 나간다", () => {
+    render(loanPreset);
+    clickSave();
+
+    expect(sent.update!.interestAmount).toBe(20000);
+    expect(sent.update!.lockAmount).toBe("Y");
   });
 });

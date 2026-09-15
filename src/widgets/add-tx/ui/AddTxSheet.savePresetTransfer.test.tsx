@@ -19,21 +19,48 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
+const sent = vi.hoisted(() => ({
+  preset: null as Record<string, unknown> | null,
+  touched: [] as number[],
+}));
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [category], isLoading: false }),
-  useExpenseTemplates: () => ({ data: [], isLoading: false }),
+  useExpenseTemplates: () => ({ data: templates, isLoading: false }),
   useCreateExpense: () => ({ mutate: () => {}, isPending: false }),
   useUpdateExpense: () => ({ mutate: () => {}, isPending: false }),
-  useCreateExpenseTemplate: () => ({ mutate: () => {}, isPending: false }),
-  useTouchExpenseTemplate: () => ({ mutate: () => {}, isPending: false }),
+  useCreateExpenseTemplate: () => ({
+    mutate: (data: Record<string, unknown>) => {
+      sent.preset = data;
+    },
+    isPending: false,
+  }),
+  useTouchExpenseTemplate: () => ({
+    mutate: (id: number) => {
+      sent.touched.push(id);
+    },
+    isPending: false,
+  }),
 }));
 vi.mock("@/features/asset", () => ({
-  useAssets: () => ({ data: { assets: [bank, savings] }, isLoading: false }),
-  useCreateTransfer: () => ({ mutate: () => {}, isPending: false }),
+  useAssets: () => ({
+    data: { assets: [bank, savings, loan] },
+    isLoading: false,
+  }),
+  useCreateTransfer: () => ({
+    mutate: (
+      _data: unknown,
+      opts?: { onSuccess?: () => void; onSettled?: () => void },
+    ) => {
+      opts?.onSuccess?.();
+      opts?.onSettled?.();
+    },
+    isPending: false,
+  }),
   useUpdateTransfer: () => ({ mutate: () => {}, isPending: false }),
 }));
 vi.mock("@/features/sms", () => ({
@@ -73,6 +100,40 @@ const savings = {
   assetType: "SAVINGS",
   institution: null,
 } as Asset;
+const loan = {
+  rowId: 5,
+  assetName: "QA대출",
+  assetType: "LOAN",
+  institution: null,
+} as Asset;
+
+/** 이체 프리셋 하나 — 칩으로 적용해 저장하면 사용 기록이 올라야 한다. */
+const templates = [
+  {
+    rowId: 77,
+    userRowId: 1,
+    templateName: "적금이체",
+    categoryRowId: null,
+    categoryName: null,
+    assetRowId: 3,
+    assetName: "QA예금",
+    toAssetRowId: 4,
+    toAssetName: "QA적금",
+    fee: 500,
+    interestAmount: null,
+    expenseType: "TRANSFER" as const,
+    amount: null,
+    description: null,
+    merchant: null,
+    paymentMethod: null,
+    useCount: 1,
+    sortOrder: 0,
+    lockAmount: "N" as const,
+    lastUsedAt: null,
+    createAt: "2026-01-01T00:00:00",
+    modifyAt: "2026-01-01T00:00:00",
+  },
+];
 
 const { AddTxSheet } = await import("./AddTxSheet");
 
@@ -97,6 +158,8 @@ beforeEach(() => {
       disconnect() {}
     };
   }
+  sent.preset = null;
+  sent.touched = [];
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -190,5 +253,88 @@ describe("이체를 프리셋으로 저장하는 대화상자", () => {
         (el) => el.textContent?.trim() === "QA예금 → QA적금",
       ),
     ).toBe(true);
+  });
+});
+
+describe("이체 프리셋 사용 기록 (#174)", () => {
+  it("칩으로 채워 이체를 저장하면 사용 기록이 오른다 — 지출·수입과 같은 규칙", () => {
+    switchTab("addTx.transfer");
+    // 칩을 눌러 계좌·수수료를 채운다(이 프리셋은 금액이 없다).
+    const chip = byText<HTMLButtonElement>("button", "적금이체");
+    if (!chip) throw new Error("이체 프리셋 칩을 찾지 못했다");
+    act(() => chip.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+
+    const amount = [
+      ...document.body.querySelectorAll<HTMLInputElement>("input"),
+    ].find((el) => el.placeholder === "0")!;
+    setValue(amount, "12345");
+
+    const save = [
+      ...document.body.querySelectorAll<HTMLButtonElement>("button"),
+    ].find((b) => ["save", "addTx.add"].includes(b.textContent?.trim() ?? ""));
+    if (!save) throw new Error("저장 버튼을 찾지 못했다");
+    act(() => save.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+
+    // 종전엔 이 분기에만 touch 가 없어 "사용 많은 순" 에서 이체 프리셋만 영영 0 이었다.
+    expect(sent.touched).toEqual([77]);
+  });
+});
+
+describe("이자는 금액을 따라간다 — 시트 저장 대화상자 (2026-09-15 결정)", () => {
+  /** 대출로 보내는 이체를 채우고 "현재 입력값 저장" 을 연다. */
+  function openSaveDialogToLoan() {
+    switchTab("addTx.transfer");
+    const amount = [
+      ...document.body.querySelectorAll<HTMLInputElement>("input"),
+    ].find((el) => el.placeholder === "0")!;
+    setValue(amount, "300000");
+    pickOption("addTx.selectPlaceholder", "QA예금");
+    pickOption("addTx.selectPlaceholder", "QA대출");
+    const boxes = [
+      ...document.body.querySelectorAll<HTMLInputElement>("input"),
+    ].filter((el) => el.placeholder === "0");
+    setValue(boxes[boxes.length - 1]!, "20000"); // 이자
+    const open = byText<HTMLButtonElement>("button", "addTx.saveCurrentInput");
+    act(() => open!.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    const name = [
+      ...document.body.querySelectorAll<HTMLInputElement>("input"),
+    ].find((el) => el.placeholder === "savePreset.namePlaceholder");
+    if (!name) throw new Error("프리셋 이름 칸을 찾지 못했다");
+    setValue(name, "대출상환");
+  }
+
+  function clickDialogSave() {
+    const btns = [
+      ...document.body.querySelectorAll<HTMLButtonElement>("button"),
+    ].filter((b) => b.textContent?.trim() === "save");
+    act(() =>
+      btns[btns.length - 1]!.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      ),
+    );
+  }
+
+  it("금액을 안 저장하면 이자도 안 보낸다 — 매달 달라지는 값이라 박아 두면 틀린다", () => {
+    openSaveDialogToLoan();
+    clickDialogSave(); // "금액도 함께 저장" 은 기본 해제
+
+    expect(sent.preset).not.toBeNull();
+    expect(sent.preset!.amount).toBeUndefined();
+    expect(sent.preset!.interestAmount).toBeUndefined();
+    // 수수료는 계좌 짝의 성질이라 조건이 다르다(여기선 비어 있어 undefined).
+    expect(sent.preset!.expenseType).toBe("TRANSFER");
+  });
+
+  it("금액을 함께 저장하면 이자도 실린다", () => {
+    openSaveDialogToLoan();
+    const check = [
+      ...document.body.querySelectorAll<HTMLElement>("[role='checkbox']"),
+    ].pop();
+    if (!check) throw new Error("금액도 함께 저장 체크를 찾지 못했다");
+    act(() => check.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    clickDialogSave();
+
+    expect(sent.preset!.amount).toBe(300000);
+    expect(sent.preset!.interestAmount).toBe(20000);
   });
 });

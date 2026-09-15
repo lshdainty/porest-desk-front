@@ -448,12 +448,18 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                             </span>
                           </>
                         )}
-                        {!mobile && p.assetName && (
-                          <>
-                            <span style={{ flexShrink: 0 }}>·</span>
-                            <span style={{ flexShrink: 0 }}>{p.assetName}</span>
-                          </>
-                        )}
+                        {/* 이체 부제는 이미 "출금 → 입금" 이라 계좌를 또 붙이면
+                            "QA예금 → QA적금 · QA예금" 이 된다. */}
+                        {!mobile &&
+                          p.expenseType !== "TRANSFER" &&
+                          p.assetName && (
+                            <>
+                              <span style={{ flexShrink: 0 }}>·</span>
+                              <span style={{ flexShrink: 0 }}>
+                                {p.assetName}
+                              </span>
+                            </>
+                          )}
                       </div>
                     </div>
                     <div
