@@ -455,8 +455,8 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                           color: "var(--fg-tertiary)",
                         }}
                       >
-                        {it.assetName ?? t("noAccount")} ·{" "}
-                        {recurringSummary(it, t)}
+                        {recurringSubtitle(it, it.assetName ?? t("noAccount"))}{" "}
+                        · {recurringSummary(it, t)}
                       </div>
                     </div>
                     <div

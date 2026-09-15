@@ -44,3 +44,20 @@ export function transferPartiesReady(
     fromAssetRowId !== toAssetRowId
   );
 }
+
+/**
+ * 이체 행의 "누구에게서 누구로" 한 줄.
+ *
+ * 이체는 카테고리가 없다. 그래서 목록·띠·미리보기가 카테고리를 적는 자리에 이걸 적는다 —
+ * 안 그러면 "카테고리 없음" 이 뜨는데, 그건 빠진 값이 아니라 **있을 수 없는 값**이다.
+ *
+ * 같은 데이터를 그리는 자리가 웹에 넷(반복 목록·반복 다가오는 7일 띠·프리셋 목록·
+ * 프리셋 저장 미리보기)이다. 넷이 각자 문자열을 만들면 한 곳만 고쳐져 갈라진다 —
+ * 실제로 2026-09-15 에 반복 목록만 고쳐져 있었다.
+ */
+export function transferPartiesLabel(
+  fromName: string | null | undefined,
+  toName: string | null | undefined,
+): string {
+  return `${fromName ?? "-"} → ${toName ?? "-"}`;
+}

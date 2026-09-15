@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
+import { transferPartiesLabel } from "@/features/asset-transfer";
 
 /*
  * 반복 거래 표시 문구 — 목록 행과 상세가 같은 문장을 써야 한다.
@@ -64,7 +65,7 @@ export function recurringSubtitle(
   fallback: string,
 ): string {
   if (it.expenseType === "TRANSFER") {
-    return `${it.assetName ?? "-"} → ${it.toAssetName ?? "-"}`;
+    return transferPartiesLabel(it.assetName, it.toAssetName);
   }
   return fallback;
 }

@@ -78,6 +78,7 @@ import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
 import {
   TransferAccountFields,
   isLoanTarget,
+  transferPartiesLabel,
   transferPartiesReady,
 } from "@/features/asset-transfer";
 
@@ -1724,7 +1725,7 @@ function SavePresetDialog({
             }}
           >
             {isTransfer
-              ? `${seed.assetName ?? "-"} → ${seed.toAssetName ?? "-"}`
+              ? transferPartiesLabel(seed.assetName, seed.toAssetName)
               : (seed.categoryName ?? t("savePreset.noCategory"))}
             {!isTransfer && seed.assetName ? ` · ${seed.assetName}` : ""}
           </div>
@@ -1734,13 +1735,16 @@ function SavePresetDialog({
           style={{
             fontSize: "var(--text-body-lg)",
             fontWeight: "800",
-            color:
-              seed.expenseType === "EXPENSE"
+            // 이체는 지출도 수입도 아니다 — 프리셋 목록·상세·가계부 이체 행과 같이
+            // 중립색·무부호. 여기만 "+수입색" 으로 남아 있었다.
+            color: isTransfer
+              ? "var(--fg-primary)"
+              : seed.expenseType === "EXPENSE"
                 ? "var(--fg-expense)"
                 : "var(--fg-income)",
           }}
         >
-          {seed.expenseType === "EXPENSE" ? "−" : "+"}
+          {isTransfer ? "" : seed.expenseType === "EXPENSE" ? "−" : "+"}
           {KRW(seed.amount)}
         </div>
       </div>
@@ -1797,7 +1801,9 @@ function SavePresetDialog({
         </div>
       </label>
 
-      {seed.categoryRowId == null && (
+      {/* 이체는 카테고리가 없는 게 정상이라 이 안내가 늘 떴다 — 저장 버튼은
+          `canSave` 가 이체 분기를 봐서 살아 있으므로 안내와 버튼이 어긋났다. */}
+      {!isTransfer && seed.categoryRowId == null && (
         <div
           style={{
             marginTop: 10,

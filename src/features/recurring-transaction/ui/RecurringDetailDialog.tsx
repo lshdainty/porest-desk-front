@@ -22,7 +22,6 @@ import {
 import {
   displayTitle,
   recurringAmountTone,
-  recurringSubtitle,
   recurringSummary,
 } from "../lib/recurring-format";
 
@@ -52,8 +51,10 @@ export function RecurringDetailDialog({
 }) {
   const { t } = useTranslation("recurring");
   const { t: tCommon } = useTranslation("common");
+  const { t: tExpense } = useTranslation("expense");
 
   const tone = recurringAmountTone(item);
+  const isTransfer = item.expenseType === "TRANSFER";
   const isActive = item.isActive === "Y";
   const cat = categories.find((c) => c.rowId === item.categoryRowId);
   const palette = getPaletteByColor(cat?.color);
@@ -128,12 +129,38 @@ export function RecurringDetailDialog({
       </DetailHero>
 
       <DetailFieldGroup>
-        <DetailField label={t("categoryLabel")}>
-          {recurringSubtitle(item, item.categoryName ?? "-")}
-        </DetailField>
-        <DetailField label={t("assetLabel")}>
-          {item.assetName ?? t("noAccount")}
-        </DetailField>
+        {/* 이체는 카테고리가 없고 계좌가 둘이다 — 라벨까지 갈라 준다. 종전엔 "카테고리"
+            칸에 출금 → 입금을 밀어 넣고 수수료·이자는 아예 없었다(앱 상세는 넷을 다
+            보여 준다: `recurring_detail_sheet.dart`). 프리셋 상세와 같은 모양으로 맞춘다. */}
+        {isTransfer ? (
+          <>
+            <DetailField label={tExpense("addTx.fromAccount")}>
+              {item.assetName ?? "-"}
+            </DetailField>
+            <DetailField label={tExpense("addTx.depositAccount")}>
+              {item.toAssetName ?? "-"}
+            </DetailField>
+            {item.fee != null && item.fee > 0 && (
+              <DetailField label={tExpense("addTx.fee")}>
+                {KRW(item.fee)}
+              </DetailField>
+            )}
+            {item.interestAmount != null && item.interestAmount > 0 && (
+              <DetailField label={tExpense("addTx.interest")}>
+                {KRW(item.interestAmount)}
+              </DetailField>
+            )}
+          </>
+        ) : (
+          <>
+            <DetailField label={t("categoryLabel")}>
+              {item.categoryName ?? "-"}
+            </DetailField>
+            <DetailField label={t("assetLabel")}>
+              {item.assetName ?? t("noAccount")}
+            </DetailField>
+          </>
+        )}
         {item.maxOccurrences != null && (
           <DetailField label={t("endCountTitle")}>
             {t("occurrencesBadge", {

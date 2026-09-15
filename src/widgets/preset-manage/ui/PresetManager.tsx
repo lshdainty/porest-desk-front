@@ -5,6 +5,7 @@ import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { transferPartiesLabel } from "@/features/asset-transfer";
 import { renderIcon } from "@/shared/lib";
 import { KRW } from "@/shared/lib/porest/format";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
@@ -427,7 +428,11 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                         }}
                       >
                         <span style={{ flexShrink: 0 }}>
-                          {p.categoryName ?? t("preset.noCategory")}
+                          {/* 이체는 카테고리가 없다 — "카테고리 없음" 은 빠진 값이 아니라
+                              있을 수 없는 값이라, 그 자리에 출금 → 입금을 적는다. */}
+                          {p.expenseType === "TRANSFER"
+                            ? transferPartiesLabel(p.assetName, p.toAssetName)
+                            : (p.categoryName ?? t("preset.noCategory"))}
                         </span>
                         {p.merchant && (
                           <>
