@@ -48,26 +48,9 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
-  X,
 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import {
-  Drawer,
-  DrawerBody,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/shared/ui/drawer";
+import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import {
@@ -83,7 +66,6 @@ import type {
   ExpenseCategory,
 } from "@/entities/expense";
 import { renderIcon, tileRadius } from "@/shared/lib";
-import { useBackClose } from "@/shared/lib/porest/use-back-close";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -4037,14 +4019,10 @@ function RangePickerSheet({
   onConfirm: (range: RangeState) => void;
 }) {
   const { t } = useTranslation("stats");
-  const { t: tc } = useTranslation("common");
   const [segMode, setSegMode] = useState<SegMode>(initial.segMode);
   const [from, setFrom] = useState<Date>(initial.from);
   const [to, setTo] = useState<Date>(initial.to);
   const canApply = from.getTime() <= to.getTime();
-  // 이 시트는 ModalShell 을 안 쓰고 Drawer 를 직접 그린다 — 뒤로가기 닫기를 따로 건다(QA #129).
-  useBackClose(onCancel, mobile);
-
   // segMode 변경 시 — 월/분기/년 의 from/to 자동 계산 (이번 month/quarter/year)
   // custom 은 기존 from/to 유지.
   const setSeg = (v: SegMode) => {
@@ -4168,78 +4146,25 @@ function RangePickerSheet({
     </>
   );
 
-  // 모바일 footer 는 취소를 secondary(테두리 없는 회색 채움) + size lg(48) 로 —
-  // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
-  // (spec button.md Migration notes 2026-08). 폭 배분은 DrawerFooter 가 맡는다.
-  const cancelBtn = (
-    <Button
-      variant={mobile ? "secondary" : "ghost"}
-      size={mobile ? "lg" : undefined}
-      onClick={onCancel}
-    >
-      {tc("cancel")}
-    </Button>
-  );
-  const applyBtn = (
-    <Button
-      size={mobile ? "lg" : undefined}
-      disabled={!canApply}
-      onClick={() => canApply && onConfirm({ from, to, segMode })}
-    >
-      {t("picker.apply")}
-    </Button>
-  );
-
-  // 모바일: Drawer (bottom sheet) — 모든 dialog 가 모바일에서 drawer 로 표시되는 패턴 정합.
-  if (mobile) {
-    return (
-      <Drawer
-        open
-        onOpenChange={(o) => {
-          if (!o) onCancel();
-        }}
-      >
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="flex-1">{t("picker.title")}</DrawerTitle>
-            <DrawerClose asChild>
-              <button
-                type="button"
-                aria-label={tc("close")}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--fg-secondary)] cursor-pointer hover:bg-[var(--bg-muted)] hover:text-[var(--fg-primary)] transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </DrawerClose>
-          </DrawerHeader>
-          <DrawerBody>{formBody}</DrawerBody>
-          <DrawerFooter>
-            {cancelBtn}
-            {applyBtn}
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
-  // 데스크탑/태블릿: Dialog (modal).
+  // 껍데기는 ModalShell 하나가 맡는다 — 모바일 Drawer / 데스크탑·태블릿 Dialog 분기,
+  // 우상단 X, 뒤로가기 닫기(QA #129)가 전부 거기 있다. footer 버튼도 표준 위젯을 쓴다 —
+  // 손으로 놓으면 size 를 빠뜨려 36 이 나온다(spec dialog.md footer).
   return (
-    <Dialog
-      open
-      onOpenChange={(o) => {
-        if (!o) onCancel();
-      }}
+    <ModalShell
+      title={t("picker.title")}
+      onClose={onCancel}
+      mobile={mobile}
+      size="sm"
+      footer={
+        <ModalFooter
+          onCancel={onCancel}
+          onSave={() => canApply && onConfirm({ from, to, segMode })}
+          saveLabel={t("picker.apply")}
+          saveDisabled={!canApply}
+        />
+      }
     >
-      <DialogContent size="sm">
-        <DialogHeader>
-          <DialogTitle>{t("picker.title")}</DialogTitle>
-        </DialogHeader>
-        <DialogBody>{formBody}</DialogBody>
-        <DialogFooter>
-          {cancelBtn}
-          {applyBtn}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {formBody}
+    </ModalShell>
   );
 }

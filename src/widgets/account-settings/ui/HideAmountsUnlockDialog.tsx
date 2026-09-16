@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { useVerifyPasswordMutation } from "@/features/user";
@@ -134,17 +134,17 @@ export function HideAmountsUnlockDialog({
             )}
           </Field>
         </DialogBody>
+        {/* 버튼은 표준 footer 위젯이 놓는다 — 손으로 놓으면 size 를 빠뜨려 36 이 나오고
+            취소도 ghost 가 된다(spec dialog.md footer). 껍데기는 controlled Dialog 그대로다
+            — 이 창은 닫혀도 마운트를 유지하며 `open` 전이로 입력을 비운다. */}
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            {tc("cancel")}
-          </Button>
-          <Button
-            loading={verifyMut.isPending}
-            disabled={!password.trim()}
-            onClick={submit}
-          >
-            {tc("confirm")}
-          </Button>
+          <ModalFooter
+            onCancel={() => onOpenChange(false)}
+            onSave={submit}
+            saveLabel={tc("confirm")}
+            saving={verifyMut.isPending}
+            saveDisabled={!password.trim()}
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>
