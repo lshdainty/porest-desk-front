@@ -62,9 +62,11 @@ export const buttonVariants = cva(
         // ghost 조합에서도 보조톤 약화 없이 중립(text-primary) 유지. button.md v97.
         iconLg: "h-9 w-9 p-0 rounded-full [&_svg]:size-5",
       },
-      // flush — 컨테이너 edge 에 붙는 ghost 버튼의 광학 정렬용. 해당 방향 좌/우 padding 만
-      // 제거해 글자/아이콘이 edge 에 flush(box·hover 영역 위치는 그대로). footer 좌측
-      // 삭제 버튼 등 ghost 가 채워진 버튼과 edge 가 안 맞아 보이던 문제용.
+      // flush — 컨테이너 edge 에 붙는 ghost + 아이콘 버튼의 광학 정렬용. 해당 방향 좌/우
+      // padding 만 제거해 아이콘이 본문 콘텐츠 열에 맞는다. 아래 compound variant 가
+      // hover 채움까지 걷는다 — 자세한 건 거기 주석.
+      //
+      // 채움 버튼(dangerSoft 삭제 등)에는 쓰지 않는다 — fill 이 이미 edge 까지 닿는다.
       flush: {
         left: "pl-0",
         right: "pr-0",
@@ -75,6 +77,19 @@ export const buttonVariants = cva(
       // 리스트 행/툴바의 quiet 아이콘 액션. porest-design button.md v96 정합.
       // (iconLg는 페이지당 1개뿐인 주 액션이라 약화 없이 중립 유지 — v97)
       { variant: "ghost", size: "icon", className: "text-text-secondary" },
+      // flush ghost 는 **텍스트 버튼**이다 — hover 에 배경을 깔지 않고 글자색으로만
+      // 반응한다(보조톤 → 본문색). 아이콘은 currentColor 라 같이 진해진다.
+      //
+      // 한쪽 padding 만 0 이라 hover 채움 상자가 글자 기준으로 좌우 비대칭이 되어 버튼이
+      // 한쪽으로 삐져나온 것처럼 보였다(2026-09-16 실측). 상자를 없애면 그 문제가 같이
+      // 사라지고 위계도 맞다 — 옆의 채움 버튼보다 한 단계 약한 보조 액션이다.
+      // spec button.md Edge flush.
+      {
+        variant: "ghost",
+        flush: ["left", "right"],
+        className:
+          "text-text-secondary hover:bg-transparent hover:text-text-primary active:bg-transparent focus-visible:text-text-primary",
+      },
     ],
     defaultVariants: {
       variant: "default",

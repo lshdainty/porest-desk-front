@@ -2068,9 +2068,11 @@ export function AssetDetailDialog({
     <ModalViewFooter
       leftSlot={
         mobile ? undefined : (
+          // 아이콘을 본문 콘텐츠 열에 맞춘다 — flush ghost 는 텍스트 버튼이라 hover 에
+          // 배경 없이 글자색으로만 반응한다(spec button.md Edge flush · dialog.md footer).
           <Button
             variant="ghost"
-            size="md"
+            flush="left"
             onClick={handleHideToggle}
             type="button"
           >
