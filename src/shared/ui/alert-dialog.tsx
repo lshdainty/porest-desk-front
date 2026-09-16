@@ -8,13 +8,13 @@ import { buttonVariants } from "@/shared/ui/button-variants";
 import { Spinner } from "@/shared/ui/spinner";
 
 /**
- * footer 버튼 크기 — 데스크탑·태블릿 `md`(40·좌우 12·15px), 모바일만 호출처가 `lg`(48)을
- * 넘긴다. dialog.md footer 규칙이고 alert-dialog.md 가 같은 값을 가리킨다.
+ * footer 버튼 크기 — 데스크탑·태블릿 `default`(36 · 좌우 **양쪽 16** · 14px), 모바일만
+ * 호출처가 `lg`(48)을 넘긴다. dialog.md footer 규칙이고 alert-dialog.md 가 같은 값을 가리킨다.
  *
  * 기기 판정을 CSS 브레이크포인트(`sm:` 640)로 하지 않는 이유 — desk 의 모바일 경계는
  * `useDeviceSize` 의 768 이라, 그 사이 폭에서 확인창의 두 버튼이 서로 다른 크기가 된다.
  */
-type FooterButtonSize = "md" | "lg";
+type FooterButtonSize = "default" | "lg";
 
 /*
  * Porest AlertDialog — porest-design specs/components/alert-dialog.md SoT 기반.
@@ -59,10 +59,11 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 const alertDialogContentVariants = cva(
   [
-    "fixed left-[50%] top-[50%] z-[301] grid w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
-    // Dialog 와 같은 상한 — 확인 문구가 길어도 화면 밖으로 밀려나지 않는다.
-    "max-h-[86vh] overflow-y-auto",
-    "flex-col bg-[var(--bg-surface)] gap-[var(--spacing-md)] duration-200",
+    "fixed left-[50%] top-[50%] z-[301] flex w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
+    // Dialog 와 같은 껍데기 — 여백은 컨테이너가 아니라 헤더·본문·footer 가 갖고,
+    // 본문만 스크롤한다(dialog.md Layout). 상한도 같은 86vh.
+    "max-h-[86vh] overflow-hidden",
+    "flex-col bg-[var(--bg-surface)] duration-200",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
     "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -72,10 +73,10 @@ const alertDialogContentVariants = cva(
       size: {
         // 폭은 Dialog 와 같은 값이다 — 같은 화면에서 확인창만 좁으면 다른 컴포넌트로
         // 보인다(2026-09-16 결정: 420/520/720 로 통일).
-        sm: "[--dialog-max-w:420px] p-[var(--spacing-xl)] rounded-lg",
+        sm: "[--dialog-max-w:420px] rounded-lg",
         // popup 은 세 사이즈 모두 radius-lg(12) — dialog.md. 시트/드로어(20)와 갈라 둔다.
-        md: "[--dialog-max-w:520px] p-[var(--spacing-2xl)] rounded-lg",
-        lg: "[--dialog-max-w:720px] p-[var(--spacing-2xl)] rounded-lg",
+        md: "[--dialog-max-w:520px] rounded-lg",
+        lg: "[--dialog-max-w:720px] rounded-lg",
       },
     },
     defaultVariants: { size: "md" },
@@ -103,16 +104,33 @@ const AlertDialogContent = React.forwardRef<
 ));
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
+// Dialog 의 세 구역과 같은 여백을 쓴다 — 같은 화면에 함께 뜨므로 확인창만 다르면
+// 다른 컴포넌트로 보인다. 헤더 18 22 · 본문 22 · footer 18 22(dialog.md Layout).
 const AlertDialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex flex-col gap-[var(--spacing-md)] text-left", className)}
+    className={cn(
+      "flex shrink-0 items-center gap-3 px-[22px] py-[18px]",
+      className,
+    )}
     {...props}
   />
 );
 AlertDialogHeader.displayName = "AlertDialogHeader";
+
+/** 본문 — 스크롤은 여기서만 인다. 헤더·footer 는 shrink-0 이라 밀리지 않는다. */
+const AlertDialogBody = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("flex-1 min-h-0 overflow-y-auto p-[22px]", className)}
+    {...props}
+  />
+);
+AlertDialogBody.displayName = "AlertDialogBody";
 
 const AlertDialogFooter = ({
   className,
@@ -125,9 +143,8 @@ const AlertDialogFooter = ({
       //
       // 모바일에서 우측 정렬 compact 로 두면 화면 구석의 작은 알약이 돼 한 손으로
       // 누를 폭이 안 나온다 — dialog.md 114-116 · drawer.md footer 와 같은 규칙.
-      // 본문과의 거리는 컨테이너의 gap(12)이 준다 — 여기서 margin-top 을 또 들면 24 가
-      // 되어 대화상자(Dialog)와 어긋난다(spec alert-dialog.md ⓔ footer).
-      "flex gap-[var(--spacing-sm)]",
+      // footer 18 22 — 헤더 위와 같은 값이다(dialog.md Layout).
+      "flex shrink-0 items-center gap-[var(--spacing-sm)] px-[22px] py-[18px]",
       "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
       className,
     )}
@@ -171,7 +188,7 @@ const AlertDialogAction = React.forwardRef<
     loading?: boolean;
     /** 파괴적 확정은 `destructive`. 기본은 primary. */
     variant?: "default" | "destructive";
-    /** 모바일만 `lg`(48). 기본 `md`(40·좌우 12·15px). */
+    /** 모바일만 `lg`(48). 기본 `default`(36·좌우 16·14px). */
     size?: FooterButtonSize;
   }
 >(
@@ -181,7 +198,7 @@ const AlertDialogAction = React.forwardRef<
       loading = false,
       disabled,
       variant = "default",
-      size = "md",
+      size = "default",
       children,
       ...props
     },
@@ -213,10 +230,10 @@ AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
-    /** 모바일만 `lg`(48). 기본 `md`(40·좌우 12·15px). */
+    /** 모바일만 `lg`(48). 기본 `default`(36·좌우 16·14px). */
     size?: FooterButtonSize;
   }
->(({ className, size = "md", ...props }, ref) => (
+>(({ className, size = "default", ...props }, ref) => (
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
@@ -238,6 +255,7 @@ export {
   AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
+  AlertDialogBody,
   AlertDialogFooter,
   AlertDialogTitle,
   AlertDialogDescription,

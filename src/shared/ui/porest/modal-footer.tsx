@@ -15,10 +15,11 @@ import { useDeviceSize } from "@/shared/lib/porest/responsive";
  *
  * 버튼 스펙은 dialog.md footer SoT 정합 — 삭제는 `dangerSoft`(옅은 빨강 채움), 취소
  * `secondary`(테두리 없는 회색 채움), 저장 primary(default). 셋 다 좌우 padding 12 를
- * 그대로 둔다 — 삭제의 `flush="left"`(padding 0)는 글자가 footer 여백선에 붙어 정사각처럼
+ * 그대로 둔다(좌우 16) — 삭제의 `flush="left"`(padding 0)는 글자가 footer 여백선에 붙어 정사각처럼
  * 보였다(2026-09-16 실측). 좌측 정렬은 `marginRight:auto` 만으로 한다.
  *
- * **모바일에선 size="lg"(48)** — dialog.md/drawer.md 가 규정하는 한 손 조작 폭. 데스크탑은 md(40).
+ * **모바일에선 size="lg"(48)** — dialog.md/drawer.md 가 규정하는 한 손 조작 폭.
+ * 데스크탑·태블릿은 `default`(36 · 좌우 **양쪽 16** · 14px) — dialog.md footer.
  * 폭 배분은 ModalShell 이 맡는다(모바일 `[&>button]:flex-1` 균등분배 / 데스크탑 `justify-end`).
  * 삭제만 `flex:none` 으로 균등분배에서 빠져 좌측에 붙는다 — spec drawer.md "액션 2개까지,
  * 삭제는 최좌측 분리".
@@ -84,7 +85,7 @@ export function ModalFooter({
   const busy = saving || deleting;
   // 터치 화면은 lg(48) — button.md "터치 우선 화면은 lg 권장", Desk 는 44 strict.
   const mobile = useDeviceSize() === "mobile";
-  const size = mobile ? "lg" : "md";
+  const size = mobile ? "lg" : "default";
   return (
     <>
       {onDelete && (
@@ -182,7 +183,7 @@ export function ModalViewFooter({
   const { t } = useTranslation("common");
   // 폼 시트와 같은 규칙 — 터치 화면은 lg(48).
   const mobile = useDeviceSize() === "mobile";
-  const size = mobile ? "lg" : "md";
+  const size = mobile ? "lg" : "default";
   return (
     <>
       {onDelete ? (

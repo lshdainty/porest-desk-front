@@ -58,9 +58,9 @@ const dialogContentVariants = cva(
   [
     "fixed left-1/2 top-1/2 z-[101] -translate-x-1/2 -translate-y-1/2",
     "max-h-[86vh] max-w-[calc(100%-40px)]",
-    // 여백은 컨테이너 한 곳에서 준다 — 구역(헤더·본문·footer)이 각자 padding 을 들면
-    // 위 18 / 아래 14 처럼 상하가 갈린다(2026-09-16 실측). dialog.md ⓑ container.
-    "flex flex-col overflow-hidden gap-[var(--spacing-md)]",
+    // 여백은 컨테이너가 아니라 헤더·본문·footer 가 각자 갖는다 — 본문만 스크롤해야 해서
+    // 셋을 한 덩어리로 묶을 수 없다(dialog.md Layout). 컨테이너는 padding 0.
+    "flex flex-col overflow-hidden",
     // popup 은 radius-lg(12) — dialog.md. 안에 놓이는 버튼(radius-md 8)과 맞물린다.
     "bg-[var(--bg-surface)] rounded-lg",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
@@ -72,9 +72,9 @@ const dialogContentVariants = cva(
   {
     variants: {
       size: {
-        sm: "w-[420px] p-[var(--spacing-xl)]",
-        md: "w-[520px] p-[var(--spacing-2xl)]",
-        lg: "w-[720px] p-[var(--spacing-2xl)]",
+        sm: "w-[420px]",
+        md: "w-[520px]",
+        lg: "w-[720px]",
       },
     },
     defaultVariants: { size: "md" },
@@ -117,28 +117,35 @@ const DialogContent = React.forwardRef<
 });
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-// .modal__head — 여백은 컨테이너(DialogContent)가 준다.
+// .modal__head — padding 18 22. **footer 아래와 같은 값**이다(dialog.md Layout).
 const DialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex shrink-0 items-center gap-3", className)}
+    className={cn(
+      "flex shrink-0 items-center gap-3 px-[22px] py-[18px]",
+      className,
+    )}
     {...props}
   />
 );
 DialogHeader.displayName = "DialogHeader";
 
-// .modal__body — flex-1 + min-h-0 + scroll. 여백은 컨테이너가 준다.
+// .modal__body — padding 22 + flex-1 + min-h-0 + scroll. 스크롤은 여기서만 인다.
 const DialogBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex-1 min-h-0 overflow-y-auto", className)} {...props} />
+  <div
+    className={cn("flex-1 min-h-0 overflow-y-auto p-[22px]", className)}
+    {...props}
+  />
 );
 DialogBody.displayName = "DialogBody";
 
-// .modal__foot — flex justify-end + gap 8. 여백은 컨테이너가 준다.
+// .modal__foot — padding 18 22 + flex justify-end + gap 8. 헤더 위와 같은 18 이다 —
+// 예전엔 14 라 위아래가 4px 어긋나 보였다(2026-09-16 실측).
 const DialogFooter = ({
   className,
   ...props
@@ -148,7 +155,7 @@ const DialogFooter = ({
       // spec dialog.md 114-116 — 모바일(<640px)은 각 button flex-1 균등 분배,
       // 데스크탑(≥640px)은 우측 정렬. 모바일에서 우측 정렬 compact 로 두면
       // 화면 구석의 작은 알약이 돼 한 손으로 누를 폭이 안 나온다.
-      "flex shrink-0 items-center gap-2",
+      "flex shrink-0 items-center gap-2 px-[22px] py-[18px]",
       "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
       className,
     )}
