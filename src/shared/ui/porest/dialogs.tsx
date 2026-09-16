@@ -162,9 +162,10 @@ export function ConfirmDialog({
   onConfirm: () => void;
 }) {
   const { t } = useTranslation("common");
-  // 모바일 footer 는 취소를 secondary(테두리 없는 회색 채움) + size lg(48) 로 둔다 —
-  // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
-  // (spec button.md Migration notes 2026-08 · dialog.md 114-116). 폭 배분은 DialogFooter 가 맡는다.
+  // 취소는 secondary(테두리 없는 회색 채움) 하나 — ghost 는 배경이 없어 전체 폭 두 버튼
+  // 중 한쪽이 빈자리처럼 보인다(spec button.md Migration notes 2026-08 · dialog.md footer).
+  // 크기는 모바일 lg(48) / 데스크탑·태블릿 md(40) — size 를 비우면 36 이 나온다.
+  // 폭 배분은 DialogFooter 가 맡는다.
   const isMobile = useDeviceSize() === "mobile";
   // 확인창도 뒤로가기로 닫힌다 — 취소와 같은 자리다(QA #129). 시트 위에 겹쳐 떠도
   // 뒤로가기 한 번은 맨 위 하나만 닫는다.
@@ -196,8 +197,8 @@ export function ConfirmDialog({
           {!singleAction && (
             /* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만. */
             <Button
-              variant={isMobile ? "secondary" : "ghost"}
-              size={isMobile ? "lg" : undefined}
+              variant="secondary"
+              size={isMobile ? "lg" : "md"}
               onClick={onCancel}
             >
               {cancelLabel ?? t("cancel")}
@@ -205,7 +206,7 @@ export function ConfirmDialog({
           )}
           <Button
             variant={danger ? "destructive" : "default"}
-            size={isMobile ? "lg" : undefined}
+            size={isMobile ? "lg" : "md"}
             onClick={onConfirm}
             // loading 을 안 넘긴 호출처도 확인은 비동기 작업이다 — false 라도 넘겨 Button 의 더블클릭 방어를 켠다.
             loading={loading ?? false}

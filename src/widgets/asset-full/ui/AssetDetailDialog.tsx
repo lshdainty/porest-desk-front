@@ -2071,7 +2071,6 @@ export function AssetDetailDialog({
           <Button
             variant="ghost"
             size="md"
-            flush="left"
             onClick={handleHideToggle}
             type="button"
           >
