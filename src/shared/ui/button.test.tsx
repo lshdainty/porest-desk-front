@@ -136,3 +136,52 @@ describe("Button 더블클릭 방어", () => {
     expect(container.querySelector("button")!.disabled).toBe(true);
   });
 });
+
+// flush 는 한쪽 padding 만 0 이라, hover 에 채움 상자가 뜨면 글자 기준으로 좌우가
+// 비대칭이 되어 버튼이 한쪽으로 삐져나온 것처럼 보였다(2026-09-16 실측). flush ghost 는
+// 텍스트 버튼으로 취급한다 — 배경 없이 글자색으로만 반응한다(spec button.md Edge flush).
+// jsdom 에는 tailwind CSS 가 없으므로 그 값을 만드는 유틸 클래스를 본다.
+describe("flush ghost 는 텍스트 버튼이다", () => {
+  const cls = () => Array.from(container.querySelector("button")!.classList);
+
+  it("hover 에 배경을 깔지 않는다", () => {
+    render(
+      <Button variant="ghost" flush="left">
+        금액 가리기
+      </Button>,
+    );
+    expect(cls()).toContain("hover:bg-transparent");
+    expect(cls()).toContain("active:bg-transparent");
+    // 일반 ghost 의 hover 채움이 남아 있으면 상자가 다시 생긴다.
+    expect(cls()).not.toContain("hover:bg-surface-input");
+    expect(cls()).not.toContain("active:bg-border-default");
+  });
+
+  it("글자색으로만 반응한다 — 보조톤에서 본문색으로", () => {
+    render(
+      <Button variant="ghost" flush="left">
+        금액 가리기
+      </Button>,
+    );
+    expect(cls()).toContain("text-text-secondary");
+    expect(cls()).toContain("hover:text-text-primary");
+    expect(cls()).toContain("focus-visible:text-text-primary");
+  });
+
+  it("해당 방향 padding 만 0 이다 — 반대쪽은 그대로", () => {
+    render(
+      <Button variant="ghost" flush="left">
+        뒤로
+      </Button>,
+    );
+    expect(cls()).toContain("pl-0");
+    expect(cls()).not.toContain("pr-0");
+  });
+
+  it("flush 를 안 붙인 ghost 는 지금 규칙 그대로다", () => {
+    render(<Button variant="ghost">툴바</Button>);
+    expect(cls()).toContain("hover:bg-surface-input");
+    expect(cls()).not.toContain("hover:bg-transparent");
+    expect(cls()).not.toContain("text-text-secondary");
+  });
+});

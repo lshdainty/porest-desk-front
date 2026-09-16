@@ -87,6 +87,25 @@ describe("대화상자 footer 는 표준 위젯을 지난다", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("leftSlot 의 ghost 버튼은 flush 를 쓴다", () => {
+    // footer 왼쪽의 두 버튼은 규칙이 반대다 — 삭제는 dangerSoft **채움**이라 fill 이 이미
+    // edge 까지 닿아 flush 가 필요 없고(modal-footer 가 그렇게 그린다), leftSlot 의
+    // ghost+아이콘은 아이콘을 본문 콘텐츠 열에 맞춰야 해서 flush 를 쓴다(dialog.md footer).
+    const offenders: string[] = [];
+    for (const file of FILES) {
+      const src = readFileSync(file, "utf8");
+      if (!src.includes("leftSlot={")) continue;
+      for (const m of src.matchAll(/\bleftSlot=\{/g)) {
+        const expr = braced(src, m.index + "leftSlot=".length);
+        if (!/variant="ghost"/.test(expr)) continue;
+        if (!/flush="(left|right)"/.test(expr)) {
+          offenders.push(file.replace(`${process.cwd()}/`, ""));
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("footer 규격은 modal-footer.tsx 한 곳에만 적혀 있다", () => {
     // `flush`(좌우 padding 0)는 footer 밖의 광학 정렬용이다 — footer 에서 쓰면
     // 글자가 여백선에 붙는다.
