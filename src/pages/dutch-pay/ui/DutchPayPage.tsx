@@ -13,11 +13,8 @@ import {
   Check,
   ArrowDownLeft,
   ArrowUpRight,
-  Send,
   Users,
   CheckCheck,
-  Trash2,
-  ChevronLeft,
 } from "lucide-react";
 import {
   useDutchPays,
@@ -41,6 +38,7 @@ import { Chip } from "@/shared/ui/chip";
 import { NameCounter } from "@/shared/ui/porest/name-counter";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter, ModalViewFooter } from "@/shared/ui/porest/modal-footer";
 import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -1322,33 +1320,27 @@ function DutchCreateWizard({
     });
   };
 
+  // 위저드의 이전/다음도 표준 footer 를 지난다 — 손으로 놓으면 size 를 빠뜨려 36 이
+  // 나오고 취소가 outline 이 된다(spec dialog.md footer). 아이콘은 두지 않는다 —
+  // 액션이 둘뿐이고 둘 다 라벨이 있다(spec drawer.md 액션 구성).
   const Footer =
     step === 1 ? (
-      <>
-        <Button variant="outline" onClick={onClose}>
-          {tc("cancel")}
-        </Button>
-        <Button onClick={goNext} disabled={!title.trim() || totalNum <= 0}>
-          {tc("next")}
-        </Button>
-      </>
+      <ModalFooter
+        onCancel={onClose}
+        cancelLabel={tc("cancel")}
+        onSave={goNext}
+        saveLabel={tc("next")}
+        saveDisabled={!title.trim() || totalNum <= 0}
+      />
     ) : (
-      <>
-        <Button
-          variant="outline"
-          onClick={() => setStep(1)}
-          disabled={submitting}
-        >
-          <ChevronLeft size={14} /> {tc("prev")}
-        </Button>
-        <Button
-          onClick={submit}
-          disabled={picked.size < 2}
-          loading={submitting}
-        >
-          <Check size={14} /> {t("fromTx.createSettlement")}
-        </Button>
-      </>
+      <ModalFooter
+        onCancel={() => setStep(1)}
+        cancelLabel={tc("prev")}
+        onSave={submit}
+        saveLabel={t("fromTx.createSettlement")}
+        saveDisabled={picked.size < 2}
+        saving={submitting}
+      />
     );
 
   return (
@@ -1700,39 +1692,27 @@ function DutchDetailDialog({
     ? `${place} · ${kDateFull(d.dutchPayDate)}`
     : kDateFull(d.dutchPayDate);
 
+  // 좌측 삭제 + 우측 액션 — 표준 footer 위젯을 쓴다. 손으로 놓았을 때는 삭제가
+  // flush="left"(좌 padding 0)라 글자가 여백선에 붙었고 닫기는 outline·36 이었다.
   const Footer = active ? (
-    <>
-      <Button
-        variant="ghost"
-        flush="left"
-        onClick={() => onDelete(d.rowId)}
-        style={{ color: "var(--status-danger-fg)", marginRight: "auto" }}
-        loading={deleting}
-      >
-        <Trash2 size={14} /> {tc("delete")}
-      </Button>
-      <Button variant="outline" onClick={onClose}>
-        {tc("close")}
-      </Button>
-      <Button onClick={() => onRequestAll(d)}>
-        <Send size={14} /> {t("requestAll")}
-      </Button>
-    </>
+    <ModalFooter
+      onDelete={() => onDelete(d.rowId)}
+      deleteLabel={tc("delete")}
+      deleting={deleting}
+      onCancel={onClose}
+      cancelLabel={tc("close")}
+      onSave={() => onRequestAll(d)}
+      saveLabel={t("requestAll")}
+    />
   ) : (
-    <>
-      <Button
-        variant="ghost"
-        flush="left"
-        onClick={() => onDelete(d.rowId)}
-        style={{ color: "var(--status-danger-fg)", marginRight: "auto" }}
-        loading={deleting}
-      >
-        <Trash2 size={14} /> {tc("delete")}
-      </Button>
-      <Button variant="outline" onClick={onClose}>
-        {tc("close")}
-      </Button>
-    </>
+    <ModalViewFooter
+      onDelete={() => onDelete(d.rowId)}
+      deleteLabel={tc("delete")}
+      deleting={deleting}
+      onConfirm={onClose}
+      confirmLabel={tc("close")}
+      confirmVariant="secondary"
+    />
   );
 
   return (

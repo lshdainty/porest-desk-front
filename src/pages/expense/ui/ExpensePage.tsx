@@ -71,6 +71,7 @@ import { ExpenseRow } from "@/entities/expense";
 import { TransferRow } from "@/entities/asset";
 import { TransferDetailDialog } from "@/widgets/expense-detail/ui/TransferDetailDialog";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
@@ -766,9 +767,9 @@ function DayDetailDialog({
       size="sm"
       mobileMinHeight="85dvh"
       footer={
-        <Button size="md" className="w-full" onClick={onAddForDay}>
-          <Plus size={16} /> {t("addTransaction")}
-        </Button>
+        onAddForDay && (
+          <ModalFooter onSave={onAddForDay} saveLabel={t("addTransaction")} />
+        )
       }
     >
       {/* 합계 카드 — muted(채움 bg)로 dark dialog 위에서도 또렷이. App PCard.muted 정합 */}
