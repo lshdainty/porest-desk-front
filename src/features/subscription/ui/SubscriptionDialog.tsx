@@ -2,23 +2,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Check, Minus, Sparkles, TrendingUp } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { KRW, money } from "@/shared/lib/porest/format";
 import { toLocalDateKey } from "@/shared/lib/date";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
 import {
   useMyFeatures,
   useMySubscription,
@@ -502,25 +492,20 @@ export function SubscriptionDialog({
       </Card>
 
       {/* 구독 해지 확인 — footer '구독 해지'(destructive) 클릭 시 controlled 로 표시 */}
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("cancelConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("cancelConfirmDesc", { date: periodEnd ?? t("expiryDate") })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("keepSub")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onCancel}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("cancelSub")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {confirmOpen && (
+        <ConfirmDialog
+          title={t("cancelConfirmTitle")}
+          message={t("cancelConfirmDesc", {
+            date: periodEnd ?? t("expiryDate"),
+          })}
+          confirmLabel={t("cancelSub")}
+          cancelLabel={t("keepSub")}
+          danger
+          loading={cancel.isPending}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={onCancel}
+        />
+      )}
     </ModalShell>
   );
 }

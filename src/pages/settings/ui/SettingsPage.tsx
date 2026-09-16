@@ -69,17 +69,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
 import { ALL_HIDE_CARDS } from "@/shared/lib/porest/hide-amounts-cards";
 import { useHiddenCards } from "@/shared/lib/porest/hide-amounts-core";
 import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
@@ -851,12 +840,12 @@ function AccountSection({
 }) {
   const { t } = useTranslation("settings");
   const { t: tu } = useTranslation("user");
-  const { t: tc } = useTranslation("common");
   const { data: user } = useCurrentUser();
   const { logout } = useAuth();
   const [pwDialogOpen, setPwDialogOpen] = useState(false);
   // 다시 로그인해야 돌아올 수 있다 — 앱은 이미 한 번 더 묻는다.
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const [subOpen, setSubOpen] = useState(false);
   const [securitiesOpen, setSecuritiesOpen] = useState(false);
 
@@ -1224,37 +1213,15 @@ function AccountSection({
           }
           onClick={() => setConfirmLogout(true)}
         />
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <AccountRow
-              mobile={mobile}
-              icon={
-                <Trash2 size={20} style={{ color: "var(--status-danger)" }} />
-              }
-              label={t("account.withdraw.label")}
-              desc={t("account.withdraw.desc")}
-              labelColor="var(--status-danger)"
-              isLast
-              asChild
-            />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {t("account.withdrawConfirm.title")}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("account.withdrawConfirm.desc")}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
-              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                {t("account.withdrawConfirm.confirm")}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <AccountRow
+          mobile={mobile}
+          icon={<Trash2 size={20} style={{ color: "var(--status-danger)" }} />}
+          label={t("account.withdraw.label")}
+          desc={t("account.withdraw.desc")}
+          labelColor="var(--status-danger)"
+          isLast
+          onClick={() => setConfirmWithdraw(true)}
+        />
       </AccountGroup>
 
       {confirmLogout && (
@@ -1264,6 +1231,19 @@ function AccountSection({
           confirmLabel={t("account.logout.label")}
           onCancel={() => setConfirmLogout(false)}
           onConfirm={logout}
+        />
+      )}
+
+      {confirmWithdraw && (
+        <ConfirmDialog
+          title={t("account.withdrawConfirm.title")}
+          message={t("account.withdrawConfirm.desc")}
+          confirmLabel={t("account.withdrawConfirm.confirm")}
+          danger
+          onCancel={() => setConfirmWithdraw(false)}
+          // 탈퇴는 아직 서버에 길이 없다 — 이 버튼은 예전부터 창만 닫았고(확정에
+          // onClick 이 아예 없었다) 지금도 그대로다. 기능이 붙기 전까지 동작을 바꾸지 않는다.
+          onConfirm={() => setConfirmWithdraw(false)}
         />
       )}
 

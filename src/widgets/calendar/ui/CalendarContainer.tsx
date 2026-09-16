@@ -37,17 +37,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/shared/ui/drawer";
+import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { Popover, PopoverAnchor, PopoverContent } from "@/shared/ui/popover";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
 
 import type {
   CalendarEvent,
@@ -497,34 +488,21 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
         />
       )}
 
-      {/* Delete Confirmation */}
-      <AlertDialog
-        open={deletingEventId !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeletingEventId(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteConfirm.message", {
-                name: events.find((e) => e.id === deletingEventId)?.title ?? "",
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("deleteConfirm.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              loading={deleteEvent.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("deleteConfirm.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete Confirmation — 삭제 확인은 전부 ConfirmDialog 한 모양이다(spec alert-dialog.md) */}
+      {deletingEventId !== null && (
+        <ConfirmDialog
+          title={t("deleteConfirm.title")}
+          message={t("deleteConfirm.message", {
+            name: events.find((e) => e.id === deletingEventId)?.title ?? "",
+          })}
+          confirmLabel={t("deleteConfirm.confirm")}
+          cancelLabel={t("deleteConfirm.cancel")}
+          danger
+          loading={deleteEvent.isPending}
+          onCancel={() => setDeletingEventId(null)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 };

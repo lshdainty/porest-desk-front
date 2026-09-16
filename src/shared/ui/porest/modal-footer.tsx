@@ -55,7 +55,7 @@ type ModalFooterProps = {
    */
   onCancel?: () => void;
   cancelLabel?: string;
-  /** 좌측 삭제(파괴적) — 제공 시에만 렌더. flush-left + danger 색. */
+  /** 좌측 삭제(파괴적) — 제공 시에만 렌더. 좌측 정렬 + dangerSoft 채움. */
   onDelete?: () => void;
   deleteLabel?: string;
   deleting?: boolean;
