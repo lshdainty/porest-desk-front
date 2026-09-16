@@ -8,12 +8,13 @@ import { buttonVariants } from "@/shared/ui/button-variants";
 import { Spinner } from "@/shared/ui/spinner";
 
 /**
- * footer 버튼 크기 — 모바일 `lg`(48, 한 손 조작 폭) / 데스크탑·태블릿 `md`(40·좌우 12·15px).
- * dialog.md footer 규칙이고 alert-dialog.md 가 같은 값을 가리킨다. size 를 안 적으면
- * 구현 기본값 36(좌우 16·14px)이 나와 같은 footer 안에 두 크기가 섞인다.
+ * footer 버튼 크기 — 데스크탑·태블릿 `md`(40·좌우 12·15px), 모바일만 호출처가 `lg`(48)을
+ * 넘긴다. dialog.md footer 규칙이고 alert-dialog.md 가 같은 값을 가리킨다.
+ *
+ * 기기 판정을 CSS 브레이크포인트(`sm:` 640)로 하지 않는 이유 — desk 의 모바일 경계는
+ * `useDeviceSize` 의 768 이라, 그 사이 폭에서 확인창의 두 버튼이 서로 다른 크기가 된다.
  */
-const FOOTER_BUTTON_SIZE =
-  "sm:h-10 sm:px-3 sm:py-2 sm:text-body-md sm:rounded-sm sm:[&_svg]:size-4";
+type FooterButtonSize = "md" | "lg";
 
 /*
  * Porest AlertDialog — porest-design specs/components/alert-dialog.md SoT 기반.
@@ -124,7 +125,9 @@ const AlertDialogFooter = ({
       //
       // 모바일에서 우측 정렬 compact 로 두면 화면 구석의 작은 알약이 돼 한 손으로
       // 누를 폭이 안 나온다 — dialog.md 114-116 · drawer.md footer 와 같은 규칙.
-      "flex gap-[var(--spacing-sm)] mt-[var(--spacing-md)]",
+      // 본문과의 거리는 컨테이너의 gap(12)이 준다 — 여기서 margin-top 을 또 들면 24 가
+      // 되어 대화상자(Dialog)와 어긋난다(spec alert-dialog.md ⓔ footer).
+      "flex gap-[var(--spacing-sm)]",
       "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
       className,
     )}
@@ -168,6 +171,8 @@ const AlertDialogAction = React.forwardRef<
     loading?: boolean;
     /** 파괴적 확정은 `destructive`. 기본은 primary. */
     variant?: "default" | "destructive";
+    /** 모바일만 `lg`(48). 기본 `md`(40·좌우 12·15px). */
+    size?: FooterButtonSize;
   }
 >(
   (
@@ -176,6 +181,7 @@ const AlertDialogAction = React.forwardRef<
       loading = false,
       disabled,
       variant = "default",
+      size = "md",
       children,
       ...props
     },
@@ -183,11 +189,7 @@ const AlertDialogAction = React.forwardRef<
   ) => (
     <AlertDialogPrimitive.Action
       ref={ref}
-      className={cn(
-        buttonVariants({ variant, size: "lg" }),
-        FOOTER_BUTTON_SIZE,
-        className,
-      )}
+      className={cn(buttonVariants({ variant, size }), className)}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...props}
@@ -210,16 +212,18 @@ AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
+    /** 모바일만 `lg`(48). 기본 `md`(40·좌우 12·15px). */
+    size?: FooterButtonSize;
+  }
+>(({ className, size = "md", ...props }, ref) => (
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
       // 모달 footer 취소 통일 — 테두리 없는 회색 채움(spec alert-dialog.md).
       // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
       // (spec button.md Migration notes 2026-08).
-      buttonVariants({ variant: "secondary", size: "lg" }),
-      FOOTER_BUTTON_SIZE,
+      buttonVariants({ variant: "secondary", size }),
       className,
     )}
     {...props}

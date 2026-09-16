@@ -1,6 +1,10 @@
 // 삭제 확인창은 손으로 만든 footer 라 버튼 크기를 안 적었고, 그래서 구현 기본값
 // 36(좌우 16·14px)이 나왔다 — 같은 화면의 표준 footer 는 40(좌우 12·15px)이다
 // (데스크톱·태블릿 실측 2026-09-16). 취소도 ghost 라 배경이 없었다.
+//
+// 그리고 같은 "삭제 확인" 이 두 계열로 갈려 있었다 — 22곳은 Dialog 위에 얹은
+// ConfirmDialog(ESC·overlay 로 닫힘), 3곳은 손수 만든 AlertDialog. 확인창은
+// **버튼으로만 닫히고 기본 포커스가 취소** 여야 한다(spec alert-dialog.md Behavior).
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -87,5 +91,81 @@ describe("모바일은 그대로다", () => {
     confirm();
     expect(byText("취소").classList).toContain("h-12");
     expect(byText("삭제").classList).toContain("h-12");
+  });
+});
+
+describe("파괴적 확정은 버튼으로만 닫는다", () => {
+  it("alertdialog 다 — 화면 낭독기가 확정 창으로 읽는다", () => {
+    confirm();
+    expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
+    // Dialog 계열로 남아 있으면 안 된다.
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it("ESC 로는 안 닫힌다 — 취소를 눌러야 한다", () => {
+    const onCancel = vi.fn();
+    render(
+      <ConfirmDialog
+        title="삭제"
+        message="지울까요?"
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        onCancel={onCancel}
+        onConfirm={() => {}}
+      />,
+    );
+    act(() => {
+      // cancelable 를 빼면 preventDefault 가 통하지 않아 브라우저와 다른 결과가 나온다.
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
+
+    act(() => byText("취소").click());
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("기본 포커스는 취소다 — Enter 를 무심코 눌러도 삭제되지 않는다", () => {
+    confirm();
+    expect(document.activeElement).toBe(byText("취소"));
+  });
+
+  it("취소가 없는 통지형은 확인이 그 자리를 대신한다", () => {
+    render(
+      <ConfirmDialog
+        title="삭제 불가"
+        message="자식이 있어요."
+        confirmLabel="확인"
+        singleAction
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+    expect(document.activeElement).toBe(byText("확인"));
+  });
+
+  it("확정을 눌러도 창은 호출처가 닫는다 — 스피너가 뜨는 동안 열려 있어야 한다", () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    render(
+      <ConfirmDialog
+        title="삭제"
+        message="지울까요?"
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />,
+    );
+    act(() => byText("삭제").click());
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    // 확정이 취소까지 부르면 호출처가 상태를 지워 스피너가 사라진다.
+    expect(onCancel).not.toHaveBeenCalled();
   });
 });
