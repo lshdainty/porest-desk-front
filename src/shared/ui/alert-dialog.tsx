@@ -7,6 +7,14 @@ import { registerOverlay } from "@/shared/lib/porest/pointer-block";
 import { buttonVariants } from "@/shared/ui/button-variants";
 import { Spinner } from "@/shared/ui/spinner";
 
+/**
+ * footer 버튼 크기 — 모바일 `lg`(48, 한 손 조작 폭) / 데스크탑·태블릿 `md`(40·좌우 12·15px).
+ * dialog.md footer 규칙이고 alert-dialog.md 가 같은 값을 가리킨다. size 를 안 적으면
+ * 구현 기본값 36(좌우 16·14px)이 나와 같은 footer 안에 두 크기가 섞인다.
+ */
+const FOOTER_BUTTON_SIZE =
+  "sm:h-10 sm:px-3 sm:py-2 sm:text-body-md sm:rounded-sm sm:[&_svg]:size-4";
+
 /*
  * Porest AlertDialog — porest-design specs/components/alert-dialog.md SoT 기반.
  * Phase 2 마이그레이션: 비가역 액션 확정용 modal. Dialog와 시각 동일.
@@ -158,34 +166,46 @@ const AlertDialogAction = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
     /** true면 좌측에 spinner 표시 + disabled 처리. */
     loading?: boolean;
+    /** 파괴적 확정은 `destructive`. 기본은 primary. */
+    variant?: "default" | "destructive";
   }
->(({ className, loading = false, disabled, children, ...props }, ref) => (
-  <AlertDialogPrimitive.Action
-    ref={ref}
-    className={cn(
-      buttonVariants(),
-      // spec alert-dialog.md footer(모바일 <640px) — size lg(48) 로 한 손 조작 폭 확보.
-      // 데스크탑은 buttonVariants() 기본(h-9) 유지.
-      "h-11 px-5 py-3 text-base [&_svg]:size-[18px] sm:h-9 sm:px-4 sm:py-[9px] sm:text-sm sm:[&_svg]:size-4",
+>(
+  (
+    {
       className,
-    )}
-    disabled={disabled || loading}
-    aria-busy={loading || undefined}
-    {...props}
-  >
-    {loading && (
-      <Spinner
-        size="sm"
-        aria-hidden
-        style={{
-          borderColor: "color-mix(in srgb, currentColor 30%, transparent)",
-          borderTopColor: "currentColor",
-        }}
-      />
-    )}
-    {children}
-  </AlertDialogPrimitive.Action>
-));
+      loading = false,
+      disabled,
+      variant = "default",
+      children,
+      ...props
+    },
+    ref,
+  ) => (
+    <AlertDialogPrimitive.Action
+      ref={ref}
+      className={cn(
+        buttonVariants({ variant, size: "lg" }),
+        FOOTER_BUTTON_SIZE,
+        className,
+      )}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading && (
+        <Spinner
+          size="sm"
+          aria-hidden
+          style={{
+            borderColor: "color-mix(in srgb, currentColor 30%, transparent)",
+            borderTopColor: "currentColor",
+          }}
+        />
+      )}
+      {children}
+    </AlertDialogPrimitive.Action>
+  ),
+);
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 const AlertDialogCancel = React.forwardRef<
@@ -198,9 +218,8 @@ const AlertDialogCancel = React.forwardRef<
       // 모달 footer 취소 통일 — 테두리 없는 회색 채움(spec alert-dialog.md).
       // ghost 는 배경이 없어 전체 폭 두 버튼 중 한쪽이 빈자리처럼 보인다
       // (spec button.md Migration notes 2026-08).
-      buttonVariants({ variant: "secondary" }),
-      // Action 과 같은 규칙 — 모바일 lg(48) / 데스크탑 기본.
-      "h-11 px-5 py-3 text-base [&_svg]:size-[18px] sm:h-9 sm:px-4 sm:py-[9px] sm:text-sm sm:[&_svg]:size-4",
+      buttonVariants({ variant: "secondary", size: "lg" }),
+      FOOTER_BUTTON_SIZE,
       className,
     )}
     {...props}

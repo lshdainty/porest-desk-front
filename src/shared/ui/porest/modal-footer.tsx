@@ -13,13 +13,15 @@ import { useDeviceSize } from "@/shared/lib/porest/responsive";
  * 각 다이얼로그가 동일 JSX(삭제 flush-left danger / 취소 ghost / 저장 primary)를 손으로
  * 복붙해 drift(flush 누락·아이콘 크기·variant 불일치)가 반복됐다. 이 컴포넌트로 수렴.
  *
- * 버튼 스펙은 button.md SoT 정합 — 삭제는 ghost+flush="left"+danger 색, 취소 ghost,
- * 저장 primary(default).
+ * 버튼 스펙은 dialog.md footer SoT 정합 — 삭제는 `dangerSoft`(옅은 빨강 채움), 취소
+ * `secondary`(테두리 없는 회색 채움), 저장 primary(default). 셋 다 좌우 padding 12 를
+ * 그대로 둔다 — 삭제의 `flush="left"`(padding 0)는 글자가 footer 여백선에 붙어 정사각처럼
+ * 보였다(2026-09-16 실측). 좌측 정렬은 `marginRight:auto` 만으로 한다.
  *
  * **모바일에선 size="lg"(48)** — dialog.md/drawer.md 가 규정하는 한 손 조작 폭. 데스크탑은 md(40).
  * 폭 배분은 ModalShell 이 맡는다(모바일 `[&>button]:flex-1` 균등분배 / 데스크탑 `justify-end`).
  * 삭제만 `flex:none` 으로 균등분배에서 빠져 좌측에 붙는다 — spec drawer.md "액션 2개까지,
- * 삭제는 최좌측 flush-left 로 분리".
+ * 삭제는 최좌측 분리".
  *
  * leftSlot(필터 초기화·요약 텍스트 등 삭제가 아닌 좌측 요소) 변형도 지원.
  * 뷰(읽기전용) footer·위저드는 범위 밖(별도 패턴).
@@ -91,19 +93,10 @@ export function ModalFooter({
           // 모바일은 error 솔리드 채움(destructive) + 균등 분배 — 삭제 확인 다이얼로그의
           // 삭제 버튼과 같은 색이라, 같은 동작이 같은 색으로 이어진다. 옅은 채움
           // (dangerSoft)은 다크에서 어두운 자주로 가라앉아 버렸다.
-          // 데스크탑은 액션이 셋일 수 있어 기존대로 ghost + flush-left 분리.
-          variant={mobile ? "destructive" : "ghost"}
+          // 데스크탑은 dangerSoft — dialog.md footer.
+          variant={mobile ? "destructive" : "dangerSoft"}
           size={size}
-          flush={mobile ? undefined : "left"}
-          style={
-            mobile
-              ? undefined
-              : {
-                  color: "var(--fg-expense)",
-                  marginRight: "auto",
-                  flex: "none",
-                }
-          }
+          style={mobile ? undefined : { marginRight: "auto", flex: "none" }}
           onClick={onDelete}
           loading={deleting}
           disabled={saving}
@@ -117,9 +110,9 @@ export function ModalFooter({
       {onCancel && (
         <Button
           type="button"
-          // 모바일은 secondary(테두리 없는 회색 채움) — ghost 는 배경이 없어 전체 폭
-          // 배치에서 버튼으로 안 보인다(spec button.md Migration notes 2026-08).
-          variant={mobile ? "secondary" : "ghost"}
+          // 취소는 secondary(테두리 없는 회색 채움) 하나 — ghost 는 배경이 없어 버튼으로
+          // 안 보인다(spec dialog.md footer · button.md Migration notes 2026-08).
+          variant="secondary"
           size={size}
           onClick={onCancel}
           disabled={busy}
@@ -158,12 +151,12 @@ type ModalViewFooterProps = {
   onConfirm?: () => void;
   confirmLabel?: string;
   /**
-   * 'default'(primary 확인) | 'secondary'(단일 닫기) | 'ghost'(레거시).
+   * 'default'(primary 확인) | 'secondary'(단일 닫기).
    *
    * 단일 닫기는 `secondary`(테두리 없는 회색 채움) — ghost 는 배경이 없어 전체 폭
    * 배치에서 버튼으로 안 보인다(spec button.md Migration notes 2026-08).
    */
-  confirmVariant?: "default" | "secondary" | "ghost";
+  confirmVariant?: "default" | "secondary";
   /** 우측 편집(opt). */
   onEdit?: () => void;
   editLabel?: string;
@@ -196,19 +189,10 @@ export function ModalViewFooter({
         <Button
           type="button"
           // 폼 시트 footer 와 같은 규칙 — 모바일은 error 솔리드 채움 + 균등 분배,
-          // 데스크탑은 ghost + flush-left 분리.
-          variant={mobile ? "destructive" : "ghost"}
+          // 데스크탑은 dangerSoft 를 좌측에 붙인다.
+          variant={mobile ? "destructive" : "dangerSoft"}
           size={size}
-          flush={mobile ? undefined : "left"}
-          style={
-            mobile
-              ? undefined
-              : {
-                  color: "var(--fg-expense)",
-                  marginRight: "auto",
-                  flex: "none",
-                }
-          }
+          style={mobile ? undefined : { marginRight: "auto", flex: "none" }}
           onClick={onDelete}
           loading={deleting}
         >
@@ -224,8 +208,10 @@ export function ModalViewFooter({
       {onEdit && (
         <Button
           type="button"
-          // 상세의 주 액션은 편집 — 모바일은 확인이 없어 이게 유일한 채움 버튼이다.
-          variant={mobile && !onConfirm ? "default" : "ghost"}
+          // 상세의 주 액션은 수정이다 — 확인이 따로 있는 화면(반복 거래의 일시중지 등)에서만
+          // 주 액션 자리를 내주고 secondary 로 물러선다. ghost 는 쓰지 않는다 — 배경이 없어
+          // 버튼으로 안 보인다(spec dialog.md footer).
+          variant={onConfirm ? "secondary" : "default"}
           size={size}
           onClick={onEdit}
           disabled={deleting}
