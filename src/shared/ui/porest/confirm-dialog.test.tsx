@@ -1,6 +1,6 @@
-// 삭제 확인창은 손으로 만든 footer 라 버튼 크기를 안 적었고, 그래서 구현 기본값
-// 36(좌우 16·14px)이 나왔다 — 같은 화면의 표준 footer 는 40(좌우 12·15px)이다
-// (데스크톱·태블릿 실측 2026-09-16). 취소도 ghost 라 배경이 없었다.
+// 삭제 확인창은 손으로 만든 footer 라 버튼 크기를 안 적었고, 취소도 ghost 라 배경이 없었다
+// (데스크톱·태블릿 실측 2026-09-16). 크기는 표준 footer 와 같은 `default`
+// (36 · 좌우 양쪽 16 · 14px)로 못 박는다 — 40 으로 올려 봤다가 대화상자에 비해 굵어 되돌렸다.
 //
 // 그리고 같은 "삭제 확인" 이 두 계열로 갈려 있었다 — 22곳은 Dialog 위에 얹은
 // ConfirmDialog(ESC·overlay 로 닫힘), 3곳은 손수 만든 AlertDialog. 확인창은
@@ -64,13 +64,13 @@ const confirm = (extra: Record<string, unknown> = {}) =>
   );
 
 describe("삭제 확인창 footer — 데스크탑·태블릿", () => {
-  it("버튼은 md(40 · 좌우 12 · 15px) 다 — 표준 footer 와 같은 크기", () => {
+  it("버튼은 default(36 · 좌우 양쪽 16 · 14px) 다 — 표준 footer 와 같은 크기", () => {
     confirm();
     for (const label of ["취소", "삭제"]) {
       const b = byText(label);
-      expect(b.classList, label).toContain("h-10");
-      expect(b.classList, label).toContain("px-3");
-      expect(b.classList, label).toContain("text-body-md");
+      expect(b.classList, label).toContain("h-9");
+      expect(b.classList, label).toContain("px-4");
+      expect(b.classList, label).toContain("text-sm");
     }
   });
 

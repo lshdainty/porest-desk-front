@@ -46,11 +46,11 @@ const buttons = () => Array.from(container.querySelectorAll("button"));
 const byText = (s: string) =>
   buttons().find((b) => (b.textContent ?? "").includes(s))!;
 
-/** md — 높이 40 · 좌우 12 · 15px(button.md Sizes). */
-const isMd = (b: Element) =>
-  b.classList.contains("h-10") &&
-  b.classList.contains("px-3") &&
-  b.classList.contains("text-body-md");
+/** default — 높이 36 · 좌우 양쪽 16 · 14px(button.md Sizes). */
+const isFooterSize = (b: Element) =>
+  b.classList.contains("h-9") &&
+  b.classList.contains("px-4") &&
+  b.classList.contains("text-sm");
 
 const isFlush = (b: Element) =>
   b.classList.contains("pl-0") || b.classList.contains("pr-0");
@@ -69,10 +69,10 @@ describe("편집 footer — 데스크탑·태블릿", () => {
     );
   });
 
-  it("버튼 크기는 md 하나다 — 36(기본값)이 섞이지 않는다", () => {
+  it("버튼 크기는 default 하나다 — 40 이 섞이지 않는다", () => {
     expect(buttons()).toHaveLength(3);
     for (const b of buttons()) {
-      expect(isMd(b), `${b.textContent} 가 md 가 아니다`).toBe(true);
+      expect(isFooterSize(b), `${b.textContent} 가 36 이 아니다`).toBe(true);
     }
   });
 
@@ -124,7 +124,7 @@ describe("상세 footer — 데스크탑·태블릿", () => {
     const del = byText("삭제");
     expect(del.className).toContain("var(--status-danger-subtle)");
     expect(isFlush(del)).toBe(false);
-    expect(isMd(del)).toBe(true);
+    expect(isFooterSize(del)).toBe(true);
   });
 });
 

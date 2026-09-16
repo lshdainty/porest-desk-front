@@ -26,6 +26,7 @@ import {
 } from "@/shared/ui/drawer";
 import {
   AlertDialog,
+  AlertDialogBody,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -176,10 +177,10 @@ export function ConfirmDialog({
   onConfirm: () => void;
 }) {
   const { t } = useTranslation("common");
-  // 크기는 모바일 lg(48) / 데스크탑·태블릿 md(40) — size 를 비우면 36 이 나온다.
-  // 폭 배분은 AlertDialogFooter 가 맡는다(모바일 균등분배 / 데스크탑 우측 정렬).
+  // 크기는 모바일 lg(48) / 데스크탑·태블릿 default(36 · 좌우 양쪽 16 · 14px) —
+  // dialog.md footer. 폭 배분은 AlertDialogFooter 가 맡는다(모바일 균등분배 / 데스크탑 우측).
   const isMobile = useDeviceSize() === "mobile";
-  const size = isMobile ? "lg" : "md";
+  const size = isMobile ? "lg" : "default";
   // 취소가 없는 통지형(singleAction)은 Radix 가 포커스를 줄 자리가 없다 — 확인이 그
   // 자리를 대신한다(spec alert-dialog.md acknowledge 변형).
   const confirmRef = useRef<HTMLButtonElement>(null);
@@ -209,12 +210,14 @@ export function ConfirmDialog({
         }
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle className="flex-1">{title}</AlertDialogTitle>
+        </AlertDialogHeader>
+        <AlertDialogBody>
           {/* 줄바꿈을 살린다 — 환불 경고처럼 문단이 둘인 문구가 있다. */}
           <AlertDialogDescription className="whitespace-pre-line">
             {message}
           </AlertDialogDescription>
-        </AlertDialogHeader>
+        </AlertDialogBody>
         <AlertDialogFooter>
           {!singleAction && (
             /* 취소는 비동기 작업(loading) 중에도 원래 상태 유지 — busy 표시는 확인 버튼 스피너로만.
