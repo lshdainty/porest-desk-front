@@ -51,6 +51,8 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 const alertDialogContentVariants = cva(
   [
     "fixed left-[50%] top-[50%] z-[301] grid w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
+    // Dialog 와 같은 상한 — 확인 문구가 길어도 화면 밖으로 밀려나지 않는다.
+    "max-h-[86vh] overflow-y-auto",
     "flex-col bg-[var(--bg-surface)] gap-[var(--spacing-md)] duration-200",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -59,10 +61,12 @@ const alertDialogContentVariants = cva(
   {
     variants: {
       size: {
-        sm: "[--dialog-max-w:384px] p-[var(--spacing-xl)] rounded-lg",
+        // 폭은 Dialog 와 같은 값이다 — 같은 화면에서 확인창만 좁으면 다른 컴포넌트로
+        // 보인다(2026-09-16 결정: 420/520/720 로 통일).
+        sm: "[--dialog-max-w:420px] p-[var(--spacing-xl)] rounded-lg",
         // popup 은 세 사이즈 모두 radius-lg(12) — dialog.md. 시트/드로어(20)와 갈라 둔다.
-        md: "[--dialog-max-w:480px] p-[var(--spacing-2xl)] rounded-lg",
-        lg: "[--dialog-max-w:640px] p-[var(--spacing-2xl)] rounded-lg",
+        md: "[--dialog-max-w:520px] p-[var(--spacing-2xl)] rounded-lg",
+        lg: "[--dialog-max-w:720px] p-[var(--spacing-2xl)] rounded-lg",
       },
     },
     defaultVariants: { size: "md" },
