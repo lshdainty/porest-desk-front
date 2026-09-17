@@ -38,6 +38,7 @@ import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import {
   HideCard,
   HideUnit,
+  HideForce,
   MaskAmount,
   WonUnit,
 } from "@/shared/lib/porest/hide-amounts";
@@ -1279,254 +1280,255 @@ function AssetCard({
       ? (asset.monthlyUsedAmount ?? 0)
       : null;
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      className={[
-        "flex flex-col cursor-pointer",
-        "transition-colors duration-[var(--motion-duration-fast)]",
-        "hover:bg-[var(--bg-muted)]",
-      ].join(" ")}
-      // 구분선 없이 hover 면으로 행을 가른다. 좌우 순 여백은 0 —
-      // 행이 여기서 더 얹으면 그만큼 섹션 라벨과 어긋난다.
-      // hover 면만 음수 margin 으로 넓힌다(행 밖까지 눌리는 느낌은 그대로).
-      style={{
-        padding: "12px 6px",
-        margin: "0 -6px",
-        borderRadius: 10,
-      }}
-      onClick={() => onOpenDetail(asset)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpenDetail(asset);
-        }
-      }}
-    >
-      {/* 발급사는 행 맨 위, 아이콘과 같은 왼쪽 끝에서 시작한다.
+    // 이 자산이 숨김이면 행의 금액을 전부 가린다 — 잔액·투자 등락·카드 사용/한도.
+    // 자리마다 force= 를 다는 방식은 등락액 하나를 빠뜨렸다(QA 22차 #4).
+    <HideForce value={asset.isAmountHidden === "Y"}>
+      <div
+        role="button"
+        tabIndex={0}
+        className={[
+          "flex flex-col cursor-pointer",
+          "transition-colors duration-[var(--motion-duration-fast)]",
+          "hover:bg-[var(--bg-muted)]",
+        ].join(" ")}
+        // 구분선 없이 hover 면으로 행을 가른다. 좌우 순 여백은 0 —
+        // 행이 여기서 더 얹으면 그만큼 섹션 라벨과 어긋난다.
+        // hover 면만 음수 margin 으로 넓힌다(행 밖까지 눌리는 느낌은 그대로).
+        style={{
+          padding: "12px 6px",
+          margin: "0 -6px",
+          borderRadius: 10,
+        }}
+        onClick={() => onOpenDetail(asset)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpenDetail(asset);
+          }
+        }}
+      >
+        {/* 발급사는 행 맨 위, 아이콘과 같은 왼쪽 끝에서 시작한다.
           이름 옆에 붙여 두면 이름 길이만큼 자리가 밀려 행마다 다른 곳에 서고,
           이름이 쓸 가로도 그만큼 줄었다. */}
-      {asset.institution && (
-        <div
-          style={{
-            fontWeight: "500",
-            color: "var(--fg-tertiary)",
-            fontSize: "var(--text-caption)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            marginBottom: "var(--spacing-xs)",
-          }}
-        >
-          {asset.institution}
-        </div>
-      )}
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <AssetLogo asset={asset} />
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {asset.institution && (
           <div
             style={{
-              fontSize: "var(--text-body-sm)",
-              fontWeight: "600",
-              color: "var(--fg-primary)",
+              fontWeight: "500",
+              color: "var(--fg-tertiary)",
+              fontSize: "var(--text-caption)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              marginBottom: "var(--spacing-xs)",
             }}
           >
-            {asset.assetName}
+            {asset.institution}
           </div>
-          {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
-          {asset.assetType === "INVESTMENT" ? (
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <AssetLogo asset={asset} />
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-tertiary)",
-                marginTop: 1,
-                fontVariantNumeric: "tabular-nums",
-                // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                fontSize: "var(--text-body-sm)",
+                fontWeight: "600",
+                color: "var(--fg-primary)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
             >
-              <InvestHoldingsSub asset={asset} />
+              {asset.assetName}
             </div>
-          ) : asset.memo && !CARD_TYPES.includes(asset.assetType) ? (
-            /* 카드는 메모를 행에 안 띄운다. 아래로 결제일·게이지가 이어지는데 메모가 한 줄
+            {/* 투자 자산 — 보유 종목 요약 서브라인 (design: "첫 보유명 외 N종목" / "보유 종목 없음") */}
+            {asset.assetType === "INVESTMENT" ? (
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 1,
+                  fontVariantNumeric: "tabular-nums",
+                  // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <InvestHoldingsSub asset={asset} />
+              </div>
+            ) : asset.memo && !CARD_TYPES.includes(asset.assetType) ? (
+              /* 카드는 메모를 행에 안 띄운다. 아래로 결제일·게이지가 이어지는데 메모가 한 줄
              끼면 그만큼 밀려, 카드마다 게이지 높이가 달라진다. 투자 행이 이미 쓰는
              원칙과 같다 — 메모는 상세에서 본다. */
-            <div
-              style={{
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-tertiary)",
-                marginTop: 1,
-                fontVariantNumeric: "tabular-nums",
-                // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {asset.memo}
-            </div>
-          ) : null}
-          {/* 신용카드는 이 줄을 늘 차지한다. 결제일이 없다고 줄을 빼면 그 카드만
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 1,
+                  fontVariantNumeric: "tabular-nums",
+                  // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {asset.memo}
+              </div>
+            ) : null}
+            {/* 신용카드는 이 줄을 늘 차지한다. 결제일이 없다고 줄을 빼면 그 카드만
             게이지가 위로 붙어 목록이 어긋난다. */}
-          {asset.assetType === "CREDIT_CARD" && (
-            <div
-              style={{
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-tertiary)",
-                marginTop: 1,
-                fontVariantNumeric: "tabular-nums",
-                // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {/* 결제일이 없으면 빈 칸(nbsp)으로 줄만 남긴다. 빈 문자열은 div 높이가
+            {asset.assetType === "CREDIT_CARD" && (
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 1,
+                  fontVariantNumeric: "tabular-nums",
+                  // 긴 값이 접히면 아래 게이지가 밀려 행마다 높이가 달라진다(앱은 ellipsis).
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {/* 결제일이 없으면 빈 칸(nbsp)으로 줄만 남긴다. 빈 문자열은 div 높이가
                 0 이라 자리가 안 잡힌다. */}
-              {asset.paymentDay != null
-                ? t("paymentDayLabel", { day: asset.paymentDay })
-                : " "}
-            </div>
-          )}
-          {/* 체크카드(연결계좌형) — 금액이 잔액이 아니라 당월 사용액임을 캡션으로 밝힌다.
+                {asset.paymentDay != null
+                  ? t("paymentDayLabel", { day: asset.paymentDay })
+                  : " "}
+              </div>
+            )}
+            {/* 체크카드(연결계좌형) — 금액이 잔액이 아니라 당월 사용액임을 캡션으로 밝힌다.
             신용카드의 결제일 줄과 같은 자리·타이포라 카드 그룹의 행 리듬이 맞는다. */}
-          {checkCardMonthly != null && (
-            <div
-              style={{
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-tertiary)",
-                marginTop: 1,
-                fontVariantNumeric: "tabular-nums",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {t("checkCardMonthLabel")}
-            </div>
-          )}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            flexShrink: 0,
-          }}
-        >
+            {checkCardMonthly != null && (
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 1,
+                  fontVariantNumeric: "tabular-nums",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t("checkCardMonthLabel")}
+              </div>
+            )}
+          </div>
           <div
-            className="num"
             style={{
-              fontSize: "var(--text-body-lg)",
-              fontWeight: "700",
-              fontVariantNumeric: "tabular-nums",
-              letterSpacing: "-0.022em",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              flexShrink: 0,
             }}
           >
-            {/* 이 자산만 가려 둔 경우도 함께 본다 — 화면 카드와 합집합이다. */}
-            <MaskAmount force={asset.isAmountHidden === "Y"}>
-              {checkCardMonthly != null ? (
-                <>
-                  {wonPre()}
-                  {KRW(checkCardMonthly)}
-                </>
-              ) : (
-                <>
-                  {neg ? MINUS : ""}
-                  {wonPre()}
-                  {KRW(Math.abs(asset.balance))}
-                </>
-              )}
-            </MaskAmount>
-            <WonUnit />
-          </div>
-          {/* 투자 등락 — design: +상승 빨강/−하락 파랑(국내 통념) + (변동액) */}
-          {investVal?.changePct != null && (
             <div
               className="num"
               style={{
-                fontSize: "var(--text-badge)",
-                fontWeight: "600",
-                marginTop: 2,
-                color:
-                  investVal.changePct >= 0
-                    ? "var(--status-danger-fg)"
-                    : "var(--fg-brand)",
+                fontSize: "var(--text-body-lg)",
+                fontWeight: "700",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.022em",
               }}
             >
-              {investVal.changePct >= 0 ? "+" : ""}
-              {investVal.changePct}%
-              {investVal.changeAmt != null && (
-                <MaskAmount mask="">
-                  {" "}
-                  ({investVal.changeAmt >= 0 ? "+" : "−"}
-                  {KRW(Math.abs(investVal.changeAmt))})
-                </MaskAmount>
-              )}
+              {/* 이 자산만 가려 둔 경우도 함께 본다 — 화면 카드와 합집합이다. */}
+              <MaskAmount>
+                {checkCardMonthly != null ? (
+                  <>
+                    {wonPre()}
+                    {KRW(checkCardMonthly)}
+                  </>
+                ) : (
+                  <>
+                    {neg ? MINUS : ""}
+                    {wonPre()}
+                    {KRW(Math.abs(asset.balance))}
+                  </>
+                )}
+              </MaskAmount>
+              <WonUnit />
             </div>
-          )}
-          {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
-          {asset.isIncludedInTotal === "N" && (
-            <div
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-                marginTop: 2,
-              }}
-            >
-              {t("excludedFromTotal")}
-            </div>
-          )}
-          {/* 카드로 가려진 것과 **이 자산이라서** 가려진 것을 구분해 준다 — 배지가
-              없으면 왜 안 보이는지 알 수 없고, 설정 화면을 뒤지게 된다. */}
-          {asset.isAmountHidden === "Y" && (
-            <div
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-                marginTop: 2,
-              }}
-            >
-              {t("amountHiddenBadge")}
-            </div>
-          )}
-          {/* 카드 사용액/한도 — 게이지 바는 아래 행 전체 폭으로 따로 그린다.
-            왼쪽 텍스트 열에 두면 카드 이름 길이에 밀려 폭이 모자라 넘친다. */}
-          {(() => {
-            const u = cardUsageOf(asset);
-            if (!u) return null;
-            return (
+            {/* 투자 등락 — design: +상승 빨강/−하락 파랑(국내 통념) + (변동액) */}
+            {investVal?.changePct != null && (
               <div
                 className="num"
                 style={{
                   fontSize: "var(--text-badge)",
-                  color: "var(--fg-tertiary)",
-                  fontWeight: "500",
+                  fontWeight: "600",
                   marginTop: 2,
-                  whiteSpace: "nowrap",
+                  color:
+                    investVal.changePct >= 0
+                      ? "var(--status-danger-fg)"
+                      : "var(--fg-brand)",
                 }}
               >
-                <MaskAmount
-                  mask="••• / •••"
-                  force={asset.isAmountHidden === "Y"}
-                >
-                  {wonPre()}
-                  {KRW(u.used)} / {wonPre()}
-                  {KRW(u.limit)}
-                </MaskAmount>
-                <WonUnit />
+                {investVal.changePct >= 0 ? "+" : ""}
+                {investVal.changePct}%
+                {investVal.changeAmt != null && (
+                  <MaskAmount mask="">
+                    {" "}
+                    ({investVal.changeAmt >= 0 ? "+" : "−"}
+                    {KRW(Math.abs(investVal.changeAmt))})
+                  </MaskAmount>
+                )}
               </div>
-            );
-          })()}
+            )}
+            {/* 총액에서 제외된 자산이면 금액 아래 '총액 제외' 표기 (관리 화면 정합) */}
+            {asset.isIncludedInTotal === "N" && (
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 2,
+                }}
+              >
+                {t("excludedFromTotal")}
+              </div>
+            )}
+            {/* 카드로 가려진 것과 **이 자산이라서** 가려진 것을 구분해 준다 — 배지가
+              없으면 왜 안 보이는지 알 수 없고, 설정 화면을 뒤지게 된다. */}
+            {asset.isAmountHidden === "Y" && (
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 2,
+                }}
+              >
+                {t("amountHiddenBadge")}
+              </div>
+            )}
+            {/* 카드 사용액/한도 — 게이지 바는 아래 행 전체 폭으로 따로 그린다.
+            왼쪽 텍스트 열에 두면 카드 이름 길이에 밀려 폭이 모자라 넘친다. */}
+            {(() => {
+              const u = cardUsageOf(asset);
+              if (!u) return null;
+              return (
+                <div
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "500",
+                    marginTop: 2,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <MaskAmount mask="••• / •••">
+                    {wonPre()}
+                    {KRW(u.used)} / {wonPre()}
+                    {KRW(u.limit)}
+                  </MaskAmount>
+                  <WonUnit />
+                </div>
+              );
+            })()}
+          </div>
         </div>
+        <CardUsageBar asset={asset} />
       </div>
-      <CardUsageBar asset={asset} />
-    </div>
+    </HideForce>
   );
 }
 

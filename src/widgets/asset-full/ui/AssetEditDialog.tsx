@@ -1,7 +1,8 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreditCard, EyeOff, Plus, Search, Trash2, Wallet } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -244,6 +245,15 @@ export function AssetEditDialog({
   const [isAmountHidden, setIsAmountHidden] = useState<YNType>(
     item?.isAmountHidden ?? "N",
   );
+  // 숨김을 **푸는** 쪽에만 본인 확인을 건다 — 켜는 건 그냥 된다(카드 가리기·상세 토글과
+  // 같은 규칙). 모바일은 상세에 토글이 없어 이 폼이 유일한 해제 경로다. 여기에 확인이
+  // 없으면 "풀 때는 비밀번호" 규칙 자체가 없는 것과 같다(QA 22차 #2).
+  const needsUnlock =
+    !isNew && item?.isAmountHidden === "Y" && isAmountHidden === "N";
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  // state 가 아니라 ref 다 — 확인창의 `onVerified` 에서 곧바로 `handleSubmit()` 을
+  // 다시 부르는데, setState 로 두면 그 호출이 아직 `false` 인 값을 읽는다.
+  const unlockedRef = useRef(false);
   // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
   const [balanceStr, setBalanceStr] = useState<string>(
     item ? KRW(Math.abs(item.balance ?? 0)) : "0",
@@ -623,6 +633,10 @@ export function AssetEditDialog({
    */
   const handleSubmit = () => {
     if (!canSubmit) return;
+    if (needsUnlock && !unlockedRef.current) {
+      setUnlockOpen(true);
+      return;
+    }
     // 칸에는 절대값만 들어온다(부호 키를 막았다) — 부호는 아래에서 종류가 붙인다.
     const parsedBalance = Number(sanitizeAmountInput(balanceStr, MAX_BALANCE));
     // 통화·환율은 세 묶음이 똑같이 싣는다. 환율은 외화일 때만 값이 있고,
@@ -1781,8 +1795,13 @@ export function AssetEditDialog({
           </div>
         </div>
         <Switch
+          id="asset-edit-hide-amount"
           checked={isAmountHidden === "Y"}
-          onCheckedChange={(b) => setIsAmountHidden(b ? "Y" : "N")}
+          onCheckedChange={(b) => {
+            // 다시 켜면 앞서 받은 확인은 무른다 — 또 끄면 다시 물어야 한다.
+            if (b) unlockedRef.current = false;
+            setIsAmountHidden(b ? "Y" : "N");
+          }}
         />
       </div>
     </Fragment>
@@ -1802,18 +1821,35 @@ export function AssetEditDialog({
   );
 
   return (
-    <ModalShell
-      title={title}
-      onClose={handleClose}
-      mobile={mobile}
-      size="md"
-      // ModalShell 이 footer 컨테이너를 쥔다 — 감싸면 안 된다. 모바일 균등분배가
-      // `[&>button]:flex-1`(직계 자식) 이라 div 를 한 겹 끼우면 버튼이 손자가 돼
-      // 선택자에서 빠지고, 데스크탑도 컨테이너의 justify-end 대신 그 div 의 배치를
-      // 따른다. 다른 다이얼로그처럼 footer 를 그대로 넘긴다.
-      footer={footerInner}
-    >
-      <div className="flex flex-col gap-5">{bodyContent}</div>
-    </ModalShell>
+    <>
+      <ModalShell
+        title={title}
+        onClose={handleClose}
+        mobile={mobile}
+        size="md"
+        // ModalShell 이 footer 컨테이너를 쥔다 — 감싸면 안 된다. 모바일 균등분배가
+        // `[&>button]:flex-1`(직계 자식) 이라 div 를 한 겹 끼우면 버튼이 손자가 돼
+        // 선택자에서 빠지고, 데스크탑도 컨테이너의 justify-end 대신 그 div 의 배치를
+        // 따른다. 다른 다이얼로그처럼 footer 를 그대로 넘긴다.
+        footer={footerInner}
+      >
+        <div className="flex flex-col gap-5">{bodyContent}</div>
+      </ModalShell>
+      {/* 확인을 취소하면 저장도 하지 않는다 — 폼 스위치는 끈 채로 남고, 창을 닫으면
+        서버 값(숨김)이 그대로다. */}
+      {/* 열릴 때만 마운트한다 — 이 창은 비밀번호 확인 훅을 물고 있어, 늘 매달아 두면
+        편집 폼을 그리는 모든 자리(테스트 포함)가 그 훅까지 갖춰야 한다. */}
+      {unlockOpen && (
+        <HideAmountsUnlockDialog
+          open
+          onOpenChange={setUnlockOpen}
+          onVerified={() => {
+            unlockedRef.current = true;
+            setUnlockOpen(false);
+            handleSubmit();
+          }}
+        />
+      )}
+    </>
   );
 }

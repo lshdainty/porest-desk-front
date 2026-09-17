@@ -25,3 +25,18 @@ export function useHideCard(
   const ctx = useContext(HideCardContext);
   return card ?? ctx;
 }
+
+/**
+ * 이 아래 금액들을 화면 카드와 **무관하게** 가린다 — 자산 하나에 붙은 `isAmountHidden`.
+ *
+ * <p>{@link HideCardContext} 와 같은 이유로 컨텍스트다. 자산 상세 하나에 금액이 열일곱 군데
+ * 박혀 있고 그중 아홉은 하위 컴포넌트(카드 청구·보유종목) 안이라 `force=` 를 손으로 다는
+ * 방식으로는 `asset` 을 프롭으로 네 겹 내려보내야 하고, 한 자리만 빠뜨려도 가려야 할
+ * 금액이 그대로 보인다. 실제로 그렇게 새서 차트 축만 가려졌다(QA 22차 #1).
+ */
+export const HideForceContext = createContext(false);
+
+/** 넘긴 값이나 감싸는 강제 가리기 중 하나라도 켜져 있으면 가린다 — 합집합이다. */
+export function useHideForce(force?: boolean): boolean {
+  return useContext(HideForceContext) || !!force;
+}

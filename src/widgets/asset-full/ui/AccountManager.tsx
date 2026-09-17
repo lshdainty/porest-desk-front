@@ -16,7 +16,11 @@ import {
   useUpdateAsset,
 } from "@/features/asset";
 import { KRW } from "@/shared/lib/porest/format";
-import { MaskAmount, WonUnit } from "@/shared/lib/porest/hide-amounts";
+import {
+  HideForce,
+  MaskAmount,
+  WonUnit,
+} from "@/shared/lib/porest/hide-amounts";
 import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
 import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
@@ -359,17 +363,16 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                               color: "var(--fg-primary)",
                             }}
                           >
-                            {/* 이 자산만 가려 둔 경우도 함께 본다 — 합집합. */}
-                            <MaskAmount
-                              card="asset.manage"
-                              mask="••••"
-                              force={asset.isAmountHidden === "Y"}
-                            >
-                              {neg ? "−" : ""}
-                              {wonPre()}
-                              {KRW(amt)}
-                            </MaskAmount>
-                            <WonUnit card="asset.manage" />
+                            {/* 이 자산만 가려 둔 경우도 함께 본다 — 합집합.
+                              단위('원')까지 함께 가려야 '••••원' 이 안 남는다. */}
+                            <HideForce value={asset.isAmountHidden === "Y"}>
+                              <MaskAmount card="asset.manage" mask="••••">
+                                {neg ? "−" : ""}
+                                {wonPre()}
+                                {KRW(amt)}
+                              </MaskAmount>
+                              <WonUnit card="asset.manage" />
+                            </HideForce>
                           </div>
                           {asset.isIncludedInTotal === "N" && (
                             <div

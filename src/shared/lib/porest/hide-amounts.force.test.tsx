@@ -19,7 +19,7 @@ vi.mock("@/shared/lib/porest/hide-amounts-core", async (orig) => ({
   useHideCard: () => undefined,
 }));
 
-const { MaskAmount, HideUnit } = await import("./hide-amounts");
+const { MaskAmount, HideUnit, HideForce } = await import("./hide-amounts");
 
 let container: HTMLDivElement;
 let root: Root;
@@ -79,5 +79,73 @@ describe("HideUnit force", () => {
 
   it("아무것도 안 가리면 보인다", () => {
     expect(render(<HideUnit>원</HideUnit>)).toContain("원");
+  });
+});
+
+// 자산 상세는 금액이 열일곱 군데 박혀 있고 그중 아홉은 하위 컴포넌트 안이다. 자리마다
+// `force=` 를 달던 동안 차트 축 하나만 가려지고 히어로 잔액·카드 청구가 그대로 보였다
+// (QA 22차 #1) — 그래서 묶음으로 거는 자리를 만들었다.
+describe("HideForce — 묶음으로 강제 가리기", () => {
+  it("감싸면 안쪽 금액이 force 없이도 가려진다", () => {
+    const text = render(
+      <HideForce value>
+        <MaskAmount mask="•••">12,000</MaskAmount>
+      </HideForce>,
+    );
+    expect(text).toContain("•••");
+    expect(text).not.toContain("12,000");
+  });
+
+  it("여러 겹 안쪽까지 닿는다 — 하위 컴포넌트가 asset 을 몰라도 된다", () => {
+    function Deep() {
+      return <MaskAmount mask="•••">12,000</MaskAmount>;
+    }
+    function Outer() {
+      return (
+        <div>
+          <Deep />
+        </div>
+      );
+    }
+    const text = render(
+      <HideForce value>
+        <Outer />
+      </HideForce>,
+    );
+    expect(text).toContain("•••");
+    expect(text).not.toContain("12,000");
+  });
+
+  it("단위도 함께 숨는다 — '•••원' 이 남지 않는다", () => {
+    const text = render(
+      <HideForce value>
+        <MaskAmount mask="•••">12,000</MaskAmount>
+        <HideUnit>원</HideUnit>
+      </HideForce>,
+    );
+    expect(text).toContain("•••");
+    expect(text).not.toContain("원");
+  });
+
+  it("value=false 면 아무것도 바뀌지 않는다", () => {
+    const text = render(
+      <HideForce value={false}>
+        <MaskAmount mask="•••">12,000</MaskAmount>
+      </HideForce>,
+    );
+    expect(text).toContain("12,000");
+  });
+
+  // 합집합 — 감싼 값이 꺼져 있어도 개별 force 는 살아 있다.
+  it("value=false 여도 안쪽 force 는 듣는다", () => {
+    const text = render(
+      <HideForce value={false}>
+        <MaskAmount mask="•••" force>
+          12,000
+        </MaskAmount>
+      </HideForce>,
+    );
+    expect(text).toContain("•••");
+    expect(text).not.toContain("12,000");
   });
 });
