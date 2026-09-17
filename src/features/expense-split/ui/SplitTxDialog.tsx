@@ -789,26 +789,30 @@ export function SplitTxDialog({
       {/* 둘이 한 묶음으로 읽혀야 한다 — 양 끝에 흩어져 있으면 각자 다른 일처럼 보인다.
           spec button.md Layout > Split bar. */}
       <div style={{ marginBottom: 16 }}>
-        <SplitActions>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addRow}
-            disabled={submitting}
-          >
-            <Plus size={14} /> {t("splitTx.addItem")}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={splitEvenly}
-            disabled={submitting}
-          >
-            <Scissors size={14} /> {t("splitTx.splitEvenly")}
-          </Button>
-        </SplitActions>
+        <SplitActions
+          left={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={addRow}
+              disabled={submitting}
+            >
+              <Plus size={14} /> {t("splitTx.addItem")}
+            </Button>
+          }
+          right={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={splitEvenly}
+              disabled={submitting}
+            >
+              <Scissors size={14} /> {t("splitTx.splitEvenly")}
+            </Button>
+          }
+        />
       </div>
 
       {/* 분할 비율 */}
