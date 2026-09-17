@@ -57,27 +57,90 @@ const DrawerOverlay = React.forwardRef<
 });
 DrawerOverlay.displayName = "DrawerOverlay";
 
+/** vaul 이 "키보드가 떴다" 로 보는 최소 높이 차. 같은 값을 쓴다. */
+const KEYBOARD_MIN_PX = 60;
+
+/**
+ * 키보드가 내려갔는데 시트가 그때 높이에 박혀 있는 것을 푼다.
+ *
+ * vaul 은 키보드가 뜨면 `style.height`·`style.bottom` 을 픽셀로 박고 내려가면 되돌린다.
+ * 그 되돌리기가 **레이아웃 뷰포트까지 함께 줄어드는 브라우저**(삼성 인터넷 · 구 크롬)에서는
+ * 동작하지 않는다. 그런 브라우저는 `window.innerHeight` 와 `visualViewport.height` 가 늘
+ * 같아서 —
+ *
+ * 1. vaul 이 키보드를 감지하지 못하고(`keyboardIsOpen` 이 false 로 남는다)
+ * 2. 되돌릴 기준 높이(`initialDrawerHeight`)마저 **이미 줄어든 값**으로 잡는다
+ *    (첫 resize 콜백에서 재는데, 그때는 뷰포트가 이미 작다)
+ *
+ * 그래서 키보드가 사라진 뒤에도 시트가 반쪽으로 남고, 입력칸을 다시 건드리기 전엔
+ * 영영 안 돌아온다(2026-09-18 사용자 제보 · 재현 743px → 370px 고착).
+ *
+ * 규칙은 하나다 — **키보드가 없으면 키보드 때문에 박힌 값도 없어야 한다.** 판정만 하고
+ * 제 값을 쓰지는 않는다. 지우고 나면 클래스(`max-h-[88%]`)와 내용이 높이를 정한다.
+ *
+ * 다음 프레임에 지우는 이유 — vaul 도 같은 `resize` 를 듣고 그 안에서 높이를 다시 박는다.
+ * 같은 이벤트 안에서 지우면 vaul 이 그 뒤에 다시 박아 아무 일도 안 한 것이 된다.
+ */
+function useClearKeyboardSizing(
+  targetRef: React.RefObject<HTMLElement | null>,
+) {
+  React.useEffect(() => {
+    // 구독은 마운트 시점의 객체에 건다. 높이는 **부를 때마다 다시 읽는다** —
+    // 브라우저에선 같은 객체의 값만 바뀌지만, 그 가정을 코드가 안 지고 있는 편이 낫다.
+    const vvAtMount = window.visualViewport;
+    let raf = 0;
+    const clear = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const el = targetRef.current;
+        if (!el) return;
+        // 키보드가 떠 있으면 vaul 이 관리 중이다 — 건드리지 않는다.
+        const vv = window.visualViewport;
+        const keyboard = vv ? window.innerHeight - vv.height : 0;
+        if (keyboard > KEYBOARD_MIN_PX) return;
+        el.style.removeProperty("height");
+        el.style.removeProperty("bottom");
+      });
+    };
+    vvAtMount?.addEventListener("resize", clear);
+    window.addEventListener("resize", clear);
+    return () => {
+      cancelAnimationFrame(raf);
+      vvAtMount?.removeEventListener("resize", clear);
+      window.removeEventListener("resize", clear);
+    };
+  }, [targetRef]);
+}
+
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, style, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-2xl)] bg-[var(--bg-surface)] outline-none",
-        className,
-      )}
-      style={{ boxShadow: "var(--shadow-xl)", ...style }}
-      {...props}
-    >
-      {/* handle — preview `.drw-handle` SoT (40×4 + surface-input + rounded-full) */}
-      <div className="mx-auto mt-1.5 mb-2 h-1 w-10 shrink-0 rounded-full bg-surface-input" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
+>(({ className, children, style, ...props }, ref) => {
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
+  useClearKeyboardSizing(contentRef);
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={(node) => {
+          contentRef.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-2xl)] bg-[var(--bg-surface)] outline-none",
+          className,
+        )}
+        style={{ boxShadow: "var(--shadow-xl)", ...style }}
+        {...props}
+      >
+        {/* handle — preview `.drw-handle` SoT (40×4 + surface-input + rounded-full) */}
+        <div className="mx-auto mt-1.5 mb-2 h-1 w-10 shrink-0 rounded-full bg-surface-input" />
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+});
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({
