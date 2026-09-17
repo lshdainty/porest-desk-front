@@ -238,6 +238,11 @@ export function WithdrawDialog({
             {t("withdraw.irreversibleData")}
           </p>
         </div>
+        {/* 데이터가 어떻게 되는지 — "사라진다" 가 아니라 보관 뒤 파기다. 내보내기
+            권유는 해지 전에만 할 수 있는 말이라 여기 둔다(설계서 결정 12). */}
+        <p className="text-sm text-[var(--fg-secondary)]">
+          {t("withdraw.dataRetention")}
+        </p>
         <div className="grid gap-1.5">
           <Label htmlFor="withdraw-reason">{t("withdraw.reasonLabel")}</Label>
           <Input
