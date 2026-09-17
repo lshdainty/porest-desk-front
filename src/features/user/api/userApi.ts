@@ -95,6 +95,18 @@ export interface WithdrawalCheck {
  */
 export const WITHDRAW_BLOCK_SUBSCRIPTION = "SUBSCRIPTION_ACTIVE";
 
+/**
+ * 티켓이 비어 오면 실패로 본다.
+ *
+ * <p>서버도 같은 검사를 하지만(desk-back `ticketOf`) 여기서 한 번 더 막는다 — 빈 값을
+ * 들고 다음 단계로 넘어가면 화면은 "확인됐다" 로 보이고 해지 호출에서야 막힌다.
+ * 사용자는 방금 맞게 넣은 비밀번호를 의심하게 된다.
+ */
+function requireTicket(token: string | undefined): string {
+  if (!token || !token.trim()) throw new Error("");
+  return token;
+}
+
 export const userApi = {
   changePassword: async (data: ChangePasswordReq): Promise<void> => {
     // 실패는 다이얼로그가 desk 문구로 보여준다 — 전역 토스트를 타면 desk-back 이
@@ -135,9 +147,14 @@ export const userApi = {
    * 비밀번호가 없는 소셜 전용 계정을 위한 경로다 — 그 계정은 비밀번호 칸을 채울 수 없다.
    */
   sendReauthEmailCode: async (): Promise<void> => {
+    // 아래 verify 와 같은 규칙으로 맞춘다 — 실패를 화면이 칸 밑에 붙이므로 전역
+    // 토스트까지 겹치면 같은 흐름에서 오류가 두 가지 방식으로 나타난다.
     const resp: ApiResponse = await apiClient.post(
       "/v1/users/me/reauth/email-code",
       {},
+      { silent: true } as import("axios").AxiosRequestConfig & {
+        silent?: boolean;
+      },
     );
     if (!resp.success) throw new Error(resp.message);
   },
@@ -157,7 +174,7 @@ export const userApi = {
       },
     );
     if (!resp.success) throw new Error(resp.message);
-    return resp.data.reauthToken;
+    return requireTicket(resp.data?.reauthToken);
   },
 
   /** 비밀번호 확인 → 재인증 티켓. 실패는 비밀번호 칸 밑에 붙인다. */
@@ -170,7 +187,7 @@ export const userApi = {
       },
     );
     if (!resp.success) throw new Error(resp.message);
-    return resp.data.reauthToken;
+    return requireTicket(resp.data?.reauthToken);
   },
 
   /**

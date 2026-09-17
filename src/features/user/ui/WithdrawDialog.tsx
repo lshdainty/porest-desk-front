@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
+import { serverErrorMessage } from "@/shared/api/error-message";
 import { toLocalDateKey } from "@/shared/lib/date";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
@@ -156,7 +157,11 @@ export function WithdrawDialog({
     } catch (e) {
       // 본인 확인 실패는 그 칸의 문제다 — 토스트로 띄우면 어느 칸을 고쳐야 하는지
       // 안 보인다. 칸 밑에 붙인다(PasswordChangeDialog 와 같은 규칙).
-      setReauthError(e instanceof Error ? e.message : t("withdraw.failed"));
+      //
+      // `e.message` 를 쓰면 안 된다 — axios 가 감싼 "Request failed with status code 400"
+      // 이 그대로 나간다. 사용자에게 할 말("인증 코드가 올바르지 않아요")은 응답 본문에
+      // 들어 있다.
+      setReauthError(serverErrorMessage(e, t("withdraw.failed")));
     } finally {
       runningRef.current = false;
     }
@@ -164,6 +169,11 @@ export function WithdrawDialog({
 
   const onSendCode = () => {
     sendCode.mutate(undefined, {
+      onError: (e) => {
+        // 확인 실패와 같은 자리에 붙인다 — 한쪽만 토스트로 띄우면 같은 흐름 안에서
+        // 오류가 두 가지 방식으로 나타난다.
+        setReauthError(serverErrorMessage(e, t("withdraw.failed")));
+      },
       onSuccess: () => {
         setCodeSent(true);
         setReauthError(null);
