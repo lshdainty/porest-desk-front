@@ -207,6 +207,13 @@ describe("막는 게 없을 때", () => {
     render();
   });
 
+  // 해지는 soft delete 다 — 데이터는 남는다. "기록이 사라진다" 로 쓰면 사용자가
+  // 실제와 다른 것을 믿고 누른다(2026-09-17 QA #7).
+  it("데이터가 어떻게 되는지와 내보내기 권유가 보인다", () => {
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("withdraw.dataRetention");
+  });
+
   it("0 인 항목은 줄을 안 만든다 — 없는 손실을 세어 겁줄 이유가 없다", () => {
     const text = document.body.textContent ?? "";
     expect(text).toContain("impact.calendarsOwned");
