@@ -51,7 +51,7 @@ import {
 import { AccountManager, SavingGoalManager } from "@/widgets/asset-full";
 import { Card, CardContent } from "@/shared/ui/card";
 import { useTheme } from "@/shared/ui/theme-context";
-import { useCurrentUser } from "@/features/user";
+import { useCurrentUser, WithdrawDialog } from "@/features/user";
 import { useAuth } from "@/features/auth";
 import { SubscriptionDialog } from "@/features/subscription/ui/SubscriptionDialog";
 import { SecuritiesLinkDialog } from "@/features/subscription/ui/SecuritiesLinkDialog";
@@ -1230,20 +1230,19 @@ function AccountSection({
           message={t("account.logout.confirmMessage")}
           confirmLabel={t("account.logout.label")}
           onCancel={() => setConfirmLogout(false)}
-          onConfirm={logout}
+          onConfirm={() => logout()}
         />
       )}
 
       {confirmWithdraw && (
-        <ConfirmDialog
-          title={t("account.withdrawConfirm.title")}
-          message={t("account.withdrawConfirm.desc")}
-          confirmLabel={t("account.withdrawConfirm.confirm")}
-          danger
-          onCancel={() => setConfirmWithdraw(false)}
-          // 탈퇴는 아직 서버에 길이 없다 — 이 버튼은 예전부터 창만 닫았고(확정에
-          // onClick 이 아예 없었다) 지금도 그대로다. 기능이 붙기 전까지 동작을 바꾸지 않는다.
-          onConfirm={() => setConfirmWithdraw(false)}
+        <WithdrawDialog
+          onClose={() => setConfirmWithdraw(false)}
+          // 해지한 사람을 로그인 화면으로 떨어뜨리지 않는다 — 왜 안 들어가지는지
+          // 모른 채 비밀번호만 다시 넣어 보게 된다. 안내 화면으로 보낸다.
+          // 보던 자리도 적어 두지 않는다(`remember: false`) — 돌아갈 자리가 없다.
+          onWithdrawn={() =>
+            logout({ returnTo: "/withdrawn", remember: false })
+          }
         />
       )}
 
