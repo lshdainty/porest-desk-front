@@ -66,7 +66,7 @@ export interface UserPreferences {
  * "모든 데이터가 삭제됩니다" 는 아무것도 알려 주지 않는다.
  */
 export interface WithdrawalCheck {
-  /** 막는 사유. 비어 있어야 해지할 수 있다. 지금은 `SUBSCRIPTION` 하나뿐. */
+  /** 막는 사유. 비어 있어야 해지할 수 있다. 지금은 `SUBSCRIPTION_ACTIVE` 하나뿐. */
   blocked: string[];
   /**
    * 구독이 막고 있을 때 **언제부터 가능한지**(ISO, 서버 UTC).
@@ -83,8 +83,17 @@ export interface WithdrawalCheck {
   dutchPayParticipations: number;
 }
 
-/** 해지를 막는 사유 코드. 서버 `CheckResult.blocked` 의 문자열과 같아야 한다. */
-export const WITHDRAW_BLOCK_SUBSCRIPTION = "SUBSCRIPTION";
+/**
+ * 해지를 막는 사유 코드.
+ *
+ * **서버가 짓는 문자열이다** — desk-back `WithdrawalServiceImpl` 이
+ * `List.of("SUBSCRIPTION_ACTIVE")` 로 넣는다. 한 글자라도 다르면 `includes` 가 조용히
+ * false 가 되어, 구독 때문에 막힌 사람에게 **언제부터 가능한지 날짜를 못 보여 준다**
+ * (실제로 `SUBSCRIPTION` 으로 적어 두고 dev 에서 뒤늦게 잡았다, 2026-09-17).
+ * 테스트가 여기에 맞춰 mock 을 만들면 서로를 보고 끄덕이는 닫힌 고리가 되므로,
+ * 이 값은 **서버 코드에서 확인**해야 한다.
+ */
+export const WITHDRAW_BLOCK_SUBSCRIPTION = "SUBSCRIPTION_ACTIVE";
 
 export const userApi = {
   changePassword: async (data: ChangePasswordReq): Promise<void> => {

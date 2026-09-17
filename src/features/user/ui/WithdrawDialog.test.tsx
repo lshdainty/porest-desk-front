@@ -55,6 +55,7 @@ vi.mock("../model/useWithdrawal", () => ({
 }));
 
 const { WithdrawDialog } = await import("./WithdrawDialog");
+const { WITHDRAW_BLOCK_SUBSCRIPTION } = await import("../api/userApi");
 
 const CLEAR = {
   blocked: [],
@@ -140,8 +141,20 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // 렌더 없이 도는 테스트(문자열 계약 검사)도 있다 — 그때는 치울 것이 없다.
+  if (!root) return;
   act(() => root.unmount());
   container.remove();
+});
+
+// 이 값은 **서버가 짓는다** — desk-back `WithdrawalServiceImpl.check()` 의
+// `List.of("SUBSCRIPTION_ACTIVE")`. 한 글자만 달라도 `includes` 가 조용히 false 가 되어
+// 구독 때문에 막힌 사람에게 **언제부터 가능한지 날짜를 못 보여 준다.** 실제로 `SUBSCRIPTION`
+// 으로 적어 두고 dev 에서야 잡았다(2026-09-17). 서버를 고치면 여기도 같이 고쳐야 한다.
+describe("막는 사유 코드", () => {
+  it("서버가 보내는 문자열과 글자 그대로 같다", () => {
+    expect(WITHDRAW_BLOCK_SUBSCRIPTION).toBe("SUBSCRIPTION_ACTIVE");
+  });
 });
 
 describe("제목", () => {
@@ -163,7 +176,9 @@ describe("구독이 막을 때", () => {
   beforeEach(() => {
     state.check = {
       ...CLEAR,
-      blocked: ["SUBSCRIPTION"],
+      // 서버가 실제로 넣는 문자열을 그대로 쓴다 — 상수를 여기 넣으면 상수와 mock 이
+      // 서로를 보고 끄덕이는 닫힌 고리가 되어, 둘 다 틀려도 초록불이 난다.
+      blocked: ["SUBSCRIPTION_ACTIVE"],
       // 서버가 시간대 없이 주는 [UTC] — 화면은 KST 로 읽어 10-01 이 되어야 한다.
       subscriptionPeriodEnd: "2026-09-30T15:00:00",
     };
