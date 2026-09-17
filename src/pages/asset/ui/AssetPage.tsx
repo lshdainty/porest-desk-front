@@ -1428,7 +1428,8 @@ function AssetCard({
               letterSpacing: "-0.022em",
             }}
           >
-            <MaskAmount>
+            {/* 이 자산만 가려 둔 경우도 함께 본다 — 화면 카드와 합집합이다. */}
+            <MaskAmount force={asset.isAmountHidden === "Y"}>
               {checkCardMonthly != null ? (
                 <>
                   {wonPre()}
@@ -1481,6 +1482,19 @@ function AssetCard({
               {t("excludedFromTotal")}
             </div>
           )}
+          {/* 카드로 가려진 것과 **이 자산이라서** 가려진 것을 구분해 준다 — 배지가
+              없으면 왜 안 보이는지 알 수 없고, 설정 화면을 뒤지게 된다. */}
+          {asset.isAmountHidden === "Y" && (
+            <div
+              style={{
+                fontSize: "var(--text-badge)",
+                color: "var(--fg-tertiary)",
+                marginTop: 2,
+              }}
+            >
+              {t("amountHiddenBadge")}
+            </div>
+          )}
           {/* 카드 사용액/한도 — 게이지 바는 아래 행 전체 폭으로 따로 그린다.
             왼쪽 텍스트 열에 두면 카드 이름 길이에 밀려 폭이 모자라 넘친다. */}
           {(() => {
@@ -1497,7 +1511,10 @@ function AssetCard({
                   whiteSpace: "nowrap",
                 }}
               >
-                <MaskAmount mask="••• / •••">
+                <MaskAmount
+                  mask="••• / •••"
+                  force={asset.isAmountHidden === "Y"}
+                >
                   {wonPre()}
                   {KRW(u.used)} / {wonPre()}
                   {KRW(u.limit)}

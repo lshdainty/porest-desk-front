@@ -359,7 +359,12 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                               color: "var(--fg-primary)",
                             }}
                           >
-                            <MaskAmount card="asset.manage" mask="••••">
+                            {/* 이 자산만 가려 둔 경우도 함께 본다 — 합집합. */}
+                            <MaskAmount
+                              card="asset.manage"
+                              mask="••••"
+                              force={asset.isAmountHidden === "Y"}
+                            >
                               {neg ? "−" : ""}
                               {wonPre()}
                               {KRW(amt)}
@@ -375,6 +380,18 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
                               }}
                             >
                               {t("excludedFromTotal")}
+                            </div>
+                          )}
+                          {/* 카드로 가려진 것과 이 자산이라서 가려진 것을 구분해 준다. */}
+                          {asset.isAmountHidden === "Y" && (
+                            <div
+                              style={{
+                                fontSize: "var(--text-badge)",
+                                color: "var(--fg-tertiary)",
+                                marginTop: 2,
+                              }}
+                            >
+                              {t("amountHiddenBadge")}
                             </div>
                           )}
                         </div>

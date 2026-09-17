@@ -70,6 +70,7 @@ const baseAsset = {
   color: null,
   sortOrder: 0,
   isIncludedInTotal: "Y",
+  isAmountHidden: "N",
   cardCatalog: null,
   createAt: "2026-01-01T00:00:00",
   modifyAt: "2026-01-01T00:00:00",
@@ -447,5 +448,29 @@ describe("메모 — 칸이 있으면 비운 상태로, 없으면 키째 (QA #11
     const { update } = submit(usdCard, "card");
     expect(memoInput()).toBeNull();
     expect(update!.memo).toBe("계좌 화면에서 적어 둔 메모");
+  });
+});
+
+/**
+ * 자산별 금액 숨김 — 폼이 그 값을 <b>싣고, 잃지 않는지</b>.
+ *
+ * <p>서버 PUT 은 "키가 없으면 유지" 라, 폼이 이 칸을 빼먹으면 겉으론 아무 일도 안 나고
+ * 그대로 유지된다. 그러나 <b>스위치를 껐는데 안 꺼지는</b> 쪽은 조용히 실패한다 —
+ * 사용자는 껐다고 믿고 화면은 계속 가려져 있다.
+ */
+describe("자산별 금액 숨김 — 폼 payload", () => {
+  // 신규 생성은 여기서 안 본다 — 필수 칸이 비어 저장이 안 눌린다(이 파일의 다른
+  // 테스트도 전부 기존 자산으로 연다). 새 자산의 기본값 'N' 은 서버 `createAsset` 과
+  // 폼 초기값 둘 다가 쥐고 있다.
+
+  it("수정: 가려 둔 자산은 그 값이 그대로 실린다 — 이름만 고쳐도 안 풀린다", () => {
+    const hidden: Asset = { ...usdAccount, isAmountHidden: "Y" };
+    const { update } = submit(hidden, "account");
+    expect(update!.isAmountHidden).toBe("Y");
+  });
+
+  it("수정: 안 가려 둔 자산은 N 으로 나간다", () => {
+    const { update } = submit(usdAccount, "account");
+    expect(update!.isAmountHidden).toBe("N");
   });
 });

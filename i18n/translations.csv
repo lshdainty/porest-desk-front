@@ -2679,6 +2679,9 @@ asset,holdings.unitCount,개,units
 asset,holdings.namePlaceholder,항목 이름,Item name
 asset,holdings.remove,삭제,Remove
 asset,holdings.balanceAutoHelp,보유 종목 합계로 자동 계산돼요. 연동 종목은 시세 확보 시 반영됩니다.,Calculated from holdings. Linked items reflect live prices when available.
+asset,editDialog.hideAmount,금액 숨기기,Hide amount
+asset,editDialog.hideAmountDesc,이 자산의 금액만 가려요. 합계는 그대로 보여요,Masks only this asset's balance. Totals stay visible
+asset,amountHiddenBadge,금액 숨김,Amount hidden
 download,title,포레스트 데스크 앱,Porest Desk App
 download,subtitleLoading,최신 버전을 확인하는 중…,Checking the latest version…
 download,subtitleNoRelease,아직 배포된 버전이 없어요,No release published yet

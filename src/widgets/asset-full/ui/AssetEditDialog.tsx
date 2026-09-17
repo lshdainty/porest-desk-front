@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CreditCard, Plus, Search, Trash2, Wallet } from "lucide-react";
+import { CreditCard, EyeOff, Plus, Search, Trash2, Wallet } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Input } from "@/shared/ui/input";
@@ -239,6 +239,10 @@ export function AssetEditDialog({
   const [memo, setMemo] = useState(item?.memo ?? "");
   const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
     item?.isIncludedInTotal ?? "Y",
+  );
+  // 새 자산은 가리지 않는다 — 만들자마자 금액이 안 보이면 잘못 만든 줄 안다.
+  const [isAmountHidden, setIsAmountHidden] = useState<YNType>(
+    item?.isAmountHidden ?? "N",
   );
   // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
   const [balanceStr, setBalanceStr] = useState<string>(
@@ -676,6 +680,7 @@ export function AssetEditDialog({
           color,
           ...currencyFields,
           isIncludedInTotal,
+          isAmountHidden,
           cardCatalogRowId: catalogId,
           ...billingFields,
         });
@@ -693,6 +698,7 @@ export function AssetEditDialog({
           // 옛 서버(이 칸을 무조건 대입한다)에서도 남이 적어 둔 메모가 안 지워진다.
           memo: memo.trim() || null,
           isIncludedInTotal,
+          isAmountHidden,
           cardCatalogRowId: catalogId,
           ...billingFields,
         });
@@ -737,6 +743,7 @@ export function AssetEditDialog({
         ...currencyFields,
         memo: memo.trim() || null,
         isIncludedInTotal,
+        isAmountHidden,
         holdings: holdingsPayload,
       };
       if (isNew) onCreate(common);
@@ -763,6 +770,7 @@ export function AssetEditDialog({
       ...currencyFields,
       memo: memo.trim() || null,
       isIncludedInTotal,
+      isAmountHidden,
       creditLimit: overdraftLimit,
     };
     if (isNew) onCreate(common);
@@ -1756,6 +1764,25 @@ export function AssetEditDialog({
         <Switch
           checked={isIncludedInTotal === "Y"}
           onCheckedChange={(b) => setIsIncludedInTotal(b ? "Y" : "N")}
+        />
+      </div>
+
+      {/* 총액 제외 바로 아래 — 둘 다 자산 하나에 붙는 표시 규칙이라 나란히 둔다. */}
+      <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3">
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-muted text-[var(--fg-secondary)]">
+          <EyeOff size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13px] font-semibold text-[var(--fg-primary)]">
+            {t("editDialog.hideAmount")}
+          </div>
+          <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">
+            {t("editDialog.hideAmountDesc")}
+          </div>
+        </div>
+        <Switch
+          checked={isAmountHidden === "Y"}
+          onCheckedChange={(b) => setIsAmountHidden(b ? "Y" : "N")}
         />
       </div>
     </Fragment>

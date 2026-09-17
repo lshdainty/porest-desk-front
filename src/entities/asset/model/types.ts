@@ -128,6 +128,13 @@ export interface Asset {
   memo: string | null;
   sortOrder: number;
   isIncludedInTotal: YNType;
+  /**
+   * 이 자산의 **금액만** 가린다.
+   *
+   * <p>화면 카드 가리기(`hide_cards`)와 별개 축이고 **합집합**이다 — 하나라도 켜져
+   * 있으면 가려진다. 합계·구성·순자산은 이 값을 보지 않는다(서버도 집계에 안 넣는다).
+   */
+  isAmountHidden: YNType;
   cardCatalog: AssetCardCatalogBrief | null;
   /** 신용카드 한도 (CREDIT_CARD 전용, nullable) */
   creditLimit?: number | null;
@@ -177,6 +184,7 @@ export interface AssetFormValues {
   memo?: string | null;
   sortOrder?: number;
   isIncludedInTotal?: YNType;
+  isAmountHidden?: YNType;
   cardCatalogRowId?: number | null;
   creditLimit?: number | null;
   paymentDay?: number | null;
@@ -211,6 +219,8 @@ export interface AssetUpdateFormValues {
    */
   memo?: string | null;
   isIncludedInTotal?: YNType;
+  /** 안 보내면 유지. 명시적 `null` 은 400 — NOT NULL 칸이라 "지운다" 가 없다. */
+  isAmountHidden?: YNType;
   cardCatalogRowId?: number | null;
   creditLimit?: number | null;
   paymentDay?: number | null;

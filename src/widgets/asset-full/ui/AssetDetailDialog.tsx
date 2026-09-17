@@ -44,6 +44,7 @@ import {
   useInvestValuation,
   holdingsOf,
   useAssetTransfers,
+  useUpdateAsset,
 } from "@/features/asset";
 import type { AssetTransfer, InstallmentDue } from "@/entities/asset";
 import { useLivePrices } from "@/features/stock/model/useLivePrices";
@@ -82,7 +83,7 @@ import {
   WonUnit,
 } from "@/shared/lib/porest/hide-amounts";
 import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
-import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
+import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
 type BalanceTooltipProps = {
@@ -1960,9 +1961,32 @@ export function AssetDetailDialog({
   const asset =
     liveAssets?.assets.find((a) => a.rowId === assetProp.rowId) ?? assetProp;
   const navigate = useNavigate();
-  const hidden = useHideAmounts("asset.detail");
-  // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
-  const handleHideToggle = useOpenHideAmountsSettings("asset");
+  // 이 자산만 가려 둔 경우도 함께 본다 — 화면 카드와 합집합이다.
+  const assetHidden = asset.isAmountHidden === "Y";
+  const hidden = useHideAmounts("asset.detail") || assetHidden;
+
+  // footer 버튼은 **이 자산**을 켜고 끈다(예전엔 설정 화면으로 보내기만 했다).
+  // 그래서 라벨·아이콘은 화면 상태(`hidden`)가 아니라 **자산 플래그**를 따른다 —
+  // 카드로 가려진 상태에서 "금액 표시" 라고 적어 놓으면 눌러도 안 보여 고장으로 읽힌다.
+  const updateAsset = useUpdateAsset();
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const applyHidden = (next: "Y" | "N") =>
+    updateAsset.mutate({
+      id: asset.rowId,
+      // 이름·종류를 함께 싣는 건 폼 타입이 필수로 요구해서다. 서버 PUT 은 "키가 없으면
+      // 유지" 라 굳이 보낼 필요는 없지만, **지금 값 그대로** 보내므로 아무것도 안 바뀐다.
+      data: {
+        assetName: asset.assetName,
+        assetType: asset.assetType,
+        isAmountHidden: next,
+      },
+    });
+  const handleHideToggle = () => {
+    // 켜는 건 그냥, 푸는 건 본인 확인을 거친다 — 카드 가리기와 같은 규칙
+    // (`HideAmountsSection`). 잠그는 쪽에 마찰을 두면 아무도 안 쓴다.
+    if (assetHidden) setUnlockOpen(true);
+    else applyHidden("Y");
+  };
 
   const group = groupOf(asset);
   const isCard = group === "card";
@@ -2076,8 +2100,8 @@ export function AssetDetailDialog({
             onClick={handleHideToggle}
             type="button"
           >
-            {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
-            {hidden
+            {assetHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+            {assetHidden
               ? t("assetDetail.showAmounts")
               : t("assetDetail.hideAmounts")}
           </Button>
@@ -2577,6 +2601,15 @@ export function AssetDetailDialog({
           </>
         )}
       </ModalShell>
+      {/* 푸는 쪽에만 본인 확인을 건다 — 켜는 건 그냥 된다(카드 가리기와 같은 규칙). */}
+      <HideAmountsUnlockDialog
+        open={unlockOpen}
+        onOpenChange={setUnlockOpen}
+        onVerified={() => {
+          setUnlockOpen(false);
+          applyHidden("N");
+        }}
+      />
     </>
   );
 }
