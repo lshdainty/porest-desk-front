@@ -78,6 +78,11 @@ const CardBenefitPage = lazy(() =>
 const LoginPage = lazy(() =>
   import("@/pages/login/ui/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
+const WithdrawnPage = lazy(() =>
+  import("@/pages/withdrawn/ui/WithdrawnPage").then((m) => ({
+    default: m.WithdrawnPage,
+  })),
+);
 const DownloadPage = lazy(() =>
   import("@/pages/download/ui/DownloadPage").then((m) => ({
     default: m.DownloadPage,
@@ -107,6 +112,10 @@ export const AppRouter = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          {/* 해지 안내 — 로그인 없이 열린다. 방금 해지한 사람이 SSO 로그아웃을 거쳐
+              돌아오는 자리이자, 해지한 계정으로 다시 들어오려다 막힌 사람이 닿는 자리다.
+              ProtectedRoute 안에 두면 둘 다 못 본다(desk 토큰이 이미 없다). */}
+          <Route path="/withdrawn" element={<WithdrawnPage />} />
           {/* 앱 받기 — 로그인 없이 열린다. 링크만 알면 누구나 받을 수 있게(사용자 결정). */}
           <Route path="/download" element={<DownloadPage />} />
           {/* 임베드 차트 — ProtectedRoute 밖 (querystring 의 60초 embed_token 으로 인증) */}

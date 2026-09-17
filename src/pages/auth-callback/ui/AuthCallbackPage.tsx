@@ -46,9 +46,15 @@ export const AuthCallbackPage = () => {
         });
         clearPkce();
         window.history.replaceState({}, "", window.location.pathname);
+        // 해지한 계정은 로그인으로 되돌리지 않는다 — 왜 안 들어가지는지 모른 채
+        // 비밀번호만 다시 넣어 보게 된다. 안내 화면이 이유를 말해 준다.
+        if (!result.ok && result.withdrawn) {
+          navigate("/withdrawn", { replace: true });
+          return;
+        }
         // 밀려나기 전에 보던 자리로 되돌린다(QA #131). 적어 둔 게 없으면 홈이다.
         // 꺼내며 지우므로 다음 로그인이 옛 자리를 물려받지 않는다.
-        navigate(result ? (takeLoginRedirect() ?? "/desk") : "/login", {
+        navigate(result.ok ? (takeLoginRedirect() ?? "/desk") : "/login", {
           replace: true,
         });
         return;

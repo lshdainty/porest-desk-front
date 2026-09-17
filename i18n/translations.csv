@@ -1264,6 +1264,37 @@ user,passwordPolicyUnmet,비밀번호 조건을 모두 충족해 주세요,Passw
 user,passwordSameAsCurrent,현재 비밀번호와 다른 비밀번호를 입력해 주세요,New password must be different from the current one
 user,passwordChangeSuccess,비밀번호를 바꿨어요,Password changed successfully
 user,passwordChangeError,비밀번호를 바꾸지 못했어요. 잠시 뒤 다시 시도해 주세요,Couldn't change your password. Please try again shortly
+user,withdraw.title,desk 이용 해지,Stop using desk
+user,withdraw.intro,해지하면 desk 에 쌓아 둔 기록이 사라지고 아래 항목이 함께 정리돼요.,"Stopping desk removes everything you kept here, along with the items below."
+user,impact.calendarsOwned,내가 만든 공유 캘린더 {{count}}개가 삭제되고 멤버도 볼 수 없어요,{{count}} shared calendar(s) you created will be deleted — members lose access too
+user,impact.calendarMemberships,참여 중인 캘린더 {{count}}개에서 빠져요,You will be removed from {{count}} calendar(s) you joined
+user,impact.dutchPaysOwned,내가 만든 정산 {{count}}개가 삭제돼요,{{count}} settlement(s) you created will be deleted
+user,impact.dutchPayParticipations,참여 중인 정산 {{count}}개에 탈퇴한 사용자로 남아요,"You will appear as ""a former member"" in {{count}} settlement(s) you joined"
+user,withdraw.irreversibleTitle,되돌릴 수 없어요,This cannot be undone
+user,withdraw.irreversibleRejoin,같은 아이디와 이메일로는 다시 가입할 수 없어요.,You cannot sign up again with the same ID or email address.
+user,withdraw.irreversibleData,해지 후에는 기록을 되살릴 수 없어요.,Your records cannot be restored after this.
+user,withdraw.reasonLabel,떠나시는 이유 (선택),Why are you leaving? (optional)
+user,withdraw.reasonPlaceholder,알려 주시면 다음에 더 낫게 만들게요,Tell us and we will do better next time
+user,withdraw.next,계속,Continue
+user,withdraw.confirm,해지하기,Stop using desk
+user,withdraw.reauthIntro,본인이 맞는지 한 번만 더 확인할게요.,"Just once more, let us confirm it is you."
+user,withdraw.useEmailCode,비밀번호가 없으신가요? 메일로 코드 받기,No password? Get a code by email
+user,withdraw.usePassword,비밀번호로 확인하기,Use my password instead
+user,withdraw.codeLabel,인증 코드,Verification code
+user,withdraw.codePlaceholder,6자리 숫자,6 digits
+user,withdraw.sendCode,코드 받기,Send code
+user,withdraw.resendCode,다시 받기,Send again
+user,withdraw.codeSent,메일로 코드를 보냈어요,We sent a code to your email
+user,withdraw.codeHint,메일함에 코드가 안 보이면 스팸함도 확인해 주세요.,"If you do not see it, check your spam folder."
+user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해 주세요,Could not stop your desk account. Please try again shortly
+user,withdraw.blockedSubscription,구독이 남아 있어 아직 해지할 수 없어요,"You still have an active subscription, so you cannot stop desk yet"
+user,withdraw.blockedSubscriptionUntil,구독이 {{date}} 까지 남아 있어 아직 해지할 수 없어요,"Your subscription runs until {{date}}, so you cannot stop desk yet"
+user,withdraw.blockedOther,아직 해지할 수 없는 상태예요,Your account cannot be stopped right now
+user,withdraw.blockedHint,구독을 먼저 해지하시면 남은 기간이 끝난 뒤에 이용 해지를 할 수 있어요.,Cancel your subscription first — you can stop desk once the paid period ends.
+user,withdrawn.title,이용 해지가 끝났어요,Your desk account is closed
+user,withdrawn.body,그동안 desk 를 써 주셔서 고마웠어요. 남아 있던 기록은 정리했어요.,"Thank you for using desk. Everything you kept here has been cleared."
+user,withdrawn.rejoin,같은 아이디와 이메일로는 다시 가입할 수 없어요.,You cannot sign up again with the same ID or email address.
+user,withdrawn.toLogin,로그인 화면으로,Go to sign in
 budget,add,추가,Add
 budget,copy,복사,Copy
 budget,copyLastMonth,지난달 복사,Copy Last Month
