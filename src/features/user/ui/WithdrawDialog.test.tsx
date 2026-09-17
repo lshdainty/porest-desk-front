@@ -144,6 +144,21 @@ afterEach(() => {
   container.remove();
 });
 
+describe("제목", () => {
+  beforeEach(() => {
+    state.check = CLEAR;
+    render();
+  });
+
+  // 제목이 `settings` 네임스페이스의 `account.withdraw.label` 을 가리킨 적이 있었다.
+  // 이 다이얼로그는 `user` 네임스페이스라 그 키는 안 풀리고, 시트 머리에 키 문자열이
+  // 그대로 떴다. t 를 키 그대로 돌려주도록 mock 했으므로 여기서 어느 키를 쓰는지 본다.
+  it("user 네임스페이스의 키를 쓴다 — 다른 네임스페이스 키는 안 풀린다", () => {
+    expect(document.body.textContent).toContain("withdraw.title");
+    expect(document.body.textContent).not.toContain("account.withdraw.label");
+  });
+});
+
 describe("구독이 막을 때", () => {
   beforeEach(() => {
     state.check = {

@@ -350,7 +350,7 @@ export function WithdrawDialog({
 
   return (
     <ModalShell
-      title={t("account.withdraw.label")}
+      title={t("withdraw.title")}
       onClose={onClose}
       mobile={mobile}
       size="sm"
