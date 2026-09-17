@@ -78,6 +78,7 @@ import { niceAxis } from "@/shared/lib/porest/chartAxis";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { assetTypeLabel } from "@/entities/asset";
 import {
+  HideForce,
   HideUnit,
   MaskAmount,
   WonUnit,
@@ -2114,202 +2115,365 @@ export function AssetDetailDialog({
 
   return (
     <>
-      <ModalShell
-        title={title}
-        onClose={onClose}
-        size="lg"
-        footer={Footer}
-        mobile={mobile}
-      >
-        {/* Hero — 플랫(design 신판): 이름 행 + 구분선 + 잔액. 신용카드는 이름 행만
+      {/* 이 자산이 숨김이면 상세 안의 금액을 전부 가린다 — 히어로·예수금·카드 청구·
+        할부·보유종목이 하위 컴포넌트에 흩어져 있어 자리마다 force= 를 달면 새기 쉽다. */}
+      <HideForce value={assetHidden}>
+        <ModalShell
+          title={title}
+          onClose={onClose}
+          size="lg"
+          footer={Footer}
+          mobile={mobile}
+        >
+          {/* Hero — 플랫(design 신판): 이름 행 + 구분선 + 잔액. 신용카드는 이름 행만
           (회차 히어로가 금액 담당 — CardDetailBody). */}
-        <div style={{ marginBottom: isCredit ? 0 : 18 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              paddingBottom: 14,
-              marginBottom: isCredit ? 0 : 14,
-              borderBottom: isCredit
-                ? "none"
-                : "1px solid var(--border-subtle)",
-            }}
-          >
-            <AssetLogo asset={asset} size={48} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: "var(--text-body-lg)",
-                  fontWeight: "700",
-                  letterSpacing: "-0.012em",
-                }}
-              >
-                {asset.assetName}
-              </div>
-              <div
-                style={{
-                  fontSize: "var(--text-label-sm)",
-                  color: "var(--fg-tertiary)",
-                  marginTop: 2,
-                }}
-              >
-                {/* 투자 — design: "투자 · 보유 N종목 · 메모" */}
-                {isInv
-                  ? [
-                      assetTypeLabel(asset.assetType, asset.balance),
-                      t("holdings.countLabel", { n: holdingsOf(asset).length }),
-                      asset.memo,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")
-                  : [
-                      asset.institution,
-                      assetTypeLabel(asset.assetType, asset.balance),
-                      asset.memo,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-              </div>
-            </div>
-          </div>
-          {!isCredit && (
-            <>
-              <div
-                style={{
-                  fontSize: "var(--text-badge)",
-                  color: "var(--fg-tertiary)",
-                  fontWeight: "600",
-                  letterSpacing: "0.04em",
-                  marginBottom: 4,
-                }}
-              >
-                {valueLabel}
-              </div>
-              <div
-                className="num"
-                style={{
-                  fontSize: "var(--text-display-md)",
-                  fontWeight: "800",
-                  letterSpacing: "-0.022em",
-                  color: "var(--fg-primary)",
-                }}
-              >
-                <MaskAmount card="asset.detail">
-                  {heroAmount < 0 ? "−" : ""}
-                  {wonPre()}
-                  {KRW(heroAmount, { abs: true })}
-                </MaskAmount>
-                {!isEn() && (
-                  <HideUnit>
-                    <span
-                      style={{ fontSize: "var(--text-body-lg)", marginLeft: 2 }}
-                    >
-                      원
-                    </span>
-                  </HideUnit>
-                )}
-              </div>
-              {/* 예수금·평가금액 — 실제 증권 계좌처럼 나눠 보여 준다(예수금이 있을 때만). */}
-              {isInv && investCash !== 0 && (
+          <div style={{ marginBottom: isCredit ? 0 : 18 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                paddingBottom: 14,
+                marginBottom: isCredit ? 0 : 14,
+                borderBottom: isCredit
+                  ? "none"
+                  : "1px solid var(--border-subtle)",
+              }}
+            >
+              <AssetLogo asset={asset} size={48} />
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    marginTop: 8,
+                    fontSize: "var(--text-body-lg)",
+                    fontWeight: "700",
+                    letterSpacing: "-0.012em",
+                  }}
+                >
+                  {asset.assetName}
+                </div>
+                <div
+                  style={{
                     fontSize: "var(--text-label-sm)",
                     color: "var(--fg-tertiary)",
+                    marginTop: 2,
                   }}
                 >
-                  <span className="num">
-                    {t("holdings.cashBalance")}{" "}
-                    <MaskAmount card="asset.detail">
-                      {KRW(investCash)}
-                    </MaskAmount>
-                  </span>
-                  <span className="dot-sep" />
-                  <span className="num">
-                    {t("holdings.holdingBalance")}{" "}
-                    <MaskAmount card="asset.detail">
-                      {KRW(investHolding)}
-                    </MaskAmount>
-                  </span>
+                  {/* 투자 — design: "투자 · 보유 N종목 · 메모" */}
+                  {isInv
+                    ? [
+                        assetTypeLabel(asset.assetType, asset.balance),
+                        t("holdings.countLabel", {
+                          n: holdingsOf(asset).length,
+                        }),
+                        asset.memo,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")
+                    : [
+                        asset.institution,
+                        assetTypeLabel(asset.assetType, asset.balance),
+                        asset.memo,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                 </div>
-              )}
-
-              {/* 투자 등락 — design: "+N% · 오늘 ±N원" (+빨강/−파랑 국내 통념) */}
-              {investVal?.changePct != null && (
+              </div>
+            </div>
+            {!isCredit && (
+              <>
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    marginTop: 8,
-                    fontSize: "var(--text-label-sm)",
+                    fontSize: "var(--text-badge)",
+                    color: "var(--fg-tertiary)",
+                    fontWeight: "600",
+                    letterSpacing: "0.04em",
+                    marginBottom: 4,
                   }}
                 >
-                  <span
-                    className="num"
+                  {valueLabel}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    fontSize: "var(--text-display-md)",
+                    fontWeight: "800",
+                    letterSpacing: "-0.022em",
+                    color: "var(--fg-primary)",
+                  }}
+                >
+                  <MaskAmount card="asset.detail">
+                    {heroAmount < 0 ? "−" : ""}
+                    {wonPre()}
+                    {KRW(heroAmount, { abs: true })}
+                  </MaskAmount>
+                  {!isEn() && (
+                    <HideUnit>
+                      <span
+                        style={{
+                          fontSize: "var(--text-body-lg)",
+                          marginLeft: 2,
+                        }}
+                      >
+                        원
+                      </span>
+                    </HideUnit>
+                  )}
+                </div>
+                {/* 예수금·평가금액 — 실제 증권 계좌처럼 나눠 보여 준다(예수금이 있을 때만). */}
+                {isInv && investCash !== 0 && (
+                  <div
                     style={{
-                      fontWeight: 700,
-                      color:
-                        investVal.changePct >= 0
-                          ? "var(--status-danger-fg)"
-                          : "var(--fg-brand)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginTop: 8,
+                      fontSize: "var(--text-label-sm)",
+                      color: "var(--fg-tertiary)",
                     }}
                   >
-                    {investVal.changePct >= 0 ? "+" : ""}
-                    {investVal.changePct}%
-                  </span>
-                  {investVal.changeAmt != null && (
+                    <span className="num">
+                      {t("holdings.cashBalance")}{" "}
+                      <MaskAmount card="asset.detail">
+                        {KRW(investCash)}
+                      </MaskAmount>
+                    </span>
+                    <span className="dot-sep" />
+                    <span className="num">
+                      {t("holdings.holdingBalance")}{" "}
+                      <MaskAmount card="asset.detail">
+                        {KRW(investHolding)}
+                      </MaskAmount>
+                    </span>
+                  </div>
+                )}
+
+                {/* 투자 등락 — design: "+N% · 오늘 ±N원" (+빨강/−파랑 국내 통념) */}
+                {investVal?.changePct != null && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginTop: 8,
+                      fontSize: "var(--text-label-sm)",
+                    }}
+                  >
                     <span
                       className="num"
-                      style={{ color: "var(--fg-tertiary)" }}
+                      style={{
+                        fontWeight: 700,
+                        color:
+                          investVal.changePct >= 0
+                            ? "var(--status-danger-fg)"
+                            : "var(--fg-brand)",
+                      }}
                     >
-                      {t("holdings.todayChange", {
-                        sign: investVal.changeAmt >= 0 ? "+" : "−",
-                        amount: KRW(Math.abs(investVal.changeAmt)),
-                      })}
+                      {investVal.changePct >= 0 ? "+" : ""}
+                      {investVal.changePct}%
                     </span>
+                    {investVal.changeAmt != null && (
+                      <span
+                        className="num"
+                        style={{ color: "var(--fg-tertiary)" }}
+                      >
+                        {t("holdings.todayChange", {
+                          sign: investVal.changeAmt >= 0 ? "+" : "−",
+                          amount: KRW(Math.abs(investVal.changeAmt)),
+                        })}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* 보유 종목 — design invest 상세: 연동/수동 항목 리스트 (행 클릭 → 편집) */}
+          {/* 종목 수정은 하단 [수정] 로만 — 목록 행은 매수·매도 버튼만 받는다. */}
+          {isInv && <HoldingsSection asset={asset} mobile={mobile} />}
+
+          {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}
+          {isCredit && (
+            <CardDetailBody
+              asset={asset}
+              mobile={mobile}
+              onEdit={onEdit ? () => onEdit(asset) : undefined}
+            />
+          )}
+
+          {/* 체크카드 — 실적 배지만(청구 회차 없음) */}
+          {isCard && !isCredit && (
+            <div style={{ marginBottom: 18 }}>
+              <CardPerfBadge assetRowId={asset.rowId} />
+            </div>
+          )}
+
+          {!isCredit && (
+            <>
+              {/* Balance trend chart — 연결계좌형 체크카드는 잔액이 늘 0 이라 평평한 0 선뿐이다.
+          차트만 빼고 내역은 그대로 둔다. */}
+              {!isCheckLinked && (
+                <div style={{ marginBottom: 18 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <h4
+                      style={{
+                        fontSize: "var(--text-label-sm)",
+                        fontWeight: "700",
+                        margin: 0,
+                      }}
+                    >
+                      {t("assetDetail.recentTrend", {
+                        period: periodLabel,
+                        label: isCard
+                          ? t("assetDetail.trendUsage")
+                          : isInv
+                            ? t("assetDetail.trendValuation")
+                            : t("assetDetail.trendBalance"),
+                      })}
+                    </h4>
+                    <Tabs
+                      value={period}
+                      onValueChange={(v) => setPeriod(v as "3m" | "6m" | "1y")}
+                      className="ml-auto"
+                    >
+                      <TabsList variant="pill" size="sm">
+                        <TabsTrigger value="3m">
+                          {t("assetDetail.period3m")}
+                        </TabsTrigger>
+                        <TabsTrigger value="6m">
+                          {t("assetDetail.period6m")}
+                        </TabsTrigger>
+                        <TabsTrigger value="1y">
+                          {t("assetDetail.period1y")}
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  {trendLoading ? (
+                    <SkeletonBase className="h-[160px] w-full rounded-md" />
+                  ) : chartData.length === 0 ? (
+                    <div
+                      style={{
+                        height: 160,
+                        background: "var(--bg-sunken)",
+                        borderRadius: "var(--radius-tile)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "var(--fg-tertiary)",
+                        fontSize: "var(--text-label-sm)",
+                      }}
+                    >
+                      {t("assetDetail.noData")}
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={chartConfig}
+                      className="aspect-auto w-full"
+                      style={{ height: 160 }}
+                    >
+                      <AreaChart
+                        data={chartData}
+                        margin={{ top: 10, right: 12, left: 0, bottom: 4 }}
+                      >
+                        <defs>
+                          <linearGradient
+                            id={`asset-balance-fill-${asset.rowId}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="var(--color-balance)"
+                              stopOpacity={0.28}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="var(--color-balance)"
+                              stopOpacity={0}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          vertical={false}
+                          stroke="var(--border-subtle)"
+                          strokeDasharray="3 3"
+                        />
+                        <XAxis
+                          dataKey="label"
+                          tickLine={false}
+                          axisLine={false}
+                          tick={{
+                            fontSize: "var(--text-badge)",
+                            fill: "var(--fg-tertiary)",
+                          }}
+                          tickMargin={6}
+                          interval="preserveStartEnd"
+                          minTickGap={18}
+                        />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          domain={[yAxis.min, yAxis.max]}
+                          ticks={yAxis.ticks}
+                          // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
+                          tickFormatter={(v: number) =>
+                            hidden ? "••••" : formatChartAxis(v)
+                          }
+                          tick={{
+                            fontSize: "var(--text-badge)",
+                            fill: "var(--fg-tertiary)",
+                          }}
+                          width={44}
+                        />
+                        <ChartTooltip
+                          cursor={{
+                            stroke: "var(--fg-tertiary)",
+                            strokeWidth: 1,
+                            strokeDasharray: "3 3",
+                          }}
+                          content={<BalanceTooltip seriesLabel={seriesLabel} />}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="balance"
+                          stroke="var(--color-balance)"
+                          strokeWidth={2}
+                          fill={`url(#asset-balance-fill-${asset.rowId})`}
+                          dot={{
+                            r: 4,
+                            fill: "var(--color-balance)",
+                            stroke: "var(--bg-surface)",
+                            strokeWidth: 1.5,
+                          }}
+                          activeDot={{
+                            r: 5.5,
+                            fill: "var(--color-balance)",
+                            stroke: "var(--bg-surface)",
+                            strokeWidth: 2,
+                          }}
+                        />
+                      </AreaChart>
+                    </ChartContainer>
                   )}
                 </div>
               )}
-            </>
-          )}
-        </div>
 
-        {/* 보유 종목 — design invest 상세: 연동/수동 항목 리스트 (행 클릭 → 편집) */}
-        {/* 종목 수정은 하단 [수정] 로만 — 목록 행은 매수·매도 버튼만 받는다. */}
-        {isInv && <HoldingsSection asset={asset} mobile={mobile} />}
-
-        {/* 신용카드 — 신판 카드 상세 본문(회차·한도·실적·이용 내역 일체) */}
-        {isCredit && (
-          <CardDetailBody
-            asset={asset}
-            mobile={mobile}
-            onEdit={onEdit ? () => onEdit(asset) : undefined}
-          />
-        )}
-
-        {/* 체크카드 — 실적 배지만(청구 회차 없음) */}
-        {isCard && !isCredit && (
-          <div style={{ marginBottom: 18 }}>
-            <CardPerfBadge assetRowId={asset.rowId} />
-          </div>
-        )}
-
-        {!isCredit && (
-          <>
-            {/* Balance trend chart — 연결계좌형 체크카드는 잔액이 늘 0 이라 평평한 0 선뿐이다.
-          차트만 빼고 내역은 그대로 둔다. */}
-            {!isCheckLinked && (
-              <div style={{ marginBottom: 18 }}>
+              {/* Recent tx */}
+              <div>
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    marginBottom: 10,
+                    marginBottom: 8,
                   }}
                 >
                   <h4
@@ -2319,288 +2483,142 @@ export function AssetDetailDialog({
                       margin: 0,
                     }}
                   >
-                    {t("assetDetail.recentTrend", {
-                      period: periodLabel,
-                      label: isCard
-                        ? t("assetDetail.trendUsage")
-                        : isInv
-                          ? t("assetDetail.trendValuation")
-                          : t("assetDetail.trendBalance"),
-                    })}
+                    {isCheckLinked
+                      ? t("assetDetail.monthTx")
+                      : t("assetDetail.recentTx")}
+                    {relatedItems.length > 0 ? ` (${relatedItems.length})` : ""}
                   </h4>
-                  <Tabs
-                    value={period}
-                    onValueChange={(v) => setPeriod(v as "3m" | "6m" | "1y")}
-                    className="ml-auto"
+                  <button
+                    type="button"
+                    className="all"
+                    style={{
+                      marginLeft: "auto",
+                      background: "transparent",
+                      border: 0,
+                      color: "var(--fg-secondary)",
+                      cursor: "pointer",
+                      fontSize: "var(--text-label-sm)",
+                      fontWeight: "600",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                    onClick={viewAll}
                   >
-                    <TabsList variant="pill" size="sm">
-                      <TabsTrigger value="3m">
-                        {t("assetDetail.period3m")}
-                      </TabsTrigger>
-                      <TabsTrigger value="6m">
-                        {t("assetDetail.period6m")}
-                      </TabsTrigger>
-                      <TabsTrigger value="1y">
-                        {t("assetDetail.period1y")}
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                    {t("assetDetail.viewAll")} <ChevronRight size={12} />
+                  </button>
                 </div>
-                {trendLoading ? (
-                  <SkeletonBase className="h-[160px] w-full rounded-md" />
-                ) : chartData.length === 0 ? (
+                {/* 가계부 메인 리스트 미러 — 카드 제거, 날짜 그룹 헤더 + 플랫 행 */}
+                {relatedLoading ? (
+                  // 실렌더와 같은 날짜 그룹 구조 — 그룹 gap 16, 행은 LedgerRow(py-3, 칩 40).
                   <div
                     style={{
-                      height: 160,
-                      background: "var(--bg-sunken)",
-                      borderRadius: "var(--radius-tile)",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      flexDirection: "column",
+                      gap: 16,
+                    }}
+                  >
+                    {[0, 1].map((g) => (
+                      <div key={g}>
+                        {/* DateGroupHeader 자리 — 날짜 + 요일 + 우측 일 합계 */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <SkeletonBase className="h-4 w-12" />
+                          <SkeletonBase className="h-4 w-8" />
+                          <SkeletonBase className="h-4 w-16 ml-auto" />
+                        </div>
+                        {[0, 1].map((i) => (
+                          <div
+                            key={i}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                              padding: "12px 4px",
+                            }}
+                          >
+                            <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <SkeletonBase className="h-4 w-2/3" />
+                              <SkeletonBase
+                                className="h-3 w-1/3"
+                                style={{ marginTop: 2 }}
+                              />
+                            </div>
+                            <SkeletonBase className="h-4 w-20 shrink-0" />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                ) : relatedItems.length === 0 ? (
+                  <div
+                    style={{
+                      padding: "24px 0",
+                      textAlign: "center",
                       color: "var(--fg-tertiary)",
                       fontSize: "var(--text-label-sm)",
                     }}
                   >
-                    {t("assetDetail.noData")}
+                    {t("assetDetail.noLinkedTx")}
                   </div>
                 ) : (
-                  <ChartContainer
-                    config={chartConfig}
-                    className="aspect-auto w-full"
-                    style={{ height: 160 }}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 16,
+                    }}
                   >
-                    <AreaChart
-                      data={chartData}
-                      margin={{ top: 10, right: 12, left: 0, bottom: 4 }}
-                    >
-                      <defs>
-                        <linearGradient
-                          id={`asset-balance-fill-${asset.rowId}`}
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor="var(--color-balance)"
-                            stopOpacity={0.28}
+                    {relatedGroups.map(([d, items]) => {
+                      const { md, dow } = formatDay(d);
+                      // 일 합계는 지출/수입만 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
+                      const dayExpenses = items.flatMap((i) =>
+                        i.kind === "expense" ? [i.expense] : [],
+                      );
+                      const out = dayExpenses
+                        .filter((tx) => tx.expenseType === "EXPENSE")
+                        .reduce((s, tx) => s + Math.abs(tx.amount), 0);
+                      const inn = dayExpenses
+                        .filter((tx) => tx.expenseType === "INCOME")
+                        .reduce((s, tx) => s + Math.abs(tx.amount), 0);
+                      return (
+                        <div key={d}>
+                          <DateGroupHeader
+                            date={md}
+                            weekday={dow}
+                            expense={out}
+                            income={inn}
                           />
-                          <stop
-                            offset="100%"
-                            stopColor="var(--color-balance)"
-                            stopOpacity={0}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        vertical={false}
-                        stroke="var(--border-subtle)"
-                        strokeDasharray="3 3"
-                      />
-                      <XAxis
-                        dataKey="label"
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{
-                          fontSize: "var(--text-badge)",
-                          fill: "var(--fg-tertiary)",
-                        }}
-                        tickMargin={6}
-                        interval="preserveStartEnd"
-                        minTickGap={18}
-                      />
-                      <YAxis
-                        tickLine={false}
-                        axisLine={false}
-                        domain={[yAxis.min, yAxis.max]}
-                        ticks={yAxis.ticks}
-                        // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
-                        tickFormatter={(v: number) =>
-                          hidden ? "••••" : formatChartAxis(v)
-                        }
-                        tick={{
-                          fontSize: "var(--text-badge)",
-                          fill: "var(--fg-tertiary)",
-                        }}
-                        width={44}
-                      />
-                      <ChartTooltip
-                        cursor={{
-                          stroke: "var(--fg-tertiary)",
-                          strokeWidth: 1,
-                          strokeDasharray: "3 3",
-                        }}
-                        content={<BalanceTooltip seriesLabel={seriesLabel} />}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="balance"
-                        stroke="var(--color-balance)"
-                        strokeWidth={2}
-                        fill={`url(#asset-balance-fill-${asset.rowId})`}
-                        dot={{
-                          r: 4,
-                          fill: "var(--color-balance)",
-                          stroke: "var(--bg-surface)",
-                          strokeWidth: 1.5,
-                        }}
-                        activeDot={{
-                          r: 5.5,
-                          fill: "var(--color-balance)",
-                          stroke: "var(--bg-surface)",
-                          strokeWidth: 2,
-                        }}
-                      />
-                    </AreaChart>
-                  </ChartContainer>
+                          {items.map((item) =>
+                            item.kind === "expense" ? (
+                              <ExpenseRow
+                                key={`e${item.expense.rowId}`}
+                                expense={item.expense}
+                              />
+                            ) : (
+                              <TransferRow
+                                key={`t${item.transfer.rowId}`}
+                                transfer={item.transfer}
+                                perspectiveAssetRowId={asset.rowId}
+                              />
+                            ),
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
-            )}
-
-            {/* Recent tx */}
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 8,
-                }}
-              >
-                <h4
-                  style={{
-                    fontSize: "var(--text-label-sm)",
-                    fontWeight: "700",
-                    margin: 0,
-                  }}
-                >
-                  {isCheckLinked
-                    ? t("assetDetail.monthTx")
-                    : t("assetDetail.recentTx")}
-                  {relatedItems.length > 0 ? ` (${relatedItems.length})` : ""}
-                </h4>
-                <button
-                  type="button"
-                  className="all"
-                  style={{
-                    marginLeft: "auto",
-                    background: "transparent",
-                    border: 0,
-                    color: "var(--fg-secondary)",
-                    cursor: "pointer",
-                    fontSize: "var(--text-label-sm)",
-                    fontWeight: "600",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
-                  onClick={viewAll}
-                >
-                  {t("assetDetail.viewAll")} <ChevronRight size={12} />
-                </button>
-              </div>
-              {/* 가계부 메인 리스트 미러 — 카드 제거, 날짜 그룹 헤더 + 플랫 행 */}
-              {relatedLoading ? (
-                // 실렌더와 같은 날짜 그룹 구조 — 그룹 gap 16, 행은 LedgerRow(py-3, 칩 40).
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  {[0, 1].map((g) => (
-                    <div key={g}>
-                      {/* DateGroupHeader 자리 — 날짜 + 요일 + 우측 일 합계 */}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <SkeletonBase className="h-4 w-12" />
-                        <SkeletonBase className="h-4 w-8" />
-                        <SkeletonBase className="h-4 w-16 ml-auto" />
-                      </div>
-                      {[0, 1].map((i) => (
-                        <div
-                          key={i}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            padding: "12px 4px",
-                          }}
-                        >
-                          <SkeletonBase className="h-10 w-10 rounded-[var(--radius-tile)] shrink-0" />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <SkeletonBase className="h-4 w-2/3" />
-                            <SkeletonBase
-                              className="h-3 w-1/3"
-                              style={{ marginTop: 2 }}
-                            />
-                          </div>
-                          <SkeletonBase className="h-4 w-20 shrink-0" />
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              ) : relatedItems.length === 0 ? (
-                <div
-                  style={{
-                    padding: "24px 0",
-                    textAlign: "center",
-                    color: "var(--fg-tertiary)",
-                    fontSize: "var(--text-label-sm)",
-                  }}
-                >
-                  {t("assetDetail.noLinkedTx")}
-                </div>
-              ) : (
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  {relatedGroups.map(([d, items]) => {
-                    const { md, dow } = formatDay(d);
-                    // 일 합계는 지출/수입만 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
-                    const dayExpenses = items.flatMap((i) =>
-                      i.kind === "expense" ? [i.expense] : [],
-                    );
-                    const out = dayExpenses
-                      .filter((tx) => tx.expenseType === "EXPENSE")
-                      .reduce((s, tx) => s + Math.abs(tx.amount), 0);
-                    const inn = dayExpenses
-                      .filter((tx) => tx.expenseType === "INCOME")
-                      .reduce((s, tx) => s + Math.abs(tx.amount), 0);
-                    return (
-                      <div key={d}>
-                        <DateGroupHeader
-                          date={md}
-                          weekday={dow}
-                          expense={out}
-                          income={inn}
-                        />
-                        {items.map((item) =>
-                          item.kind === "expense" ? (
-                            <ExpenseRow
-                              key={`e${item.expense.rowId}`}
-                              expense={item.expense}
-                            />
-                          ) : (
-                            <TransferRow
-                              key={`t${item.transfer.rowId}`}
-                              transfer={item.transfer}
-                              perspectiveAssetRowId={asset.rowId}
-                            />
-                          ),
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </ModalShell>
+            </>
+          )}
+        </ModalShell>
+      </HideForce>
       {/* 푸는 쪽에만 본인 확인을 건다 — 켜는 건 그냥 된다(카드 가리기와 같은 규칙). */}
       <HideAmountsUnlockDialog
         open={unlockOpen}

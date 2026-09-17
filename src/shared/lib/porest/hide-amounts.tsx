@@ -1,7 +1,9 @@
 import { Activity, type ReactNode } from "react";
 import {
   HideCardContext,
+  HideForceContext,
   useHideCard,
+  useHideForce,
 } from "@/shared/lib/porest/hide-card-context";
 import { isEn } from "@/shared/lib/porest/format";
 import {
@@ -22,6 +24,26 @@ export function HideCard({
 }) {
   return (
     <HideCardContext.Provider value={card}>{children}</HideCardContext.Provider>
+  );
+}
+
+/**
+ * 이 아래 금액을 전부 가린다 — {@link MaskAmount} 의 `force` 를 묶음으로 건다.
+ *
+ * <p>자산 상세처럼 금액이 여러 겹의 하위 컴포넌트에 흩어져 있는 화면에서 쓴다.
+ * 개별 `force=` 와는 합집합이라, 감싼 값이 `false` 여도 안쪽에서 켤 수 있다.
+ */
+export function HideForce({
+  value,
+  children,
+}: {
+  value: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <HideForceContext.Provider value={value}>
+      {children}
+    </HideForceContext.Provider>
   );
 }
 
@@ -63,7 +85,11 @@ export function MaskAmount({
    */
   force?: boolean;
 }) {
-  const hidden = useHideAmounts(useHideCard(card), kind) || !!force;
+  // 훅은 둘 다 무조건 부른다 — `||` 로 이으면 앞이 참일 때 뒤가 안 불려
+  // 렌더마다 훅 순서가 달라진다(react-hooks/rules-of-hooks).
+  const byCard = useHideAmounts(useHideCard(card), kind);
+  const forced = useHideForce(force);
+  const hidden = byCard || forced;
   return (
     <>
       <Activity mode={hidden ? "hidden" : "visible"}>{children}</Activity>
@@ -84,6 +110,10 @@ export function HideUnit({
   /** {@link MaskAmount} 의 같은 이름과 같은 뜻 — 카드와 합집합이다. */
   force?: boolean;
 }) {
-  const hidden = useHideAmounts(useHideCard(card), kind) || !!force;
+  // 훅은 둘 다 무조건 부른다 — `||` 로 이으면 앞이 참일 때 뒤가 안 불려
+  // 렌더마다 훅 순서가 달라진다(react-hooks/rules-of-hooks).
+  const byCard = useHideAmounts(useHideCard(card), kind);
+  const forced = useHideForce(force);
+  const hidden = byCard || forced;
   return <Activity mode={hidden ? "hidden" : "visible"}>{children}</Activity>;
 }
