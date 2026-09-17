@@ -14,6 +14,7 @@ declare global {
 
 const state = vi.hoisted(() => ({
   check: null as Record<string, unknown> | null,
+  verifyError: null as unknown,
   verifiedPassword: null as string | null,
   withdrew: null as Record<string, unknown> | null,
   onWithdrawnCalls: 0,
@@ -42,6 +43,7 @@ vi.mock("../model/useWithdrawal", () => ({
   useVerifyReauthPasswordMutation: () => ({
     mutateAsync: async (pw: string) => {
       state.verifiedPassword = pw;
+      if (state.verifyError) throw state.verifyError;
       return "ticket-abc";
     },
     isPending: false,
@@ -127,6 +129,7 @@ function setValue(el: HTMLInputElement, value: string) {
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   state.check = null;
+  state.verifyError = null;
   state.verifiedPassword = null;
   state.withdrew = null;
   state.onWithdrawnCalls = 0;
@@ -229,6 +232,45 @@ describe("막는 게 없을 때", () => {
     await flushClickGuard();
     await act(async () => click("withdraw.confirm"));
     expect(state.withdrew).toBeNull();
+  });
+
+  /**
+   * 실패 문구는 **서버가 쓴 문장**이어야 한다.
+   *
+   * axios 는 실패를 Error 로 감싸는데 그 `message` 는 "Request failed with status code
+   * 400" 이다 — 그대로 붙이면 사용자가 영문 상태 코드를 읽게 된다(2026-09-17 QA 스크린샷).
+   * 정작 할 말은 응답 본문에 들어 있다.
+   */
+  it("확인에 실패하면 서버 문장을 칸 밑에 붙인다 — axios 원문이 나오면 안 된다", async () => {
+    state.verifyError = Object.assign(
+      new Error("Request failed with status code 400"),
+      { response: { data: { message: "비밀번호가 올바르지 않아요" } } },
+    );
+
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    const pw = document.getElementById("withdraw-password") as HTMLInputElement;
+    act(() => setValue(pw, "wrong"));
+    await act(async () => click("withdraw.confirm"));
+
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("비밀번호가 올바르지 않아요");
+    expect(text).not.toContain("Request failed with status code");
+    expect(state.withdrew).toBeNull();
+  });
+
+  it("서버가 아무 말도 안 하면 이 화면의 문구를 쓴다", async () => {
+    state.verifyError = new Error("Network Error");
+
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    const pw = document.getElementById("withdraw-password") as HTMLInputElement;
+    act(() => setValue(pw, "whatever"));
+    await act(async () => click("withdraw.confirm"));
+
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("withdraw.failed");
+    expect(text).not.toContain("Network Error");
   });
 
   it("비밀번호 확인 → 그 티켓으로 해지 → 로그아웃까지 이어진다", async () => {
