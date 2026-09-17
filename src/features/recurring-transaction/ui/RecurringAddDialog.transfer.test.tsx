@@ -74,6 +74,7 @@ const bank: Asset = {
   memo: null,
   sortOrder: 0,
   isIncludedInTotal: "Y",
+  isAmountHidden: "N",
   cardCatalog: null,
   createAt: "2026-01-01T00:00:00",
   modifyAt: "2026-01-01T00:00:00",

@@ -73,6 +73,7 @@ const baseAsset = {
   color: null,
   sortOrder: 0,
   isIncludedInTotal: "Y",
+  isAmountHidden: "N",
   cardCatalog: null,
   currency: "KRW",
   exchangeRate: 1,
