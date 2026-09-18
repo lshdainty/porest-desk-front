@@ -30,7 +30,11 @@ import {
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { MINUS, money } from "@/shared/lib/porest/format";
 import type { CalendarEvent, Holiday } from "@/entities/calendar";
-import { isRefundedTx, type Expense } from "@/entities/expense";
+import {
+  isCardCarryoverTx,
+  isRefundedTx,
+  type Expense,
+} from "@/entities/expense";
 import type {
   IEvent,
   ICalendarCell,
@@ -395,11 +399,12 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
   // 환불은 삭제와 똑같이 합계에서 빠져야 한다 — 그러면서도 셀의 칩은 제 금액·색으로
   // 남아야 사용자가 "환불한 그 건" 을 찾을 수 있다. 칩은 `title` 을 쓰므로 두 요구가
   // 여기서 갈린다. 금액 0 인 거래는 저장할 수 없어(금액 > 0) 값이 겹칠 일도 없다.
-  const expenseAmount = isRefundedTx(expense)
-    ? 0
-    : negative
-      ? -Math.abs(expense.amount)
-      : Math.abs(expense.amount);
+  const expenseAmount =
+    isRefundedTx(expense) || isCardCarryoverTx(expense)
+      ? 0
+      : negative
+        ? -Math.abs(expense.amount)
+        : Math.abs(expense.amount);
 
   return {
     id: expense.rowId,
