@@ -1696,6 +1696,21 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     e.merchant ?? e.description ?? e.categoryName ?? tc("transaction");
 
   /**
+   * 지우면 결제계좌로 돈이 돌아갈 수 있는 거래인가 — 신용카드 + 결제계좌.
+   *
+   * 실제로 돌아가는지는 그 회차를 이미 냈는지에 달렸고 그건 서버만 안다. 여기서는
+   * "그럴 수 있다" 까지만 말한다(설계 13-2).
+   */
+  const paidRefundHintFor = (e: Expense) => {
+    const asset = (assetsQ.data?.assets ?? []).find(
+      (a) => a.rowId === e.assetRowId,
+    );
+    return (
+      asset?.assetType === "CREDIT_CARD" && asset.paymentAssetRowId != null
+    );
+  };
+
+  /**
    * 밀었을 때 드러나는 액션 — 의미 순서 그대로 [수정, 삭제] 로 넘긴다.
    * 컴포넌트가 뒤집어 삭제를 가장 안쪽에 놓으므로, 조금만 밀면 수정부터 닿는다.
    */
@@ -1719,7 +1734,15 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         // ConfirmDialog 의 message 는 white-space 지정 없는 <p> 라 개행 문자가 접힌다.
         // 달린 환불을 경고할 필요가 없어졌다 — 환불은 이제 원거래에 찍는 표식이라
         // "이 거래에 달린 환불" 이 존재하지 않는다.
-        message: t("txDetail.deleteMessage", { name: rowLabelOf(e) }),
+        //
+        // 카드 거래면 **금액 없는** 예고를 붙인다(설계 13-2의 폴백 문구). 스와이프의
+        // 확인창은 액션을 만들 때 문구가 굳는 선언형이라 상세처럼 열릴 때 미리보기를
+        // 걸 자리가 없다 — 금액은 상세에서 지울 때 보인다.
+        message: paidRefundHintFor(e)
+          ? `${t("txDetail.deleteMessage", { name: rowLabelOf(e) })} ${t(
+              "txDetail.paidDeleteFallback",
+            )}`
+          : t("txDetail.deleteMessage", { name: rowLabelOf(e) }),
         loading: deleteExpense.isPending,
       },
       onSelect: () => deleteExpense.mutateAsync(e.rowId),

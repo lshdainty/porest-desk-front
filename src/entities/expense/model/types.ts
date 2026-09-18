@@ -56,6 +56,11 @@ export interface Expense {
   refundedAt: string | null;
   /** 환불 마크가 만든 카드→결제계좌 환급 이체 (null = 없음). */
   refundTransferRowId: number | null;
+  /**
+   * 이 저장이 **방금 만든** 카드 환급액 (없으면 없음) — 거래의 속성이 아니라 그 요청의
+   * 결과다. 조회로 받은 거래에는 늘 없다(설계 13-1).
+   */
+  refundedAmount?: number | null;
   /** 원 통화 금액 (해외 결제). null 이면 원화 결제 */
   originalAmount: number | null;
   /** 원 통화 (ISO 4217, 예: USD) */
@@ -221,4 +226,26 @@ export interface HeatmapCell {
   /** 0-23 */
   hour: number;
   totalAmount: number;
+}
+
+/**
+ * 카드 환급 미리보기 — 지우거나 고치면 결제계좌로 얼마가 돌아오는지(설계 13-1).
+ *
+ * `applies` 가 false 면 돌려줄 돈이 없다. `reason` 으로 화면이 문구를 고른다:
+ * `OK`(금액 줄) · `ALREADY_REFUNDED`("이미 환급된 거래") · 나머지(줄 없음).
+ */
+export interface RefundPreview {
+  applies: boolean;
+  refundAmount: number;
+  reason:
+    | "OK"
+    | "NOT_CARD"
+    | "NO_PAYMENT_ASSET"
+    | "NOT_PAID_CYCLE"
+    | "ALREADY_REFUNDED";
+}
+
+/** 삭제 응답 — 이 삭제가 만든 환급액(없으면 null). */
+export interface DeleteExpenseResult {
+  refundedAmount: number | null;
 }

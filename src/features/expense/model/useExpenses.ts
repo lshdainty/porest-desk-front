@@ -57,6 +57,31 @@ export const useCancelRefund = () => {
   });
 };
 
+/**
+ * 삭제·수정 확인창이 열릴 때 도는 환급 미리보기(설계 13-1).
+ *
+ * `enabled` 로 확인창이 열린 동안만 돈다 — 상세를 열기만 해도 부르면 목록을 훑는 동안
+ * 쓸데없는 요청이 쌓인다. 실패는 재시도하지 않는다: 확인창은 3초를 넘기면 금액 없는
+ * 문구로 넘어가야 하고, 재시도가 그 폴백을 뒤로 밀면 사용자가 빈 자리를 더 오래 본다.
+ */
+export const useRefundPreview = (
+  id: number | null,
+  enabled: boolean,
+  params?: {
+    amount?: number;
+    assetRowId?: number | null;
+    expenseDate?: string;
+  },
+) =>
+  useQuery({
+    queryKey: ["expense", "refund-preview", id, params ?? null],
+    queryFn: () => expenseApi.refundPreview(id!, params),
+    enabled: enabled && id != null,
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+  });
+
 export const useDeleteExpense = () => {
   const queryClient = useQueryClient();
 

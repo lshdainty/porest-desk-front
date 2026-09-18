@@ -19,6 +19,8 @@ export type {
   StatsPeriod,
   BudgetVsActualItem,
   HeatmapCell,
+  RefundPreview,
+  DeleteExpenseResult,
 } from "./model/types";
 
 export {
