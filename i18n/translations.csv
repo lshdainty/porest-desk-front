@@ -686,6 +686,7 @@ asset,assetDetail.billingPeriod,{{start}}~{{end}} 사용분,Usage {{start}}–{{
 asset,assetDetail.scheduledTag,예정,Upcoming
 asset,assetDetail.paidDone,결제 완료,Paid
 asset,assetDetail.usagePeriod,카드 이용 기간 {{period}},Card usage period {{period}}
+asset,assetDetail.billingScheduledPortion,아직 안 온 예정 거래 {{amount}} 포함,Includes {{amount}} not yet charged
 asset,assetDetail.installmentFallback,할부,Installment
 asset,assetDetail.installmentSeq,{{seq}}/{{total}}회차,Payment {{seq}} of {{total}}
 asset,assetDetail.installmentPrincipal,원금 {{amount}},Principal {{amount}}
