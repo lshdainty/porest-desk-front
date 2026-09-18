@@ -30,8 +30,7 @@ import {
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { MINUS, money } from "@/shared/lib/porest/format";
 import type { CalendarEvent, Holiday } from "@/entities/calendar";
-import { isRefundTx } from "@/entities/expense";
-import type { Expense } from "@/entities/expense";
+import { isRefundedTx, type Expense } from "@/entities/expense";
 import type {
   IEvent,
   ICalendarCell,
@@ -377,24 +376,30 @@ export function getMonthCellEvents(
  * Expense (가계부 데이터)를 IEvent 인터페이스로 변환
  */
 export function convertExpenseToIEvent(expense: Expense): IEvent {
-  // 환불(INCOME + 원거래 지정)은 수입이 아니라 지출 상계다 — 서버 집계와 같은 규칙.
-  // 파랑 '+3,000' 으로 그리면 셀 합계가 월 헤더와 어긋난다.
-  const isRefund = isRefundTx(expense);
-  const isIncome = expense.expenseType === "INCOME" && !isRefund;
+  // 환불된 거래도 제 부호·색으로 그린다 — 지출은 빨강 음수 그대로다. 합계에서만
+  // 빠진다(아래 `expenseAmount`).
+  const isIncome = expense.expenseType === "INCOME";
   const color = isIncome ? "#0147ad" : "#c73838";
   // 지출만 음수. 부호 문자열을 되비교하지 않고 불린을 기준으로 둔다 — 기호를 바꿔도
   // (하이픈 → U+2212, QA #22) 아래 금액 계산이 따라 깨지지 않게.
-  const negative = !isIncome && !isRefund;
+  const negative = !isIncome;
   const sign = negative ? MINUS : "+";
   const amount = money(expense.amount, { abs: true });
   const categoryName = expense.categoryName || "";
   const title = categoryName
     ? `${categoryName} ${sign}${amount}`
     : `${sign}${amount}`;
-  // 지출 음수 / 수입·환불 양수 — title 의 sign·color 와 같은 규칙.
-  const expenseAmount = negative
-    ? -Math.abs(expense.amount)
-    : Math.abs(expense.amount);
+  // 지출 음수 / 수입 양수 — title 의 sign·color 와 같은 규칙.
+  //
+  // 환불된 거래만 **0** 이다. 이 값은 일별 합계에만 쓰이는데(`buildExpenseSummaryMap`),
+  // 환불은 삭제와 똑같이 합계에서 빠져야 한다 — 그러면서도 셀의 칩은 제 금액·색으로
+  // 남아야 사용자가 "환불한 그 건" 을 찾을 수 있다. 칩은 `title` 을 쓰므로 두 요구가
+  // 여기서 갈린다. 금액 0 인 거래는 저장할 수 없어(금액 > 0) 값이 겹칠 일도 없다.
+  const expenseAmount = isRefundedTx(expense)
+    ? 0
+    : negative
+      ? -Math.abs(expense.amount)
+      : Math.abs(expense.amount);
 
   return {
     id: expense.rowId,

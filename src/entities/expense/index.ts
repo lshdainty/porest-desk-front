@@ -34,7 +34,7 @@ export { TxTypeToggle } from "./ui/tx-type-toggle";
 export type { TxTypeOption, TxTypeToggleProps } from "./ui/tx-type-toggle";
 export {
   isScheduledTx,
-  isRefundTx,
+  isRefundedTx,
   countableTx,
   incomeSum,
   expenseSum,

@@ -31,6 +31,7 @@ common,savings,저축,Savings
 common,others,기타,Others
 common,transaction,거래,Transaction
 common,scheduled,예정,Scheduled
+common,refunded,환불됨,Refunded
 common,iconSearchPlaceholder,아이콘 검색...,Search icons...
 common,iconResultCount,{{count}}개 결과,{{count}} results
 common,iconTotalHint,전체 {{count}}개 · 스크롤해서 더 보기,{{count}} total · scroll for more
@@ -686,7 +687,6 @@ asset,assetDetail.billingPeriod,{{start}}~{{end}} 사용분,Usage {{start}}–{{
 asset,assetDetail.scheduledTag,예정,Upcoming
 asset,assetDetail.paidDone,결제 완료,Paid
 asset,assetDetail.usagePeriod,카드 이용 기간 {{period}},Card usage period {{period}}
-asset,assetDetail.billingScheduledPortion,아직 안 온 예정 거래 {{amount}} 포함,Includes {{amount}} not yet charged
 asset,assetDetail.installmentFallback,할부,Installment
 asset,assetDetail.installmentSeq,{{seq}}/{{total}}회차,Payment {{seq}} of {{total}}
 asset,assetDetail.installmentPrincipal,원금 {{amount}},Principal {{amount}}
@@ -1562,7 +1562,6 @@ expense,transaction,거래,Transaction
 expense,item,항목,Item
 expense,selectNone,선택 안 함,None
 expense,addTx.newTitle,거래 추가,Add transaction
-expense,addTx.refundTitle,환불 기록,Record refund
 expense,addTx.editTitle,거래 수정,Edit transaction
 expense,addTx.autoSource.TRADE_REALIZED,주식을 팔아 생긴 실현손익이에요. 금액은 매매 내역에서 계산됩니다.,Realized P/L from a sale. The amount is calculated from the trade.
 expense,addTx.autoSource.TRANSFER_INTEREST,이체에 붙은 이자예요. 금액은 이체 내역에서 계산됩니다.,Interest on a transfer. The amount is calculated from the transfer.
@@ -1620,16 +1619,7 @@ expense,transferWithdrawn,출금 합계,Total withdrawn
 expense,transferDeleted,이체를 삭제했어요,Transfer deleted
 expense,addTx.optional,선택 사항,Optional
 expense,addTx.amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
-expense,addTx.refundOverCap,환불은 {{max}}까지만 넣을 수 있어요,A refund can be at most {{max}}
-expense,addTx.refundRemaining,이미 {{refunded}} 환불했어요. {{max}}까지 더 넣을 수 있어요,{{refunded}} already refunded. You can add up to {{max}} more
-expense,addTx.refundFullyDone,이미 전액 환불한 거래예요. 더 환불할 금액이 없어요,This transaction is already fully refunded. Nothing left to refund
-expense,addTx.refundAmountLocked,환불 금액은 고칠 수 없어요. 금액이 틀렸으면 이 환불을 지우고 다시 넣어 주세요,"A refund amount cannot be edited. If it is wrong, delete this refund and add it again"
 expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
-expense,addTx.deleteRefundWarn,이 거래에 달린 환불 {{count}}건({{amount}}원)도 함께 사라져요,{{count}} linked refund(s) ({{amount}} KRW) will also be deleted
-expense,txDetail.refundLinked,환불 {{count}}건 · {{amount}}원이 이 거래에 묶여 있어요,{{count}} refund(s) · {{amount}} KRW linked to this transaction
-expense,txDetail.refundOfLinked,원거래에 묶인 환불이에요,This is a refund linked to the original transaction
-expense,txDetail.refundUnlink,환불 취소,Unlink refund
-expense,txDetail.refundUnlinkConfirm,"원거래와의 연결을 끊을까요? 거래는 그대로 남고 일반 수입이 돼요. 원거래의 지출도 깎이지 않고 전액으로 잡혀요.","Unlink from the original transaction? The transaction stays and becomes ordinary income, and the original expense counts in full again."
 expense,savePreset.title,프리셋으로 저장,Save as preset
 expense,savePreset.noMerchant,내역 없음,No details
 expense,savePreset.noCategory,카테고리 미선택,No category
@@ -1648,6 +1638,16 @@ expense,txDetail.recurring,반복 설정,Recurring
 expense,txDetail.linked,연결됨,Linked
 expense,txDetail.dutchPay,더치페이,Dutch Pay
 expense,txDetail.refund,환불,Refund
+expense,txDetail.refundConfirmTitle,환불 처리,Mark as refunded
+expense,txDetail.refundConfirmBody,"이 거래를 환불로 표시하고 {{amount}}을 {{asset}}(으)로 되돌려요. 합계에서 빠져요.","Marks this transaction as refunded and returns {{amount}} to {{asset}}. It leaves your totals."
+expense,txDetail.refundConfirmBodyCard,이미 결제된 금액은 결제계좌로 환급돼요.,Any amount already paid goes back to the payment account.
+expense,txDetail.refundConfirmBodyCardNoAccount,결제계좌가 없어 카드 잔액만 정리돼요.,"No payment account is linked, so only the card balance is adjusted."
+expense,txDetail.refundDate,환불일,Refund date
+expense,txDetail.refundConfirm,환불 처리,Mark refunded
+expense,txDetail.refundedAt,환불됨 · {{date}},Refunded · {{date}}
+expense,txDetail.refundCancel,환불 취소,Undo refund
+expense,txDetail.refundCancelConfirm,"환불 표시를 지울까요? 이 거래가 합계에 다시 들어가고, 환급된 금액도 되돌아가요.","Remove the refund mark? This transaction counts in your totals again, and any refunded amount is reversed."
+expense,txDetail.refundedReadonly,환불된 거래는 수정할 수 없어요. 먼저 환불을 취소해 주세요,"Refunded transactions can't be edited. Undo the refund first"
 expense,txDetail.countCases,{{count}}건,{{count}}
 expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}

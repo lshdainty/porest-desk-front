@@ -30,17 +30,21 @@ import {
   DetailStatSplit,
 } from "@/shared/ui/porest/detail";
 import { CategoryChip } from "@/shared/ui/porest/category-chip";
-import { ExpenseRow, isRefundTx } from "@/entities/expense";
+import { ExpenseRow, isRefundedTx } from "@/entities/expense";
 import { Button } from "@/shared/ui/button";
 import {
   useDeleteExpense,
   useExpenseCategories,
   useSearchExpenses,
-  useUnlinkRefund,
+  useRefundExpense,
+  useCancelRefund,
 } from "@/features/expense";
 import { useExpenseSplits } from "@/features/expense-split";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import { useDutchPays } from "@/features/dutch-pay";
+import { todayLocalKey } from "@/shared/lib/date";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
 import { useAssets } from "@/features/asset";
 import type { Expense, ExpenseCategory } from "@/entities/expense";
 import type { Asset } from "@/entities/asset";
@@ -66,7 +70,6 @@ type Props = {
    * 부모가 AddTxSheet 를 환불 모드로 여는 콜백.
    * 지출 거래에만 노출된다 — 수입·환불 자체를 다시 환불할 일은 없다.
    */
-  onRefund?: (expense: Expense) => void;
   mobile: boolean;
 };
 
@@ -74,21 +77,25 @@ export function TxDetailDialog({
   expense: expenseProp,
   onClose,
   onEdit,
-  onRefund,
   mobile,
 }: Props) {
   const { t, i18n } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [confirmUnlink, setConfirmUnlink] = useState(false);
-  const unlinkMut = useUnlinkRefund();
+  const [confirmRefund, setConfirmRefund] = useState(false);
+  // 환불일 — 기본은 오늘. 며칠 전에 환불한 걸 나중에 적는 경우가 있어 고칠 수 있게 둔다.
+  const [refundDate, setRefundDate] = useState("");
+  const [confirmCancelRefund, setConfirmCancelRefund] = useState(false);
+  const refundMut = useRefundExpense();
+  const cancelRefundMut = useCancelRefund();
   // 부모는 목록에서 집은 **스냅샷**을 넘긴다(`ExpensePage` 의 `detail` state) — 무효화가
   // 끝나도 그 객체는 안 바뀐다. 그래서 환불 연결을 끊으면 서버 응답으로 이 자리를 갈아
   // 열려 있는 상세가 그대로 다시 그려지게 한다. 안 그러면 배지가 남아 두 번 누르게 된다.
   // 행이 바뀌면(다이얼로그 재사용) 스냅샷이 새 거래 것이므로 응답은 버린다.
-  const [unlinked, setUnlinked] = useState<Expense | null>(null);
-  const expense =
-    unlinked?.rowId === expenseProp.rowId ? unlinked : expenseProp;
+  // 마크·취소 뒤에도 상세는 열어 둔다 — 지우는 게 아니라 표식을 바꾸는 것이라
+  // 사용자가 결과(배너가 생기거나 사라지는 것)를 그 자리에서 봐야 한다.
+  const [marked, setMarked] = useState<Expense | null>(null);
+  const expense = marked?.rowId === expenseProp.rowId ? marked : expenseProp;
   const [openSub, setOpenSub] = useState<
     "split" | "recurring" | "dutch" | null
   >(null);
@@ -201,13 +208,28 @@ export function TxDetailDialog({
     });
   };
 
-  // 끊고도 상세는 열어 둔다 — 지우는 게 아니라 연결만 푸는 것이라 사용자가 결과를
-  // 그 자리에서 봐야 한다. 응답으로 다시 그리면 배너가 그 자리에서 사라진다.
-  const handleConfirmUnlink = () => {
-    unlinkMut.mutate(expense.rowId, {
+  const handleConfirmRefund = () => {
+    refundMut.mutate(
+      // 날짜만 고르므로 시각은 정오로 둔다 — 자정으로 보내면 그날 앞에 찍힌 거래보다
+      // 과거가 되어 카드 회차 판정이 하루 밀린다.
+      {
+        id: expense.rowId,
+        refundedAt: refundDate ? `${refundDate}T12:00:00` : undefined,
+      },
+      {
+        onSuccess: (updated) => {
+          setMarked(updated);
+          setConfirmRefund(false);
+        },
+      },
+    );
+  };
+
+  const handleConfirmCancelRefund = () => {
+    cancelRefundMut.mutate(expense.rowId, {
       onSuccess: (updated) => {
-        setUnlinked(updated);
-        setConfirmUnlink(false);
+        setMarked(updated);
+        setConfirmCancelRefund(false);
       },
     });
   };
@@ -222,29 +244,44 @@ export function TxDetailDialog({
   // 4 로 바꿔 박으면 이번엔 수입에서 한 칸이 빈다. 배열로 모아 `length` 를 쓰면 어느 쪽도
   // 아니고, 나중에 버튼이 하나 더 늘어도 따라온다.
   // 앱도 `Row` + `Expanded` 로 한 줄이다(desk-app `tx_detail_dialog.dart`).
+  const isRefunded = isRefundedTx(expense);
+  // 카드면 확인창이 한 줄 더 말한다 — 이미 낸 돈이 어디로 가는지가 사용자의 관심사다.
+  const isCreditCard = asset?.assetType === "CREDIT_CARD";
+  const cardHasPaymentAsset = asset?.paymentAssetRowId != null;
   const quickActions = [
-    // 환불 — 지출에만. 수입으로 기록하되 원거래에 묶여 통계에서 지출을 상계한다
-    // (수입이 부풀지 않는다). 부분 환불이면 금액만 고치면 된다.
-    ...(!isIncome && onRefund
+    // 환불 — 지출에만, 아직 환불 안 한 것만. 누르면 확인창이고, 확인하면 원거래에
+    // 표식이 찍혀 합계에서 빠진다(수입 행을 만들지 않는다).
+    ...(!isIncome && !isRefunded
       ? [
           <DetailQuickAction
             key="refund"
             icon={Undo2}
             label={t("txDetail.refund")}
-            onClick={() => onRefund(expense)}
+            onClick={() => {
+              setRefundDate(todayLocalKey());
+              setConfirmRefund(true);
+            }}
           />,
         ]
       : []),
-    <DetailQuickAction
-      key="split"
-      icon={Scissors}
-      label={t("splitTitle")}
-      active={splitCount > 0}
-      badge={
-        splitCount > 0 ? t("txDetail.countItems", { count: splitCount }) : null
-      }
-      onClick={() => setOpenSub("split")}
-    />,
+    // 분할도 환불된 거래에는 안 띄운다 — 서버가 EXP_043 으로 막으므로 눌러 봐야
+    // 토스트만 뜬다. 열은 배열 길이로 세므로 빠지면 저절로 줄어든다.
+    ...(isRefunded
+      ? []
+      : [
+          <DetailQuickAction
+            key="split"
+            icon={Scissors}
+            label={t("splitTitle")}
+            active={splitCount > 0}
+            badge={
+              splitCount > 0
+                ? t("txDetail.countItems", { count: splitCount })
+                : null
+            }
+            onClick={() => setOpenSub("split")}
+          />,
+        ]),
     <DetailQuickAction
       key="recurring"
       icon={Repeat}
@@ -271,7 +308,11 @@ export function TxDetailDialog({
     <ModalViewFooter
       onDelete={isAutoGenerated ? undefined : () => setConfirmDelete(true)}
       deleting={deleteMut.isPending}
-      onEdit={onEdit && !isAutoGenerated ? handleEdit : undefined}
+      // 환불된 거래는 고칠 수 없다 — 돈이 이미 자산으로 돌아가 있어 되돌릴 기준이
+      // 사라진다(서버도 EXP_043 으로 막는다). 먼저 환불을 취소하게 한다.
+      onEdit={
+        onEdit && !isAutoGenerated && !isRefunded ? handleEdit : undefined
+      }
     />
   );
 
@@ -450,42 +491,9 @@ export function TxDetailDialog({
               </DetailSection>
             )}
 
-            {/* 환불 연결 — 이 거래에 달린 환불이 있으면 알린다. 지우면 함께 사라지고,
-            지출 총액도 상계된 값으로 잡혀 있다는 걸 여기서만 알 수 있다. */}
-            {(expense.refundCount ?? 0) > 0 && (
-              <DetailSection>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "10px 12px",
-                    borderRadius: "var(--radius-md)",
-                    background: "var(--bg-sunken)",
-                    fontSize: "var(--text-body-sm)",
-                    color: "var(--fg-secondary)",
-                  }}
-                >
-                  <Undo2
-                    size={15}
-                    style={{ flexShrink: 0, color: "var(--fg-tertiary)" }}
-                  />
-                  <span>
-                    {t("txDetail.refundLinked", {
-                      count: expense.refundCount,
-                      amount: KRW(expense.refundedAmount),
-                    })}
-                  </span>
-                </div>
-              </DetailSection>
-            )}
-
-            {/* 환불 쪽에서 본 같은 연결 — 이 거래가 환불이면 알리고 끊을 자리를 준다(D3).
-            편집 저장으로는 못 끊는다(그 시트엔 환불 연결 칸이 없다, QA #108). 여기가
-            유일한 자리다. 판정은 `isRefundTx` — **수입 + 원거래 연결**이다. 연결만 보면
-            지출에 남은 연결에도 뜨고, 수입만 보면 모든 수입에 뜬다.
-            모양·문구는 앱과 같다(desk-app #331). */}
-            {isRefundTx(expense) && (
+            {/* 환불됨 — 이 거래는 합계에서 빠져 있다. 되돌릴 자리를 함께 준다.
+            앱도 같은 자리·같은 문구다(설계서 7절). */}
+            {isRefunded && (
               <DetailSection>
                 <div
                   style={{
@@ -504,15 +512,17 @@ export function TxDetailDialog({
                     style={{ flexShrink: 0, color: "var(--fg-tertiary)" }}
                   />
                   <span style={{ flex: 1 }}>
-                    {t("txDetail.refundOfLinked")}
+                    {t("txDetail.refundedAt", {
+                      date: (expense.refundedAt ?? "").slice(0, 10),
+                    })}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
-                    loading={unlinkMut.isPending}
-                    onClick={() => setConfirmUnlink(true)}
+                    loading={cancelRefundMut.isPending}
+                    onClick={() => setConfirmCancelRefund(true)}
                   >
-                    {t("txDetail.refundUnlink")}
+                    {t("txDetail.refundCancel")}
                   </Button>
                 </div>
               </DetailSection>
@@ -745,17 +755,7 @@ export function TxDetailDialog({
       {confirmDelete && (
         <ConfirmDialog
           title={t("deleteConfirm.title")}
-          message={
-            (expense.refundCount ?? 0) > 0
-              ? `${t("txDetail.deleteMessage", { name: displayMerchant })}\n\n${t(
-                  "addTx.deleteRefundWarn",
-                  {
-                    count: expense.refundCount,
-                    amount: KRW(expense.refundedAmount),
-                  },
-                )}`
-              : t("txDetail.deleteMessage", { name: displayMerchant })
-          }
+          message={t("txDetail.deleteMessage", { name: displayMerchant })}
           confirmLabel={tc("delete")}
           danger
           loading={deleteMut.isPending}
@@ -764,17 +764,56 @@ export function TxDetailDialog({
         />
       )}
 
-      {/* 되돌리는 칸이 어느 화면에도 없다 — 다시 묶으려면 이 거래를 지우고 원거래에서
-          환불을 새로 기록해야 한다. 그래서 삭제와 같은 무게(danger)로 묻는다. */}
-      {confirmUnlink && (
+      {/* 환불 처리 — 되돌릴 수 있으므로 danger 가 아니다. 카드면 무슨 일이
+          벌어지는지 한 줄 더 알려 준다(결제계좌가 있으면 환급, 없으면 잔액만 정리). */}
+      {confirmRefund && (
         <ConfirmDialog
-          title={t("txDetail.refundUnlink")}
-          message={t("txDetail.refundUnlinkConfirm")}
-          confirmLabel={t("txDetail.refundUnlink")}
-          danger
-          loading={unlinkMut.isPending}
-          onCancel={() => !unlinkMut.isPending && setConfirmUnlink(false)}
-          onConfirm={handleConfirmUnlink}
+          title={t("txDetail.refundConfirmTitle")}
+          message={
+            <>
+              {t("txDetail.refundConfirmBody", {
+                amount: KRW(Math.abs(expense.amount)),
+                asset: expense.assetName ?? tc("none"),
+              })}
+              {isCreditCard && (
+                <>
+                  <br />
+                  <br />
+                  {cardHasPaymentAsset
+                    ? t("txDetail.refundConfirmBodyCard")
+                    : t("txDetail.refundConfirmBodyCardNoAccount")}
+                </>
+              )}
+              <Field style={{ marginTop: 14 }}>
+                <FieldLabel htmlFor="tx-refund-date">
+                  {t("txDetail.refundDate")}
+                </FieldLabel>
+                <Input
+                  id="tx-refund-date"
+                  type="date"
+                  value={refundDate}
+                  onChange={(e) => setRefundDate(e.target.value)}
+                />
+              </Field>
+            </>
+          }
+          confirmLabel={t("txDetail.refundConfirm")}
+          loading={refundMut.isPending}
+          onCancel={() => !refundMut.isPending && setConfirmRefund(false)}
+          onConfirm={handleConfirmRefund}
+        />
+      )}
+
+      {confirmCancelRefund && (
+        <ConfirmDialog
+          title={t("txDetail.refundCancel")}
+          message={t("txDetail.refundCancelConfirm")}
+          confirmLabel={t("txDetail.refundCancel")}
+          loading={cancelRefundMut.isPending}
+          onCancel={() =>
+            !cancelRefundMut.isPending && setConfirmCancelRefund(false)
+          }
+          onConfirm={handleConfirmCancelRefund}
         />
       )}
 

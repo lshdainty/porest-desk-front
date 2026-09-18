@@ -53,12 +53,19 @@ describe("convertExpenseToIEvent.expenseAmount", () => {
     expect(ev.expenseAmount).toBe(50000);
   });
 
-  it("환불(수입+원거래)은 양수 — 지출 상계용", () => {
+  it("환불된 지출은 합계 기여가 0 — 칩은 제 금액·색으로 남는다", () => {
+    // 마크 모델에서는 환불이 수입 행을 만들지 않는다. 그 거래는 여전히 지출이라
+    // 셀에 남아 있어야 "환불한 그 건" 을 찾을 수 있고, 일별 합계에서는 삭제와
+    // 똑같이 빠져야 한다. 그래서 칩(title)과 합계(expenseAmount)가 갈린다.
     const ev = convertExpenseToIEvent(
-      tx({ expenseType: "INCOME", refundOfExpenseRowId: 9, amount: 3000 }),
+      tx({
+        expenseType: "EXPENSE",
+        refundedAt: "2026-09-18T12:00:00",
+        amount: 3000,
+      }),
     );
-    expect(ev.expenseAmount).toBe(3000);
-    // 지출 계열 색 그대로 (파랑이면 수입으로 합산돼 버린다)
+    expect(ev.expenseAmount).toBe(0);
+    expect(ev.title).toContain("₩3,000");
     expect(ev.color).toBe("#c73838");
   });
 

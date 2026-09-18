@@ -28,9 +28,11 @@ export interface IEvent {
   recurrenceId: number | null;
   reminders: EventReminderInfo[];
   /**
-   * expense 이벤트의 표시 부호 금액 — 지출 음수 / 수입·환불 양수.
-   * 일별 합계는 이 값을 쓴다. title 에서 금액을 되파싱하면 en 로케일의
-   * `-₩50,000`(부호와 숫자 사이 ₩)이나 숫자로 시작하는 카테고리명에서 깨진다.
+   * expense 이벤트의 **일별 합계용** 금액 — 지출 음수 / 수입 양수 /
+   * 환불된 거래 0(삭제와 똑같이 합계에서 빠진다. 칩은 `title` 로 그리므로
+   * 셀에는 제 금액으로 남는다).
+   * title 에서 금액을 되파싱하면 en 로케일의 `-₩50,000`(부호와 숫자 사이 ₩)이나
+   * 숫자로 시작하는 카테고리명에서 깨진다.
    */
   expenseAmount?: number;
 }

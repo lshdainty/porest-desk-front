@@ -1,32 +1,36 @@
-// 거래 상세의 **환불 취소** (D3 · 앱 desk-app #331 의 미러).
+// 거래 상세의 **환불 마크**와 그 취소.
 //
-// 환불로 잘못 묶은 거래를 푸는 방법이 **삭제뿐**이었다. 편집 시트에는 환불 연결 칸이
-// 없고, 그래서 저장 본문은 그 키를 아예 안 싣는다 — 실었다가는 메모만 고쳐도 연결이
-// 끊겨 원거래의 지출 상계가 사라진다(QA #108). 결과적으로 "끊어라" 를 보낼 자리가
-// 어디에도 없었다. 이 버튼이 그 자리다.
+// 환불은 더 이상 수입 행을 만들지 않는다 — 원거래에 "환불됨" 표식을 찍어 합계·잔액에서
+// 빼고, 내역·검색에는 남긴다(설계서 2절). 그래서 화면에서 잠글 것이 셋이다.
 //
-// 여기서 잠그는 것 셋:
-//   1) **판정은 `isRefundTx`** — 수입 + 원거래 연결. 연결만 보면 지출에 남은 연결에도
-//      뜨고, 수입만 보면 모든 수입에 뜬다.
-//   2) **확인을 받는다.** 되돌리는 칸이 어느 화면에도 없어서(다시 묶으려면 이 거래를
-//      지우고 원거래에서 환불을 새로 기록해야 한다) 삭제와 같은 무게로 묻는다.
-//   3) **응답으로 다시 그린다.** 부모는 목록에서 집은 스냅샷을 넘긴다 — 무효화가 끝나도
-//      그 객체는 안 바뀌므로, 갈아 주지 않으면 배너가 남아 두 번 누르게 된다.
+//   1) **확인을 받고, 날짜를 받는다.** 카드사 환급은 며칠 걸리므로 "언제 환불됐나" 는
+//      사용자만 안다. 자정이 아니라 **정오**로 보낸다 — 자정으로 보내면 같은 날 앞에
+//      찍힌 거래보다 과거가 되어 카드 회차 판정이 하루 밀린다.
+//   2) **응답으로 다시 그린다.** 부모는 목록에서 집은 스냅샷을 넘긴다 — 무효화가 끝나도
+//      그 객체는 안 바뀌므로, 갈아 주지 않으면 배너가 안 뜨고 두 번 누르게 된다.
+//   3) **환불된 거래는 고칠 수 없다.** 돈이 이미 자산으로 돌아가 있어 되돌릴 기준이
+//      사라진다(서버도 EXP_043 으로 막는다). 수정·분할을 감추고 환불 취소만 남긴다.
 //
-// 본문이 무엇인지는 `features/expense/api/expenseApi.test.ts` 가 본다.
+// 본문 모양은 `features/expense/api/expenseApi.test.ts` 가, 빠른 동작 줄의 열 수는
+// `TxDetailDialog.quickActions.test.tsx` 가 본다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Expense } from "@/entities/expense";
+import { todayLocalKey } from "@/shared/lib/date";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
-const unlink = vi.hoisted(() => ({
-  calls: [] as number[],
-  /** 서버가 돌려주는 거래 — 연결이 끊긴 모습이다. */
-  reply: null as Expense | null,
+const api = vi.hoisted(() => ({
+  refundCalls: [] as { id: number; refundedAt?: string }[],
+  cancelCalls: [] as number[],
+  /** 서버가 돌려주는 거래 — null 이면 응답이 안 온 것으로 본다. */
+  refundReply: null as Expense | null,
+  cancelReply: null as Expense | null,
+  /** 거래가 달린 자산 — 카드면 확인창이 한 줄 더 말한다. */
+  assets: [] as unknown[],
 }));
 
 vi.mock("react-i18next", () => ({
@@ -37,10 +41,20 @@ vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [], isLoading: false }),
   useSearchExpenses: () => ({ data: [], isLoading: false }),
   useDeleteExpense: () => ({ mutate: () => {}, isPending: false }),
-  useUnlinkRefund: () => ({
+  useRefundExpense: () => ({
+    mutate: (
+      vars: { id: number; refundedAt?: string },
+      opts?: { onSuccess?: (e: Expense) => void },
+    ) => {
+      api.refundCalls.push(vars);
+      if (api.refundReply) opts?.onSuccess?.(api.refundReply);
+    },
+    isPending: false,
+  }),
+  useCancelRefund: () => ({
     mutate: (id: number, opts?: { onSuccess?: (e: Expense) => void }) => {
-      unlink.calls.push(id);
-      if (unlink.reply) opts?.onSuccess?.(unlink.reply);
+      api.cancelCalls.push(id);
+      if (api.cancelReply) opts?.onSuccess?.(api.cancelReply);
     },
     isPending: false,
   }),
@@ -55,7 +69,7 @@ vi.mock("@/features/dutch-pay", () => ({
   useDutchPays: () => ({ data: [], isLoading: false }),
 }));
 vi.mock("@/features/asset", () => ({
-  useAssets: () => ({ data: { assets: [] }, isLoading: false }),
+  useAssets: () => ({ data: { assets: api.assets }, isLoading: false }),
 }));
 vi.mock("@/features/expense-split/ui/SplitTxDialog", () => ({
   SplitTxDialog: () => null,
@@ -72,26 +86,31 @@ const { TxDetailDialog } = await import("./TxDetailDialog");
 const baseExpense: Expense = {
   rowId: 77,
   categoryRowId: 21,
-  assetRowId: null,
-  assetName: null,
-  expenseType: "INCOME",
+  assetRowId: 9,
+  assetName: "현대카드",
+  expenseType: "EXPENSE",
   amount: 3000,
   description: null,
   merchant: "김밥천국",
   expenseDate: "2026-09-05T12:30:00",
   paymentMethod: null,
   installmentMonths: null,
-  refundOfExpenseRowId: 500,
+  refundedAt: null,
+  refundTransferRowId: null,
   originalAmount: null,
   originalCurrency: null,
   exchangeRate: null,
   calendarEventRowId: null,
   todoRowId: null,
   autoSource: null,
-  refundCount: 0,
-  refundedAmount: 0,
   createAt: "2026-09-05T12:30:00",
   modifyAt: "2026-09-05T12:30:00",
+};
+
+const refunded: Expense = {
+  ...baseExpense,
+  refundedAt: "2026-09-18T12:00:00",
+  refundTransferRowId: 41,
 };
 
 let container: HTMLDivElement;
@@ -99,8 +118,11 @@ let root: Root;
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  unlink.calls = [];
-  unlink.reply = null;
+  api.refundCalls = [];
+  api.cancelCalls = [];
+  api.refundReply = null;
+  api.cancelReply = null;
+  api.assets = [];
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -118,10 +140,15 @@ afterEach(() => {
   container.remove();
 });
 
-function render(expense: Expense) {
+function render(expense: Expense, opts: { onEdit?: boolean } = {}) {
   act(() =>
     root.render(
-      <TxDetailDialog expense={expense} mobile={false} onClose={() => {}} />,
+      <TxDetailDialog
+        expense={expense}
+        mobile={false}
+        onClose={() => {}}
+        onEdit={opts.onEdit === false ? undefined : () => {}}
+      />,
     ),
   );
 }
@@ -132,87 +159,164 @@ const buttonsWith = (text: string) =>
     (b) => b.textContent?.trim() === text,
   );
 
-const unlinkButton = () => buttonsWith("txDetail.refundUnlink")[0] ?? null;
+const refundAction = () => buttonsWith("txDetail.refund")[0] ?? null;
+const splitAction = () => buttonsWith("splitTitle")[0] ?? null;
+const editButton = () => buttonsWith("edit")[0] ?? null;
+/** 환불됨 배너 — `refundedAt` 문구를 담은 span 이다. */
 const banner = () =>
   [...document.body.querySelectorAll("span")].find(
-    (el) => el.textContent?.trim() === "txDetail.refundOfLinked",
+    (el) => el.textContent?.trim() === "txDetail.refundedAt",
   ) ?? null;
+/** 배너 안의 취소 버튼과 확인창의 확인 버튼이 같은 글자다 — 나중에 붙은 쪽이 확인창. */
+const cancelRefundButtons = () => buttonsWith("txDetail.refundCancel");
 
 const click = (el: Element) =>
   act(() => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
 
-describe("버튼이 보이는 조건은 isRefundTx 다", () => {
-  it("환불 거래(수입 + 원거래 연결)에는 보인다", () => {
-    render(baseExpense);
-
-    expect(banner()).not.toBeNull();
-    expect(unlinkButton()).not.toBeNull();
-  });
-
-  it("지출에 연결이 남아 있어도 안 보인다 — 연결만 보고 가르면 여기서 샌다", () => {
-    render({ ...baseExpense, expenseType: "EXPENSE" });
-
-    expect(banner()).toBeNull();
-    expect(unlinkButton()).toBeNull();
-  });
-
-  it("그냥 수입에는 안 보인다 — 수입만 보고 가르면 여기서 샌다", () => {
-    render({ ...baseExpense, refundOfExpenseRowId: null });
-
-    expect(banner()).toBeNull();
-    expect(unlinkButton()).toBeNull();
-  });
+const creditCard = (over: Record<string, unknown> = {}) => ({
+  rowId: 9,
+  assetName: "현대카드",
+  assetType: "CREDIT_CARD",
+  paymentAssetRowId: 1,
+  ...over,
 });
 
-describe("누르면 확인을 받는다", () => {
+describe("환불은 확인창을 거쳐 표식을 찍는다", () => {
   it("확인창에서 취소하면 아무것도 안 나간다", () => {
     render(baseExpense);
-    click(unlinkButton()!);
+    click(refundAction()!);
     // 확인 전에는 요청이 없다.
-    expect(unlink.calls).toEqual([]);
+    expect(api.refundCalls).toEqual([]);
 
     click(buttonsWith("cancel")[0]!);
 
-    expect(unlink.calls).toEqual([]);
-    // 배너는 그대로 남는다 — 아무 일도 안 일어났다.
-    expect(banner()).not.toBeNull();
-  });
-
-  it("확인하면 이 거래 하나만 끊고, 응답으로 다시 그려 배너가 사라진다", () => {
-    unlink.reply = { ...baseExpense, refundOfExpenseRowId: null };
-    render(baseExpense);
-    click(unlinkButton()!);
-
-    // 확인창의 확인 버튼도 같은 글자다(제목·버튼 모두 '환불 취소') —
-    // 배너의 것 말고 나중에 붙은 쪽을 누른다.
-    const confirms = buttonsWith("txDetail.refundUnlink");
-    expect(confirms.length).toBe(2);
-    click(confirms[confirms.length - 1]!);
-
-    expect(unlink.calls).toEqual([77]);
-    // 부모가 넘긴 스냅샷은 그대로인데도 배너가 사라져야 한다.
+    expect(api.refundCalls).toEqual([]);
     expect(banner()).toBeNull();
-    expect(unlinkButton()).toBeNull();
   });
 
-  it("응답이 안 오면 배너를 지우지 않는다 — 끊긴 척하지 않는다", () => {
-    unlink.reply = null;
+  it("확인하면 오늘 날짜 정오로 마크하고, 응답으로 다시 그려 배너가 뜬다", () => {
+    api.refundReply = refunded;
     render(baseExpense);
-    click(unlinkButton()!);
-    const confirms = buttonsWith("txDetail.refundUnlink");
-    click(confirms[confirms.length - 1]!);
+    click(refundAction()!);
+    click(buttonsWith("txDetail.refundConfirm")[0]!);
 
-    expect(unlink.calls).toEqual([77]);
+    // 자정이 아니라 정오다 — 같은 날 거래보다 과거가 되면 회차 판정이 밀린다.
+    expect(api.refundCalls).toEqual([
+      { id: 77, refundedAt: `${todayLocalKey()}T12:00:00` },
+    ]);
+    // 부모가 넘긴 스냅샷은 그대로인데도 배너가 떠야 한다.
     expect(banner()).not.toBeNull();
+    expect(refundAction()).toBeNull();
+  });
+
+  it("고른 날짜를 그대로 보낸다 — 환급일은 사용자만 안다", () => {
+    api.refundReply = refunded;
+    render(baseExpense);
+    click(refundAction()!);
+
+    const date = document.getElementById(
+      "tx-refund-date",
+    ) as HTMLInputElement | null;
+    expect(date, "확인창에 환불일 칸이 없다").not.toBeNull();
+    // `el.value = ...` 로 직접 넣으면 React 의 값 추적기가 "이미 그 값" 으로 보고
+    // onChange 를 건너뛴다. 프로토타입의 setter 로 넣어 추적기를 지나가게 한다.
+    act(() => {
+      Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value",
+      )!.set!.call(date!, "2026-09-11");
+      date!.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    click(buttonsWith("txDetail.refundConfirm")[0]!);
+
+    expect(api.refundCalls).toEqual([
+      { id: 77, refundedAt: "2026-09-11T12:00:00" },
+    ]);
+  });
+
+  it("응답이 안 오면 마크된 척하지 않는다", () => {
+    api.refundReply = null;
+    render(baseExpense);
+    click(refundAction()!);
+    click(buttonsWith("txDetail.refundConfirm")[0]!);
+
+    expect(api.refundCalls).toHaveLength(1);
+    expect(banner()).toBeNull();
   });
 });
 
-// 환불 행의 **금액**은 편집 시트에서 잠겼다(`AddTxSheet.refundEditLock.test.tsx`) —
-// "금액이 틀렸으면 지우고 다시 넣는다" 가 사용자가 쓸 길이라, 삭제가 여기 남아 있어야
-// 그 길이 뚫려 있다. 삭제까지 막으면 잘못 적은 환불이 영구히 남는 막다른 길이 된다.
-describe("환불 행도 삭제는 열려 있다", () => {
-  it("환불 거래에 삭제 버튼이 남아 있다", () => {
+describe("카드 거래는 확인창이 한 줄 더 말한다", () => {
+  const bodyText = () =>
+    document.body.textContent?.replace(/\s+/g, " ").trim() ?? "";
+
+  it("결제계좌가 있으면 환급 안내", () => {
+    api.assets = [creditCard()];
     render(baseExpense);
+    click(refundAction()!);
+
+    expect(bodyText()).toContain("txDetail.refundConfirmBodyCard");
+  });
+
+  it("결제계좌가 없으면 잔액만 정리한다고 말한다", () => {
+    api.assets = [creditCard({ paymentAssetRowId: null })];
+    render(baseExpense);
+    click(refundAction()!);
+
+    expect(bodyText()).toContain("txDetail.refundConfirmBodyCardNoAccount");
+  });
+
+  it("계좌 거래에는 카드 줄이 없다 — 환급할 카드가 없다", () => {
+    api.assets = [
+      creditCard({ assetType: "BANK_ACCOUNT", paymentAssetRowId: null }),
+    ];
+    render(baseExpense);
+    click(refundAction()!);
+
+    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCard");
+  });
+});
+
+describe("환불된 거래는 되돌리기만 열려 있다", () => {
+  it("배너·취소만 있고 수정·분할·환불은 없다", () => {
+    render(refunded);
+
+    expect(banner()).not.toBeNull();
+    expect(cancelRefundButtons()).toHaveLength(1);
+    // 서버가 EXP_043 으로 막는 자리 둘 — 눌러 봐야 토스트만 뜬다.
+    expect(editButton()).toBeNull();
+    expect(splitAction()).toBeNull();
+    expect(refundAction()).toBeNull();
+  });
+
+  it("취소도 확인을 받고, 응답으로 배너를 걷는다", () => {
+    api.cancelReply = baseExpense;
+    render(refunded);
+    click(cancelRefundButtons()[0]!);
+    expect(api.cancelCalls).toEqual([]);
+
+    // 확인창의 확인 버튼도 같은 글자다 — 나중에 붙은 쪽을 누른다.
+    const buttons = cancelRefundButtons();
+    expect(buttons.length).toBe(2);
+    click(buttons[buttons.length - 1]!);
+
+    expect(api.cancelCalls).toEqual([77]);
+    expect(banner()).toBeNull();
+    expect(refundAction()).not.toBeNull();
+  });
+
+  it("확인창에서 취소하면 아무것도 안 나간다", () => {
+    render(refunded);
+    click(cancelRefundButtons()[0]!);
+    click(buttonsWith("cancel")[0]!);
+
+    expect(api.cancelCalls).toEqual([]);
+    expect(banner()).not.toBeNull();
+  });
+
+  // 금액이 틀렸으면 환불을 취소하고 고치는 길이 있지만, 그 거래 자체가 잘못 들어온
+  // 경우엔 삭제가 유일한 출구다. 막으면 막다른 길이 된다.
+  it("삭제는 남아 있다", () => {
+    render(refunded);
 
     const del = buttonsWith("delete")[0];
     expect(del).toBeDefined();

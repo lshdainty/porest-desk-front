@@ -47,8 +47,15 @@ export interface Expense {
   paymentMethod: string | null;
   /** 할부 개월 (null = 일시불). 신용카드 결제에만 의미. */
   installmentMonths: number | null;
-  /** 환불 원거래 행 아이디 (null = 환불 아님). 수입이면서 이 값이 있으면 지출 상계로 집계. */
-  refundOfExpenseRowId: number | null;
+  /**
+   * 환불 처리 시각 (null = 환불 아님).
+   *
+   * 환불은 **원거래에 찍는 표식**이다 — 수입 행을 만들지 않는다. 있으면 합계·예산·통계·
+   * 청구·실적에서 삭제와 똑같이 빠지고, 목록·검색·상세에는 남는다.
+   */
+  refundedAt: string | null;
+  /** 환불 마크가 만든 카드→결제계좌 환급 이체 (null = 없음). */
+  refundTransferRowId: number | null;
   /** 원 통화 금액 (해외 결제). null 이면 원화 결제 */
   originalAmount: number | null;
   /** 원 통화 (ISO 4217, 예: USD) */
@@ -65,12 +72,6 @@ export interface Expense {
    * 카테고리·메모는 분류라서 그대로 고칠 수 있다.
    */
   autoSource: string | null;
-  /**
-   * 이 거래에 달린 환불 건수·합계. 지우면 함께 사라지므로 화면이 미리 알린다.
-   * 환불이 없으면 0 이다.
-   */
-  refundCount: number;
-  refundedAmount: number;
   /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
   splitCategoryRowIds?: number[];
   createAt: string;
@@ -101,13 +102,6 @@ export interface ExpenseFormValues {
   paymentMethod?: string | null;
   /** 할부 개월 (미전달·1 = 일시불). 신용카드 결제에만 의미. */
   installmentMonths?: number | null;
-  /**
-   * 환불 원거래 행 아이디. 이 연결이 통계 상계를 만든다(수입으로 부풀지 않는다).
-   *
-   * **수정에서는 이 키를 싣지 마라.** 연결을 끊는 칸이 어느 화면에도 없는데 `null` 이
-   * 나가면 메모만 고쳐도 원거래의 환불 수·환불액이 0 이 된다(QA #108).
-   */
-  refundOfExpenseRowId?: number | null;
   /** 원 통화 금액 (해외 결제) */
   originalAmount?: number | null;
   /** 원 통화 (ISO 4217) */
