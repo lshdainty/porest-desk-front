@@ -539,7 +539,7 @@ asset,editDialog.nameLabelAccount,별칭,Alias
 asset,editDialog.namePlaceholderInvest,"예: 연금저축, 금 보유분","e.g. Pension savings, Gold holdings"
 asset,editDialog.namePlaceholderCard,예: 신한 Deep Dream,e.g. Shinhan Deep Dream
 asset,editDialog.namePlaceholderAccount,예: 신한 주거래,e.g. Shinhan Main Account
-asset,editDialog.balanceLabelCard,현재 사용액 ({{unit}}),Current Usage ({{unit}})
+asset,editDialog.balanceLabelCard,이전 미결제 사용액 ({{unit}}),Unpaid balance ({{unit}})
 asset,editDialog.balanceLabelInvest,평가액 ({{unit}}),Valuation ({{unit}})
 asset,editDialog.balanceLabelAccount,잔액 ({{unit}}),Balance ({{unit}})
 asset,editDialog.balanceLabelOverdraft,사용 중인 금액 ({{unit}}),Amount Used ({{unit}})
@@ -563,7 +563,7 @@ asset,cardAdd.searchPlaceholder,카드명 또는 발급사 검색,Search card na
 asset,cardAdd.noResults,검색 결과가 없어요,No results
 asset,cardAdd.nicknameOptional,별칭 (선택),Nickname (optional)
 asset,cardAdd.nicknamePlaceholder,예: 신한 Deep Dream,e.g. Shinhan Deep Dream
-asset,cardAdd.outstanding,현재 사용액 (원),Current balance (KRW)
+asset,cardAdd.outstanding,이전 미결제 사용액 (원),Unpaid balance (KRW)
 asset,cardAdd.outstandingHint,청구될 금액을 입력하세요. 총 부채에 반영됩니다.,Enter the billed amount. It counts toward total debt.
 asset,cardAdd.selectRequired,카드 선택 필요,Select a card
 asset,cardAdd.title,카드 추가,Add card
@@ -608,7 +608,7 @@ asset,accountSub.cash,현금,Cash
 asset,accountSub.loan,대출,Loan
 asset,editDialog.overLimitBadge,한도 초과,Over limit
 asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되지만 한도나 사용액을 다시 확인해 주세요.,{{amount}} over the limit. It still saves — check the limit or the amount.
-asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어 주세요. 0으로 두면 이 카드에 입력하는 모든 내역(지난 날짜 포함)이 미결제 사용액으로 잡혀요.,Enter the amount not yet paid. If left at 0 every expense entered on this card (including past dates) counts as unpaid usage.
+asset,editDialog.cardBalanceHelp,"아직 결제되지 않은 사용액을 적어 주세요. 이 카드에 입력하는 내역은 지난 날짜여도 모두 미결제 사용액으로 잡혀요.","Enter the amount not yet paid. Every expense entered on this card counts as unpaid usage, including ones dated in the past."
 asset,editDialog.memoOptional,메모 (선택),Memo (optional)
 asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 메모하세요","Note the last digits of account number, payment day, limit, etc."
 asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
