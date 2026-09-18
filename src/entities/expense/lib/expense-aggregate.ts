@@ -9,6 +9,11 @@ import type { Expense } from "../model/types";
  *      통장에 없는 급여가 이번 달 수입으로 잡힌다.
  *   2) 환불된 건 안 센다. 환불은 원거래에 찍는 표식이고, 표식이 찍힌 거래는 삭제와
  *      똑같이 빠진다 — 지출 50,000 을 환불하면 그 달 지출에서 50,000 이 사라진다.
+ *   3) 카드 이월은 안 센다. 카드를 만들 때 적은 "이전 미결제 사용액" 은 앱을 쓰기 전에
+ *      이미 쓴 돈이라 등록한 달의 지출이 아니다.
+ *
+ * 여기 있는 합계는 전부 **가계부 숫자**다. 카드 청구·한도 사용은 서버가 내려 주고 그쪽은
+ * 이월을 포함한다 — 빼면 "잔액 = 거래 합"(D4)이 풀린다.
  *
  * 이 규칙이 화면마다 흩어져 있어서 실제로 여러 번 빠뜨렸다 — 예산 이행률 차트, 통계 일별
  * 추이, 캘린더 셀이 각각 다른 시점에 발견됐다. 그래서 한곳에 모은다.
@@ -29,13 +34,28 @@ export function isRefundedTx(e: Expense): boolean {
 }
 
 /**
+ * 카드 이월 거래인가 — 카드를 만들 때 적은 "이전 미결제 사용액"(D4).
+ *
+ * 등록 전에 이미 쓴 돈이라 그 달의 지출이 아니다. 목록에는 보이고(자동 생성이라 수정·삭제는
+ * 잠겨 있다) 합계에서만 빠진다.
+ */
+export function isCardCarryoverTx(e: Expense): boolean {
+  return e.autoSource === "CARD_CARRYOVER";
+}
+
+/**
  * 집계 대상만 남긴다 — 아직 안 온 것과 **환불된 것**을 뺀다.
  *
  * 환불은 원거래에 찍는 표식이라 삭제와 똑같이 빠진다. 종전엔 수입 행을 만들어 음수로
  * 상계했는데, 그러면 환불 날짜 회차에서 또 빠져 카드 청구가 두 번 깎였다.
  */
 export function countableTx(all: Expense[]): Expense[] {
-  return all.filter((e) => !isScheduledTx(e.expenseDate) && !isRefundedTx(e));
+  return all.filter(
+    (e) =>
+      !isScheduledTx(e.expenseDate) &&
+      !isRefundedTx(e) &&
+      !isCardCarryoverTx(e),
+  );
 }
 
 /** 수입 합계. */
