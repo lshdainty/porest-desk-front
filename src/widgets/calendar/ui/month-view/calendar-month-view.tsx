@@ -54,10 +54,10 @@ function buildExpenseSummaryMap(
     if (event.color === "#0147ad") {
       summary.income += Math.abs(amount);
     } else {
-      // 지출 계열 — 부호를 뒤집어 더한다.
-      //   지출 −52,400 → +52,400 (쓴 돈)
-      //   환불 +3,000  → −3,000  (되돌려받아 지출이 준다, 서버 집계와 같은 규칙)
-      // abs() 로 묶으면 환불이 지출로 더해져 월 헤더와 두 배로 어긋난다.
+      // 지출 계열 — 부호를 뒤집어 더한다(지출 −52,400 → +52,400, 쓴 돈).
+      // 환불된 거래는 converter 가 0 을 실어 주므로 여기서 저절로 빠진다 — 삭제와
+      // 같은 규칙이다(`convertExpenseToIEvent`). abs() 로 묶으면 그 0 판정이
+      // 무의미해지고 부호 있는 값이 전부 지출로 더해진다.
       summary.expense += -amount;
     }
 
@@ -173,7 +173,8 @@ const MonthDayCell = ({
     endSelection();
   }, [endSelection]);
 
-  // 환불이 지출보다 많은 날은 expense 가 음수다 — 0 만 감춘다.
+  // 합계가 0 인 날만 감춘다 — 환불만 있는 날이 그렇다(기여가 0 이다).
+  // 부호 판정은 그대로 둔다: 합계 식이 바뀌어 음수가 나와도 숫자가 뒤집히지 않는다.
   const hasExpense =
     expenseSummary &&
     (expenseSummary.income > 0 || expenseSummary.expense !== 0);
@@ -261,7 +262,8 @@ const MonthDayCell = ({
                 inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
             {expenseSummary.expense !== 0 &&
               (() => {
-                // 환불이 더 많은 날은 순 −(음수) 라 부호가 뒤집힌다.
+                // 순액이 음수면 부호가 뒤집힌다 — 지금 식으로는 안 나오지만,
+                // 합계 규칙이 바뀌어도 `−-52,400` 같은 글자가 안 나오게 둔다.
                 const net = expenseSummary.expense;
                 const text = hideExpense
                   ? "••••"

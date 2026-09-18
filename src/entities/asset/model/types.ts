@@ -275,14 +275,6 @@ export interface CardBilling {
   upcomingLumpSumAmount?: number | null;
   /** 같은 회차에 이미 낸 금액(선결제 차감분). */
   upcomingAlreadyPaidAmount?: number | null;
-  /**
-   * 이 회차 금액 중 **아직 오지 않은 분**. 옛 서버 호환으로 옵셔널.
-   *
-   * 자산 목록·한도 사용에 쓰는 잔액은 지금 이전 이력만 세고, 청구 예정액은 회차 기간
-   * 전체를 센다. 그래서 반복 거래가 미리 만들어 둔 거래나 시각이 뒤인 오늘 거래가 있으면
-   * 같은 카드인데 두 숫자가 다르게 보인다 — 딱 이만큼이다(2026-09-18 사용자 제보).
-   */
-  upcomingScheduledAmount?: number | null;
   /** 이 회차에 빠지는 할부 구성 — 예정액이 이용 내역 합과 다른 이유를 설명한다. */
   upcomingInstallments?: InstallmentDue[];
   /** 다가오는 회차 청구 기간 "yyyy-MM-dd" | null (결제일 미설정 시 null) */
@@ -308,8 +300,6 @@ export interface UpcomingCycle {
   amount: number;
   lumpSumAmount: number | null;
   alreadyPaidAmount: number | null;
-  /** {@link CardBilling.upcomingScheduledAmount} 와 같은 뜻 — 이 회차의 예정분. */
-  scheduledAmount?: number | null;
   installments: InstallmentDue[];
 }
 

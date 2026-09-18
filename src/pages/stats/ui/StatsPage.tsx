@@ -25,7 +25,7 @@ import {
   formatYearQuarter,
 } from "@/shared/lib/date";
 import { niceAxis, niceCeil } from "@/shared/lib/porest/chartAxis";
-import { isRefundTx, isScheduledTx } from "@/entities/expense";
+import { isRefundedTx, isScheduledTx } from "@/entities/expense";
 import {
   HideCard,
   MaskAmount,
@@ -2103,16 +2103,14 @@ export const StatsPage = () => {
           label: `${d.getMonth() + 1}/${d.getDate()}`,
         });
       }
-      // 서버 집계와 같은 규칙 — 환불은 지출 상계, 아직 안 온 건 세지 않는다.
+      // 서버 집계와 같은 규칙 — 환불된 것과 아직 안 온 건 세지 않는다.
       // 안 그러면 같은 화면의 저축률 위젯(서버 값)과 선 그래프가 어긋난다.
       for (const e of exps) {
         const key = e.expenseDate.slice(0, 10);
         const bucket = byDay.get(key);
         if (!bucket) continue;
-        if (isScheduledTx(e.expenseDate)) continue;
-        const isRefund = isRefundTx(e);
-        if (isRefund) bucket.expense -= Math.abs(e.amount);
-        else if (e.expenseType === "INCOME") bucket.income += e.amount;
+        if (isScheduledTx(e.expenseDate) || isRefundedTx(e)) continue;
+        if (e.expenseType === "INCOME") bucket.income += e.amount;
         else bucket.expense += e.amount;
       }
       return Array.from(byDay.values()).map((v) => ({

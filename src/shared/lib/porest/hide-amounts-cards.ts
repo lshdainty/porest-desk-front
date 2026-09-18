@@ -126,7 +126,7 @@ export function cardsOfKind(kind: HideKind): HideCardKey[] {
     : [`kind.${kind}` as HideCardKey];
 }
 
-/** 거래 한 건의 종류 — 부호가 아니라 타입으로 가른다(환불이 음수 지출이라 부호로는 샌다). */
+/** 거래 한 건의 종류 — 부호가 아니라 타입으로 가른다(금액은 늘 양수로 온다). */
 export function kindOfExpense(
   expenseType: string | null | undefined,
 ): HideKind {

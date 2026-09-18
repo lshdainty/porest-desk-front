@@ -20,6 +20,7 @@ import {
   ScheduledBadge,
 } from "@/shared/ui/porest/ledger";
 import type { Expense } from "../model/types";
+import { isRefundedTx } from "../lib/expense-aggregate";
 
 /** 거래 한 건 — 지출/수입. 목록 어디서든 같은 모양이어야 해서 entity 가 소유한다. */
 export function ExpenseRow({
@@ -36,10 +37,14 @@ export function ExpenseRow({
 }) {
   const { t } = useTranslation("common");
   const isIncome = expense.expenseType === "INCOME";
+  // 환불된 거래 — 합계에서 빠져 있다. 예정 거래와 같은 흐림을 쓰되 **배지로 갈라
+  // 준다**(흐림만으로는 "아직 안 온 것" 과 구별이 안 된다). 금액은 원래 부호 그대로
+  // 두고 취소선으로 "없는 것으로 셌다" 를 말한다.
+  const refunded = isRefundedTx(expense);
   return (
     <LedgerRow
       onClick={onClick ? () => onClick(expense) : undefined}
-      dim={isScheduledDate(expense.expenseDate)}
+      dim={isScheduledDate(expense.expenseDate) || refunded}
     >
       <CategoryChip
         name={expense.categoryName ?? t("others")}
@@ -65,6 +70,7 @@ export function ExpenseRow({
           {isScheduledDate(expense.expenseDate) && (
             <ScheduledBadge label={t("scheduled")} />
           )}
+          {refunded && <ScheduledBadge label={t("refunded")} />}
           {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
             <span
               style={{
@@ -115,9 +121,15 @@ export function ExpenseRow({
               card="ledger.txList"
               kind={kindOfExpense(expense.expenseType)}
             >
-              {isIncome ? "+" : MINUS}
-              {isEn() ? "₩" : ""}
-              {KRW(expense.amount, { abs: true })}
+              <span
+                style={
+                  refunded ? { textDecoration: "line-through" } : undefined
+                }
+              >
+                {isIncome ? "+" : MINUS}
+                {isEn() ? "₩" : ""}
+                {KRW(expense.amount, { abs: true })}
+              </span>
             </MaskAmount>
             <HideUnit
               card="ledger.txList"

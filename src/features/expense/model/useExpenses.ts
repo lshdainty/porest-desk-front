@@ -31,18 +31,28 @@ export const useUpdateExpense = () => {
 };
 
 /**
- * 환불 연결 끊기 (D3) — 거래는 남고 연결만 사라진다.
+ * 환불 마크·취소.
  *
- * 무효화 범위가 이 훅의 핵심이다. **원거래가 다른 달일 수 있다** — 이 거래의 달만
- * 무효화하면 원거래가 있는 달 목록이 옛 환불 배지·환불액을 들고 남는다. 그래서
- * 다른 거래 변경과 같은 범위(`"ledger"`)로 통째로 턴다. 잔액은 안 움직이지만
- * 환불 상계는 카드 실적·홈 합계까지 타므로, 범위를 여기서 좁히지 않는다.
+ * 무효화 범위가 이 훅의 핵심이다. 환불은 **원거래 달**의 합계를 바꾼다 — 오늘 누른
+ * 환불이 지난달 지출을 줄인다. 그래서 이 거래의 달만 털면 안 되고, 다른 거래 변경과
+ * 같은 범위(`"ledger"`)로 통째로 턴다. 카드였다면 **잔액·이체까지 움직이므로**
+ * 자산 쪽도 함께 무효화되는 그 범위가 맞다.
  */
-export const useUnlinkRefund = () => {
+export const useRefundExpense = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => expenseApi.unlinkRefund(id),
+    mutationFn: ({ id, refundedAt }: { id: number; refundedAt?: string }) =>
+      expenseApi.refund(id, refundedAt),
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
+  });
+};
+
+export const useCancelRefund = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => expenseApi.cancelRefund(id),
     onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };

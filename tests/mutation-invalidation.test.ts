@@ -140,9 +140,15 @@ const ROWS: Row[] = [
   },
   {
     file: EXPENSES,
-    hook: "useUnlinkRefund",
+    hook: "useRefundExpense",
     change: "ledger",
-    call: () => expenses.useUnlinkRefund(),
+    call: () => expenses.useRefundExpense(),
+  },
+  {
+    file: EXPENSES,
+    hook: "useCancelRefund",
+    change: "ledger",
+    call: () => expenses.useCancelRefund(),
   },
   {
     file: EXPENSES,

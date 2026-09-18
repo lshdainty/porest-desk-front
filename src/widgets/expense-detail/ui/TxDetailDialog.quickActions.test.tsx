@@ -25,7 +25,8 @@ vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [], isLoading: false }),
   useSearchExpenses: () => ({ data: [], isLoading: false }),
   useDeleteExpense: () => ({ mutate: () => {}, isPending: false }),
-  useUnlinkRefund: () => ({ mutate: () => {}, isPending: false }),
+  useRefundExpense: () => ({ mutate: () => {}, isPending: false }),
+  useCancelRefund: () => ({ mutate: () => {}, isPending: false }),
 }));
 vi.mock("@/features/expense-split", () => ({
   useExpenseSplits: () => ({ data: [], isLoading: false }),
@@ -63,15 +64,14 @@ const baseExpense: Expense = {
   expenseDate: "2026-09-05T12:30:00",
   paymentMethod: null,
   installmentMonths: null,
-  refundOfExpenseRowId: null,
+  refundedAt: null,
+  refundTransferRowId: null,
   originalAmount: null,
   originalCurrency: null,
   exchangeRate: null,
   calendarEventRowId: null,
   todoRowId: null,
   autoSource: null,
-  refundCount: 0,
-  refundedAmount: 0,
   createAt: "2026-09-05T12:30:00",
   modifyAt: "2026-09-05T12:30:00",
 };
@@ -99,17 +99,13 @@ afterEach(() => {
 });
 
 /** `mobile` 은 껍데기(Drawer/Dialog)만 가른다 — 빠른 동작 줄은 둘이 같은 코드다. */
-function render(
-  expense: Expense,
-  opts: { refundable: boolean; mobile: boolean },
-) {
+function render(expense: Expense, opts: { mobile: boolean }) {
   act(() =>
     root.render(
       <TxDetailDialog
         expense={expense}
         mobile={opts.mobile}
         onClose={() => {}}
-        onRefund={opts.refundable ? () => {} : undefined}
       />,
     ),
   );
@@ -133,7 +129,7 @@ function rowShape() {
 
 describe("빠른 동작은 개수와 무관하게 한 줄이다", () => {
   it("지출 4개(환불 포함) — 열도 4다", () => {
-    render(baseExpense, { refundable: true, mobile: false });
+    render(baseExpense, { mobile: false });
 
     expect(rowShape()).toEqual({
       columns: "repeat(4, 1fr)",
@@ -147,10 +143,7 @@ describe("빠른 동작은 개수와 무관하게 한 줄이다", () => {
   });
 
   it("수입 3개(환불 없음) — 열도 3이다. 4로 박으면 여기서 한 칸이 빈다", () => {
-    render(
-      { ...baseExpense, expenseType: "INCOME" },
-      { refundable: true, mobile: false },
-    );
+    render({ ...baseExpense, expenseType: "INCOME" }, { mobile: false });
 
     expect(rowShape()).toEqual({
       columns: "repeat(3, 1fr)",
@@ -158,17 +151,22 @@ describe("빠른 동작은 개수와 무관하게 한 줄이다", () => {
     });
   });
 
-  it("지출이어도 부모가 onRefund 를 안 주면 3개 — 열도 3이다", () => {
-    render(baseExpense, { refundable: false, mobile: false });
+  it("이미 환불한 지출은 2개 — 환불·분할이 빠져 열도 2다", () => {
+    // 환불된 거래는 고칠 수도 쪼갤 수도 없다(서버가 EXP_043 으로 막는다) —
+    // 둘이 함께 빠지므로 숫자를 박아 뒀다면 여기서 또 어긋났다.
+    render(
+      { ...baseExpense, refundedAt: "2026-09-18T12:00:00" },
+      { mobile: false },
+    );
 
     expect(rowShape()).toEqual({
-      columns: "repeat(3, 1fr)",
-      labels: ["splitTitle", "txDetail.recurring", "txDetail.dutchPay"],
+      columns: "repeat(2, 1fr)",
+      labels: ["txDetail.recurring", "txDetail.dutchPay"],
     });
   });
 
   it("모바일도 같다 — 사용자가 데스크톱·모바일 둘 다 지목했다", () => {
-    render(baseExpense, { refundable: true, mobile: true });
+    render(baseExpense, { mobile: true });
 
     const { columns, labels } = rowShape();
     expect(labels).toHaveLength(4);

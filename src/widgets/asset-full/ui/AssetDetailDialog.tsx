@@ -304,13 +304,6 @@ type CardStatement = {
   paymentDate: string;
   /** 예정 회차에 빠지는 할부 구성 — 과거 회차는 서버가 내려주지 않는다. */
   installments?: InstallmentDue[];
-  /**
-   * 이 회차 금액 중 아직 오지 않은 분.
-   *
-   * 한도 사용 게이지에 쓰는 잔액은 지금 이전만 세고 예정액은 기간 전체를 센다 — 딱
-   * 이만큼 예정액이 커 보인다. 같은 화면의 두 숫자가 다른 이유라 그 자리에서 밝힌다.
-   */
-  scheduledAmount?: number | null;
 };
 
 /**
@@ -355,7 +348,6 @@ function CardDetailBody({
         periodEnd: n.periodEnd,
         paymentDate: n.paymentDate,
         installments: n.installments ?? [],
-        scheduledAmount: n.scheduledAmount,
       });
     }
     if (billing?.nextPaymentDate) {
@@ -368,7 +360,6 @@ function CardDetailBody({
         periodEnd: billing.upcomingPeriodEnd,
         paymentDate: billing.nextPaymentDate,
         installments: billing.upcomingInstallments ?? [],
-        scheduledAmount: billing.upcomingScheduledAmount,
       });
     }
     // 과거 회차 — 결제월별 합산: 같은 달에 여러 번(선결제 등) 결제해도 월 1행(사용자 결정).
@@ -689,21 +680,6 @@ function CardDetailBody({
             </HideUnit>
           )}
         </div>
-        {/* 예정액이 한도 사용(=잔액)과 다른 이유를 그 숫자 바로 아래에서 밝힌다.
-          잔액은 아직 안 온 거래를 안 세고 예정액은 센다 — 딱 이만큼이다. */}
-        {st?.scheduled && (st.scheduledAmount ?? 0) > 0 && (
-          <div
-            style={{
-              fontSize: "var(--text-caption)",
-              color: "var(--fg-tertiary)",
-              marginTop: 6,
-            }}
-          >
-            {t("assetDetail.billingScheduledPortion", {
-              amount: money(st.scheduledAmount!),
-            })}
-          </div>
-        )}
         {st && !st.scheduled && (
           <div
             style={{

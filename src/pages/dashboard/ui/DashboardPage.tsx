@@ -1041,7 +1041,7 @@ function HomeDesktop() {
     .slice()
     .filter((t) => t.expenseDate?.slice(0, 10) === todayDStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate));
-  // 서버 집계와 같은 규칙 — 환불 상계 + 예정 제외.
+  // 서버 집계와 같은 규칙 — 환불·예정 제외.
   const todayTotal = expenseSum(todayTx);
 
   // 일평균 + 전월 대비 — 가계부 카드 요약 라인용
@@ -2095,7 +2095,7 @@ function HomeMobile() {
     .slice()
     .filter((t) => t.expenseDate?.slice(0, 10) === todayStr)
     .sort((a, b) => b.expenseDate.localeCompare(a.expenseDate));
-  // 서버 집계와 같은 규칙 — 환불 상계 + 예정 제외.
+  // 서버 집계와 같은 규칙 — 환불·예정 제외.
   const todayTotal = expenseSum(todayTx);
 
   // 도넛 — 부모 카테고리로 롤업, 전체 표시

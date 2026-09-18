@@ -109,12 +109,7 @@ import {
   matchesFilter,
   type FilterValue,
 } from "@/features/expense/model/filter";
-import {
-  countableTx,
-  expenseSum,
-  incomeSum,
-  isRefundTx,
-} from "@/entities/expense";
+import { countableTx, expenseSum, incomeSum } from "@/entities/expense";
 import { AddTxSheet } from "@/widgets/add-tx";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { TxDetailDialog } from "@/widgets/expense-detail/ui/TxDetailDialog";
@@ -643,8 +638,6 @@ function ExpenseCalendar({
   // row 클릭 → TxDetailDialog → 편집 → AddTxSheet flow (EditableList 와 동일).
   const [detail, setDetail] = useState<Expense | null>(null);
   const [editing, setEditing] = useState<Expense | null>(null);
-  // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
-  const [refunding, setRefunding] = useState<Expense | null>(null);
   // 일별 drawer '거래 추가' → 그 날짜 seed 로 신규 AddTxSheet.
   const [addSeedDate, setAddSeedDate] = useState<string | null>(null);
   const dayItems = useMemo(() => {
@@ -706,10 +699,6 @@ function ExpenseCalendar({
             setDetail(null);
             setEditing(e);
           }}
-          onRefund={(e) => {
-            setDetail(null);
-            setRefunding(e);
-          }}
         />
       )}
       {editing && (
@@ -717,13 +706,6 @@ function ExpenseCalendar({
           expense={editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
-        />
-      )}
-      {refunding && (
-        <AddTxSheet
-          refundOf={refunding}
-          mobile={mobile}
-          onClose={() => setRefunding(null)}
         />
       )}
       {addSeedDate && (
@@ -964,7 +946,7 @@ function ExpenseList({
       {grouped.map(([d, items]) => {
         const { md, dow } = formatDay(d);
         // 날짜 헤더의 지출/수입 합계 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
-        // 합계 규칙은 expenseSum/incomeSum 한곳이다(환불: 수입 제외 + 지출 상계).
+        // 합계 규칙은 expenseSum/incomeSum 한곳이다(환불된 것과 예정은 빠진다).
         // 즉석 reduce 는 2755886 이 걷어낸 옛 규칙의 잔재였다 — 환불이 있는 날
         // 이 헤더만 월 요약과 다른 숫자를 냈다(수입 +2,005,000 / 지출 −45,000).
         const dayTxs = items.flatMap((i) =>
@@ -1456,7 +1438,6 @@ function EditableList({
   const [detail, setDetail] = useState<Expense | null>(null);
   const [editing, setEditing] = useState<Expense | null>(null);
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
-  const [refunding, setRefunding] = useState<Expense | null>(null);
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(
     null,
@@ -1503,10 +1484,6 @@ function EditableList({
             setDetail(null);
             setEditing(e);
           }}
-          onRefund={(e) => {
-            setDetail(null);
-            setRefunding(e);
-          }}
         />
       )}
       {editing && (
@@ -1514,13 +1491,6 @@ function EditableList({
           expense={editing}
           mobile={mobile}
           onClose={() => setEditing(null)}
-        />
-      )}
-      {refunding && (
-        <AddTxSheet
-          refundOf={refunding}
-          mobile={mobile}
-          onClose={() => setRefunding(null)}
         />
       )}
     </>
@@ -1747,27 +1717,15 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       confirm: {
         title: t("deleteConfirm.title"),
         // ConfirmDialog 의 message 는 white-space 지정 없는 <p> 라 개행 문자가 접힌다.
-        message:
-          (e.refundCount ?? 0) > 0 ? (
-            <>
-              {t("txDetail.deleteMessage", { name: rowLabelOf(e) })}
-              <br />
-              <br />
-              {t("addTx.deleteRefundWarn", {
-                count: e.refundCount,
-                amount: KRW(e.refundedAmount),
-              })}
-            </>
-          ) : (
-            t("txDetail.deleteMessage", { name: rowLabelOf(e) })
-          ),
+        // 달린 환불을 경고할 필요가 없어졌다 — 환불은 이제 원거래에 찍는 표식이라
+        // "이 거래에 달린 환불" 이 존재하지 않는다.
+        message: t("txDetail.deleteMessage", { name: rowLabelOf(e) }),
         loading: deleteExpense.isPending,
       },
       onSelect: () => deleteExpense.mutateAsync(e.rowId),
     },
   ];
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
-  const [refunding, setRefunding] = useState<Expense | null>(null);
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(
     null,
@@ -1862,12 +1820,11 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   // 일별 합계 — 캘린더 셀 밑 금액.
   const byDay = useMemo(() => {
     const m: Record<string, { out: number; inn: number }> = {};
-    // 서버 집계와 같은 규칙 — 환불은 지출 상계, 아직 안 온 건 세지 않는다.
+    // 서버 집계와 같은 규칙 — 환불된 것과 아직 안 온 건 `countableTx` 가 이미 뺀다.
     for (const e of countableTx(expenses)) {
       const k = dayKey(e.expenseDate);
       m[k] = m[k] || { out: 0, inn: 0 };
-      if (isRefundTx(e)) m[k].out -= Math.abs(e.amount);
-      else if (e.expenseType === "EXPENSE") m[k].out += Math.abs(e.amount);
+      if (e.expenseType === "EXPENSE") m[k].out += Math.abs(e.amount);
       else m[k].inn += Math.abs(e.amount);
     }
     return m;
@@ -2363,21 +2320,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             setDetail(null);
             setEditing(e);
           }}
-          onRefund={(e) => {
-            setDetail(null);
-            setRefunding(e);
-          }}
         />
       )}
       {editing && (
         <AddTxSheet expense={editing} mobile onClose={() => setEditing(null)} />
-      )}
-      {refunding && (
-        <AddTxSheet
-          refundOf={refunding}
-          mobile
-          onClose={() => setRefunding(null)}
-        />
       )}
       {transferDetail && !editingTransfer && (
         <TransferDetailDialog

@@ -150,15 +150,14 @@ const baseExpense: Expense = {
   merchant: "김밥천국",
   paymentMethod: "CARD",
   installmentMonths: null,
-  refundOfExpenseRowId: null,
+  refundedAt: null,
+  refundTransferRowId: null,
   originalAmount: null,
   originalCurrency: null,
   exchangeRate: null,
   calendarEventRowId: null,
   todoRowId: null,
   autoSource: null,
-  refundCount: 0,
-  refundedAmount: 0,
   createAt: "2026-09-05T12:30:00",
   modifyAt: "2026-09-05T12:30:00",
 };
@@ -214,17 +213,13 @@ const byValue = (v: string) =>
     ),
   ].find((el) => el.value === v);
 
-function render(props: {
-  expense?: Expense | null;
-  refundOf?: Expense | null;
-}) {
+function render(props: { expense?: Expense | null }) {
   act(() =>
     root.render(
       <AddTxSheet
         onClose={() => {}}
         mobile={false}
         expense={props.expense ?? null}
-        refundOf={props.refundOf ?? null}
       />,
     ),
   );
@@ -297,32 +292,6 @@ describe("비운 칸은 명시 null 로 나간다 (QA #107)", () => {
     // 반대편 — 채워진 칸은 그대로.
     expect(sent.update!.merchant).toBe("김밥천국");
     expect(sent.update!.description).toBe("점심");
-  });
-});
-
-describe("환불 연결 (QA #108)", () => {
-  it("편집에서는 키를 아예 안 싣는다 — 서버가 지금 연결을 지킨다", () => {
-    render({
-      expense: {
-        ...baseExpense,
-        expenseType: "INCOME",
-        categoryRowId: 21,
-        // 이 수입은 원거래에 묶인 환불이다 — 그 연결이 통계 상계를 만든다.
-        refundOfExpenseRowId: 500,
-      },
-    });
-    setValue(byValue("점심")!, "메모만 고친다");
-    clickSave();
-
-    expect(sent.update!).not.toHaveProperty("refundOfExpenseRowId");
-  });
-
-  it("환불을 새로 기록할 때는 원거래를 싣는다", () => {
-    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
-    clickSave();
-
-    expect(sent.create).not.toBeNull();
-    expect(sent.create!.refundOfExpenseRowId).toBe(501);
   });
 });
 
@@ -431,18 +400,18 @@ describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
 
   it("새 거래는 설정의 기본 통화로 열린다 — 해외 결제 칸이 함께 뜬다", () => {
     prefs.defaultCurrency = "USD";
-    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+    render({});
 
     expect(origAmountInput()).not.toBeNull();
   });
 
   it("기본 통화가 늦게 와도 첫 렌더의 원화에 안 잠긴다", () => {
     prefs.defaultCurrency = "KRW";
-    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+    render({});
     expect(origAmountInput()).toBeNull();
 
     prefs.defaultCurrency = "USD";
-    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+    render({});
 
     expect(origAmountInput()).not.toBeNull();
   });
@@ -459,7 +428,13 @@ describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
     // 통화만 골라 두고 금액을 안 적은 거래는 해외 결제가 아니다 — 서버도 반쪽이면
     // 전부 비운다. 기본값이 외화가 됐다고 빈 값이 흘러 나가면 안 된다.
     prefs.defaultCurrency = "USD";
-    render({ refundOf: { ...baseExpense, categoryRowId: 21 } });
+    render({});
+    // 새 거래는 빈 폼으로 열린다 — 금액과 분류가 있어야 저장이 열린다(canSave).
+    setValue(
+      document.body.querySelector<HTMLInputElement>("input.num")!,
+      "12000",
+    );
+    clickButton("식비");
     clickSave();
 
     expect(sent.create).not.toBeNull();
