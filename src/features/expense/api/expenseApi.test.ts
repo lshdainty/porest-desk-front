@@ -13,19 +13,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExpenseFormValues } from "@/entities/expense";
 
-const { put, post, del } = vi.hoisted(() => ({
+const { put, post, del, get } = vi.hoisted(() => ({
   put: vi.fn(),
   post: vi.fn(),
   del: vi.fn(),
+  get: vi.fn(),
 }));
 
 vi.mock("@/shared/api", () => ({
-  apiClient: { put, post, get: vi.fn(), delete: del },
+  apiClient: { put, post, get, delete: del },
 }));
 
 const { expenseApi } = await import("./expenseApi");
 
 beforeEach(() => {
+  get.mockReset().mockResolvedValue({
+    data: { applies: false, refundAmount: 0, reason: "NOT_CARD" },
+  });
   put.mockReset().mockResolvedValue({ data: { rowId: 77 } });
   post.mockReset().mockResolvedValue({ data: { rowId: 77 } });
   del.mockReset().mockResolvedValue({ data: { rowId: 77 } });
@@ -90,5 +94,69 @@ describe("편집 저장은 환불 표식을 못 건드린다", () => {
     expect(wire()).not.toHaveProperty("refundedAt");
     expect(wire()).not.toHaveProperty("refundTransferRowId");
     expect(wire()).not.toHaveProperty("refundOfExpenseRowId");
+  });
+});
+
+/**
+ * 환급 미리보기 — 확인창이 저장하기 **전에** 금액을 묻는 자리(설계 13-1).
+ *
+ * 잠그는 것 둘: ① 쿼리를 비우면 삭제 미리보기다(수정 값을 지어내지 않는다)
+ * ② 확인창을 네트워크에 묶지 않으려고 **3초**에서 끊는다.
+ */
+describe("환급 미리보기", () => {
+  it("삭제 미리보기는 쿼리를 안 싣는다", async () => {
+    get.mockResolvedValue({
+      data: { applies: true, refundAmount: 58_600, reason: "OK" },
+    });
+
+    await expect(expenseApi.refundPreview(77)).resolves.toEqual({
+      applies: true,
+      refundAmount: 58_600,
+      reason: "OK",
+    });
+    expect(get).toHaveBeenCalledWith("/v1/expense/77/refund-preview", {
+      params: undefined,
+      timeout: 3000,
+    });
+  });
+
+  it("수정 미리보기는 바뀔 값만 싣는다", async () => {
+    await expenseApi.refundPreview(77, {
+      amount: 20_000,
+      assetRowId: 9,
+      expenseDate: "2026-09-10T12:00:00",
+    });
+
+    expect(get).toHaveBeenCalledWith("/v1/expense/77/refund-preview", {
+      params: {
+        amount: 20_000,
+        assetRowId: 9,
+        expenseDate: "2026-09-10T12:00:00",
+      },
+      timeout: 3000,
+    });
+  });
+});
+
+/**
+ * 삭제 응답 — 결제계좌로 돌려준 금액이 함께 온다. 옛 서버는 `data` 가 없으므로
+ * 그때도 깨지지 않아야 한다(응답을 읽는 쪽이 늘 객체를 받게 둔다).
+ */
+describe("삭제는 환급액을 돌려준다", () => {
+  it("환급이 있으면 금액이 온다", async () => {
+    del.mockResolvedValue({ data: { refundedAmount: 58_600 } });
+
+    await expect(expenseApi.deleteExpense(77)).resolves.toEqual({
+      refundedAmount: 58_600,
+    });
+    expect(del).toHaveBeenCalledWith("/v1/expense/77");
+  });
+
+  it("응답에 본문이 없어도 객체를 돌려준다", async () => {
+    del.mockResolvedValue({ data: null });
+
+    await expect(expenseApi.deleteExpense(77)).resolves.toEqual({
+      refundedAmount: null,
+    });
   });
 });

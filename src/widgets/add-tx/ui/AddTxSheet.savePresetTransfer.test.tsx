@@ -29,6 +29,11 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/expense", () => ({
+  // 편집 저장 전 환급 미리보기 — 돌려줄 돈이 없다고 답하면 곧바로 저장한다.
+  expenseApi: {
+    refundPreview: () =>
+      Promise.resolve({ applies: false, refundAmount: 0, reason: "NOT_CARD" }),
+  },
   useExpenseCategories: () => ({ data: [category], isLoading: false }),
   useExpenseTemplates: () => ({ data: templates, isLoading: false }),
   useCreateExpense: () => ({ mutate: () => {}, isPending: false }),

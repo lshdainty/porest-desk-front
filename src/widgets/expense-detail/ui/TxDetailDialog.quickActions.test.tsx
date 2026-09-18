@@ -25,6 +25,12 @@ vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [], isLoading: false }),
   useSearchExpenses: () => ({ data: [], isLoading: false }),
   useDeleteExpense: () => ({ mutate: () => {}, isPending: false }),
+  // 삭제 확인창의 환급 미리보기 — 이 파일은 그 갈래를 보지 않는다.
+  useRefundPreview: () => ({
+    data: undefined,
+    isPending: false,
+    isError: true,
+  }),
   useRefundExpense: () => ({ mutate: () => {}, isPending: false }),
   useCancelRefund: () => ({ mutate: () => {}, isPending: false }),
 }));

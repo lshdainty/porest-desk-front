@@ -32,6 +32,7 @@ common,others,기타,Others
 common,transaction,거래,Transaction
 common,scheduled,예정,Scheduled
 common,refunded,환불됨,Refunded
+common,refundedToast,결제계좌로 {{amount}}이 환급됐어요.,{{amount}} went back to the payment account.
 common,iconSearchPlaceholder,아이콘 검색...,Search icons...
 common,iconResultCount,{{count}}개 결과,{{count}} results
 common,iconTotalHint,전체 {{count}}개 · 스크롤해서 더 보기,{{count}} total · scroll for more
@@ -1648,6 +1649,10 @@ expense,txDetail.refundedAt,환불됨 · {{date}},Refunded · {{date}}
 expense,txDetail.refundCancel,환불 취소,Undo refund
 expense,txDetail.refundCancelConfirm,"환불 표시를 지울까요? 이 거래가 합계에 다시 들어가고, 환급된 금액도 되돌아가요.","Remove the refund mark? This transaction counts in your totals again, and any refunded amount is reversed."
 expense,txDetail.refundedReadonly,환불된 거래는 수정할 수 없어요. 먼저 환불을 취소해 주세요,"Refunded transactions can't be edited. Undo the refund first"
+expense,txDetail.paidDeleteNote,이미 결제된 거래라 결제계좌로 {{amount}}이 환급돼요.,"This was already paid, so {{amount}} goes back to the payment account."
+expense,txDetail.paidDeleteFallback,"이미 결제된 회차의 거래라면 결제계좌로 환급돼요.","If this was in an already-paid cycle, it goes back to the payment account."
+expense,txDetail.refundedDeleteNote,"이미 환급된 거래예요. 지우면 내역에서만 사라져요.","This was already refunded. Deleting only removes it from the list."
+expense,addTx.paidReduceNote,"줄어든 {{amount}}이 결제계좌로 환급돼요. 저장할까요?","The reduced {{amount}} goes back to the payment account. Save?"
 expense,txDetail.countCases,{{count}}건,{{count}}
 expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}

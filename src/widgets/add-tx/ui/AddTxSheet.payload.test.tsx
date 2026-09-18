@@ -36,6 +36,11 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/expense", () => ({
+  // 편집 저장 전 환급 미리보기 — 돌려줄 돈이 없다고 답하면 곧바로 저장한다.
+  expenseApi: {
+    refundPreview: () =>
+      Promise.resolve({ applies: false, refundAmount: 0, reason: "NOT_CARD" }),
+  },
   useExpenseCategories: () => ({ data: state.categories, isLoading: false }),
   useExpenseTemplates: () => ({ data: [], isLoading: false }),
   useCreateExpense: () => ({
@@ -225,12 +230,23 @@ function render(props: { expense?: Expense | null }) {
   );
 }
 
-function clickSave() {
+/**
+ * 저장을 누른다.
+ *
+ * 편집 저장은 **비동기**다 — 결제 완료 회차의 카드 거래가 줄어드는지 서버에 먼저
+ * 물어본다(설계 13-2). 그래서 누른 뒤 마이크로태스크를 흘려 보내야 본문이 나간다.
+ */
+/** 편집 저장이 기다리는 미리보기를 흘려 보낸다 — 같은 틱의 연타를 보려면 따로 필요하다. */
+const flushSave = () => act(async () => {});
+
+async function clickSave() {
   const save = [...document.body.querySelectorAll("button")].find((b) =>
     ["save", "addTx.add"].includes(b.textContent?.trim() ?? ""),
   );
   if (!save) throw new Error("저장 버튼을 찾지 못했다");
-  act(() => save.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+  await act(async () => {
+    save.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  });
 }
 
 /** 글자로 버튼을 찾아 누른다 — 아이콘이 섞이므로 정확 일치가 아니라 포함으로 본다. */
@@ -264,11 +280,11 @@ function pressEnter(
 }
 
 describe("비운 칸은 명시 null 로 나간다 (QA #107)", () => {
-  it("거래처·설명을 지우면 null 이 나간다 — 값이 있는 칸은 그대로", () => {
+  it("거래처·설명을 지우면 null 이 나간다 — 값이 있는 칸은 그대로", async () => {
     render({ expense: baseExpense });
     setValue(byValue("김밥천국")!, "");
     setValue(byValue("점심")!, "");
-    clickSave();
+    await clickSave();
 
     expect(sent.update).not.toBeNull();
     expect(sent.update!.merchant).toBeNull();
@@ -278,11 +294,11 @@ describe("비운 칸은 명시 null 로 나간다 (QA #107)", () => {
     expect(sent.update!.assetRowId).toBe(3);
   });
 
-  it("결제수단·계좌가 비어 있으면 키가 아니라 null 로 나간다", () => {
+  it("결제수단·계좌가 비어 있으면 키가 아니라 null 로 나간다", async () => {
     render({
       expense: { ...baseExpense, paymentMethod: null, assetRowId: null },
     });
-    clickSave();
+    await clickSave();
 
     // `undefined` 였다면 키 자체가 없어 서버가 "안 고침" 으로 읽는다.
     expect(sent.update!).toHaveProperty("paymentMethod");
@@ -309,10 +325,10 @@ describe("문자에서 온 내역의 거래 종류 (QA #123)", () => {
     clickButton("환불");
   };
 
-  it("수입으로 고쳐 저장하면 수입으로 나간다", () => {
+  it("수입으로 고쳐 저장하면 수입으로 나간다", async () => {
     render({});
     toIncome();
-    clickSave();
+    await clickSave();
 
     expect(sent.sms).not.toBeNull();
     expect(sent.sms!.expenseType).toBe("INCOME");
@@ -321,10 +337,10 @@ describe("문자에서 온 내역의 거래 종류 (QA #123)", () => {
     expect(sent.sms!.text).toContain("스타벅스");
   });
 
-  it("그대로 두면 지출로 나간다 — 종류를 한쪽으로 박아 둔 게 아니다", () => {
+  it("그대로 두면 지출로 나간다 — 종류를 한쪽으로 박아 둔 게 아니다", async () => {
     render({});
     clickButton("sms-parse");
-    clickSave();
+    await clickSave();
 
     expect(sent.sms).not.toBeNull();
     expect(sent.sms!.expenseType).toBe("EXPENSE");
@@ -336,33 +352,36 @@ describe("문자에서 온 내역의 거래 종류 (QA #123)", () => {
  * 함께** 붙인다: 빠른 추가가 Enter 연타로 같은 할 일을 여러 건 만든 게 #122 다.
  */
 describe("Enter 저장 (QA #132)", () => {
-  it("입력칸에서 Enter 를 누르면 저장된다", () => {
+  it("입력칸에서 Enter 를 누르면 저장된다", async () => {
     render({ expense: baseExpense });
     const merchant = byValue("김밥천국")!;
     pressEnter(merchant);
+    await flushSave();
 
     expect(sent.update).not.toBeNull();
     expect(sent.update!.merchant).toBe("김밥천국");
   });
 
-  it("연타해도 한 번만 나간다 — 이 가드가 없어 #122 가 났다", () => {
+  it("연타해도 한 번만 나간다 — 이 가드가 없어 #122 가 났다", async () => {
     render({ expense: baseExpense });
     const merchant = byValue("김밥천국")!;
+    // 세 번을 **같은 틱** 에 누른다 — 사이에 await 를 두면 첫 저장이 끝나 잠금이 풀린다.
     pressEnter(merchant);
     pressEnter(merchant);
     pressEnter(merchant);
+    await flushSave();
 
     expect(sent.calls).toBe(1);
   });
 
-  it("한글을 확정하는 Enter 는 저장하지 않는다", () => {
+  it("한글을 확정하는 Enter 는 저장하지 않는다", async () => {
     render({ expense: baseExpense });
     pressEnter(byValue("김밥천국")!, { isComposing: true });
 
     expect(sent.calls).toBe(0);
   });
 
-  it("메모(여러 줄 칸)의 Enter 는 줄바꿈이다", () => {
+  it("메모(여러 줄 칸)의 Enter 는 줄바꿈이다", async () => {
     render({ expense: baseExpense });
     const memo = byValue("점심")!;
     expect(memo.tagName).toBe("TEXTAREA");
@@ -371,7 +390,7 @@ describe("Enter 저장 (QA #132)", () => {
     expect(sent.calls).toBe(0);
   });
 
-  it("저장할 수 없는 상태에선 Enter 도 아무 일을 안 한다", () => {
+  it("저장할 수 없는 상태에선 Enter 도 아무 일을 안 한다", async () => {
     render({ expense: baseExpense });
     const amount = byValue("12000")!;
     setValue(amount, "");
@@ -398,14 +417,14 @@ describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
       "input[placeholder='addTx.originalAmountPlaceholder']",
     );
 
-  it("새 거래는 설정의 기본 통화로 열린다 — 해외 결제 칸이 함께 뜬다", () => {
+  it("새 거래는 설정의 기본 통화로 열린다 — 해외 결제 칸이 함께 뜬다", async () => {
     prefs.defaultCurrency = "USD";
     render({});
 
     expect(origAmountInput()).not.toBeNull();
   });
 
-  it("기본 통화가 늦게 와도 첫 렌더의 원화에 안 잠긴다", () => {
+  it("기본 통화가 늦게 와도 첫 렌더의 원화에 안 잠긴다", async () => {
     prefs.defaultCurrency = "KRW";
     render({});
     expect(origAmountInput()).toBeNull();
@@ -416,7 +435,7 @@ describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
     expect(origAmountInput()).not.toBeNull();
   });
 
-  it("편집은 그 거래의 값으로 연다 — 원화 거래가 해외 결제로 열리지 않는다", () => {
+  it("편집은 그 거래의 값으로 연다 — 원화 거래가 해외 결제로 열리지 않는다", async () => {
     prefs.defaultCurrency = "USD";
     render({ expense: baseExpense });
 
@@ -424,7 +443,7 @@ describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
     expect(origAmountInput()).toBeNull();
   });
 
-  it("기본 통화가 외화여도 원 통화 금액을 안 적으면 셋 다 null 로 나간다", () => {
+  it("기본 통화가 외화여도 원 통화 금액을 안 적으면 셋 다 null 로 나간다", async () => {
     // 통화만 골라 두고 금액을 안 적은 거래는 해외 결제가 아니다 — 서버도 반쪽이면
     // 전부 비운다. 기본값이 외화가 됐다고 빈 값이 흘러 나가면 안 된다.
     prefs.defaultCurrency = "USD";
@@ -435,7 +454,7 @@ describe("새 거래의 기본 통화 (QA #124 · D7)", () => {
       "12000",
     );
     clickButton("식비");
-    clickSave();
+    await clickSave();
 
     expect(sent.create).not.toBeNull();
     expect(sent.create!.originalCurrency).toBeNull();

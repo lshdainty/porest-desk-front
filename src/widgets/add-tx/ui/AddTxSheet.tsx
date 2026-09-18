@@ -25,6 +25,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { renderIcon } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
 import { KRW, money, formatChartAxis } from "@/shared/lib/porest/format";
 import {
   Select,
@@ -39,6 +41,7 @@ import {
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { InputTimePicker } from "@/shared/ui/input-time-picker";
 import {
+  expenseApi,
   useCreateExpense,
   useCreateExpenseTemplate,
   useExpenseCategories,
@@ -266,6 +269,14 @@ export function AddTxSheet({
 
   // 분할 합 일치화: 금액을 바꿔 기존 분할 합과 어긋날 때 맞추기 플로우
   const [openReconcile, setOpenReconcile] = useState(false);
+  /**
+   * 감액 저장 대기 — 결제 완료 회차의 카드 거래를 줄이면 그만큼 결제계좌로 돌아간다.
+   * 돈이 움직이는 저장이라 한 번 묻는다(설계 13-2).
+   */
+  const [paidReduce, setPaidReduce] = useState<{
+    amount: number;
+    data: ExpenseFormValues;
+  } | null>(null);
   // 이번 편집 세션에서 맞춘 분할(있으면 저장 시 금액과 함께 원자적으로 전송)
   const [reconciledSplits, setReconciledSplits] = useState<
     ExpenseSplitFormValue[] | null
@@ -476,6 +487,52 @@ export function AddTxSheet({
   })();
 
   // 더블클릭 방어 — isPending 은 다음 렌더에야 바뀌므로 동기 잠금을 따로 둔다.
+  /**
+   * 편집 저장 — 결제 완료 회차의 카드 거래가 줄어드는지 먼저 물어본다(설계 13-2).
+   *
+   * 줄어들면 확인을 한 번 받고 저장한다. 못 물어봤으면(네트워크 실패·3초 초과) 묻지
+   * 않고 저장하고, 응답에 환급액이 실려 오면 그때 토스트로 알린다 — 확인을 못 받았다고
+   * 저장을 막으면 사용자가 아무것도 못 한다.
+   */
+  const confirmPaidReduceThenSave = async (data: ExpenseFormValues) => {
+    if (!expense) return;
+    try {
+      const preview = await expenseApi.refundPreview(expense.rowId, {
+        amount: amountNumber,
+        assetRowId: assetRowId ?? null,
+        expenseDate: `${expenseDate}T${expenseTime}`,
+      });
+      if (preview.applies && preview.refundAmount > 0) {
+        // 확인 대기 — 잠금을 풀어 두지 않으면 확인창의 저장이 먹지 않는다.
+        savingRef.current = false;
+        setPaidReduce({ amount: preview.refundAmount, data });
+        return;
+      }
+      saveEdit(data, preview.refundAmount);
+    } catch {
+      saveEdit(data, null);
+    }
+  };
+
+  /** 편집 PUT — 미리보기와 실제 환급액이 다를 때만 알린다. */
+  const saveEdit = (data: ExpenseFormValues, previewed: number | null) => {
+    if (!expense) return;
+    updateMut.mutate(
+      { id: expense.rowId, data },
+      {
+        onSuccess: (updated) => {
+          const actual = updated?.refundedAmount ?? null;
+          if (actual != null && actual !== previewed) {
+            toast.success(tc("refundedToast", { amount: KRW(actual) }));
+          }
+          setPaidReduce(null);
+          onClose();
+        },
+        onSettled: unlock,
+      },
+    );
+  };
+
   const savingRef = useRef(false);
   const unlock = () => {
     savingRef.current = false;
@@ -600,10 +657,7 @@ export function AddTxSheet({
       ...(isEdit && reconciledSplits ? { splits: reconciledSplits } : {}),
     };
     if (isEdit && expense) {
-      updateMut.mutate(
-        { id: expense.rowId, data },
-        { onSuccess: onClose, onSettled: unlock },
-      );
+      void confirmPaidReduceThenSave(data);
     } else if (smsDraft) {
       // 문자에서 온 지출은 전용 경로로 — 서버가 원문을 다시 봐 취소 문자를 막고
       // 체크했다면 카드 연결을 기억한다. 만들어지는 지출 자체는 같다.
@@ -1462,6 +1516,21 @@ export function AddTxSheet({
             paymentMethod: isTransfer ? "" : paymentMethod,
             description,
           }}
+        />
+      )}
+
+      {/* 감액 저장 확인 — 이미 낸 돈이 결제계좌로 돌아간다는 것만 말하고 묻는다.
+          되돌릴 수 있는 일이라 danger 가 아니다. */}
+      {paidReduce && (
+        <ConfirmDialog
+          title={t("addTx.editTitle")}
+          message={t("addTx.paidReduceNote", {
+            amount: KRW(paidReduce.amount),
+          })}
+          confirmLabel={tc("save")}
+          loading={updateMut.isPending}
+          onCancel={() => !updateMut.isPending && setPaidReduce(null)}
+          onConfirm={() => saveEdit(paidReduce.data, paidReduce.amount)}
         />
       )}
 

@@ -37,8 +37,11 @@ import {
   useExpenseCategories,
   useSearchExpenses,
   useRefundExpense,
+  useRefundPreview,
   useCancelRefund,
 } from "@/features/expense";
+import { toast } from "sonner";
+import { PaidRefundNote } from "@/features/expense/ui/PaidRefundNote";
 import { useExpenseSplits } from "@/features/expense-split";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import { useDutchPays } from "@/features/dutch-pay";
@@ -199,9 +202,21 @@ export function TxDetailDialog({
     onEdit(expense);
   };
 
+  // 삭제 확인창이 열린 동안만 미리보기를 돈다 — 상세를 열기만 해도 부르면 목록을
+  // 훑는 사이 요청이 쌓인다.
+  const previewQ = useRefundPreview(expense.rowId, confirmDelete);
+
   const handleConfirmDelete = () => {
     deleteMut.mutate(expense.rowId, {
-      onSuccess: () => {
+      onSuccess: (result) => {
+        // 미리보기와 실제가 다를 때만 알린다 — 같으면 확인창에서 이미 읽었다.
+        const actual = result?.refundedAmount ?? null;
+        if (
+          actual != null &&
+          actual !== (previewQ.data?.refundAmount ?? null)
+        ) {
+          toast.success(tc("refundedToast", { amount: KRW(actual) }));
+        }
         setConfirmDelete(false);
         onClose();
       },
@@ -755,7 +770,19 @@ export function TxDetailDialog({
       {confirmDelete && (
         <ConfirmDialog
           title={t("deleteConfirm.title")}
-          message={t("txDetail.deleteMessage", { name: displayMerchant })}
+          message={
+            <>
+              {t("txDetail.deleteMessage", { name: displayMerchant })}
+              {/* 결제 완료 회차의 카드 거래는 지우는 순간 돈이 결제계좌로 돌아간다 —
+                  그 예고를 여기서 한다(설계 13-2). 확인 버튼은 이 조회를 기다리지
+                  않는다: 느린 네트워크가 삭제를 막으면 안 된다. */}
+              <PaidRefundNote
+                query={previewQ}
+                isCreditCard={isCreditCard}
+                cardHasPaymentAsset={cardHasPaymentAsset}
+              />
+            </>
+          }
           confirmLabel={tc("delete")}
           danger
           loading={deleteMut.isPending}
