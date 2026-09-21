@@ -61,6 +61,15 @@ export interface Expense {
    * 결과다. 조회로 받은 거래에는 늘 없다(설계 13-1).
    */
   refundedAmount?: number | null;
+  /**
+   * 이 날짜(회차 말일)까지의 카드 회차분은 계좌 이체 없이 정리된 **기록용** (null = 정상).
+   *
+   * 결제가 끝난(닫힌) 회차에 뒤늦게 적은 카드 지출에 붙는다 — 가계부 합계에는 들어가지만
+   * 계좌에서는 빠지지 않았고 이후 청구에도 안 얹힌다(닫힌 회차 규칙 R2). 옛 서버면 없다.
+   */
+  cardSettledThrough?: string | null;
+  /** 그 가운데 기록만 남긴 금액 — 할부는 지난 회차분만이라 거래 금액보다 작을 수 있다. */
+  recordOnlyAmount?: number | null;
   /** 원 통화 금액 (해외 결제). null 이면 원화 결제 */
   originalAmount: number | null;
   /** 원 통화 (ISO 4217, 예: USD) */
@@ -229,20 +238,28 @@ export interface HeatmapCell {
 }
 
 /**
- * 카드 환급 미리보기 — 지우거나 고치면 결제계좌로 얼마가 돌아오는지(설계 13-1).
+ * 카드 정산 미리보기 — 저장·삭제·수정·환불하면 돈이 어떻게 움직이는지(설계 13-1,
+ * 닫힌 회차 R2·R3·R6).
  *
  * `applies` 가 false 면 돌려줄 돈이 없다. `reason` 으로 화면이 문구를 고른다:
- * `OK`(금액 줄) · `ALREADY_REFUNDED`("이미 환급된 거래") · 나머지(줄 없음).
+ * `OK`·`RECORD_ONLY_OK`(금액 줄) · `ALREADY_REFUNDED`("이미 환급된 거래") ·
+ * `REFUND_WINDOW_CLOSED`("결제한 달이 지나 기록만 정리돼요") · 나머지(줄 없음).
  */
 export interface RefundPreview {
   applies: boolean;
   refundAmount: number;
   reason:
     | "OK"
+    | "RECORD_ONLY_OK"
+    | "REFUND_WINDOW_CLOSED"
     | "NOT_CARD"
     | "NO_PAYMENT_ASSET"
     | "NOT_PAID_CYCLE"
     | "ALREADY_REFUNDED";
+  /** 이번 저장으로 기록만 남는 금액 — 결제가 끝난 회차에 떨어진 몫(R2). 옛 서버면 없다. */
+  newRecordAmount?: number;
+  /** 오늘이 결제일이라 결제계좌에서 추가로 빠질 금액(R3). 옛 서버면 없다. */
+  sameDayExtraPayment?: number;
 }
 
 /** 삭제 응답 — 이 삭제가 만든 환급액(없으면 null). */

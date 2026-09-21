@@ -42,3 +42,4 @@ export {
   incomeSum,
   expenseSum,
 } from "./lib/expense-aggregate";
+export { cardCyclePaymentDate, isCardCycleDue } from "./lib/card-cycle";
