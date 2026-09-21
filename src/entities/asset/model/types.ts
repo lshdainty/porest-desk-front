@@ -171,6 +171,14 @@ export interface Asset {
    * 견준다.
    */
   cardClosedThrough?: string | null;
+  /**
+   * 결제일 있는 신용카드의 **결제일이 오늘보다 뒤인 첫 회차**가 실제로 결제되는 날
+   * (`yyyy-MM-dd`, 결제일 변경 이력 반영 — D5). 그 회차는 이 날짜의 전달 1일~말일이고, 그 뒤
+   * 회차들은 지금 `paymentDay` 로 결제된다. 결제일을 바꾼 직후엔 이 회차만 옛 결제일에
+   * 결제되므로 `paymentDay` 로 세면 틀린 날짜를 말한다. 결제일 없는 카드·신용카드 아님·옛
+   * 서버면 없다.
+   */
+  nextPaymentDate?: string | null;
   createAt: string;
   modifyAt: string;
 }

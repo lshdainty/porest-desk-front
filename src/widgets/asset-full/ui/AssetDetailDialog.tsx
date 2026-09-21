@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import {
   AssetLogo,
   HOLDING_UNIT_KEY,
+  editAssetPath,
   formatQty,
   qtyNumber,
   type Asset,
@@ -774,43 +775,49 @@ function CardDetailBody({
           ))}
         {/* 머리 금액(지금 기록 합)과 실제로 계좌에서 나간 돈이 다를 때만 한 줄(D10) — 결제 뒤에
             적은 거래는 기록만 늘고, 지우거나 환불한 거래는 기록만 준다. 문장은 남기고 금액만
-            가린다(금액 가리기). */}
-        {st && !st.scheduled && st.paid != null && st.amount !== st.paid && (
-          <div
-            data-testid="recorded-diff-note"
-            style={{
-              fontSize: "var(--text-caption)",
-              color: "var(--fg-secondary)",
-              marginTop: 6,
-            }}
-          >
-            {st.amount > st.paid ? (
-              <Trans
-                t={t}
-                i18nKey="assetDetail.recordedMoreNote"
-                values={{
-                  paid: money(st.paid),
-                  diff: money(st.amount - st.paid),
-                }}
-                components={{
-                  amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
-                }}
-              />
-            ) : (
-              <Trans
-                t={t}
-                i18nKey="assetDetail.recordedLessNote"
-                values={{
-                  recorded: money(st.amount),
-                  paid: money(st.paid),
-                }}
-                components={{
-                  amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
-                }}
-              />
-            )}
-          </div>
-        )}
+            가린다(금액 가리기).
+            낸 돈이 0 인 회차는 "기록 회차" 라벨이 이미 다 말한다 — "계좌에서 나간 돈은
+            0원이에요…" 를 또 붙이면 같은 말을 두 번 한다(QA 26차). */}
+        {st &&
+          !st.scheduled &&
+          st.paid != null &&
+          st.paid !== 0 &&
+          st.amount !== st.paid && (
+            <div
+              data-testid="recorded-diff-note"
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-secondary)",
+                marginTop: 6,
+              }}
+            >
+              {st.amount > st.paid ? (
+                <Trans
+                  t={t}
+                  i18nKey="assetDetail.recordedMoreNote"
+                  values={{
+                    paid: money(st.paid),
+                    diff: money(st.amount - st.paid),
+                  }}
+                  components={{
+                    amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
+                  }}
+                />
+              ) : (
+                <Trans
+                  t={t}
+                  i18nKey="assetDetail.recordedLessNote"
+                  values={{
+                    recorded: money(st.amount),
+                    paid: money(st.paid),
+                  }}
+                  components={{
+                    amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
+                  }}
+                />
+              )}
+            </div>
+          )}
         {st && !st.scheduled && st.preRegistration && (
           <div
             data-testid="pre-registration-note"
@@ -869,6 +876,43 @@ function CardDetailBody({
                 {t("assetDetail.usagePeriod", { period: periodText })}
               </span>
             )}
+          </div>
+        </div>
+      )}
+      {/* 결제일이 없는 옛 신용카드 — 서버는 이제 결제일을 필수로 받는다(D8). 그 카드는 늘
+          열린 회차로 보이니 결제일 행 자리에서 넣으라고 말하고, 누르면 그 카드의 수정 폼으로
+          간다(앱 `assetPaymentDayMissing` 과 같은 글자·같은 자리). 호스트가 [수정]을 쥐고
+          있으면 그걸 쓴다 — 설정의 관리 화면은 주소를 거치지 않고 폼을 연다. */}
+      {paymentDay == null && (
+        <div
+          data-testid="payment-day-missing"
+          style={{ borderTop: "1px solid var(--border-subtle)" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "14px 2px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "var(--text-label-sm)",
+                color: "var(--fg-tertiary)",
+                minWidth: 68,
+                flexShrink: 0,
+              }}
+            >
+              {t("assetDetail.paymentDateLabel")}
+            </span>
+            <Button
+              variant="link"
+              className="h-auto p-0"
+              onClick={onEdit ?? (() => navigate(editAssetPath(asset.rowId)))}
+            >
+              {t("assetDetail.paymentDayMissing")} <ChevronRight size={12} />
+            </Button>
           </div>
         </div>
       )}

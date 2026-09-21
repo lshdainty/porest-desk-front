@@ -44,6 +44,7 @@ export {
 export {
   cardCyclePaymentDate,
   closedCycleSpan,
+  cyclePaymentDate,
   pendingCycleOnOldDay,
   type ClosedCycleSpan,
 } from "./lib/card-cycle";

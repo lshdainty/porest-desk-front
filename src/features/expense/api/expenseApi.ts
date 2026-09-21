@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/api";
+import type { QuietRequestConfig } from "@/shared/api";
 import type { ApiResponse } from "@/shared/types";
 import type {
   Expense,
@@ -66,14 +67,20 @@ export const expenseApi = {
    * 그 분할로 옮기고, 안 실으면 옛 분할을 그대로 옮긴다(합이 새 금액과 안 맞으면 400).
    *
    * 응답은 **새 거래**다(새 rowId). 선결제 환급이 생겼으면 `refundedAmount` 가 실린다.
+   *
+   * 404 는 전역 토스트로 띄우지 않는다(`silentStatuses`). 옛 거래가 이미 없다는 뜻인데, 응답만
+   * 못 받고 다시 누른 경우라면 교체는 앞선 요청에서 이미 끝났다 — "찾을 수 없어요" 는 거짓
+   * 안내다. 호출처가 목록을 다시 읽고 시트를 닫는다(QA 26 5).
    */
   replaceExpense: async (
     id: number,
     data: ExpenseFormValues,
   ): Promise<Expense> => {
+    const config: QuietRequestConfig = { silentStatuses: [404] };
     const resp: ApiResponse<Expense> = await apiClient.post(
       `/v1/expense/${id}/replace`,
       data,
+      config,
     );
     return resp.data;
   },

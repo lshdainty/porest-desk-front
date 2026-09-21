@@ -23,7 +23,10 @@ vi.mock("react-i18next", () => ({
   Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
+const nav = vi.hoisted(() => ({ to: [] as string[] }));
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => (to: string) => nav.to.push(to),
+}));
 vi.mock("sonner", () => ({ toast: { success: () => {}, error: () => {} } }));
 
 // 화면 카드 가리기는 **꺼 둔다** — 자산 플래그만으로 가려지는지를 본다.
@@ -194,10 +197,15 @@ const billingItem = (over: Record<string, unknown>) => ({
 let container: HTMLDivElement;
 let root: Root;
 
-function render(asset: Asset = card) {
+function render(asset: Asset = card, onEdit?: (a: Asset) => void) {
   act(() =>
     root.render(
-      <AssetDetailDialog asset={asset} onClose={() => {}} mobile={false} />,
+      <AssetDetailDialog
+        asset={asset}
+        onClose={() => {}}
+        onEdit={onEdit}
+        mobile={false}
+      />,
     ),
   );
 }
@@ -291,6 +299,8 @@ describe("닫힌 회차 머리 = 지금 기록 합(D10)", () => {
     expect(byTestId("record-cycle-label")?.textContent).toBe(
       "assetDetail.recordCycle",
     );
+    // "계좌에서 나간 돈은 0원이에요…" 는 라벨과 같은 말이라 붙이지 않는다(QA 26차).
+    expect(byTestId("recorded-diff-note")).toBeNull();
     expect(bodyText()).not.toContain("assetDetail.paidDone");
     // 카드 등록 전 회차 주의(R4)는 그대로다.
     expect(byTestId("pre-registration-note")?.textContent).toBe(
@@ -414,5 +424,51 @@ describe("결제 취소(D6)", () => {
     render({ ...card, cardClosedThrough: "2026-08-31" } as Asset);
 
     expect(cancelTile()).toBeDefined();
+  });
+});
+
+describe("결제일 없는 신용카드(D8 · QA 26차 6)", () => {
+  // 서버는 이제 결제일을 필수로 받는다. 이미 결제일 없이 만든 옛 카드는 늘 열린 회차로
+  // 보이니, 결제일 행 자리에서 넣으라고 말하고 그 카드의 수정 폼으로 보낸다.
+  const noDay = { ...card, paymentDay: null } as Asset;
+  const missing = () => byTestId("payment-day-missing");
+
+  beforeEach(() => {
+    nav.to = [];
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      paymentDay: null,
+      nextPaymentDate: null,
+      upcomingPeriodStart: null,
+      upcomingPeriodEnd: null,
+      closedCycles: [],
+    };
+  });
+
+  it("결제일 행 자리에 '결제일을 넣어 주세요' 가 뜨고, 누르면 그 카드의 수정 폼으로 간다", () => {
+    render(noDay);
+
+    expect(missing()?.textContent).toContain("assetDetail.paymentDayMissing");
+    click(buttonWith("assetDetail.paymentDayMissing")!);
+    expect(nav.to).toEqual(["/desk/settings?section=accounts&edit=9"]);
+  });
+
+  it("호스트가 [수정]을 쥐고 있으면 그걸 부른다 — 설정의 관리 화면은 폼을 바로 연다", () => {
+    const edited: number[] = [];
+    render(noDay, (a) => edited.push(a.rowId));
+    click(buttonWith("assetDetail.paymentDayMissing")!);
+
+    expect(edited).toEqual([9]);
+    expect(nav.to).toEqual([]);
+  });
+
+  it("결제일이 있는 카드엔 없다", () => {
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      paymentDay: 12,
+    };
+    render();
+
+    expect(missing()).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   cardCyclePaymentDate,
   closedCycleSpan,
+  cyclePaymentDate,
   pendingCycleOnOldDay,
 } from "./card-cycle";
 
@@ -18,6 +19,23 @@ describe("카드 회차 결제일", () => {
 
   it("12월 거래는 다음 해 1월에 결제된다", () => {
     expect(cardCyclePaymentDate("2026-12-05", 12)).toBe("2027-01-12");
+  });
+});
+
+// 결제일 변경이 대기 중인 카드 — 25일 카드를 9/21 에 21일로, 다시 10일로 바꿨다. 8월분은
+// 처음 결제일인 9/25 에 결제되고(서버 이력, `nextPaymentDate`), 9월분부터 10일이다(D5).
+describe("회차가 실제로 결제되는 날", () => {
+  it("대기 중인 회차에 든 날짜는 서버가 준 결제일이다 — 지금 결제일로 세지 않는다", () => {
+    expect(cyclePaymentDate("2026-08-28", 10, "2026-09-25")).toBe("2026-09-25");
+  });
+
+  it("그 뒤 회차는 지금 결제일로 센다", () => {
+    expect(cyclePaymentDate("2026-09-05", 10, "2026-09-25")).toBe("2026-10-10");
+  });
+
+  it("서버 값이 없으면(옛 서버) 지금 결제일로 센다", () => {
+    expect(cyclePaymentDate("2026-08-28", 10, null)).toBe("2026-09-10");
+    expect(cyclePaymentDate("2026-08-28", 10)).toBe("2026-09-10");
   });
 });
 
@@ -76,6 +94,13 @@ describe("옛 결제일로 결제되는 회차", () => {
       month: "2026-08",
       paymentDate: "2026-09-25",
     });
+  });
+
+  it("서버가 다음 결제일을 주면 그 날과 그 회차의 달이다 — 결제일을 두 번 바꿔도 맞다", () => {
+    // 25 → 21(오늘) → 10: 지금 결제일은 21 이지만 8월분은 처음 결제일인 9/25 에 나간다.
+    expect(
+      pendingCycleOnOldDay(21, "2026-07-31", "2026-09-21", "2026-09-25"),
+    ).toEqual({ month: "2026-08", paymentDate: "2026-09-25" });
   });
 
   it("결제일 당일이면 그 회차는 이미 닫혔다 — 다음 회차다", () => {

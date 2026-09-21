@@ -693,10 +693,13 @@ export function AssetEditDialog({
       newDay !== oldDay &&
       !paymentDayConfirmedRef.current
     ) {
+      // 서버가 그 회차의 실제 결제일(`nextPaymentDate`, 결제일 이력 반영)을 주면 그 값을 쓴다 —
+      // 결제일을 한 번 바꿔 둔 채 또 바꾸면 지금 결제일로 센 날짜가 틀린다(QA 26차 4).
       const pending = pendingCycleOnOldDay(
         oldDay,
         item?.cardClosedThrough,
         todayLocalKey(),
+        item?.nextPaymentDate,
       );
       const month = Number(pending.month.slice(5, 7));
       setPaymentDayConfirm(

@@ -82,6 +82,12 @@ export interface Expense {
    * 고친다. 돈 칸을 바꾸려면 [고쳐 쓰기](`POST /expense/{id}/replace`, D13). 옛 서버면 없다.
    */
   moneyLocked?: boolean;
+  /**
+   * [고쳐 쓰기]를 쓸 수 있는 거래 — 잠겼고(`moneyLocked`) 환불 안 됐고 자동 생성이 아니고
+   * 중도 정리하지 않은 할부. 잠겼는데 이게 false 면 사실상 중도 정리한 할부다(서버가 교체를
+   * EXP_047 로 거절한다). 옛 서버면 없다 — 그때는 `moneyLocked` 로 본다.
+   */
+  replaceable?: boolean;
   /** 원 통화 금액 (해외 결제). null 이면 원화 결제 */
   originalAmount: number | null;
   /** 원 통화 (ISO 4217, 예: USD) */

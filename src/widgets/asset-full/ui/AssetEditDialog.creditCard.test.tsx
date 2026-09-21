@@ -271,4 +271,21 @@ describe("결제일 변경은 다음 회차부터(D5)", () => {
 
     expect(update).toBeNull();
   });
+
+  it("결제일 변경이 대기 중이면 서버가 준 실제 결제일과 그 회차의 달을 말한다(QA 26차 4)", () => {
+    // 25일 카드를 9/21 에 21일로 바꿔 둔 채 다시 10일로 바꾼다. 8월분은 처음 결제일인
+    // 9/25 에 나간다 — 지금 결제일(21)로 세면 "9월 21일" 이라는 틀린 날을 말했다.
+    open({
+      ...card,
+      paymentDay: 21,
+      cardClosedThrough: "2026-07-31",
+      nextPaymentDate: "2026-09-25",
+    });
+    pickPaymentDay(10);
+    click(buttons("save")[0]!);
+
+    expect(update).toBeNull();
+    expect(bodyText()).toContain("editDialog.paymentDayChangeConfirm|month=8,");
+    expect(bodyText()).toContain(`oldDate=${formatDay("2026-09-25").md}`);
+  });
 });
