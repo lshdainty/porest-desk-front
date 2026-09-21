@@ -307,6 +307,10 @@ type CardStatement = {
    * 이용 내역에 안 나오는 회차분(24차 8). 옛 서버의 과거 회차엔 없다.
    */
   installments?: InstallmentDue[];
+  /** 예정 회차의 일시불 순사용액 — 할부 구성 아래 줄. 회차마다 제 값이다(다음 회차도). */
+  lumpSum?: number | null;
+  /** 예정 회차에 이미 낸 돈(선결제) — 할부 구성 아래 차감 줄. */
+  alreadyPaid?: number | null;
   /**
    * 닫힌 회차 — 앱이 결제계좌에서 실제로 뺀 순 금액(D10). 머리 금액(`amount`)은 지금 기록
    * 합이라 둘이 다르면 머리 아래 한 줄로 말한다. 옛 서버의 과거 회차엔 없다.
@@ -358,6 +362,8 @@ function CardDetailBody({
         periodEnd: n.periodEnd,
         paymentDate: n.paymentDate,
         installments: n.installments ?? [],
+        lumpSum: n.lumpSumAmount,
+        alreadyPaid: n.alreadyPaidAmount,
       });
     }
     if (billing?.nextPaymentDate) {
@@ -370,6 +376,8 @@ function CardDetailBody({
         periodEnd: billing.upcomingPeriodEnd,
         paymentDate: billing.nextPaymentDate,
         installments: billing.upcomingInstallments ?? [],
+        lumpSum: billing.upcomingLumpSumAmount,
+        alreadyPaid: billing.upcomingAlreadyPaidAmount,
       });
     }
     // 과거 회차 — 서버가 닫힌 회차를 내려 주면 그대로 쓴다. 결제 기록이 없는 회차(0원이라
@@ -985,7 +993,8 @@ function CardDetailBody({
               </span>
             </div>
           ))}
-          {(billing!.upcomingLumpSumAmount ?? 0) !== 0 && (
+          {/* 고른 회차의 값 — 다음 회차를 볼 때 다가오는 회차의 일시불·선결제를 보여 주던 자리. */}
+          {(st.lumpSum ?? 0) !== 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span
                 style={{
@@ -1004,12 +1013,12 @@ function CardDetailBody({
                 }}
               >
                 <MaskAmount card="asset.detail">
-                  {money(billing!.upcomingLumpSumAmount!)}
+                  {money(st.lumpSum!)}
                 </MaskAmount>
               </span>
             </div>
           )}
-          {(billing!.upcomingAlreadyPaidAmount ?? 0) > 0 && (
+          {(st.alreadyPaid ?? 0) > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span
                 style={{
@@ -1028,7 +1037,7 @@ function CardDetailBody({
                 }}
               >
                 <MaskAmount card="asset.detail">
-                  -{money(billing!.upcomingAlreadyPaidAmount!)}
+                  -{money(st.alreadyPaid!)}
                 </MaskAmount>
               </span>
             </div>
