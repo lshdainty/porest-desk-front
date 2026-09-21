@@ -68,7 +68,12 @@ import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import { useSavingGoals } from "@/features/savingGoal";
 import { AssetDetailDialog } from "@/widgets/asset-full/ui/AssetDetailDialog";
-import { AssetLogo, type Asset, type AssetType } from "@/entities/asset";
+import {
+  AssetLogo,
+  editAssetPath,
+  type Asset,
+  type AssetType,
+} from "@/entities/asset";
 import type { SavingGoal } from "@/entities/savingGoal";
 
 type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } };
@@ -2092,8 +2097,10 @@ function AssetDesktop() {
           asset={detailAsset}
           mobile={false}
           onClose={() => setDetailAsset(null)}
-          onEdit={() => {
-            navigate("/desk/settings?section=accounts");
+          // 그 자산의 수정 폼으로 바로 간다(D9) — 목록에서 다시 찾아 연필을 누르지 않게.
+          // 폼은 설정의 관리 화면 한 곳에 있고, 여기선 주소로 어느 자산인지만 넘긴다.
+          onEdit={(a) => {
+            navigate(editAssetPath(a.rowId));
             setDetailAsset(null);
           }}
         />
@@ -2228,8 +2235,10 @@ function AssetMobile() {
           asset={detailAsset}
           mobile
           onClose={() => setDetailAsset(null)}
-          onEdit={() => {
-            navigate("/desk/settings?section=accounts");
+          // 그 자산의 수정 폼으로 바로 간다(D9) — 목록에서 다시 찾아 연필을 누르지 않게.
+          // 폼은 설정의 관리 화면 한 곳에 있고, 여기선 주소로 어느 자산인지만 넘긴다.
+          onEdit={(a) => {
+            navigate(editAssetPath(a.rowId));
             setDetailAsset(null);
           }}
         />
