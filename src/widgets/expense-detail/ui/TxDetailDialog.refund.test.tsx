@@ -22,7 +22,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Expense } from "@/entities/expense";
-import { todayLocalKey } from "@/shared/lib/date";
+import { localDateKey, todayLocalKey } from "@/shared/lib/date";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -485,6 +485,39 @@ describe("환불 취소 확인창", () => {
     expect(bodyText()).toContain("txDetail.refundCancelConfirm");
     expect(bodyText()).not.toContain("txDetail.refundCancelConfirmTransfer");
     expect(bodyText()).toContain("closedCycle.note");
+  });
+});
+
+/**
+ * 예정(미래 날짜) 거래에는 [환불]이 없다(사용자 확정 2026-09-21).
+ *
+ * 환불일은 거래일~오늘이라(D16) 거래일이 오늘보다 뒤면 고를 날이 없다 — 서버가 어떤
+ * 날짜로도 거절한다. 날짜만 본다: 오늘 거래는 시각이 아직 안 왔어도 환불할 수 있다.
+ */
+describe("예정 거래에는 [환불]이 없다", () => {
+  const dayFromToday = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return localDateKey(d);
+  };
+
+  it("거래일이 내일이면 없다 — 다른 빠른 동작은 그대로다", () => {
+    render({ ...baseExpense, expenseDate: `${dayFromToday(1)}T09:00:00` });
+
+    expect(refundAction()).toBeNull();
+    expect(splitAction()).not.toBeNull();
+  });
+
+  it("오늘 거래면 있다 — 시각이 아직 안 왔어도", () => {
+    render({ ...baseExpense, expenseDate: `${todayLocalKey()}T23:59:00` });
+
+    expect(refundAction()).not.toBeNull();
+  });
+
+  it("지난 거래면 있다", () => {
+    render({ ...baseExpense, expenseDate: `${dayFromToday(-1)}T09:00:00` });
+
+    expect(refundAction()).not.toBeNull();
   });
 });
 
