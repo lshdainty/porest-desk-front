@@ -43,7 +43,15 @@ export function ExpenseRow({
   const refunded = isRefundedTx(expense);
   // 기록만 — 결제가 끝난 회차에 뒤늦게 적은 카드 지출. 합계에는 들어가므로 흐리지 않고
   // 배지로만 "계좌에서는 안 빠졌다" 를 알린다(닫힌 회차 규칙 R2).
-  const recordOnly = !refunded && expense.cardSettledThrough != null;
+  //
+  // **통째로 기록용인 거래에만** 단다(D10). 할부가 닫힌 회차와 열린 회차에 걸치면 지난
+  // 회차분만 기록용이라 행 배지는 거짓이 된다 — 그 몫은 상세가 "이 중 N원" 으로 말한다.
+  // 옛 서버는 금액을 안 주는데, 그때는 표식이 곧 통째로 기록용이었다.
+  const recordOnly =
+    !refunded &&
+    expense.cardSettledThrough != null &&
+    (expense.recordOnlyAmount ?? Math.abs(expense.amount)) ===
+      Math.abs(expense.amount);
   return (
     <LedgerRow
       onClick={onClick ? () => onClick(expense) : undefined}

@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { Pencil, Plus, Trash2, Wallet } from "lucide-react";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import type {
@@ -8,7 +9,7 @@ import type {
   AssetType,
   AssetUpdateFormValues,
 } from "@/entities/asset";
-import { AssetLogo } from "@/entities/asset";
+import { ASSET_EDIT_PARAM, AssetLogo } from "@/entities/asset";
 import {
   useAssets,
   useCreateAsset,
@@ -87,10 +88,49 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
 
   const assets: Asset[] = assetsData?.assets ?? EMPTY_ASSETS;
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<AssetGroup>("account");
   const [editing, setEditing] = useState<EditingState>(null);
   const [detail, setDetail] = useState<Asset | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Asset | null>(null);
+
+  /**
+   * `?edit=<rowId>` 로 들어오면 그 자산의 수정 폼을 바로 연다(D9).
+   *
+   * 결제가 끝난 회차의 카드 거래를 환불·삭제·고쳐 쓰면 통장은 그대로라 사용자가 결제계좌
+   * 잔액을 고친다 — 토스트의 [잔액 고치기] 와 자산 상세의 [수정] 이 이 주소로 온다
+   * (`editAssetPath`). 폼은 여전히 이 화면 하나에만 있다.
+   *
+   * 값은 받아 두고 주소에서는 지운다. 남겨 두면 설정 안에서 다른 섹션에 다녀오는 것만으로
+   * 폼이 혼자 다시 열린다 — 이 화면은 섹션을 옮길 때마다 새로 마운트되는데 주소는 그대로
+   * 따라다닌다. 이 화면이 떠 있는 채 새 주소가 와도(설정에서 다시 누름) 받는다.
+   */
+  const editParam = searchParams.get(ASSET_EDIT_PARAM);
+  const [pendingEdit, setPendingEdit] = useState<string | null>(editParam);
+  const [seenEditParam, setSeenEditParam] = useState(editParam);
+  if (editParam !== seenEditParam) {
+    setSeenEditParam(editParam);
+    if (editParam !== null) setPendingEdit(editParam);
+  }
+  useEffect(() => {
+    if (!searchParams.has(ASSET_EDIT_PARAM)) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete(ASSET_EDIT_PARAM);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  // 자산 목록이 와야 어느 탭인지 알 수 있어 로딩이 끝나면 연다. effect 로 미루면 한 번
+  // 그려진 뒤에 열려 목록이 번쩍인다 — 렌더 중에 상태를 맞추는 자리다.
+  // 없는 `rowId`(지웠거나 남의 자산)면 목록만 보여 준다. 빈 폼을 여는 것보다 낫다.
+  if (pendingEdit !== null && !isLoading) {
+    setPendingEdit(null);
+    const target = assets.find((a) => String(a.rowId) === pendingEdit);
+    if (target) {
+      setTab(groupOfAsset(target));
+      setDetail(null);
+      setEditing({ mode: "edit", asset: target });
+    }
+  }
 
   const counts = useMemo(() => {
     const base: Record<AssetGroup, number> = { account: 0, card: 0, invest: 0 };

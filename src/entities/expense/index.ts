@@ -19,7 +19,6 @@ export type {
   StatsPeriod,
   BudgetVsActualItem,
   HeatmapCell,
-  RefundPreview,
   DeleteExpenseResult,
 } from "./model/types";
 
@@ -42,4 +41,9 @@ export {
   incomeSum,
   expenseSum,
 } from "./lib/expense-aggregate";
-export { cardCyclePaymentDate, isCardCycleDue } from "./lib/card-cycle";
+export {
+  cardCyclePaymentDate,
+  closedCycleSpan,
+  pendingCycleOnOldDay,
+  type ClosedCycleSpan,
+} from "./lib/card-cycle";

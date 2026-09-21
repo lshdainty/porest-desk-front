@@ -32,7 +32,6 @@ common,others,기타,Others
 common,transaction,거래,Transaction
 common,scheduled,예정,Scheduled
 common,refunded,환불됨,Refunded
-common,refundedToast,결제계좌로 {{amount}}이 환급됐어요.,{{amount}} went back to the payment account.
 common,iconSearchPlaceholder,아이콘 검색...,Search icons...
 common,iconResultCount,{{count}}개 결과,{{count}} results
 common,iconTotalHint,전체 {{count}}개 · 스크롤해서 더 보기,{{count}} total · scroll for more
@@ -609,7 +608,11 @@ asset,accountSub.cash,현금,Cash
 asset,accountSub.loan,대출,Loan
 asset,editDialog.overLimitBadge,한도 초과,Over limit
 asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되지만 한도나 사용액을 다시 확인해 주세요.,{{amount}} over the limit. It still saves — check the limit or the amount.
-asset,editDialog.cardBalanceHelp,"아직 결제되지 않은 사용액을 적어 주세요. 이 카드에 입력하는 내역은 지난 날짜여도 모두 미결제 사용액으로 잡혀요.","Enter the amount not yet paid. Every expense entered on this card counts as unpaid usage, including ones dated in the past."
+asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어 주세요.,Enter the amount not yet paid.
+asset,editDialog.currentUnpaid,지금 미결제 잔액 {{balance}},Unpaid now: {{balance}}
+asset,editDialog.carryoverLocked,결제가 끝나 고칠 수 없어요,"Already paid, so it can't be changed"
+asset,editDialog.paymentDayChangeTitle,결제일 변경,Change payment day
+asset,editDialog.paymentDayChangeConfirm,바꾼 결제일은 다음 회차부터 적용돼요. {{month}}월분은 {{oldDate}}에 결제돼요,The new payment day applies from the next cycle. {{monthName}} charges are still paid on {{oldDate}}
 asset,editDialog.memoOptional,메모 (선택),Memo (optional)
 asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 메모하세요","Note the last digits of account number, payment day, limit, etc."
 asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
@@ -1567,6 +1570,7 @@ expense,addTx.newTitle,거래 추가,Add transaction
 expense,addTx.editTitle,거래 수정,Edit transaction
 expense,addTx.autoSource.TRADE_REALIZED,주식을 팔아 생긴 실현손익이에요. 금액은 매매 내역에서 계산됩니다.,Realized P/L from a sale. The amount is calculated from the trade.
 expense,addTx.autoSource.TRANSFER_INTEREST,이체에 붙은 이자예요. 금액은 이체 내역에서 계산됩니다.,Interest on a transfer. The amount is calculated from the transfer.
+expense,addTx.autoSource.CARD_CARRYOVER,카드를 등록할 때 적은 이전 미결제 사용액이에요. 금액은 카드 수정에서 바꿔요.,The unpaid balance entered when the card was added. Change the amount by editing the card.
 expense,addTx.autoSource.default,자동으로 만들어진 거래예요. 원래 거래를 지우면 함께 사라집니다.,Created automatically. It disappears when the original is deleted.
 expense,addTx.transfer,이체,Transfer
 expense,addTx.add,추가,Add
@@ -1642,18 +1646,15 @@ expense,txDetail.dutchPay,더치페이,Dutch Pay
 expense,txDetail.refund,환불,Refund
 expense,txDetail.refundConfirmTitle,환불 처리,Mark as refunded
 expense,txDetail.refundConfirmBody,"이 거래를 환불로 표시하고 {{amount}}을 {{asset}}(으)로 되돌려요. 합계에서 빠져요.","Marks this transaction as refunded and returns {{amount}} to {{asset}}. It leaves your totals."
-expense,txDetail.refundConfirmBodyCard,이미 결제된 금액은 결제계좌로 환급돼요.,Any amount already paid goes back to the payment account.
 expense,txDetail.refundConfirmBodyCardNoAccount,결제계좌가 없어 카드 잔액만 정리돼요.,"No payment account is linked, so only the card balance is adjusted."
+expense,txDetail.refundConfirmBodyClosed,이 거래를 환불로 표시해요. 합계에서 빠져요.,Marks this transaction as refunded. It leaves your totals.
 expense,txDetail.refundDate,환불일,Refund date
 expense,txDetail.refundConfirm,환불 처리,Mark refunded
 expense,txDetail.refundedAt,환불됨 · {{date}},Refunded · {{date}}
 expense,txDetail.refundCancel,환불 취소,Undo refund
-expense,txDetail.refundCancelConfirm,"환불 표시를 지울까요? 이 거래가 합계에 다시 들어가고, 환급된 금액도 되돌아가요.","Remove the refund mark? This transaction counts in your totals again, and any refunded amount is reversed."
+expense,txDetail.refundCancelConfirm,환불 표시를 지울까요? 이 거래가 합계에 다시 들어가요.,Remove the refund mark? This transaction counts in your totals again.
+expense,txDetail.refundCancelConfirmTransfer,"환불 표시를 지울까요? 이 거래가 합계에 다시 들어가고, 환급된 금액도 되돌아가요.","Remove the refund mark? This transaction counts in your totals again, and any refunded amount is reversed."
 expense,txDetail.refundedReadonly,환불된 거래는 수정할 수 없어요. 먼저 환불을 취소해 주세요,"Refunded transactions can't be edited. Undo the refund first"
-expense,txDetail.paidDeleteNote,이미 결제된 거래라 결제계좌로 {{amount}}이 환급돼요.,"This was already paid, so {{amount}} goes back to the payment account."
-expense,txDetail.paidDeleteFallback,"이미 결제된 회차의 거래라면 결제계좌로 환급돼요.","If this was in an already-paid cycle, it goes back to the payment account."
-expense,txDetail.refundedDeleteNote,"이미 환급된 거래예요. 지우면 내역에서만 사라져요.","This was already refunded. Deleting only removes it from the list."
-expense,addTx.paidReduceNote,"줄어든 {{amount}}이 결제계좌로 환급돼요. 저장할까요?","The reduced {{amount}} goes back to the payment account. Save?"
 expense,txDetail.countCases,{{count}}건,{{count}}
 expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}
@@ -2689,7 +2690,9 @@ asset,holdings.balanceAutoHelp,보유 종목 합계로 자동 계산돼요. 연�
 asset,editDialog.hideAmount,금액 숨기기,Hide amount
 asset,editDialog.hideAmountDesc,이 자산의 금액만 가려요. 합계는 그대로 보여요,Masks only this asset's balance. Totals stay visible
 asset,amountHiddenBadge,금액 숨김,Amount hidden
-asset,assetDetail.recordedOnlyNote,이 중 <amt>{{amount}}</amt>은 기록만 남긴 금액이에요. 계좌에서는 빠지지 않았어요,<amt>{{amount}}</amt> of this is record only. It was not taken from your account
+asset,assetDetail.recordCycle,기록 회차,Record-only cycle
+asset,assetDetail.recordedMoreNote,계좌에서 나간 돈은 <amt>{{paid}}</amt>이에요. 나머지 <amt>{{diff}}</amt>은 기록만 남긴 금액이에요,<amt>{{paid}}</amt> left your account. The other <amt>{{diff}}</amt> is record only
+asset,assetDetail.recordedLessNote,기록은 <amt>{{recorded}}</amt>인데 계좌에서는 <amt>{{paid}}</amt>이 나갔어요,"The records add up to <amt>{{recorded}}</amt>, but <amt>{{paid}}</amt> left your account"
 asset,assetDetail.preRegistrationNote,카드 등록 이전 거래라 실제와 맞지 않을 수 있어요,"These transactions are from before the card was added, so they may not match your actual statement"
 download,title,포레스트 데스크 앱,Porest Desk App
 download,subtitleLoading,최신 버전을 확인하는 중…,Checking the latest version…
@@ -2716,12 +2719,18 @@ expense,sms.cancelNotice,취소 문자예요. 자동 기록은 지원하지 않�
 expense,sms.lowConfidence,일부 항목을 읽지 못했어요. 확인하고 채워 주세요.,Some fields could not be read. Please review and fill them in.
 expense,sms.parseFailed,문자를 읽지 못했어요. 잠시 후 다시 시도해 주세요.,Could not read the text. Please try again in a moment.
 expense,sms.rememberCard,이 카드를 기억해서 다음부터 자동으로 연결하기,Remember this card and link it automatically next time
-expense,txDetail.windowClosedNote,결제한 달이 지나 기록만 정리돼요. 계좌로는 환급되지 않아요,"The payment month has passed, so only the record is updated. Nothing goes back to your account"
 expense,txDetail.recordOnlyNote,결제가 끝난 회차에 적은 거래라 기록만 남았어요. 계좌에서는 빠지지 않았어요,"This was added to a cycle that was already paid, so it is kept as a record only. It was not taken from your account"
 expense,txDetail.recordOnlyPartNote,이 중 <amt>{{amount}}</amt>은 결제가 끝난 회차분이라 기록만 남았어요. 남은 회차는 정상 청구돼요,"<amt>{{amount}}</amt> of this belongs to cycles that were already paid, so it is kept as a record only. The remaining installments are billed as usual"
-expense,addTx.closedCycleNote,이미 결제가 끝난 회차라 기록만 남아요. 계좌에서는 빠지지 않아요,"This cycle has already been paid, so it is kept as a record only. Nothing is taken from your account"
-expense,addTx.sameDayPaymentNote,오늘이 결제일이라 계좌에서 {{amount}}이 추가로 빠져요,"Today is the payment day, so {{amount}} more is taken from your account"
+expense,closedCycle.note,이미 결제가 끝난 회차예요. 기록만 바뀌고 계좌 잔액은 그대로예요.,"This cycle has already been paid. Only the record changes, and your account balance stays the same."
+expense,closedCycle.partialNote,지난 회차분은 기록만 남아요.,Installments from cycles already paid stay as records only.
+expense,closedCycle.fixBalance,잔액 고치기,Fix balance
+expense,closedCycle.prepaidRefunded,미리 낸 돈 중 {{amount}}이 계좌로 돌아왔어요,{{amount}} of what you paid early went back to your account
 expense,addTx.saveConfirmTitle,저장할까요?,Save this?
+expense,addTx.moneyLockedNote,결제가 끝난 거래예요. 금액·날짜를 바꾸려면 고쳐 쓰기를 눌러 주세요,"This transaction has already been paid. To change the amount or date, tap Rewrite"
+expense,addTx.rewrite,고쳐 쓰기,Rewrite
+expense,addTx.rewriteConfirmBody,원래 거래는 지워지고 새 거래로 바뀌어요.,The original transaction is deleted and replaced with a new one.
+expense,addTx.rewriteClosedNote,기록만 바뀌고 계좌 잔액은 그대로예요.,"Only the record changes, and your account balance stays the same."
+expense,addTx.rewriteOpenNote,새 거래는 {{date}} 결제에 청구돼요. 원래 거래는 이미 결제된 회차에서 기록만 빠져요.,The new transaction is billed on {{date}}. The original is only removed from the record of the cycle already paid.
 stocks,namu.domesticValue,국내 평가금액 (KRW),Domestic value (KRW)
 stocks,namu.overseasValue,해외 평가금액 (USD),Overseas value (USD)
 stocks,namu.countSplit,국내 {{kr}} · 해외 {{us}},KR {{kr}} · US {{us}}

@@ -36,11 +36,9 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/expense", () => ({
-  // 편집 저장 전 환급 미리보기 — 돌려줄 돈이 없다고 답하면 곧바로 저장한다.
-  expenseApi: {
-    refundPreview: () =>
-      Promise.resolve({ applies: false, refundAmount: 0, reason: "NOT_CARD" }),
-  },
+  // 저장 뒤 토스트(D4·D9) — 이 파일은 그 갈래를 보지 않는다.
+  useLedgerResultToast: () => () => {},
+  useReplaceExpense: () => ({ mutate: () => {}, isPending: false }),
   useExpenseCategories: () => ({ data: state.categories, isLoading: false }),
   useExpenseTemplates: () => ({ data: [], isLoading: false }),
   useCreateExpense: () => ({
@@ -233,10 +231,10 @@ function render(props: { expense?: Expense | null }) {
 /**
  * 저장을 누른다.
  *
- * 편집 저장은 **비동기**다 — 결제 완료 회차의 카드 거래가 줄어드는지 서버에 먼저
- * 물어본다(설계 13-2). 그래서 누른 뒤 마이크로태스크를 흘려 보내야 본문이 나간다.
+ * 저장은 이제 서버에 미리 묻지 않는다(D4) — 결제가 끝난 회차면 확인창을 띄울 뿐이고,
+ * 이 파일의 거래는 카드가 아니라 곧바로 나간다. 그래도 눌린 뒤의 렌더를 한 번 흘려
+ * 보낸다 — 연타가 같은 틱에 몰리는지 보는 케이스가 그 경계를 쓴다.
  */
-/** 편집 저장이 기다리는 미리보기를 흘려 보낸다 — 같은 틱의 연타를 보려면 따로 필요하다. */
 const flushSave = () => act(async () => {});
 
 async function clickSave() {

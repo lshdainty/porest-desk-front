@@ -54,11 +54,14 @@ export interface Expense {
    * 청구·실적에서 삭제와 똑같이 빠지고, 목록·검색·상세에는 남는다.
    */
   refundedAt: string | null;
-  /** 환불 마크가 만든 카드→결제계좌 환급 이체 (null = 없음). */
+  /**
+   * 옛 환불 마크가 만든 카드→결제계좌 환급 이체 (null = 없음). 이제 환불은 환급 이체를
+   * 만들지 않는다(D1) — 옛 데이터에만 있고, 있으면 환불 취소가 그 이체를 되돌린다.
+   */
   refundTransferRowId: number | null;
   /**
-   * 이 저장이 **방금 만든** 카드 환급액 (없으면 없음) — 거래의 속성이 아니라 그 요청의
-   * 결과다. 조회로 받은 거래에는 늘 없다(설계 13-1).
+   * 이 요청이 **방금 만든** 선결제 환급액 (없으면 없음) — 거래의 속성이 아니라 그 요청의
+   * 결과다. 조회로 받은 거래에는 늘 없다. 0 보다 크면 토스트로 알린다(D4).
    */
   refundedAmount?: number | null;
   /**
@@ -68,8 +71,17 @@ export interface Expense {
    * 계좌에서는 빠지지 않았고 이후 청구에도 안 얹힌다(닫힌 회차 규칙 R2). 옛 서버면 없다.
    */
   cardSettledThrough?: string | null;
-  /** 그 가운데 기록만 남긴 금액 — 할부는 지난 회차분만이라 거래 금액보다 작을 수 있다. */
+  /**
+   * 그 가운데 기록만 남긴 금액. 거래 금액과 같을 때만 행에 "기록만" 배지를 단다 —
+   * 작으면 할부의 지난 회차분뿐이라 상세에서 "이 중 N원" 으로 말한다(D10).
+   */
   recordOnlyAmount?: number | null;
+  /**
+   * **돈 칸 잠금**(D12) — 결제일이 된 회차분이 하나라도 있는 신용카드 거래(기록용 포함).
+   * 금액·날짜·시간·자산·할부·유형·통화 3칸·결제수단을 못 고치고, 카테고리·가맹점·메모만
+   * 고친다. 돈 칸을 바꾸려면 [고쳐 쓰기](`POST /expense/{id}/replace`, D13). 옛 서버면 없다.
+   */
+  moneyLocked?: boolean;
   /** 원 통화 금액 (해외 결제). null 이면 원화 결제 */
   originalAmount: number | null;
   /** 원 통화 (ISO 4217, 예: USD) */
@@ -237,32 +249,7 @@ export interface HeatmapCell {
   totalAmount: number;
 }
 
-/**
- * 카드 정산 미리보기 — 저장·삭제·수정·환불하면 돈이 어떻게 움직이는지(설계 13-1,
- * 닫힌 회차 R2·R3·R6).
- *
- * `applies` 가 false 면 돌려줄 돈이 없다. `reason` 으로 화면이 문구를 고른다:
- * `OK`·`RECORD_ONLY_OK`(금액 줄) · `ALREADY_REFUNDED`("이미 환급된 거래") ·
- * `REFUND_WINDOW_CLOSED`("결제한 달이 지나 기록만 정리돼요") · 나머지(줄 없음).
- */
-export interface RefundPreview {
-  applies: boolean;
-  refundAmount: number;
-  reason:
-    | "OK"
-    | "RECORD_ONLY_OK"
-    | "REFUND_WINDOW_CLOSED"
-    | "NOT_CARD"
-    | "NO_PAYMENT_ASSET"
-    | "NOT_PAID_CYCLE"
-    | "ALREADY_REFUNDED";
-  /** 이번 저장으로 기록만 남는 금액 — 결제가 끝난 회차에 떨어진 몫(R2). 옛 서버면 없다. */
-  newRecordAmount?: number;
-  /** 오늘이 결제일이라 결제계좌에서 추가로 빠질 금액(R3). 옛 서버면 없다. */
-  sameDayExtraPayment?: number;
-}
-
-/** 삭제 응답 — 이 삭제가 만든 환급액(없으면 null). */
+/** 삭제 응답 — 이 삭제가 만든 선결제 환급액(없으면 null, D4). */
 export interface DeleteExpenseResult {
   refundedAmount: number | null;
 }

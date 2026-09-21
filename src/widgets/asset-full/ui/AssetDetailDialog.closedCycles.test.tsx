@@ -1,9 +1,13 @@
-// 카드 상세 회차 선택기의 **닫힌 회차**(닫힌 회차 규칙 R2·R4).
+// 카드 상세 회차 선택기의 **닫힌 회차**(D10 · 닫힌 회차 규칙 R4).
 //
-// 과거 회차는 서버의 `closedCycles` 로 그린다. 종전엔 결제 기록(history)만 보고 그려서
-// 뒤늦게 적은 거래가 떨어진 회차는 머리 금액에 안 들어가거나(목록과 금액이 어긋남) 결제
-// 기록이 없으면 아예 고를 수 없었다. 머리 금액 = 결제한 금액 + 기록만 남긴 금액이고,
-// 기록만 남긴 몫과 등록 전 회차는 한 줄씩 따로 말한다.
+// 과거 회차는 서버의 `closedCycles` 로 그린다. 머리 금액은 **지금 기록 합**
+// (`recordedAmount`)이다 — 결제가 끝난 뒤 거래를 지우거나 고쳐 써도 통장은 그대로라(D1)
+// 실제로 나간 돈과 갈릴 수 있고, 그때만 머리 아래 한 줄로 말한다. 세 갈래다:
+//   기록 > 결제 — "계좌에서 나간 돈은 …이에요. 나머지 …은 기록만 남긴 금액이에요"
+//   기록 < 결제 — "기록은 …인데 계좌에서는 …이 나갔어요"
+//   결제 = 0   — "결제 완료" 대신 "기록 회차"
+// 닫힌 회차 화면엔 [지금 결제]가 없고(24차 7), 할부 회차분을 한 줄씩 보여 준다(24차 8).
+// 결제 취소는 닫힌 회차·환급이 나간 회차의 결제엔 없다(D6).
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -83,6 +87,7 @@ vi.mock("@/features/stock/model/useStockMaster", () => ({
 vi.mock("@/entities/expense", () => ({
   ExpenseRow: () => null,
   isScheduledTx: () => false,
+  isRefundedTx: () => false,
 }));
 
 const { AssetDetailDialog } = await import("./AssetDetailDialog");
@@ -111,8 +116,91 @@ const card: Asset = {
   modifyAt: "2026-09-01T00:00:00",
 } as Asset;
 
+/** 8월분 — 100,000 을 결제했고 지금 기록은 125,000(뒤늦게 적은 25,000). */
+const augCycle = {
+  periodStart: "2026-08-01",
+  periodEnd: "2026-08-31",
+  paymentDate: "2026-09-12",
+  paidAmount: 100_000,
+  recordedAmount: 125_000,
+  recordedOnlyAmount: 25_000,
+  preRegistration: false,
+  refundableUntil: null,
+  installmentDues: [
+    {
+      expenseRowId: 71,
+      merchant: "QC90000",
+      description: null,
+      principalAmount: 90_000,
+      installmentMonths: 3,
+      sequence: 2,
+      amount: 30_000,
+      paidOff: false,
+      recordOnly: true,
+    },
+  ],
+};
+/** 7월분 — 앱이 한 푼도 안 뺐다(카드 등록 전). 기록만 40,000. */
+const julCycle = {
+  periodStart: "2026-07-01",
+  periodEnd: "2026-07-31",
+  paymentDate: "2026-08-12",
+  paidAmount: 0,
+  recordedAmount: 40_000,
+  recordedOnlyAmount: 40_000,
+  preRegistration: true,
+  refundableUntil: null,
+  installmentDues: [],
+};
+/** 6월분 — 70,000 을 결제했는데 그 뒤 거래를 지워 기록은 50,000. */
+const junCycle = {
+  periodStart: "2026-06-01",
+  periodEnd: "2026-06-30",
+  paymentDate: "2026-07-12",
+  paidAmount: 70_000,
+  recordedAmount: 50_000,
+  recordedOnlyAmount: 0,
+  preRegistration: false,
+  refundableUntil: null,
+  installmentDues: [],
+};
+/** 5월분 — 기록과 결제가 같다. */
+const mayCycle = {
+  periodStart: "2026-05-01",
+  periodEnd: "2026-05-31",
+  paymentDate: "2026-06-12",
+  paidAmount: 33_000,
+  recordedAmount: 33_000,
+  recordedOnlyAmount: 0,
+  preRegistration: false,
+  refundableUntil: null,
+  installmentDues: [],
+};
+
+const billingItem = (over: Record<string, unknown>) => ({
+  rowId: 1,
+  cardAssetRowId: 9,
+  paymentAssetRowId: 1,
+  billingAmount: 100_000,
+  periodStart: "2026-08-01",
+  periodEnd: "2026-08-31",
+  paymentDate: "2026-09-12",
+  status: "COMPLETED",
+  transferRowId: 11,
+  failureReason: null,
+  ...over,
+});
+
 let container: HTMLDivElement;
 let root: Root;
+
+function render(asset: Asset = card) {
+  act(() =>
+    root.render(
+      <AssetDetailDialog asset={asset} onClose={() => {}} mobile={false} />,
+    ),
+  );
+}
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -129,35 +217,11 @@ beforeEach(() => {
     paymentAssetRowId: 1,
     history: [],
     nextCycle: null,
-    closedCycles: [
-      {
-        periodStart: "2026-08-01",
-        periodEnd: "2026-08-31",
-        paymentDate: "2026-09-12",
-        paidAmount: 100_000,
-        recordedOnlyAmount: 25_000,
-        preRegistration: false,
-        refundableUntil: "2026-09-30",
-      },
-      {
-        periodStart: "2026-07-01",
-        periodEnd: "2026-07-31",
-        paymentDate: "2026-08-12",
-        paidAmount: 0,
-        recordedOnlyAmount: 40_000,
-        preRegistration: true,
-        refundableUntil: "2026-08-31",
-      },
-    ],
+    closedCycles: [augCycle, julCycle, junCycle, mayCycle],
   };
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() =>
-    root.render(
-      <AssetDetailDialog asset={card} onClose={() => {}} mobile={false} />,
-    ),
-  );
 });
 
 afterEach(() => {
@@ -187,28 +251,168 @@ function pick(amountText: string) {
 const byTestId = (id: string) =>
   document.body.querySelector(`[data-testid='${id}']`);
 
-describe("닫힌 회차", () => {
-  it("머리 금액은 결제한 금액 + 기록만 남긴 금액이고, 기록만 몫을 따로 말한다", () => {
+const bodyText = () => document.body.textContent ?? "";
+
+describe("닫힌 회차 머리 = 지금 기록 합(D10)", () => {
+  it("기록이 결제보다 많으면 머리는 기록 합이고, 나간 돈과 나머지를 한 줄로 말한다", () => {
+    render();
     pick("125,000");
 
-    expect(document.body.textContent).toContain("125,000");
-    expect(byTestId("recorded-only-note")?.textContent).toBe(
-      "assetDetail.recordedOnlyNote",
+    expect(bodyText()).toContain("125,000");
+    expect(byTestId("recorded-diff-note")?.textContent).toBe(
+      "assetDetail.recordedMoreNote",
     );
+    expect(bodyText()).toContain("assetDetail.paidDone");
+    expect(byTestId("record-cycle-label")).toBeNull();
     expect(byTestId("pre-registration-note")).toBeNull();
   });
 
-  it("결제 기록이 없는 회차도 고를 수 있고, 등록 전 회차면 주의를 단다(R4)", () => {
+  it("기록이 결제보다 적으면(결제 뒤 지움·환불) '기록은 …인데 계좌에서는 …' 이다", () => {
+    render();
+    pick("50,000");
+
+    expect(byTestId("recorded-diff-note")?.textContent).toBe(
+      "assetDetail.recordedLessNote",
+    );
+  });
+
+  it("기록과 결제가 같으면 한 줄이 없다", () => {
+    render();
+    pick("33,000");
+
+    expect(byTestId("recorded-diff-note")).toBeNull();
+    expect(bodyText()).toContain("assetDetail.paidDone");
+  });
+
+  it("앱이 한 푼도 안 뺀 회차는 '결제 완료' 가 아니라 '기록 회차' 다(24차 7)", () => {
+    render();
     pick("40,000");
 
-    expect(byTestId("recorded-only-note")).not.toBeNull();
+    expect(byTestId("record-cycle-label")?.textContent).toBe(
+      "assetDetail.recordCycle",
+    );
+    expect(bodyText()).not.toContain("assetDetail.paidDone");
+    // 카드 등록 전 회차 주의(R4)는 그대로다.
     expect(byTestId("pre-registration-note")?.textContent).toBe(
       "assetDetail.preRegistrationNote",
     );
   });
 
-  it("다가오는 회차에는 기록만 줄이 없다", () => {
-    expect(byTestId("recorded-only-note")).toBeNull();
-    expect(byTestId("pre-registration-note")).toBeNull();
+  it("옛 서버(recordedAmount 없음)는 결제 + 기록만 으로 머리를 잡는다", () => {
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      closedCycles: [{ ...augCycle, recordedAmount: undefined }],
+    };
+    render();
+    pick("125,000");
+
+    expect(byTestId("recorded-diff-note")?.textContent).toBe(
+      "assetDetail.recordedMoreNote",
+    );
+  });
+});
+
+describe("닫힌 회차 화면", () => {
+  it("[지금 결제] 타일이 없다 — 예정 회차엔 있다(24차 7)", () => {
+    render();
+    expect(buttonWith("assetDetail.payNow")).toBeDefined();
+
+    pick("125,000");
+    expect(buttonWith("assetDetail.payNow")).toBeUndefined();
+  });
+
+  it("할부 회차분을 한 줄씩 보여 주고 기록용이면 '기록만' 을 단다(24차 8)", () => {
+    render();
+    pick("125,000");
+
+    const rows = byTestId("closed-installments");
+    expect(rows).not.toBeNull();
+    expect(rows!.textContent).toContain("QC90000");
+    expect(rows!.textContent).toContain("assetDetail.installmentSeq");
+    expect(rows!.textContent).toContain("recordOnly");
+    expect(rows!.textContent).toContain("30,000");
+  });
+
+  it("다가오는 회차에는 닫힌 회차 줄이 없다", () => {
+    render();
+
+    expect(byTestId("recorded-diff-note")).toBeNull();
+    expect(byTestId("record-cycle-label")).toBeNull();
+    expect(byTestId("closed-installments")).toBeNull();
+  });
+});
+
+describe("결제 취소(D6)", () => {
+  const cancelTile = () => buttonWith("assetDetail.cancelPayment");
+
+  it("열린 회차의 결제는 되돌릴 수 있다", () => {
+    // 9월분(10/12 결제 예정)을 미리 낸 결제.
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      history: [
+        billingItem({
+          periodStart: "2026-09-01",
+          periodEnd: "2026-09-30",
+          paymentDate: "2026-09-15",
+        }),
+      ],
+    };
+    render({ ...card, cardClosedThrough: "2026-08-31" } as Asset);
+
+    expect(cancelTile()).toBeDefined();
+  });
+
+  it("결제일이 지난 회차의 결제는 없다", () => {
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      history: [billingItem({})],
+    };
+    render({ ...card, cardClosedThrough: "2026-08-31" } as Asset);
+
+    expect(cancelTile()).toBeUndefined();
+  });
+
+  it("환급이 나간 회차의 결제는 없다", () => {
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      closedCycles: [],
+      history: [
+        billingItem({
+          periodStart: "2026-09-01",
+          periodEnd: "2026-09-30",
+          paymentDate: "2026-09-15",
+        }),
+        billingItem({
+          rowId: 2,
+          periodStart: "2026-09-01",
+          periodEnd: "2026-09-30",
+          paymentDate: "2026-09-16",
+          status: "REFUNDED",
+          billingAmount: 30_000,
+        }),
+      ],
+    };
+    render({ ...card, cardClosedThrough: "2026-08-31" } as Asset);
+
+    expect(cancelTile()).toBeUndefined();
+  });
+
+  it("최근 결제가 닫힌 회차여도 열린 회차의 선결제는 되돌릴 수 있다", () => {
+    billing.data = {
+      ...(billing.data as Record<string, unknown>),
+      history: [
+        billingItem({
+          rowId: 3,
+          periodStart: "2026-09-01",
+          periodEnd: "2026-09-30",
+          paymentDate: "2026-09-05",
+        }),
+        // 8월분 자동 결제 — 더 최근이지만 결제일이 지난 회차다.
+        billingItem({ rowId: 4, paymentDate: "2026-09-12" }),
+      ],
+    };
+    render({ ...card, cardClosedThrough: "2026-08-31" } as Asset);
+
+    expect(cancelTile()).toBeDefined();
   });
 });
