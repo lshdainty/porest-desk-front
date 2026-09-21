@@ -294,6 +294,11 @@ describe("카드 거래는 확인창이 한 줄 더 말한다 — 서버에 묻�
 
     expect(bodyText()).toContain("closedCycle.note");
     expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCardNoAccount");
+    // 카드로 되돌아가는 돈이 없다 — "…(으)로 되돌려요" 본문 대신 표시만 말한다.
+    expect(bodyText()).toContain("txDetail.refundConfirmBodyClosed");
+    expect(bodyText()).not.toMatch(
+      /txDetail\.refundConfirmBody(?!Closed|CardNoAccount)/,
+    );
   });
 
   it("결제계좌가 없어도 닫힌 회차면 같은 한 줄이다 — 잔액 정리 문구가 아니다", () => {
@@ -326,6 +331,7 @@ describe("카드 거래는 확인창이 한 줄 더 말한다 — 서버에 묻�
 
     expect(bodyText()).not.toContain("closedCycle.");
     expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCardNoAccount");
+    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyClosed");
   });
 
   it("열린 회차인데 결제계좌가 없으면 잔액만 정리한다고 말한다", () => {

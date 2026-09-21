@@ -868,10 +868,13 @@ export function TxDetailDialog({
           title={t("txDetail.refundConfirmTitle")}
           message={
             <>
-              {t("txDetail.refundConfirmBody", {
-                amount: money(Math.abs(expense.amount)),
-                asset: expense.assetName ?? tc("none"),
-              })}
+              {/* 결제가 끝난 회차면 카드로 되돌아가는 돈이 없다 — "되돌려요" 를 빼고 표시만 말한다(D1). */}
+              {closedSpan != null
+                ? t("txDetail.refundConfirmBodyClosed")
+                : t("txDetail.refundConfirmBody", {
+                    amount: money(Math.abs(expense.amount)),
+                    asset: expense.assetName ?? tc("none"),
+                  })}
               {closedSpan != null ? (
                 <ClosedCycleNote span={closedSpan} />
               ) : (

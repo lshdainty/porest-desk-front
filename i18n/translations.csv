@@ -608,7 +608,7 @@ asset,accountSub.cash,현금,Cash
 asset,accountSub.loan,대출,Loan
 asset,editDialog.overLimitBadge,한도 초과,Over limit
 asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되지만 한도나 사용액을 다시 확인해 주세요.,{{amount}} over the limit. It still saves — check the limit or the amount.
-asset,editDialog.cardBalanceHelp,"아직 결제되지 않은 사용액을 적어 주세요. 이 카드에 입력하는 내역은 지난 날짜여도 모두 미결제 사용액으로 잡혀요.","Enter the amount not yet paid. Every expense entered on this card counts as unpaid usage, including ones dated in the past."
+asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어 주세요.,Enter the amount not yet paid.
 asset,editDialog.currentUnpaid,지금 미결제 잔액 {{balance}},Unpaid now: {{balance}}
 asset,editDialog.carryoverLocked,결제가 끝나 고칠 수 없어요,"Already paid, so it can't be changed"
 asset,editDialog.paymentDayChangeTitle,결제일 변경,Change payment day
@@ -1647,6 +1647,7 @@ expense,txDetail.refund,환불,Refund
 expense,txDetail.refundConfirmTitle,환불 처리,Mark as refunded
 expense,txDetail.refundConfirmBody,"이 거래를 환불로 표시하고 {{amount}}을 {{asset}}(으)로 되돌려요. 합계에서 빠져요.","Marks this transaction as refunded and returns {{amount}} to {{asset}}. It leaves your totals."
 expense,txDetail.refundConfirmBodyCardNoAccount,결제계좌가 없어 카드 잔액만 정리돼요.,"No payment account is linked, so only the card balance is adjusted."
+expense,txDetail.refundConfirmBodyClosed,이 거래를 환불로 표시해요. 합계에서 빠져요.,Marks this transaction as refunded. It leaves your totals.
 expense,txDetail.refundDate,환불일,Refund date
 expense,txDetail.refundConfirm,환불 처리,Mark refunded
 expense,txDetail.refundedAt,환불됨 · {{date}},Refunded · {{date}}
