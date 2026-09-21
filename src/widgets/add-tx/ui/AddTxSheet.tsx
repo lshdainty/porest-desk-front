@@ -787,7 +787,7 @@ export function AddTxSheet({
       // (안 실으면 서버가 옛 분할을 옮긴다. 종류를 바꿨으면 빈 목록으로 비운다).
       ...(isRewrite ? { splits: effectiveSplits } : {}),
     };
-    // 결제가 끝난 회차의 카드 거래면 저장 전에 한 줄 말한다(D1) — 새 거래·편집 같다.
+    // 결제가 끝난 회차의 카드 거래면 저장 전에 한 줄 말한다(D1).
     const closedNotes = saveClosedSpan
       ? [closedCycleNoteText(t, saveClosedSpan)]
       : [];
@@ -795,7 +795,13 @@ export function AddTxSheet({
       // 고쳐 쓰기는 늘 묻는다 — 원래 거래가 지워진다.
       confirmThen(t("addTx.rewrite"), [rewriteNote()], () => saveRewrite(data));
     } else if (isEdit && expense) {
-      confirmThen(t("addTx.editTitle"), closedNotes, () => saveEdit(data));
+      // 편집은 **돈과 기록이 갈리는 저장만** 묻는다 — 열린 회차 거래를 닫힌 회차 날짜·카드로
+      // 옮기면 청구에서 빠지고 기록만 남는다. 잠긴 거래(D12)는 카테고리·가맹점·메모만 바뀌어
+      // 돈과 무관하므로 묻지 않고 바로 저장한다(사용자 확정 2026-09-21) — 묻게 두면 지난
+      // 카드 거래의 분류를 고칠 때마다 확인창을 한 번 더 넘겨야 했다.
+      confirmThen(t("addTx.editTitle"), isMoneyLocked ? [] : closedNotes, () =>
+        saveEdit(data),
+      );
     } else if (smsDraft) {
       // 문자에서 온 지출은 전용 경로로 — 서버가 원문을 다시 봐 취소 문자를 막고
       // 체크했다면 카드 연결을 기억한다. 만들어지는 지출 자체는 같다.

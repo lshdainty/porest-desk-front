@@ -47,3 +47,4 @@ export {
   pendingCycleOnOldDay,
   type ClosedCycleSpan,
 } from "./lib/card-cycle";
+export { isRefundableDate } from "./lib/refund-window";
