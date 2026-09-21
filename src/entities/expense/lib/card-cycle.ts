@@ -17,10 +17,11 @@ function monthEnd(yearMonth: string): string {
 }
 
 /**
- * 카드 회차 — 거래 날짜가 속한 회차(그 달 1일~말일)의 결제일.
+ * 카드 회차 — 거래 날짜가 속한 회차(그 달 1일~말일)의 결제일을 **지금 결제일로** 센다.
  *
  * 결제일은 **다음 달**의 결제일이고, 그 달에 없는 날이면 말일이다(서버 `CardCycleMath` 와
- * 같은 규칙). 고쳐 쓰기 확인창의 "{날짜} 결제에 청구돼요" 가 쓴다(계약 10).
+ * 같은 규칙). 결제일을 바꾼 직후 아직 결제 전인 회차는 옛 결제일에 결제되므로(D5), 화면이
+ * 날짜를 말할 땐 이 값을 바로 쓰지 말고 `cyclePaymentDate` 를 거친다.
  *
  * @param dateKey    거래 날짜 `yyyy-MM-dd`
  * @param paymentDay 카드 결제일(1~31)
@@ -33,6 +34,38 @@ export function cardCyclePaymentDate(
   const next = shiftMonth(dateKey.slice(0, 7), 1);
   const last = Number(monthEnd(next).slice(8, 10));
   return `${next}-${pad2(Math.min(paymentDay, last))}`;
+}
+
+/** 회차의 달(`yyyy-MM`) — 그 회차의 결제일(`yyyy-MM-dd`)이 든 달의 전달이다. */
+function cycleMonthOfPaymentDate(paymentDate: string): string {
+  return shiftMonth(paymentDate.slice(0, 7), -1);
+}
+
+/**
+ * 그 날짜가 든 회차가 **실제로** 결제되는 날(D5).
+ *
+ * 결제일을 바꾸면 아직 결제 전인 가장 가까운 회차는 옛 결제일에 결제되고 그 다음 회차부터
+ * 새 결제일이다. 그 회차의 실제 결제일은 서버가 자산 응답에 `nextPaymentDate` 로 내려 준다
+ * (결제일 이력 반영). 날짜가 그 회차(= `nextPaymentDate` 의 전달)에 들면 그 값을, 그 밖의
+ * 회차는 지금 결제일로 센다. 지금 결제일로만 세면 결제일 변경이 대기 중인 카드에서
+ * 고쳐 쓰기 확인창이 틀린 날을 말했다(QA 26차 4 — 실제 결제는 서버 이력대로 맞았다).
+ *
+ * @param dateKey         거래 날짜 `yyyy-MM-dd`
+ * @param paymentDay      카드의 지금 결제일(1~31)
+ * @param nextPaymentDate 카드 자산의 `nextPaymentDate` — 없으면 지금 결제일로만 센다
+ */
+export function cyclePaymentDate(
+  dateKey: string,
+  paymentDay: number,
+  nextPaymentDate?: string | null,
+): string {
+  if (
+    nextPaymentDate &&
+    dateKey.slice(0, 7) === cycleMonthOfPaymentDate(nextPaymentDate)
+  ) {
+    return nextPaymentDate;
+  }
+  return cardCyclePaymentDate(dateKey, paymentDay);
 }
 
 /**
@@ -77,19 +110,33 @@ export function closedCycleSpan(
 /**
  * 결제일을 바꿔도 **옛 결제일로 결제되는 회차**(D5 — 바꾼 결제일은 다음 회차부터).
  *
- * 닫힌 회차가 있으면 그 다음 달 회차다(계약 10). 없으면 오늘 기준으로 결제일이 아직 안
- * 온 가장 이른 회차다 — 결제일 당일부터는 닫힌 회차라(D2) "오늘보다 뒤" 로 가른다.
+ * 서버가 그 회차의 실제 결제일을 `nextPaymentDate` 로 내려 주면 그 값과 그 회차의 달을
+ * 쓴다 — 결제일을 한 번 바꿔 둔 채 또 바꾸면 그 회차는 지금 결제일이 아니라 처음 결제일에
+ * 결제된다(25→21→10 이면 8월분은 9/25). 지금 결제일로 세면 그 자리에서 틀린 날을 말했다
+ * (QA 26차 4).
  *
- * @param oldPaymentDay 바꾸기 전 결제일
- * @param closedThrough 카드 자산의 `cardClosedThrough`
- * @param todayKey      오늘 `yyyy-MM-dd`
- * @returns 그 회차의 달 `yyyy-MM` 과 옛 결제일 `yyyy-MM-dd`
+ * 없으면(옛 서버) 스스로 센다 — 닫힌 회차가 있으면 그 다음 달 회차다(계약 10). 없으면 오늘
+ * 기준으로 결제일이 아직 안 온 가장 이른 회차다 — 결제일 당일부터는 닫힌 회차라(D2)
+ * "오늘보다 뒤" 로 가른다.
+ *
+ * @param oldPaymentDay   바꾸기 전 결제일
+ * @param closedThrough   카드 자산의 `cardClosedThrough`
+ * @param todayKey        오늘 `yyyy-MM-dd`
+ * @param nextPaymentDate 카드 자산의 `nextPaymentDate`
+ * @returns 그 회차의 달 `yyyy-MM` 과 그 회차가 결제되는 날 `yyyy-MM-dd`
  */
 export function pendingCycleOnOldDay(
   oldPaymentDay: number,
   closedThrough: string | null | undefined,
   todayKey: string,
+  nextPaymentDate?: string | null,
 ): { month: string; paymentDate: string } {
+  if (nextPaymentDate) {
+    return {
+      month: cycleMonthOfPaymentDate(nextPaymentDate),
+      paymentDate: nextPaymentDate,
+    };
+  }
   let month: string;
   if (closedThrough) {
     month = shiftMonth(closedThrough.slice(0, 7), 1);

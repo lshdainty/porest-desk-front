@@ -781,6 +781,33 @@ describe("뮤테이션이 고른 변경", () => {
   }
 });
 
+/**
+ * 고쳐 쓰기는 **404 에도** 가계부를 비운다(QA 26차 5).
+ *
+ * 404 는 옛 거래가 이미 없다는 뜻이다 — 응답만 못 받은 채 다시 눌렀으면 교체는 앞선
+ * 요청에서 끝났다. 안 비우면 목록에 사라진 옛 행이 남는다. 그 밖의 실패는 서버가 아무것도
+ * 안 바꿨으므로 비우지 않는다.
+ */
+describe("고쳐 쓰기 실패 뒤 무효화", () => {
+  const settle = (error: unknown) => {
+    mocks.invalidated.length = 0;
+    const mutation = expenses.useReplaceExpense() as MutationLike;
+    mutation.onSettled?.(undefined, error, undefined);
+    return [...mocks.invalidated];
+  };
+
+  it("404 면 가계부를 비운다", () => {
+    expect(settle({ response: { status: 404 } })).toEqual(
+      INVALIDATION_MAP.ledger.map((key) => [...key]),
+    );
+  });
+
+  it("그 밖의 실패는 비우지 않는다", () => {
+    expect(settle({ response: { status: 500 } })).toEqual([]);
+    expect(settle(new Error("network"))).toEqual([]);
+  });
+});
+
 describe("표 밖에서 비우지 못한다", () => {
   for (const file of new Set(ROWS.map((r) => r.file))) {
     it(`${file} 는 키를 손으로 나열하지 않는다`, () => {

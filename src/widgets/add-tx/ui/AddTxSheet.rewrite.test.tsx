@@ -12,6 +12,11 @@
 //   (3) [고쳐 쓰기] — 새 거래 모드로 바뀌고 값이 그대로 채워진다
 //   (4) 교체 본문 = 생성 본문 + 시트가 불러 둔 분할. 확인창이 새 날짜의 회차를 말한다
 //   (5) 교체 뒤 토스트는 원래 카드의 결제계좌로 [잔액 고치기](D9)
+//   (6) 고쳐 쓸 수 없는 잠긴 거래(중도 정리한 할부 — `replaceable: false`)엔 버튼이 없고
+//       안내도 버튼을 가리키지 않는다(QA 26차 3)
+//   (7) 결제일 변경이 대기 중인 카드는 확인창이 서버가 준 실제 결제일을 말한다(26차 4)
+//   (8) 교체가 404 면(옛 거래가 이미 없다) 시트를 닫고, 그 밖의 실패면 둔다(26차 5)
+//   (9) 분할을 다 불러오기 전엔 [고쳐 쓰기]를 못 연다 — 분할이 빠진 교체가 나가지 않는다
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -28,6 +33,13 @@ const st = vi.hoisted(() => ({
   replace: null as { id: number; data: Record<string, unknown> } | null,
   replaceReply: { rowId: 902, refundedAmount: null } as Record<string, unknown>,
   notified: [] as { result: unknown; context: unknown }[],
+  /** 교체 요청의 실패 — 있으면 onError 로 돌려준다. */
+  replaceError: null as unknown,
+  /** 카드 자산에 덧씌울 값 — 결제일 변경 대기 같은 경우를 만든다. */
+  cardOver: {} as Record<string, unknown>,
+  /** 분할 조회 상태 — 불러오는 중·실패. */
+  splitsPending: false,
+  splitsError: false,
   /** 편집 시트가 불러 두는 그 거래의 분할. */
   splits: [] as {
     rowId: number;
@@ -66,10 +78,14 @@ vi.mock("@/features/expense", () => ({
   useReplaceExpense: () => ({
     mutate: (
       vars: { id: number; data: Record<string, unknown> },
-      opts?: { onSuccess?: (r: unknown) => void },
+      opts?: {
+        onSuccess?: (r: unknown) => void;
+        onError?: (e: unknown) => void;
+      },
     ) => {
       st.replace = vars;
-      opts?.onSuccess?.(st.replaceReply);
+      if (st.replaceError != null) opts?.onError?.(st.replaceError);
+      else opts?.onSuccess?.(st.replaceReply);
     },
     isPending: false,
   }),
@@ -81,7 +97,10 @@ vi.mock("@/features/expense", () => ({
   useTouchExpenseTemplate: () => ({ mutate: () => {}, isPending: false }),
 }));
 vi.mock("@/features/asset", () => ({
-  useAssets: () => ({ data: { assets: [card] }, isLoading: false }),
+  useAssets: () => ({
+    data: { assets: [{ ...card, ...st.cardOver }] },
+    isLoading: false,
+  }),
   useCreateTransfer: () => ({ mutate: () => {}, isPending: false }),
   useUpdateTransfer: () => ({ mutate: () => {}, isPending: false }),
 }));
@@ -91,9 +110,11 @@ vi.mock("@/features/sms", () => ({
 }));
 vi.mock("@/features/expense-split", () => ({
   useExpenseSplits: (id: number | null) =>
-    id == null
+    id == null || st.splitsPending
       ? { data: undefined, isPending: true, isError: false }
-      : { data: st.splits, isPending: false, isError: false },
+      : st.splitsError
+        ? { data: undefined, isPending: false, isError: true }
+        : { data: st.splits, isPending: false, isError: false },
 }));
 vi.mock("@/features/expense-split/ui/SplitTxDialog", () => ({
   SplitTxDialog: () => <div>split-reconcile</div>,
@@ -172,6 +193,10 @@ beforeEach(() => {
   st.replaceReply = { rowId: 902, refundedAmount: null };
   st.notified = [];
   st.splits = [];
+  st.replaceError = null;
+  st.cardOver = {};
+  st.splitsPending = false;
+  st.splitsError = false;
   closed = 0;
   // Radix Select 는 포인터 캡처·스크롤 API 를 쓴다 — jsdom 엔 없어서 채워 준다.
   const proto = window.HTMLElement.prototype as unknown as Record<
@@ -417,5 +442,106 @@ describe("[고쳐 쓰기](D13)", () => {
 
     expect(st.replace!.data.expenseType).toBe("INCOME");
     expect(st.replace!.data.splits).toEqual([]);
+  });
+});
+
+describe("고쳐 쓸 수 없는 잠긴 거래(QA 26차 3)", () => {
+  it("중도 정리한 할부는 [고쳐 쓰기]가 없고, 안내가 버튼을 가리키지 않는다", () => {
+    render({ ...locked, installmentMonths: 3, replaceable: false });
+
+    expect(buttons("addTx.rewrite")).toHaveLength(0);
+    expect(bodyText()).toContain("addTx.moneyLockedPaidOffNote");
+    expect(bodyText()).not.toContain("addTx.moneyLockedNote");
+    // 돈 칸은 그대로 잠겨 있다.
+    expect(byValue("12000")?.disabled).toBe(true);
+  });
+
+  it("서버가 고쳐 쓸 수 있다고 하면 버튼과 안내가 그대로다", () => {
+    render({ ...locked, replaceable: true });
+
+    expect(buttons("addTx.rewrite")).toHaveLength(1);
+    expect(bodyText()).toContain("addTx.moneyLockedNote");
+  });
+
+  it("옛 서버(값 없음)는 잠금으로 본다 — 잠긴 거래엔 버튼이 있다", () => {
+    render(locked);
+
+    expect(buttons("addTx.rewrite")).toHaveLength(1);
+  });
+});
+
+describe("결제일 변경이 대기 중인 카드(QA 26차 4)", () => {
+  // 25일 카드를 21일로, 다시 10일로 바꿨다 — 8월분은 처음 결제일(9/25)에 나가고 9월분부터
+  // 10일이다. 서버가 첫 열린 회차의 실제 결제일을 `nextPaymentDate` 로 내려 준다.
+  beforeEach(() => {
+    st.cardOver = {
+      paymentDay: 10,
+      cardClosedThrough: "2026-07-31",
+      nextPaymentDate: "2026-09-25",
+    };
+  });
+
+  it("대기 중인 회차로 고쳐 쓰면 그 회차의 실제 결제일을 말한다", async () => {
+    await openRewrite();
+    setValue(byValue("2026-08-20")!, "2026-08-28");
+    await click(buttons("save")[0]!);
+
+    expect(bodyText()).toContain(
+      `addTx.rewriteOpenNote|${formatDay("2026-09-25").md}`,
+    );
+  });
+
+  it("그 뒤 회차로 고쳐 쓰면 지금 결제일로 센다", async () => {
+    await openRewrite();
+    setValue(byValue("2026-08-20")!, "2026-09-05");
+    await click(buttons("save")[0]!);
+
+    expect(bodyText()).toContain(
+      `addTx.rewriteOpenNote|${formatDay("2026-10-10").md}`,
+    );
+  });
+});
+
+describe("고쳐 쓰기 실패 뒷처리(QA 26차 5)", () => {
+  it("404(옛 거래가 이미 없다)면 시트를 닫는다 — 목록은 훅이 비운다", async () => {
+    st.replaceError = { response: { status: 404 } };
+    await openRewrite();
+    await click(buttons("save")[0]!);
+    await click(lastSave());
+
+    expect(st.replace).not.toBeNull();
+    expect(closed).toBe(1);
+    // 성공이 아니므로 결과 토스트는 없다.
+    expect(st.notified).toEqual([]);
+  });
+
+  it("그 밖의 실패면 시트를 둔다 — 고친 값을 잃지 않고 다시 시도한다", async () => {
+    st.replaceError = { response: { status: 500 } };
+    await openRewrite();
+    await click(buttons("save")[0]!);
+    await click(lastSave());
+
+    expect(closed).toBe(0);
+    expect(byValue("12000")).toBeDefined();
+    expect(bodyText()).toContain("addTx.rewrite");
+  });
+});
+
+describe("분할을 다 불러오기 전엔 고쳐 쓰기를 못 연다", () => {
+  // 고쳐 쓰기는 편집 시트가 불러 둔 분할을 본문에 싣는다. 모르는 채 열리면 분할이 빠진
+  // 교체가 나가 서버가 옛 분할을 옮기고, 금액을 바꿨다면 합이 안 맞아 400 이 난다
+  // (앱에서 난 경로 — QA 26차). 웹은 입구에서 막는다.
+  it("불러오는 중이면 [고쳐 쓰기]가 눌리지 않는다", () => {
+    st.splitsPending = true;
+    render(locked);
+
+    expect(buttons("addTx.rewrite")[0]?.disabled).toBe(true);
+  });
+
+  it("불러오지 못했으면 [고쳐 쓰기]가 눌리지 않는다", () => {
+    st.splitsError = true;
+    render(locked);
+
+    expect(buttons("addTx.rewrite")[0]?.disabled).toBe(true);
   });
 });

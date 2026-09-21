@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { expenseKeys, invalidateFor } from "@/shared/config";
+import { isHttpStatus } from "@/shared/api";
 import { expenseApi } from "../api/expenseApi";
 import type { ExpenseListParams, ExpenseSearchParams } from "../api/expenseApi";
 import type { ExpenseFormValues } from "@/entities/expense";
@@ -67,7 +68,15 @@ export const useReplaceExpense = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: ExpenseFormValues }) =>
       expenseApi.replaceExpense(id, data),
-    onSuccess: () => invalidateFor(queryClient, "ledger"),
+    // 성공했을 때와 **404** 일 때 턴다. 404 는 옛 거래가 이미 없다는 뜻이다 — 응답만 못
+    // 받은 채 다시 눌렀으면 교체는 앞선 요청에서 끝났다(다른 기기에서 지웠어도 같다). 안
+    // 털면 목록에 사라진 옛 행이 남아 보인다(QA 26차 5). 그 밖의 실패는 서버가 아무것도
+    // 안 바꿨으므로 그대로 둔다.
+    onSettled: (_data, error) => {
+      if (error == null || isHttpStatus(error, 404)) {
+        invalidateFor(queryClient, "ledger");
+      }
+    },
   });
 };
 
