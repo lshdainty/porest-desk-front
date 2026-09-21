@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import {
   ChevronDown,
   ChevronUp,
@@ -205,6 +205,9 @@ export function TxDetailDialog({
   // 삭제 확인창이 열린 동안만 미리보기를 돈다 — 상세를 열기만 해도 부르면 목록을
   // 훑는 사이 요청이 쌓인다.
   const previewQ = useRefundPreview(expense.rowId, confirmDelete);
+  // 환불도 돈은 삭제와 똑같이 움직인다 — 같은 미리보기를 환불 확인창이 열린 동안 돈다.
+  // 결제한 달이 지났으면 "기록만 정리돼요" 로 바뀐다(닫힌 회차 R6).
+  const refundPreviewQ = useRefundPreview(expense.rowId, confirmRefund);
 
   const handleConfirmDelete = () => {
     deleteMut.mutate(expense.rowId, {
@@ -260,6 +263,12 @@ export function TxDetailDialog({
   // 아니고, 나중에 버튼이 하나 더 늘어도 따라온다.
   // 앱도 `Row` + `Expanded` 로 한 줄이다(desk-app `tx_detail_dialog.dart`).
   const isRefunded = isRefundedTx(expense);
+  // 기록만 — 결제가 끝난 회차에 뒤늦게 적은 카드 지출(닫힌 회차 R2). 할부는 지난 회차분만
+  // 기록용이라 금액이 거래보다 작으면 "이 중 N원" 으로 말한다.
+  const recordOnlyAmount =
+    !isRefunded && expense.cardSettledThrough != null
+      ? (expense.recordOnlyAmount ?? Math.abs(expense.amount))
+      : null;
   // 카드면 확인창이 한 줄 더 말한다 — 이미 낸 돈이 어디로 가는지가 사용자의 관심사다.
   const isCreditCard = asset?.assetType === "CREDIT_CARD";
   const cardHasPaymentAsset = asset?.paymentAssetRowId != null;
@@ -543,6 +552,47 @@ export function TxDetailDialog({
               </DetailSection>
             )}
 
+            {/* 기록만 — 계좌에서는 안 빠졌다는 것을 상세에서 한 번 더 말한다. 앱도 같은
+            자리·같은 문구다. */}
+            {recordOnlyAmount != null && (
+              <DetailSection>
+                <div
+                  data-testid="record-only-note"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 12px",
+                    borderRadius: "var(--radius-md)",
+                    background: "var(--bg-sunken)",
+                    fontSize: "var(--text-body-sm)",
+                    color: "var(--fg-secondary)",
+                  }}
+                >
+                  <span style={{ flex: 1 }}>
+                    {recordOnlyAmount < Math.abs(expense.amount) ? (
+                      <Trans
+                        t={t}
+                        i18nKey="txDetail.recordOnlyPartNote"
+                        values={{
+                          amount: `${wonPre()}${KRW(recordOnlyAmount)}${isEn() ? "" : "원"}`,
+                        }}
+                        components={{
+                          amt: (
+                            <MaskAmount card="ledger.txDetail" kind={txKind}>
+                              {""}
+                            </MaskAmount>
+                          ),
+                        }}
+                      />
+                    ) : (
+                      t("txDetail.recordOnlyNote")
+                    )}
+                  </span>
+                </div>
+              </DetailSection>
+            )}
+
             {/* Quick actions — 원형 아이콘 한 줄. 열 수는 `quickActions.length` 다. */}
             <DetailSection>
               <div
@@ -802,15 +852,22 @@ export function TxDetailDialog({
                 amount: KRW(Math.abs(expense.amount)),
                 asset: expense.assetName ?? tc("none"),
               })}
-              {isCreditCard && (
-                <>
-                  <br />
-                  <br />
-                  {cardHasPaymentAsset
-                    ? t("txDetail.refundConfirmBodyCard")
-                    : t("txDetail.refundConfirmBodyCardNoAccount")}
-                </>
-              )}
+              {/* 결제계좌가 있으면 얼마가 돌아오는지(또는 기한이 지나 안 돌아오는지)를
+                  미리보기로 말한다. 없으면 카드 잔액만 정리된다는 한 줄이다. */}
+              {isCreditCard &&
+                (cardHasPaymentAsset ? (
+                  <PaidRefundNote
+                    query={refundPreviewQ}
+                    isCreditCard={isCreditCard}
+                    cardHasPaymentAsset={cardHasPaymentAsset}
+                  />
+                ) : (
+                  <>
+                    <br />
+                    <br />
+                    {t("txDetail.refundConfirmBodyCardNoAccount")}
+                  </>
+                ))}
               <Field style={{ marginTop: 14 }}>
                 <FieldLabel htmlFor="tx-refund-date">
                   {t("txDetail.refundDate")}

@@ -96,10 +96,30 @@ export const expenseApi = {
       amount?: number;
       assetRowId?: number | null;
       expenseDate?: string;
+      installmentMonths?: number | null;
     },
   ): Promise<RefundPreview> => {
     const resp: ApiResponse<RefundPreview> = await apiClient.get(
       `/v1/expense/${id}/refund-preview`,
+      { params, timeout: 3000 },
+    );
+    return resp.data;
+  },
+
+  /**
+   * 새 카드 지출을 저장하면 어떻게 되는지 **미리** 센다 — 결제가 끝난 회차면 기록만
+   * 남고(`newRecordAmount`), 오늘이 결제일이면 결제계좌에서 추가로 빠진다
+   * (`sameDayExtraPayment`). 서버는 DB 를 바꾸지 않는다. 3초에서 끊는다 — 저장 확인을
+   * 네트워크에 묶지 않는다.
+   */
+  cardSavePreview: async (params: {
+    assetRowId: number;
+    amount: number;
+    expenseDate: string;
+    installmentMonths?: number | null;
+  }): Promise<RefundPreview> => {
+    const resp: ApiResponse<RefundPreview> = await apiClient.get(
+      `/v1/expense/card-save-preview`,
       { params, timeout: 3000 },
     );
     return resp.data;

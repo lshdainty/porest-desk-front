@@ -12,13 +12,14 @@ import { KRW } from "@/shared/lib/porest/format";
  * 금액은 서버만 안다. 회차마다 "실제 낸 이체액 − 다시 계산한 청구액" 이라 거래 금액과
  * 다르고, 재료가 전부 서버 테이블에 있다. 그래서 확인창이 열릴 때 미리보기를 부른다.
  *
- * 네 갈래다. **확인 버튼은 이 조회를 기다리지 않는다** — 느린 네트워크가 삭제를 막으면
+ * 다섯 갈래다. **확인 버튼은 이 조회를 기다리지 않는다** — 느린 네트워크가 삭제를 막으면
  * 안 되므로, 아직 모르는 동안에는 자리만 잡아 둔다.
  *
  *   1. 도는 중 — 스켈레톤(줄이 나중에 나타나며 버튼이 밀리지 않게)
- *   2. 돌려줄 돈이 있다 — 금액을 말한다
+ *   2. 돌려줄 돈이 있다 — 금액을 말한다(기록용 몫도 같은 문구다)
  *   3. 이미 환불된 거래 — 환급은 그때 끝났다고 말한다
- *   4. 실패·3초 초과 — 카드+결제계좌면 금액 없는 문구, 그 밖이면 줄 없음
+ *   4. 결제한 달이 지났다 — 기록만 정리되고 계좌로는 안 돌아간다고 말한다(닫힌 회차 R6)
+ *   5. 실패·3초 초과 — 카드+결제계좌면 금액 없는 문구, 그 밖이면 줄 없음
  */
 export function PaidRefundNote({
   query,
@@ -70,6 +71,9 @@ export function PaidRefundNote({
 
   if (preview?.reason === "ALREADY_REFUNDED") {
     return note(t("txDetail.refundedDeleteNote"));
+  }
+  if (preview?.reason === "REFUND_WINDOW_CLOSED") {
+    return note(t("txDetail.windowClosedNote"));
   }
   if (preview?.applies && preview.refundAmount > 0) {
     return note(

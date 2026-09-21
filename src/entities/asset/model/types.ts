@@ -290,6 +290,27 @@ export interface CardBilling {
    * 결제일 미설정이거나 옛 서버면 없다.
    */
   nextCycle?: UpcomingCycle | null;
+  /**
+   * 닫힌 회차(결제일이 지난) — 회차 선택기의 과거 칸, 최신 회차부터. 결제 기록이 있는
+   * 회차와 기록용 거래가 있는 회차의 합집합이다(닫힌 회차 규칙 R2·R4). 옛 서버면 없다 —
+   * 그때는 `history` 의 결제 완료 행으로 그린다.
+   */
+  closedCycles?: ClosedCycle[];
+}
+
+/** 닫힌 회차 하나 — 명세서 머리 금액은 `paidAmount + recordedOnlyAmount`. */
+export interface ClosedCycle {
+  periodStart: string;
+  periodEnd: string;
+  paymentDate: string;
+  /** 앱이 결제계좌에서 실제로 뺀 순 금액(결제 − 환급). */
+  paidAmount: number;
+  /** 기록만 남긴 금액 — 현실에선 결제됐지만 계좌에서는 안 빠졌다. */
+  recordedOnlyAmount: number;
+  /** 카드 등록 전 회차 — "실제와 맞지 않을 수 있어요" 주의 문구. */
+  preRegistration: boolean;
+  /** 이 회차 거래를 지우거나 환불하면 결제계좌로 돌려주는 마지막 날. */
+  refundableUntil: string;
 }
 
 /** 회차 하나 — 청구 응답의 nextCycle. */

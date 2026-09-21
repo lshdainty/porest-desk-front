@@ -304,6 +304,10 @@ type CardStatement = {
   paymentDate: string;
   /** 예정 회차에 빠지는 할부 구성 — 과거 회차는 서버가 내려주지 않는다. */
   installments?: InstallmentDue[];
+  /** 닫힌 회차 — 머리 금액 가운데 기록만 남긴 금액(계좌에서 안 빠졌다, 닫힌 회차 R2). */
+  recordedOnly?: number;
+  /** 카드 등록 전 회차 — 실제와 안 맞을 수 있다는 주의(R4). */
+  preRegistration?: boolean;
 };
 
 /**
@@ -362,7 +366,26 @@ function CardDetailBody({
         installments: billing.upcomingInstallments ?? [],
       });
     }
-    // 과거 회차 — 결제월별 합산: 같은 달에 여러 번(선결제 등) 결제해도 월 1행(사용자 결정).
+    // 과거 회차 — 서버가 닫힌 회차를 내려 주면 그대로 쓴다. 결제 기록이 없는 회차(0원이라
+    // 건너뜀·카드 등록 전)도 기록용 거래가 있으면 들어 있다. 머리 금액은 앱이 결제한 금액과
+    // 기록만 남긴 금액의 합이다 — 아래 이용 내역 목록과 맞는다(닫힌 회차 규칙 R2·R4).
+    if (billing?.closedCycles) {
+      for (const c of billing.closedCycles) {
+        out.push({
+          key: `c-${c.periodStart}`,
+          label: formatDay(c.paymentDate).md,
+          scheduled: false,
+          amount: c.paidAmount + c.recordedOnlyAmount,
+          periodStart: c.periodStart,
+          periodEnd: c.periodEnd,
+          paymentDate: c.paymentDate,
+          recordedOnly: c.recordedOnlyAmount,
+          preRegistration: c.preRegistration,
+        });
+      }
+      return out;
+    }
+    // 옛 서버 — 결제월별 합산: 같은 달에 여러 번(선결제 등) 결제해도 월 1행(사용자 결정).
     // 라벨은 정규 결제일(paymentDay, 말일 보정), 기간은 결제월의 전월 1일~말일(백엔드 회차 규칙 미러).
     const pad2 = (n: number) => String(n).padStart(2, "0");
     const byMonth = new Map<string, { amount: number; latest: string }>();
@@ -693,6 +716,41 @@ function CardDetailBody({
             }}
           >
             <Check size={13} strokeWidth={3} /> {t("assetDetail.paidDone")}
+          </div>
+        )}
+        {/* 기록만 남긴 금액 — 머리 금액에 들어 있지만 계좌에서는 빠지지 않았다. 문장은 남기고
+            금액만 가린다(금액 가리기). */}
+        {st && !st.scheduled && (st.recordedOnly ?? 0) > 0 && (
+          <div
+            data-testid="recorded-only-note"
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-secondary)",
+              marginTop: 6,
+            }}
+          >
+            <Trans
+              t={t}
+              i18nKey="assetDetail.recordedOnlyNote"
+              values={{
+                amount: `${wonPre()}${KRW(st.recordedOnly ?? 0)}${isEn() ? "" : "원"}`,
+              }}
+              components={{
+                amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
+              }}
+            />
+          </div>
+        )}
+        {st && !st.scheduled && st.preRegistration && (
+          <div
+            data-testid="pre-registration-note"
+            style={{
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+              marginTop: 4,
+            }}
+          >
+            {t("assetDetail.preRegistrationNote")}
           </div>
         )}
       </div>

@@ -41,6 +41,9 @@ export function ExpenseRow({
   // 준다**(흐림만으로는 "아직 안 온 것" 과 구별이 안 된다). 금액은 원래 부호 그대로
   // 두고 취소선으로 "없는 것으로 셌다" 를 말한다.
   const refunded = isRefundedTx(expense);
+  // 기록만 — 결제가 끝난 회차에 뒤늦게 적은 카드 지출. 합계에는 들어가므로 흐리지 않고
+  // 배지로만 "계좌에서는 안 빠졌다" 를 알린다(닫힌 회차 규칙 R2).
+  const recordOnly = !refunded && expense.cardSettledThrough != null;
   return (
     <LedgerRow
       onClick={onClick ? () => onClick(expense) : undefined}
@@ -71,6 +74,7 @@ export function ExpenseRow({
             <ScheduledBadge label={t("scheduled")} />
           )}
           {refunded && <ScheduledBadge label={t("refunded")} />}
+          {recordOnly && <ScheduledBadge label={t("recordOnly")} />}
           {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
             <span
               style={{

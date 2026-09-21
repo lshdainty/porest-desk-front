@@ -16,7 +16,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Expense } from "@/entities/expense";
+import type { Expense, RefundPreview } from "@/entities/expense";
 import { todayLocalKey } from "@/shared/lib/date";
 
 declare global {
@@ -31,21 +31,25 @@ const api = vi.hoisted(() => ({
   cancelReply: null as Expense | null,
   /** 거래가 달린 자산 — 카드면 확인창이 한 줄 더 말한다. */
   assets: [] as unknown[],
+  /** 환불·삭제 확인창의 미리보기 — 없으면 못 받은 것(실패)으로 본다. */
+  preview: undefined as RefundPreview | undefined,
 }));
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
+  // 금액을 가리는 문장(`<amt>`)은 Trans 로 그린다 — 키만 남겨 무엇을 골랐는지 본다.
+  Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [], isLoading: false }),
   useSearchExpenses: () => ({ data: [], isLoading: false }),
   useDeleteExpense: () => ({ mutate: () => {}, isPending: false }),
-  // 삭제 확인창의 환급 미리보기 — 이 파일은 그 갈래를 보지 않는다.
+  // 환불·삭제 확인창의 환급 미리보기 — 테스트가 `api.preview` 로 정한다.
   useRefundPreview: () => ({
-    data: undefined,
+    data: api.preview,
     isPending: false,
-    isError: true,
+    isError: api.preview == null,
   }),
   useRefundExpense: () => ({
     mutate: (
@@ -129,6 +133,7 @@ beforeEach(() => {
   api.refundReply = null;
   api.cancelReply = null;
   api.assets = [];
+  api.preview = undefined;
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -255,12 +260,35 @@ describe("카드 거래는 확인창이 한 줄 더 말한다", () => {
   const bodyText = () =>
     document.body.textContent?.replace(/\s+/g, " ").trim() ?? "";
 
-  it("결제계좌가 있으면 환급 안내", () => {
+  it("결제계좌가 있으면 미리보기 금액으로 환급을 알린다", () => {
+    api.assets = [creditCard()];
+    api.preview = { applies: true, refundAmount: 3000, reason: "OK" };
+    render(baseExpense);
+    click(refundAction()!);
+
+    expect(bodyText()).toContain("txDetail.paidDeleteNote");
+  });
+
+  it("결제한 달이 지났으면 기록만 정리된다고 말한다(R6)", () => {
+    api.assets = [creditCard()];
+    api.preview = {
+      applies: false,
+      refundAmount: 0,
+      reason: "REFUND_WINDOW_CLOSED",
+    };
+    render(baseExpense);
+    click(refundAction()!);
+
+    expect(bodyText()).toContain("txDetail.windowClosedNote");
+    expect(bodyText()).not.toContain("txDetail.paidDeleteNote");
+  });
+
+  it("미리보기를 못 받으면 금액 없는 안내로 넘어간다", () => {
     api.assets = [creditCard()];
     render(baseExpense);
     click(refundAction()!);
 
-    expect(bodyText()).toContain("txDetail.refundConfirmBodyCard");
+    expect(bodyText()).toContain("txDetail.paidDeleteFallback");
   });
 
   it("결제계좌가 없으면 잔액만 정리한다고 말한다", () => {
@@ -279,6 +307,35 @@ describe("카드 거래는 확인창이 한 줄 더 말한다", () => {
     click(refundAction()!);
 
     expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCard");
+    expect(bodyText()).not.toContain("txDetail.paidDeleteFallback");
+  });
+});
+
+describe("기록만 남긴 거래는 상세에서 한 번 더 말한다(닫힌 회차 R2)", () => {
+  const note = () =>
+    document.body.querySelector("[data-testid='record-only-note']");
+
+  it("일시불 — 계좌에서 안 빠졌다는 문장", () => {
+    render({ ...baseExpense, cardSettledThrough: "2026-08-31" });
+
+    expect(note()?.textContent).toBe("txDetail.recordOnlyNote");
+  });
+
+  it("할부 — 지난 회차분만 기록용이면 '이 중' 문장", () => {
+    render({
+      ...baseExpense,
+      amount: 90000,
+      installmentMonths: 3,
+      cardSettledThrough: "2026-08-31",
+      recordOnlyAmount: 60000,
+    });
+
+    expect(note()?.textContent).toBe("txDetail.recordOnlyPartNote");
+  });
+
+  it("정상 거래·환불된 거래에는 없다", () => {
+    render(baseExpense);
+    expect(note()).toBeNull();
   });
 });
 

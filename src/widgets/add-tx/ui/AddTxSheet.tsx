@@ -69,7 +69,9 @@ import type {
 import type { AssetTransfer } from "@/entities/asset";
 import type { Asset, AssetType } from "@/entities/asset";
 import type { ExpenseTemplate } from "@/entities/expense-template";
-import type { TxKind } from "@/entities/expense";
+import type { RefundPreview, TxKind } from "@/entities/expense";
+import { isCardCycleDue } from "@/entities/expense";
+import { todayLocalKey } from "@/shared/lib/date";
 import type { ExpenseSplitFormValue } from "@/entities/expense-split";
 import {
   CURRENCIES,
@@ -270,12 +272,14 @@ export function AddTxSheet({
   // 분할 합 일치화: 금액을 바꿔 기존 분할 합과 어긋날 때 맞추기 플로우
   const [openReconcile, setOpenReconcile] = useState(false);
   /**
-   * 감액 저장 대기 — 결제 완료 회차의 카드 거래를 줄이면 그만큼 결제계좌로 돌아간다.
-   * 돈이 움직이는 저장이라 한 번 묻는다(설계 13-2).
+   * 저장 확인 대기 — 카드 거래를 저장하면 돈이 움직이거나(환급·결제일 당일 추가 결제)
+   * 일부러 안 움직이는(결제가 끝난 회차라 기록만) 경우 한 번 묻는다(설계 13-2,
+   * 닫힌 회차 R2·R3·R6). 무슨 일인지는 서버 미리보기가 정하고, 여기선 문장만 고른다.
    */
-  const [paidReduce, setPaidReduce] = useState<{
-    amount: number;
-    data: ExpenseFormValues;
+  const [saveConfirm, setSaveConfirm] = useState<{
+    title: string;
+    notes: string[];
+    onConfirm: () => void;
   } | null>(null);
   // 이번 편집 세션에서 맞춘 분할(있으면 저장 시 금액과 함께 원자적으로 전송)
   const [reconciledSplits, setReconciledSplits] = useState<
@@ -501,17 +505,97 @@ export function AddTxSheet({
         amount: amountNumber,
         assetRowId: assetRowId ?? null,
         expenseDate: `${expenseDate}T${expenseTime}`,
+        installmentMonths: data.installmentMonths ?? null,
       });
-      if (preview.applies && preview.refundAmount > 0) {
+      const notes = saveNotes(preview);
+      if (notes.length > 0) {
         // 확인 대기 — 잠금을 풀어 두지 않으면 확인창의 저장이 먹지 않는다.
         savingRef.current = false;
-        setPaidReduce({ amount: preview.refundAmount, data });
+        setSaveConfirm({
+          title: t("addTx.editTitle"),
+          notes,
+          onConfirm: () => saveEdit(data, preview.refundAmount),
+        });
         return;
       }
       saveEdit(data, preview.refundAmount);
     } catch {
       saveEdit(data, null);
     }
+  };
+
+  /**
+   * 미리보기 → 확인창 문장. 비면 묻지 않고 저장한다.
+   *
+   * 환급만 있으면 종전 감액 문구 그대로다(13-2 문구). 결제한 달이 지나 안 돌려주면
+   * "기록만 정리돼요", 결제가 끝난 회차에 떨어지면 "기록만 남아요", 오늘이 결제일이면
+   * 추가로 빠지는 금액을 말한다.
+   */
+  const saveNotes = (p: RefundPreview): string[] => {
+    const notes: string[] = [];
+    const record = p.newRecordAmount ?? 0;
+    const sameDay = p.sameDayExtraPayment ?? 0;
+    if (p.applies && p.refundAmount > 0) {
+      notes.push(
+        record > 0 || sameDay > 0
+          ? t("txDetail.paidDeleteNote", { amount: KRW(p.refundAmount) })
+          : t("addTx.paidReduceNote", { amount: KRW(p.refundAmount) }),
+      );
+    } else if (p.reason === "REFUND_WINDOW_CLOSED") {
+      notes.push(t("txDetail.windowClosedNote"));
+    }
+    if (record > 0) notes.push(t("addTx.closedCycleNote"));
+    if (sameDay > 0) {
+      notes.push(t("addTx.sameDayPaymentNote", { amount: KRW(sameDay) }));
+    }
+    return notes;
+  };
+
+  /**
+   * 새 카드 지출 — 그 회차 결제일이 이미 왔으면(닫혔거나 오늘) 저장 전에 한 번 묻는다.
+   *
+   * 결제일 전 회차는 묻지 않는다 — 평소대로 청구될 뿐이라 요청을 보낼 이유가 없다.
+   * 못 물어봤으면(네트워크 실패·3초 초과) 묻지 않고 저장한다 — 규칙은 서버에서 그대로 돈다.
+   */
+  const confirmCardThenCreate = async (
+    data: ExpenseFormValues,
+    run: () => void,
+  ) => {
+    const card = assets.find((a) => a.rowId === data.assetRowId);
+    if (
+      data.expenseType !== "EXPENSE" ||
+      card?.assetType !== "CREDIT_CARD" ||
+      card.paymentDay == null ||
+      !isCardCycleDue(
+        data.expenseDate.slice(0, 10),
+        card.paymentDay,
+        todayLocalKey(),
+      )
+    ) {
+      run();
+      return;
+    }
+    try {
+      const preview = await expenseApi.cardSavePreview({
+        assetRowId: card.rowId,
+        amount: data.amount,
+        expenseDate: data.expenseDate,
+        installmentMonths: data.installmentMonths ?? null,
+      });
+      const notes = saveNotes(preview);
+      if (notes.length > 0) {
+        savingRef.current = false;
+        setSaveConfirm({
+          title: t("addTx.saveConfirmTitle"),
+          notes,
+          onConfirm: run,
+        });
+        return;
+      }
+    } catch {
+      // 묻지 못했다 — 저장은 막지 않는다.
+    }
+    run();
   };
 
   /** 편집 PUT — 미리보기와 실제 환급액이 다를 때만 알린다. */
@@ -525,7 +609,7 @@ export function AddTxSheet({
           if (actual != null && actual !== previewed) {
             toast.success(tc("refundedToast", { amount: KRW(actual) }));
           }
-          setPaidReduce(null);
+          setSaveConfirm(null);
           onClose();
         },
         onSettled: unlock,
@@ -536,6 +620,12 @@ export function AddTxSheet({
   const savingRef = useRef(false);
   const unlock = () => {
     savingRef.current = false;
+  };
+  /** 저장 확인창의 저장 — 다시 잠그고 기다리던 저장을 보낸다. */
+  const confirmSave = () => {
+    if (!saveConfirm) return;
+    savingRef.current = true;
+    saveConfirm.onConfirm();
   };
   // 프리셋으로 저장할 수 있는 조건 — 종류마다 있어야 하는 칸이 다르다.
   // 지출·수입은 카테고리가, 이체는 양쪽 계좌가 프리셋의 뼈대다.
@@ -661,41 +751,46 @@ export function AddTxSheet({
     } else if (smsDraft) {
       // 문자에서 온 지출은 전용 경로로 — 서버가 원문을 다시 봐 취소 문자를 막고
       // 체크했다면 카드 연결을 기억한다. 만들어지는 지출 자체는 같다.
-      commitSmsMut.mutate(
-        {
-          text: smsDraft.text,
-          assetRowId: assetRowId ?? null,
-          categoryRowId: categoryRowId!,
-          // 종류를 안 실으면 서버가 지출로 본다 — 결제 문자를 수입으로 고쳐 저장하면
-          // 수입 전용 조합이 지출로 넘어가 400 이 났다(QA #123). 여기까지 오는 `type`
-          // 은 이체를 위에서 걸러 EXPENSE·INCOME 뿐이다.
-          expenseType: type,
-          amount: amountNumber,
-          merchant: merchant || null,
-          description: description || null,
-          expenseDate: `${expenseDate}T${expenseTime}`,
-          paymentMethod: paymentMethod || null,
-          installmentMonths: data.installmentMonths,
-          originalAmount: data.originalAmount,
-          originalCurrency: data.originalCurrency,
-          exchangeRate: data.exchangeRate,
-          rememberCard: assetRowId != null && rememberCard,
-        },
-        { onSuccess: onClose, onSettled: unlock },
+      const sms = smsDraft;
+      void confirmCardThenCreate(data, () =>
+        commitSmsMut.mutate(
+          {
+            text: sms.text,
+            assetRowId: assetRowId ?? null,
+            categoryRowId: categoryRowId!,
+            // 종류를 안 실으면 서버가 지출로 본다 — 결제 문자를 수입으로 고쳐 저장하면
+            // 수입 전용 조합이 지출로 넘어가 400 이 났다(QA #123). 여기까지 오는 `type`
+            // 은 이체를 위에서 걸러 EXPENSE·INCOME 뿐이다.
+            expenseType: type,
+            amount: amountNumber,
+            merchant: merchant || null,
+            description: description || null,
+            expenseDate: `${expenseDate}T${expenseTime}`,
+            paymentMethod: paymentMethod || null,
+            installmentMonths: data.installmentMonths,
+            originalAmount: data.originalAmount,
+            originalCurrency: data.originalCurrency,
+            exchangeRate: data.exchangeRate,
+            rememberCard: assetRowId != null && rememberCard,
+          },
+          { onSuccess: onClose, onSettled: unlock },
+        ),
       );
     } else {
       const presetIdAtSubmit = activePresetId;
-      createMut.mutate(data, {
-        onSettled: unlock,
-        onSuccess: () => {
-          // 거래 저장 성공 후 적용된 프리셋이 있으면 useCount/lastUsedAt 갱신.
-          // 실패해도 거래는 성공했으니 무시(Best-effort).
-          if (presetIdAtSubmit != null) {
-            touchPresetMut.mutate(presetIdAtSubmit);
-          }
-          onClose();
-        },
-      });
+      void confirmCardThenCreate(data, () =>
+        createMut.mutate(data, {
+          onSettled: unlock,
+          onSuccess: () => {
+            // 거래 저장 성공 후 적용된 프리셋이 있으면 useCount/lastUsedAt 갱신.
+            // 실패해도 거래는 성공했으니 무시(Best-effort).
+            if (presetIdAtSubmit != null) {
+              touchPresetMut.mutate(presetIdAtSubmit);
+            }
+            onClose();
+          },
+        }),
+      );
     }
   };
 
@@ -1519,18 +1614,26 @@ export function AddTxSheet({
         />
       )}
 
-      {/* 감액 저장 확인 — 이미 낸 돈이 결제계좌로 돌아간다는 것만 말하고 묻는다.
-          되돌릴 수 있는 일이라 danger 가 아니다. */}
-      {paidReduce && (
+      {/* 저장 확인 — 돈이 어떻게 움직이는지(환급·결제일 당일 추가 결제) 또는 왜 안
+          움직이는지(결제가 끝난 회차라 기록만)를 말하고 묻는다. 되돌릴 수 있는 일이라
+          danger 가 아니다. */}
+      {saveConfirm && (
         <ConfirmDialog
-          title={t("addTx.editTitle")}
-          message={t("addTx.paidReduceNote", {
-            amount: KRW(paidReduce.amount),
-          })}
+          title={saveConfirm.title}
+          message={saveConfirm.notes.map((n, i) => (
+            <span
+              key={n}
+              style={{ display: "block", marginTop: i === 0 ? 0 : 8 }}
+            >
+              {n}
+            </span>
+          ))}
           confirmLabel={tc("save")}
-          loading={updateMut.isPending}
-          onCancel={() => !updateMut.isPending && setPaidReduce(null)}
-          onConfirm={() => saveEdit(paidReduce.data, paidReduce.amount)}
+          loading={submitting || commitSmsMut.isPending}
+          onCancel={() =>
+            !submitting && !commitSmsMut.isPending && setSaveConfirm(null)
+          }
+          onConfirm={confirmSave}
         />
       )}
 
