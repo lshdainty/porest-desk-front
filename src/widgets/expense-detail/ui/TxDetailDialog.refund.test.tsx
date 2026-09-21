@@ -11,12 +11,17 @@
 //   3) **환불된 거래는 고칠 수 없다.** 돈이 이미 자산으로 돌아가 있어 되돌릴 기준이
 //      사라진다(서버도 EXP_043 으로 막는다). 수정·분할을 감추고 환불 취소만 남긴다.
 //
+// 결제가 끝난 회차의 카드 거래는 무엇을 바꿔도 기록만 바뀐다(D1) — 삭제·환불·환불 취소
+// 확인창이 **서버에 묻지 않고** 같은 한 줄을 말하고, 끝나면 토스트가 [잔액 고치기]를 단다
+// (D4·D9). 그 갈래도 여기서 잠근다.
+//
 // 본문 모양은 `features/expense/api/expenseApi.test.ts` 가, 빠른 동작 줄의 열 수는
-// `TxDetailDialog.quickActions.test.tsx` 가 본다.
+// `TxDetailDialog.quickActions.test.tsx` 가, 토스트 글자는
+// `features/expense/model/useLedgerResultToast.test.tsx` 가 본다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Expense, RefundPreview } from "@/entities/expense";
+import type { Expense } from "@/entities/expense";
 import { todayLocalKey } from "@/shared/lib/date";
 
 declare global {
@@ -31,8 +36,12 @@ const api = vi.hoisted(() => ({
   cancelReply: null as Expense | null,
   /** 거래가 달린 자산 — 카드면 확인창이 한 줄 더 말한다. */
   assets: [] as unknown[],
-  /** 환불·삭제 확인창의 미리보기 — 없으면 못 받은 것(실패)으로 본다. */
-  preview: undefined as RefundPreview | undefined,
+  deleteCalls: [] as number[],
+  /** 삭제 응답 — 열린 회차에서 미리 낸 돈이 돌아왔으면 금액이 실린다. */
+  deleteReply: { refundedAmount: null } as { refundedAmount: number | null },
+  /** 변경 뒤 토스트 훅이 받은 것 — 응답과 "닫힌 회차였나·결제계좌". */
+  notified: [] as { result: unknown; context: unknown }[],
+  navigated: [] as string[],
 }));
 
 vi.mock("react-i18next", () => ({
@@ -41,16 +50,26 @@ vi.mock("react-i18next", () => ({
   Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => (to: string) => api.navigated.push(to),
+}));
 vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [], isLoading: false }),
   useSearchExpenses: () => ({ data: [], isLoading: false }),
-  useDeleteExpense: () => ({ mutate: () => {}, isPending: false }),
-  // 환불·삭제 확인창의 환급 미리보기 — 테스트가 `api.preview` 로 정한다.
-  useRefundPreview: () => ({
-    data: api.preview,
+  useDeleteExpense: () => ({
+    mutate: (
+      id: number,
+      opts?: { onSuccess?: (r: { refundedAmount: number | null }) => void },
+    ) => {
+      api.deleteCalls.push(id);
+      opts?.onSuccess?.(api.deleteReply);
+    },
     isPending: false,
-    isError: api.preview == null,
   }),
+  useLedgerResultToast:
+    () =>
+    (result: unknown, context: unknown = {}) =>
+      api.notified.push({ result, context }),
   useRefundExpense: () => ({
     mutate: (
       vars: { id: number; refundedAt?: string },
@@ -133,7 +152,10 @@ beforeEach(() => {
   api.refundReply = null;
   api.cancelReply = null;
   api.assets = [];
-  api.preview = undefined;
+  api.deleteCalls = [];
+  api.deleteReply = { refundedAmount: null };
+  api.notified = [];
+  api.navigated = [];
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -256,58 +278,217 @@ describe("환불은 확인창을 거쳐 표식을 찍는다", () => {
   });
 });
 
-describe("카드 거래는 확인창이 한 줄 더 말한다", () => {
-  const bodyText = () =>
-    document.body.textContent?.replace(/\s+/g, " ").trim() ?? "";
+const bodyText = () =>
+  document.body.textContent?.replace(/\s+/g, " ").trim() ?? "";
 
-  it("결제계좌가 있으면 미리보기 금액으로 환급을 알린다", () => {
-    api.assets = [creditCard()];
-    api.preview = { applies: true, refundAmount: 3000, reason: "OK" };
+/** 8월 회차까지 결제가 끝난 카드(오늘 9월). 9/5 거래는 열린 회차다. */
+const closedThroughAug = { cardClosedThrough: "2026-08-31" };
+/** 9월 회차까지 결제가 끝난 카드 — 9/5 거래가 닫힌 회차에 든다. */
+const closedThroughSep = { cardClosedThrough: "2026-09-30" };
+
+describe("카드 거래는 확인창이 한 줄 더 말한다 — 서버에 묻지 않는다(D4)", () => {
+  it("결제가 끝난 회차면 '기록만 바뀌고 계좌 잔액은 그대로' 를 말한다", () => {
+    api.assets = [creditCard(closedThroughSep)];
     render(baseExpense);
     click(refundAction()!);
 
-    expect(bodyText()).toContain("txDetail.paidDeleteNote");
+    expect(bodyText()).toContain("closedCycle.note");
+    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCardNoAccount");
   });
 
-  it("결제한 달이 지났으면 기록만 정리된다고 말한다(R6)", () => {
-    api.assets = [creditCard()];
-    api.preview = {
-      applies: false,
-      refundAmount: 0,
-      reason: "REFUND_WINDOW_CLOSED",
-    };
+  it("결제계좌가 없어도 닫힌 회차면 같은 한 줄이다 — 잔액 정리 문구가 아니다", () => {
+    api.assets = [creditCard({ ...closedThroughSep, paymentAssetRowId: null })];
     render(baseExpense);
     click(refundAction()!);
 
-    expect(bodyText()).toContain("txDetail.windowClosedNote");
-    expect(bodyText()).not.toContain("txDetail.paidDeleteNote");
+    expect(bodyText()).toContain("closedCycle.note");
+    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCardNoAccount");
   });
 
-  it("미리보기를 못 받으면 금액 없는 안내로 넘어간다", () => {
-    api.assets = [creditCard()];
+  it("할부가 닫힌 회차와 열린 회차에 걸치면 '지난 회차분만'", () => {
+    // 8/5 시작 3개월 = 8·9·10월 회차. 9월까지 닫혔으면 10월분이 남는다.
+    api.assets = [creditCard(closedThroughSep)];
+    render({
+      ...baseExpense,
+      expenseDate: "2026-08-05T12:30:00",
+      installmentMonths: 3,
+    });
+    click(refundAction()!);
+
+    expect(bodyText()).toContain("closedCycle.partialNote");
+    expect(bodyText()).not.toContain("closedCycle.note");
+  });
+
+  it("열린 회차면 아무 말도 없다 — 청구에서 빠질 뿐이다", () => {
+    api.assets = [creditCard(closedThroughAug)];
     render(baseExpense);
     click(refundAction()!);
 
-    expect(bodyText()).toContain("txDetail.paidDeleteFallback");
+    expect(bodyText()).not.toContain("closedCycle.");
+    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCardNoAccount");
   });
 
-  it("결제계좌가 없으면 잔액만 정리한다고 말한다", () => {
-    api.assets = [creditCard({ paymentAssetRowId: null })];
+  it("열린 회차인데 결제계좌가 없으면 잔액만 정리한다고 말한다", () => {
+    api.assets = [creditCard({ ...closedThroughAug, paymentAssetRowId: null })];
     render(baseExpense);
     click(refundAction()!);
 
     expect(bodyText()).toContain("txDetail.refundConfirmBodyCardNoAccount");
   });
 
-  it("계좌 거래에는 카드 줄이 없다 — 환급할 카드가 없다", () => {
+  it("계좌 거래에는 카드 줄이 없다 — 회차가 없다", () => {
     api.assets = [
-      creditCard({ assetType: "BANK_ACCOUNT", paymentAssetRowId: null }),
+      creditCard({
+        assetType: "BANK_ACCOUNT",
+        paymentAssetRowId: null,
+        cardClosedThrough: null,
+      }),
     ];
     render(baseExpense);
     click(refundAction()!);
 
-    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCard");
-    expect(bodyText()).not.toContain("txDetail.paidDeleteFallback");
+    expect(bodyText()).not.toContain("closedCycle.");
+    expect(bodyText()).not.toContain("txDetail.refundConfirmBodyCardNoAccount");
+  });
+
+  it("삭제 확인창도 같은 한 줄이다", () => {
+    api.assets = [creditCard(closedThroughSep)];
+    render(baseExpense);
+    click(buttonsWith("delete")[0]!);
+
+    expect(bodyText()).toContain("txDetail.deleteMessage");
+    expect(bodyText()).toContain("closedCycle.note");
+  });
+
+  it("열린 회차의 삭제 확인창엔 한 줄이 없다", () => {
+    api.assets = [creditCard(closedThroughAug)];
+    render(baseExpense);
+    click(buttonsWith("delete")[0]!);
+
+    expect(bodyText()).toContain("txDetail.deleteMessage");
+    expect(bodyText()).not.toContain("closedCycle.");
+  });
+});
+
+describe("지운·환불한 뒤의 토스트(D4 · D9)", () => {
+  it("삭제 — 응답과 함께 '닫힌 회차였다 · 이 결제계좌' 를 넘긴다", () => {
+    api.assets = [creditCard(closedThroughSep)];
+    api.deleteReply = { refundedAmount: null };
+    render(baseExpense);
+    click(buttonsWith("delete")[0]!);
+    // 확인창의 삭제 — 나중에 붙은 쪽.
+    const del = buttonsWith("delete");
+    click(del[del.length - 1]!);
+
+    expect(api.deleteCalls).toEqual([77]);
+    expect(api.notified).toEqual([
+      {
+        result: { refundedAmount: null },
+        context: { closed: true, paymentAssetRowId: 1 },
+      },
+    ]);
+  });
+
+  it("삭제 — 열린 회차면 닫힌 회차가 아니라고 넘긴다(미리 낸 돈만 알린다)", () => {
+    api.assets = [creditCard(closedThroughAug)];
+    api.deleteReply = { refundedAmount: 3000 };
+    render(baseExpense);
+    click(buttonsWith("delete")[0]!);
+    const del = buttonsWith("delete");
+    click(del[del.length - 1]!);
+
+    expect(api.notified).toEqual([
+      {
+        result: { refundedAmount: 3000 },
+        context: { closed: false, paymentAssetRowId: 1 },
+      },
+    ]);
+  });
+
+  it("환불 — 응답과 닫힌 회차 여부를 넘긴다", () => {
+    api.assets = [creditCard(closedThroughSep)];
+    api.refundReply = { ...refunded, refundTransferRowId: null };
+    render(baseExpense);
+    click(refundAction()!);
+    click(buttonsWith("txDetail.refundConfirm")[0]!);
+
+    expect(api.notified).toHaveLength(1);
+    expect(api.notified[0]!.context).toEqual({
+      closed: true,
+      paymentAssetRowId: 1,
+    });
+  });
+});
+
+describe("환불일은 거래일부터 오늘까지다(D16)", () => {
+  it("날짜 칸이 그 밖을 못 고른다", () => {
+    render(baseExpense);
+    click(refundAction()!);
+
+    const date = document.getElementById(
+      "tx-refund-date",
+    ) as HTMLInputElement | null;
+    expect(date?.min).toBe("2026-09-05");
+    expect(date?.max).toBe(todayLocalKey());
+  });
+});
+
+describe("환불됨 배너의 [잔액 고치기](D9)", () => {
+  const fixButton = () => buttonsWith("closedCycle.fixBalance")[0] ?? null;
+  const markedClosed: Expense = { ...refunded, refundTransferRowId: null };
+
+  it("결제가 끝난 회차의 환불이면 결제계좌 수정 폼으로 간다", () => {
+    api.assets = [creditCard(closedThroughSep)];
+    render(markedClosed);
+
+    expect(fixButton()).not.toBeNull();
+    click(fixButton()!);
+    expect(api.navigated).toEqual(["/desk/settings?section=accounts&edit=1"]);
+  });
+
+  it("열린 회차의 환불엔 없다 — 청구에서 빠졌을 뿐 통장은 안 움직였다", () => {
+    api.assets = [creditCard(closedThroughAug)];
+    render(markedClosed);
+
+    expect(fixButton()).toBeNull();
+  });
+
+  it("결제계좌가 없는 카드엔 없다 — 고칠 통장이 없다", () => {
+    api.assets = [creditCard({ ...closedThroughSep, paymentAssetRowId: null })];
+    render(markedClosed);
+
+    expect(fixButton()).toBeNull();
+  });
+});
+
+describe("환불 취소 확인창", () => {
+  it("옛 환급 이체가 묶였으면 '환급된 금액도 되돌아가요' — 통장이 움직이므로 닫힌 회차 줄은 없다", () => {
+    api.assets = [creditCard(closedThroughSep)];
+    render(refunded);
+    click(cancelRefundButtons()[0]!);
+
+    expect(bodyText()).toContain("txDetail.refundCancelConfirmTransfer");
+    expect(bodyText()).not.toContain("closedCycle.note");
+  });
+
+  it("표식만 걷는 환불이면 환급 얘기가 없다 — 닫힌 회차면 한 줄을 붙인다", () => {
+    api.assets = [creditCard(closedThroughSep)];
+    render({ ...refunded, refundTransferRowId: null });
+    click(cancelRefundButtons()[0]!);
+
+    expect(bodyText()).toContain("txDetail.refundCancelConfirm");
+    expect(bodyText()).not.toContain("txDetail.refundCancelConfirmTransfer");
+    expect(bodyText()).toContain("closedCycle.note");
+  });
+});
+
+describe("시스템이 만든 거래는 환불·분할이 없다(QA 23차 10)", () => {
+  it("카드 이월 — 서버가 막는 두 버튼을 감추고 왜 못 고치는지 말한다", () => {
+    render({ ...baseExpense, autoSource: "CARD_CARRYOVER" });
+
+    expect(refundAction()).toBeNull();
+    expect(splitAction()).toBeNull();
+    expect(bodyText()).toContain("addTx.autoSource.CARD_CARRYOVER");
   });
 });
 

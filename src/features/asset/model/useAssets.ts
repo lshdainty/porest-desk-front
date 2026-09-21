@@ -52,22 +52,32 @@ export const useAssetBalanceTrend = (assetId: number, weeks: number) => {
   });
 };
 
+/**
+ * 자산 추가 — 자산만 생기는 게 아니다. 신용카드의 "이전 미결제 사용액" 은 **거래 한 건**
+ * (카드 이월)으로 만들어지고, 계좌의 첫 잔액도 가계부·홈 합계가 읽는다. 그래서 거래
+ * 변경과 같은 범위(`"ledger"`)를 턴다 — `"asset"` 만 털면 가계부에 이월 거래가 안 보였다
+ * (QA 23차 낮음).
+ */
 export const useCreateAsset = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: AssetFormValues) => assetApi.createAsset(data),
-    onSuccess: () => invalidateFor(queryClient, "asset"),
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 
+/**
+ * 자산 수정 — 이월 금액을 고치면 카드 이월 거래가, 결제일·결제계좌를 바꾸면 청구가,
+ * 잔액을 고치면 잔액 앵커가 바뀐다. 가계부·카드·홈이 함께 늙으므로 `"ledger"` 다.
+ */
 export const useUpdateAsset = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: AssetUpdateFormValues }) =>
       assetApi.updateAsset(id, data),
-    onSuccess: () => invalidateFor(queryClient, "asset"),
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };
 

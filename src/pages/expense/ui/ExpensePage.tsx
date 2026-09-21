@@ -8,11 +8,9 @@ import {
   Download,
   Filter,
   List,
-  Pencil,
   Plus,
   ReceiptText,
   SlidersHorizontal,
-  Trash2,
   X,
 } from "lucide-react";
 import { KRW, formatDay, isEn, minusOf } from "@/shared/lib/porest/format";
@@ -25,6 +23,8 @@ import {
   saveViewMode,
   type ViewMode,
 } from "@/pages/expense/lib/view-mode";
+import { monthFromQuery } from "@/pages/expense/lib/month-query";
+import { useExpenseSwipeActions } from "@/pages/expense/lib/use-expense-swipe-actions";
 import { formatMonthDayWeekday, formatYearMonth } from "@/shared/lib/date";
 import { MaskAmount, WonUnit } from "@/shared/lib/porest/hide-amounts";
 import {
@@ -82,9 +82,8 @@ import {
   useExpenses,
   useRangeSummary,
   useExpenseCategories,
-  useDeleteExpense,
 } from "@/features/expense";
-import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
+import { SwipeActions } from "@/shared/ui/swipe-actions";
 import type { HideCardKey } from "@/shared/lib/porest/hide-amounts-cards";
 
 /**
@@ -442,7 +441,7 @@ function ExpensePageSkeleton({
 export const ExpensePage = () => {
   const { onAddTx, mobile } = useOutletContext<OutletCtx>();
   const [searchParams] = useSearchParams();
-  const initialMonth = searchParams.get("month") || currentMonthKey();
+  const initialMonth = monthFromQuery(searchParams.get("month"));
   const { isLoading } = useExpensePageData(initialMonth);
   const [hasEverLoaded, setHasEverLoaded] = useState(false);
   // 데이터가 모두 도착하면 hasEverLoaded 를 true 로 — render 중에 동기 set (React 권장 패턴).
@@ -1500,7 +1499,7 @@ function EditableList({
 function ExpenseDesktop() {
   const { t } = useTranslation("expense");
   const [searchParams] = useSearchParams();
-  const initialMonth = searchParams.get("month") || currentMonthKey();
+  const initialMonth = monthFromQuery(searchParams.get("month"));
   const focusTxId = Number(searchParams.get("txId")) || null;
   const [filter, setFilter] = useState<Filter>("all");
   const [month, setMonth] = useState<string>(initialMonth);
@@ -1654,7 +1653,7 @@ function txmMonthLabel(monthKey: string): string {
 function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const { t } = useTranslation("expense");
   const [searchParams] = useSearchParams();
-  const initialMonth = searchParams.get("month") || currentMonthKey();
+  const initialMonth = monthFromQuery(searchParams.get("month"));
   const focusTxId = Number(searchParams.get("txId")) || null;
   const [month, setMonth] = useState<string>(initialMonth);
   const { assetId, asset, clear } = useAssetFilter();
@@ -1688,66 +1687,13 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   // 상세→편집 flow — EditableList 패턴 인라인(dayhead 형식이 달라 리스트 자체 렌더).
   const [detail, setDetail] = useState<Expense | null>(null);
   const [editing, setEditing] = useState<Expense | null>(null);
-  // 스와이프 액션 — 상세 다이얼로그와 같은 뮤테이션·같은 확인 문구를 쓴다.
+  // 스와이프 액션 — 상세 다이얼로그와 같은 뮤테이션·같은 확인 문구를 쓴다(아래
+  // `useExpenseSwipeActions`). 행의 접근명만 여기서 만든다.
   const { t: tc } = useTranslation("common");
-  const deleteExpense = useDeleteExpense();
 
   const rowLabelOf = (e: Expense) =>
     e.merchant ?? e.description ?? e.categoryName ?? tc("transaction");
 
-  /**
-   * 지우면 결제계좌로 돈이 돌아갈 수 있는 거래인가 — 신용카드 + 결제계좌.
-   *
-   * 실제로 돌아가는지는 그 회차를 이미 냈는지에 달렸고 그건 서버만 안다. 여기서는
-   * "그럴 수 있다" 까지만 말한다(설계 13-2).
-   */
-  const paidRefundHintFor = (e: Expense) => {
-    const asset = (assetsQ.data?.assets ?? []).find(
-      (a) => a.rowId === e.assetRowId,
-    );
-    return (
-      asset?.assetType === "CREDIT_CARD" && asset.paymentAssetRowId != null
-    );
-  };
-
-  /**
-   * 밀었을 때 드러나는 액션 — 의미 순서 그대로 [수정, 삭제] 로 넘긴다.
-   * 컴포넌트가 뒤집어 삭제를 가장 안쪽에 놓으므로, 조금만 밀면 수정부터 닿는다.
-   */
-  const swipeActionsFor = (e: Expense): SwipeAction[] => [
-    {
-      label: tc("edit"),
-      icon: <Pencil />,
-      kind: "primary",
-      // 상세를 닫고 수정으로 — 상세 footer 의 수정과 같은 목적지(AddTxSheet).
-      onSelect: () => {
-        setDetail(null);
-        setEditing(e);
-      },
-    },
-    {
-      label: tc("delete"),
-      icon: <Trash2 />,
-      kind: "destructive",
-      confirm: {
-        title: t("deleteConfirm.title"),
-        // ConfirmDialog 의 message 는 white-space 지정 없는 <p> 라 개행 문자가 접힌다.
-        // 달린 환불을 경고할 필요가 없어졌다 — 환불은 이제 원거래에 찍는 표식이라
-        // "이 거래에 달린 환불" 이 존재하지 않는다.
-        //
-        // 카드 거래면 **금액 없는** 예고를 붙인다(설계 13-2의 폴백 문구). 스와이프의
-        // 확인창은 액션을 만들 때 문구가 굳는 선언형이라 상세처럼 열릴 때 미리보기를
-        // 걸 자리가 없다 — 금액은 상세에서 지울 때 보인다.
-        message: paidRefundHintFor(e)
-          ? `${t("txDetail.deleteMessage", { name: rowLabelOf(e) })} ${t(
-              "txDetail.paidDeleteFallback",
-            )}`
-          : t("txDetail.deleteMessage", { name: rowLabelOf(e) }),
-        loading: deleteExpense.isPending,
-      },
-      onSelect: () => deleteExpense.mutateAsync(e.rowId),
-    },
-  ];
   // 지출 상세 → '환불' → 원거래를 승계한 환불 입력(수입 + 원거래 연결).
   // 이체는 지출과 별개 엔티티라 상세도 별도(수정 없이 삭제만).
   const [transferDetail, setTransferDetail] = useState<AssetTransfer | null>(
@@ -1759,6 +1705,14 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const categoriesQ = useExpenseCategories();
   const assetsQ = useAssets();
+  // 밀면 [수정, 삭제] — 상세를 닫고 수정으로 가는 것은 상세 footer 의 수정과 같은 목적지.
+  const swipeActionsFor = useExpenseSwipeActions({
+    assets: assetsQ.data?.assets ?? [],
+    onEdit: (e) => {
+      setDetail(null);
+      setEditing(e);
+    },
+  });
   const {
     expenses,
     transfers,

@@ -72,20 +72,30 @@ const baseAsset = {
   modifyAt: "2026-01-01T00:00:00",
 } as const;
 
-/** 한도 300만, 미결제 사용액 500만 — 200만 초과. */
+/**
+ * 한도 300만, 미결제 사용액 500만(그 가운데 등록 때 적은 이월 100만) — 200만 초과.
+ *
+ * 칸은 이월 금액이다(D7) — 한도와 견주는 건 칸 값이 아니라 저장 뒤 미결제 사용액이다.
+ */
 const overCard: Asset = {
   ...baseAsset,
   rowId: 21,
   assetName: "신한 Deep Dream",
   assetType: "CREDIT_CARD",
   balance: -5_000_000,
+  carryoverAmount: 1_000_000,
   institution: "신한카드",
   creditLimit: 3_000_000,
   paymentDay: 14,
 };
 
 /** 한도 300만, 사용액 100만 — 안 넘겼다. */
-const underCard: Asset = { ...overCard, rowId: 22, balance: -1_000_000 };
+const underCard: Asset = {
+  ...overCard,
+  rowId: 22,
+  balance: -1_000_000,
+  carryoverAmount: 0,
+};
 
 /** 한도를 안 적어 둔 카드 — 견줄 값이 없다. */
 const noLimitCard: Asset = { ...overCard, rowId: 23, creditLimit: null };
@@ -179,8 +189,9 @@ describe("한도 초과 — 보이되 막지 않는다 (QA #125)", () => {
     const { update, btn } = save();
     expect(btn.hasAttribute("disabled")).toBe(false);
     expect(update).not.toBeNull();
-    // 넘긴 값 그대로 나간다(카드 잔액은 미결제라 음수).
-    expect(update!.balance).toBe(-5_000_000);
+    // 칸의 이월 금액이 전용 키로 나간다 — 신용카드는 잔액을 싣지 않는다(D7).
+    expect(update!.carryoverAmount).toBe(1_000_000);
+    expect(update!).not.toHaveProperty("balance");
     expect(update!.creditLimit).toBe(3_000_000);
   });
 

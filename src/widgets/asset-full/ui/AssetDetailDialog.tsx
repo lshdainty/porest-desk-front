@@ -33,7 +33,7 @@ import {
   type AssetHolding,
 } from "@/entities/asset";
 import type { Expense } from "@/entities/expense";
-import { isScheduledTx } from "@/entities/expense";
+import { isRefundedTx, isScheduledTx } from "@/entities/expense";
 import {
   useAssetBalanceTrend,
   useAssets,
@@ -302,10 +302,16 @@ type CardStatement = {
   periodStart: string | null;
   periodEnd: string | null;
   paymentDate: string;
-  /** 예정 회차에 빠지는 할부 구성 — 과거 회차는 서버가 내려주지 않는다. */
+  /**
+   * 그 회차의 할부 회차분 — 예정 회차는 청구 구성, 닫힌 회차는 거래 날짜가 앞 달이라
+   * 이용 내역에 안 나오는 회차분(24차 8). 옛 서버의 과거 회차엔 없다.
+   */
   installments?: InstallmentDue[];
-  /** 닫힌 회차 — 머리 금액 가운데 기록만 남긴 금액(계좌에서 안 빠졌다, 닫힌 회차 R2). */
-  recordedOnly?: number;
+  /**
+   * 닫힌 회차 — 앱이 결제계좌에서 실제로 뺀 순 금액(D10). 머리 금액(`amount`)은 지금 기록
+   * 합이라 둘이 다르면 머리 아래 한 줄로 말한다. 옛 서버의 과거 회차엔 없다.
+   */
+  paid?: number;
   /** 카드 등록 전 회차 — 실제와 안 맞을 수 있다는 주의(R4). */
   preRegistration?: boolean;
 };
@@ -367,19 +373,22 @@ function CardDetailBody({
       });
     }
     // 과거 회차 — 서버가 닫힌 회차를 내려 주면 그대로 쓴다. 결제 기록이 없는 회차(0원이라
-    // 건너뜀·카드 등록 전)도 기록용 거래가 있으면 들어 있다. 머리 금액은 앱이 결제한 금액과
-    // 기록만 남긴 금액의 합이다 — 아래 이용 내역 목록과 맞는다(닫힌 회차 규칙 R2·R4).
+    // 건너뜀·카드 등록 전)도 기록용 거래가 있으면 들어 있다. 머리 금액은 **지금 기록 합**이다
+    // (D10) — 결제 뒤에 거래를 지우거나 고쳐 써도 통장은 그대로라(D1) 실제로 나간 돈과
+    // 갈릴 수 있고, 그때는 머리 아래 한 줄로 말한다. 옛 서버면 결제한 금액 + 기록만 남긴
+    // 금액이다(그때는 기록이 결제보다 적을 수 없었다).
     if (billing?.closedCycles) {
       for (const c of billing.closedCycles) {
         out.push({
           key: `c-${c.periodStart}`,
           label: formatDay(c.paymentDate).md,
           scheduled: false,
-          amount: c.paidAmount + c.recordedOnlyAmount,
+          amount: c.recordedAmount ?? c.paidAmount + c.recordedOnlyAmount,
+          paid: c.paidAmount,
           periodStart: c.periodStart,
           periodEnd: c.periodEnd,
           paymentDate: c.paymentDate,
-          recordedOnly: c.recordedOnlyAmount,
+          installments: c.installmentDues ?? [],
           preRegistration: c.preRegistration,
         });
       }
@@ -466,15 +475,35 @@ function CardDetailBody({
    *
    * <p>결제는 실행하면 되돌릴 길이 없었다 — 그 이체는 청구와 묶여 있어 잠가 뒀고
    * 취소 경로도 없었다. 잘못 눌렀을 때 바로 무를 수 있게 마지막 한 건을 짚어 준다.
+   *
+   * <p>결제일이 지난 회차(닫힌 회차)의 결제와 환급이 나간 회차의 결제는 서버가 취소를
+   * 막는다(D6) — 무르면 이미 끝난 회차에 빚이 되살아나거나 돌려준 돈이 통장에 남는다.
+   * 그런 결제는 고르지 않는다. 닫힌 회차는 카드의 `cardClosedThrough`(회차 말일 ≤ 그 값)
+   * 와 서버가 내려 준 닫힌 회차 목록 둘 다로 가른다.
    */
+  const closedThrough = asset.cardClosedThrough ?? null;
   const lastPayment = useMemo(() => {
-    const done = (billing?.history ?? []).filter(
-      (b) => b.status === "COMPLETED",
+    const history = billing?.history ?? [];
+    const closedStarts = new Set(
+      (billing?.closedCycles ?? []).map((c) => c.periodStart),
     );
-    if (done.length === 0) return null;
-    return done.reduce((a, b) => (b.paymentDate > a.paymentDate ? b : a));
-  }, [billing]);
+    const refundedStarts = new Set(
+      history.filter((b) => b.status === "REFUNDED").map((b) => b.periodStart),
+    );
+    const cancelable = history.filter(
+      (b) =>
+        b.status === "COMPLETED" &&
+        !(closedThrough != null && b.periodEnd <= closedThrough) &&
+        !closedStarts.has(b.periodStart) &&
+        !refundedStarts.has(b.periodStart),
+    );
+    if (cancelable.length === 0) return null;
+    return cancelable.reduce((a, b) => (b.paymentDate > a.paymentDate ? b : a));
+  }, [billing, closedThrough]);
   const [confirmCancelPay, setConfirmCancelPay] = useState(false);
+  // 지금 결제는 예정 회차에서만 — 닫힌 회차를 보는 중엔 감춘다(D10).
+  const showPayNow = !(st != null && !st.scheduled);
+  const actionTiles = (showPayNow ? 1 : 0) + 1 + (lastPayment ? 1 : 0);
   const periodText =
     st?.periodStart && st?.periodEnd
       ? `${fmtBillingDate(st.periodStart)} ~ ${fmtBillingDate(st.periodEnd)}`
@@ -703,42 +732,75 @@ function CardDetailBody({
             </HideUnit>
           )}
         </div>
-        {st && !st.scheduled && (
+        {/* 앱이 한 푼도 안 뺀 회차(결제계좌 없음·카드 등록 전·전부 기록용)에 "결제 완료" 를
+            달면 돈이 나간 것으로 읽힌다 — "기록 회차" 로 부른다(24차 7). 옛 서버의 과거
+            회차는 결제 기록으로만 그려지므로(`paid` 없음) 결제 완료 그대로다. */}
+        {st &&
+          !st.scheduled &&
+          (st.paid === 0 ? (
+            <div
+              data-testid="record-cycle-label"
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-secondary)",
+                fontWeight: "600",
+                marginTop: 6,
+              }}
+            >
+              {t("assetDetail.recordCycle")}
+            </div>
+          ) : (
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--color-cat-green)",
+                fontWeight: "600",
+                marginTop: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <Check size={13} strokeWidth={3} /> {t("assetDetail.paidDone")}
+            </div>
+          ))}
+        {/* 머리 금액(지금 기록 합)과 실제로 계좌에서 나간 돈이 다를 때만 한 줄(D10) — 결제 뒤에
+            적은 거래는 기록만 늘고, 지우거나 환불한 거래는 기록만 준다. 문장은 남기고 금액만
+            가린다(금액 가리기). */}
+        {st && !st.scheduled && st.paid != null && st.amount !== st.paid && (
           <div
-            style={{
-              fontSize: "var(--text-caption)",
-              color: "var(--color-cat-green)",
-              fontWeight: "600",
-              marginTop: 6,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <Check size={13} strokeWidth={3} /> {t("assetDetail.paidDone")}
-          </div>
-        )}
-        {/* 기록만 남긴 금액 — 머리 금액에 들어 있지만 계좌에서는 빠지지 않았다. 문장은 남기고
-            금액만 가린다(금액 가리기). */}
-        {st && !st.scheduled && (st.recordedOnly ?? 0) > 0 && (
-          <div
-            data-testid="recorded-only-note"
+            data-testid="recorded-diff-note"
             style={{
               fontSize: "var(--text-caption)",
               color: "var(--fg-secondary)",
               marginTop: 6,
             }}
           >
-            <Trans
-              t={t}
-              i18nKey="assetDetail.recordedOnlyNote"
-              values={{
-                amount: `${wonPre()}${KRW(st.recordedOnly ?? 0)}${isEn() ? "" : "원"}`,
-              }}
-              components={{
-                amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
-              }}
-            />
+            {st.amount > st.paid ? (
+              <Trans
+                t={t}
+                i18nKey="assetDetail.recordedMoreNote"
+                values={{
+                  paid: money(st.paid),
+                  diff: money(st.amount - st.paid),
+                }}
+                components={{
+                  amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
+                }}
+              />
+            ) : (
+              <Trans
+                t={t}
+                i18nKey="assetDetail.recordedLessNote"
+                values={{
+                  recorded: money(st.amount),
+                  paid: money(st.paid),
+                }}
+                components={{
+                  amt: <MaskAmount card="asset.detail">{""}</MaskAmount>,
+                }}
+              />
+            )}
           </div>
         )}
         {st && !st.scheduled && st.preRegistration && (
@@ -854,6 +916,7 @@ function CardDetailBody({
                       amount: money(due.principalAmount),
                     })}
                   </MaskAmount>
+                  {due.recordOnly && ` · ${tc("recordOnly")}`}
                 </div>
                 {/* 정리/되돌리기 — 상환하면 남은 원금이 이 회차에 몰리므로 두 상태가 같은 자리를 쓴다. */}
                 <div style={{ marginTop: 4 }}>
@@ -973,52 +1036,122 @@ function CardDetailBody({
         </div>
       )}
 
-      {/* 빠른 액션 — 되돌릴 결제가 있으면 3열 */}
+      {/* 닫힌 회차의 할부 회차분 — 거래 날짜가 앞 달이라 아래 이용 내역에는 안 나오는데
+          머리 금액에는 들어 있다. 그 차이를 이 자리에서 한 줄씩 설명한다(24차 8). 결제가 끝난
+          회차라 정리·되돌리기는 없다. */}
+      {st && !st.scheduled && (st.installments?.length ?? 0) > 0 && (
+        <div
+          data-testid="closed-installments"
+          style={{
+            borderTop: "1px solid var(--border-subtle)",
+            padding: "14px 2px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          {st.installments!.map((due) => (
+            <div
+              key={due.expenseRowId}
+              style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: "var(--text-body-sm)",
+                    fontWeight: "600",
+                    color: "var(--fg-primary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {due.merchant ??
+                    due.description ??
+                    t("assetDetail.installmentFallback")}
+                </div>
+                <div
+                  className="num"
+                  style={{
+                    marginTop: 2,
+                    fontSize: "var(--text-caption)",
+                    color: "var(--fg-tertiary)",
+                  }}
+                >
+                  {t("assetDetail.installmentSeq", {
+                    seq: due.sequence,
+                    total: due.installmentMonths,
+                  })}
+                  {due.recordOnly && ` · ${tc("recordOnly")}`}
+                </div>
+              </div>
+              <span
+                className="num"
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  fontWeight: "700",
+                  color: "var(--fg-primary)",
+                  flexShrink: 0,
+                }}
+              >
+                <MaskAmount card="asset.detail">{money(due.amount)}</MaskAmount>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 빠른 액션 — 그리는 타일 수만큼 열을 나눈다(지금 결제는 예정 회차에서만, 결제
+          취소는 되돌릴 결제가 있을 때만). */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: lastPayment ? "1fr 1fr 1fr" : "1fr 1fr",
+          gridTemplateColumns: `repeat(${actionTiles}, 1fr)`,
           gap: 8,
           margin: "14px 0 4px",
         }}
       >
-        <button
-          type="button"
-          disabled={!canPay}
-          onClick={openPay}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 8,
-            padding: "14px 4px",
-            background: "var(--bg-sunken)",
-            border: 0,
-            borderRadius: "var(--radius-lg)",
-            cursor: canPay ? "pointer" : "not-allowed",
-            fontFamily: "inherit",
-            fontSize: "var(--text-caption)",
-            fontWeight: "600",
-            color: "var(--fg-primary)",
-            opacity: canPay ? 1 : 0.55,
-          }}
-        >
-          <span
+        {/* 지금 결제 — 결제가 끝난 회차를 보는 중엔 감춘다(24차 7). 그 화면에서 누르면
+            보던 회차가 아니라 다가오는 회차가 결제돼 무엇을 내는지 헷갈린다. */}
+        {showPayNow && (
+          <button
+            type="button"
+            disabled={!canPay}
+            onClick={openPay}
             style={{
-              width: 30,
-              height: 30,
-              borderRadius: "var(--radius-md)",
-              background: "var(--bg-surface)",
-              color: "var(--fg-secondary)",
-              display: "inline-flex",
+              display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
+              gap: 8,
+              padding: "14px 4px",
+              background: "var(--bg-sunken)",
+              border: 0,
+              borderRadius: "var(--radius-lg)",
+              cursor: canPay ? "pointer" : "not-allowed",
+              fontFamily: "inherit",
+              fontSize: "var(--text-caption)",
+              fontWeight: "600",
+              color: "var(--fg-primary)",
+              opacity: canPay ? 1 : 0.55,
             }}
           >
-            <Zap size={15} strokeWidth={1.9} />
-          </span>
-          <span>{t("assetDetail.payNow")}</span>
-        </button>
+            <span
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: "var(--radius-md)",
+                background: "var(--bg-surface)",
+                color: "var(--fg-secondary)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Zap size={15} strokeWidth={1.9} />
+            </span>
+            <span>{t("assetDetail.payNow")}</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={onEdit}
@@ -1281,10 +1414,13 @@ function CardDetailBody({
           >
             {usageGroups.map(([d, items]) => {
               const { md, dow } = formatDay(d);
-              const out = items
+              // 환불된 거래는 행으로는 남되(취소선) 일 합계에선 뺀다 — 환불한 11,000 뿐인
+              // 날의 머리가 −11,000 으로 떴다(23차 8).
+              const counted = items.filter((tx) => !isRefundedTx(tx));
+              const out = counted
                 .filter((tx) => tx.expenseType === "EXPENSE")
                 .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
-              const inn = items
+              const inn = counted
                 .filter((tx) => tx.expenseType === "INCOME")
                 .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
               return (
@@ -2636,8 +2772,11 @@ export function AssetDetailDialog({
                     {relatedGroups.map(([d, items]) => {
                       const { md, dow } = formatDay(d);
                       // 일 합계는 지출/수입만 — 이체는 자산 간 이동이라 어느 쪽에도 넣지 않는다.
+                      // 환불된 거래도 뺀다 — 행은 취소선으로 남지만 합계에선 없는 것이다(23차 8).
                       const dayExpenses = items.flatMap((i) =>
-                        i.kind === "expense" ? [i.expense] : [],
+                        i.kind === "expense" && !isRefundedTx(i.expense)
+                          ? [i.expense]
+                          : [],
                       );
                       const out = dayExpenses
                         .filter((tx) => tx.expenseType === "EXPENSE")

@@ -27,9 +27,7 @@ vi.mock("@/shared/api", () => ({
 const { expenseApi } = await import("./expenseApi");
 
 beforeEach(() => {
-  get.mockReset().mockResolvedValue({
-    data: { applies: false, refundAmount: 0, reason: "NOT_CARD" },
-  });
+  get.mockReset().mockResolvedValue({ data: {} });
   put.mockReset().mockResolvedValue({ data: { rowId: 77 } });
   post.mockReset().mockResolvedValue({ data: { rowId: 77 } });
   del.mockReset().mockResolvedValue({ data: { rowId: 77 } });
@@ -98,49 +96,42 @@ describe("편집 저장은 환불 표식을 못 건드린다", () => {
 });
 
 /**
- * 환급 미리보기 — 확인창이 저장하기 **전에** 금액을 묻는 자리(설계 13-1).
+ * 고쳐 쓰기 — 결제가 끝나 돈 칸이 잠긴 거래를 새 거래로 교체한다(D13).
  *
- * 잠그는 것 둘: ① 쿼리를 비우면 삭제 미리보기다(수정 값을 지어내지 않는다)
- * ② 확인창을 네트워크에 묶지 않으려고 **3초**에서 끊는다.
+ * 잠그는 것 셋: ① 전용 경로로 POST 한다(수정 PUT 이 아니다 — 잠긴 거래의 돈 칸을 PUT 으로
+ * 바꾸면 서버가 거절한다) ② 본문은 새로 만들 때와 같은 모양 + 분할이다 ③ 응답은 **새**
+ * 거래다(새 rowId). 옛 id 를 들고 있으면 사라진 거래를 가리킨다.
  */
-describe("환급 미리보기", () => {
-  it("삭제 미리보기는 쿼리를 안 싣는다", async () => {
-    get.mockResolvedValue({
-      data: { applies: true, refundAmount: 58_600, reason: "OK" },
-    });
+describe("고쳐 쓰기", () => {
+  it("전용 경로로 생성 본문과 분할을 보내고 새 거래를 돌려받는다", async () => {
+    post.mockResolvedValue({ data: { rowId: 901, refundedAmount: null } });
+    const body = {
+      categoryRowId: 11,
+      expenseType: "EXPENSE",
+      amount: 130_000,
+      expenseDate: "2026-08-20T12:30:00",
+      assetRowId: 9,
+      splits: [{ categoryRowId: 11, amount: 130_000, label: "", sortOrder: 0 }],
+    } as unknown as ExpenseFormValues;
 
-    await expect(expenseApi.refundPreview(77)).resolves.toEqual({
-      applies: true,
-      refundAmount: 58_600,
-      reason: "OK",
+    await expect(expenseApi.replaceExpense(77, body)).resolves.toEqual({
+      rowId: 901,
+      refundedAmount: null,
     });
-    expect(get).toHaveBeenCalledWith("/v1/expense/77/refund-preview", {
-      params: undefined,
-      timeout: 3000,
-    });
+    expect(post).toHaveBeenCalledWith("/v1/expense/77/replace", body);
+    expect(put).not.toHaveBeenCalled();
   });
 
-  it("수정 미리보기는 바뀔 값만 싣는다", async () => {
-    await expenseApi.refundPreview(77, {
-      amount: 20_000,
-      assetRowId: 9,
-      expenseDate: "2026-09-10T12:00:00",
-    });
-
-    expect(get).toHaveBeenCalledWith("/v1/expense/77/refund-preview", {
-      params: {
-        amount: 20_000,
-        assetRowId: 9,
-        expenseDate: "2026-09-10T12:00:00",
-      },
-      timeout: 3000,
-    });
+  it("미리보기 경로는 더 부르지 않는다 — 걷었다(D4)", () => {
+    expect(expenseApi).not.toHaveProperty("refundPreview");
+    expect(expenseApi).not.toHaveProperty("cardSavePreview");
   });
 });
 
 /**
- * 삭제 응답 — 결제계좌로 돌려준 금액이 함께 온다. 옛 서버는 `data` 가 없으므로
- * 그때도 깨지지 않아야 한다(응답을 읽는 쪽이 늘 객체를 받게 둔다).
+ * 삭제 응답 — 열린 회차에서 미리 낸 돈을 결제계좌로 돌려줬으면 그 금액이 함께 온다(D4).
+ * 옛 서버는 `data` 가 없으므로 그때도 깨지지 않아야 한다(응답을 읽는 쪽이 늘 객체를 받게
+ * 둔다).
  */
 describe("삭제는 환급액을 돌려준다", () => {
   it("환급이 있으면 금액이 온다", async () => {

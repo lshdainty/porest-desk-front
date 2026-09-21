@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { cardCyclePaymentDate, isCardCycleDue } from "./card-cycle";
+import {
+  cardCyclePaymentDate,
+  closedCycleSpan,
+  pendingCycleOnOldDay,
+} from "./card-cycle";
 
-// 서버 `CardCycleMath.paymentDateOf` 와 같은 규칙이어야 한다 — 어긋나면 확인창이 물어야 할
-// 자리에서 안 묻거나(돈이 말없이 움직인다) 안 물어도 될 자리에서 묻는다.
+// 서버 `CardCycleMath.paymentDateOf` 와 같은 규칙이어야 한다 — 고쳐 쓰기 확인창이 "언제
+// 결제에 청구되는지" 를 이 값으로 말한다(계약 10).
 describe("카드 회차 결제일", () => {
   it("거래 달의 다음 달 결제일이다", () => {
     expect(cardCyclePaymentDate("2026-08-20", 12)).toBe("2026-09-12");
@@ -17,16 +21,67 @@ describe("카드 회차 결제일", () => {
   });
 });
 
-describe("저장 전에 물어볼 회차", () => {
-  it("결제일이 지난 회차(닫힘)는 묻는다", () => {
-    expect(isCardCycleDue("2026-08-20", 12, "2026-09-14")).toBe(true);
+// 닫힌 회차 판정은 서버가 내려 준 `cardClosedThrough` 와 날짜만 견준다 — 화면이 회차를 다시
+// 세면 결제일을 바꾼 카드(D5)·서울 시계(D11)에서 서버와 갈린다.
+describe("닫힌 회차에 걸렸나", () => {
+  it("그 날짜 이하 거래는 닫힌 회차다 — 말일 당일도", () => {
+    expect(closedCycleSpan("2026-08-20T10:00:00", null, "2026-08-31")).toBe(
+      "closed",
+    );
+    expect(closedCycleSpan("2026-08-31", null, "2026-08-31")).toBe("closed");
   });
 
-  it("결제일 당일도 묻는다 — 그 자리에서 추가로 빠진다", () => {
-    expect(isCardCycleDue("2026-08-30", 12, "2026-09-12")).toBe(true);
+  it("그 뒤 거래는 열린 회차다", () => {
+    expect(closedCycleSpan("2026-09-01", null, "2026-08-31")).toBeNull();
   });
 
-  it("결제일 전 회차는 묻지 않는다", () => {
-    expect(isCardCycleDue("2026-09-13", 12, "2026-09-14")).toBe(false);
+  it("닫힌 회차가 없는 카드·신용카드 아님(null)은 늘 열린 회차다", () => {
+    expect(closedCycleSpan("2020-01-01", null, null)).toBeNull();
+    expect(closedCycleSpan("2020-01-01", null, undefined)).toBeNull();
+  });
+
+  it("할부가 닫힌 회차와 열린 회차에 걸치면 '지난 회차분만'", () => {
+    // 7월 시작 3개월 = 7·8·9월 회차. 8월까지 닫혔으면 9월분이 남는다.
+    expect(closedCycleSpan("2026-07-15", 3, "2026-08-31")).toBe("partial");
+  });
+
+  it("할부의 마지막 회차까지 닫혔으면 통째로 닫힌 회차다", () => {
+    expect(closedCycleSpan("2026-06-15", 3, "2026-08-31")).toBe("closed");
+  });
+
+  it("할부 개월 1 은 일시불이다", () => {
+    expect(closedCycleSpan("2026-08-15", 1, "2026-08-31")).toBe("closed");
+  });
+
+  it("해를 넘기는 할부도 센다", () => {
+    // 11월 시작 3개월 = 11·12·1월 회차.
+    expect(closedCycleSpan("2025-11-10", 3, "2025-12-31")).toBe("partial");
+    expect(closedCycleSpan("2025-11-10", 3, "2026-01-31")).toBe("closed");
+  });
+});
+
+// 결제일을 바꿔도 아직 결제 전인 회차는 옛 결제일에 결제된다(D5).
+describe("옛 결제일로 결제되는 회차", () => {
+  it("닫힌 회차 다음 달 회차다", () => {
+    // 8월분이 9/12 에 결제됐다(닫힘). 9월분은 옛 결제일 10/12 에 결제된다.
+    expect(pendingCycleOnOldDay(12, "2026-08-31", "2026-09-21")).toEqual({
+      month: "2026-09",
+      paymentDate: "2026-10-12",
+    });
+  });
+
+  it("닫힌 회차가 없으면 오늘 기준 결제일이 아직 안 온 회차다", () => {
+    // 오늘 9/21, 결제일 25 → 8월분이 9/25 에 아직 남았다.
+    expect(pendingCycleOnOldDay(25, null, "2026-09-21")).toEqual({
+      month: "2026-08",
+      paymentDate: "2026-09-25",
+    });
+  });
+
+  it("결제일 당일이면 그 회차는 이미 닫혔다 — 다음 회차다", () => {
+    expect(pendingCycleOnOldDay(21, null, "2026-09-21")).toEqual({
+      month: "2026-09",
+      paymentDate: "2026-10-21",
+    });
   });
 });

@@ -21,16 +21,13 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
+vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
 vi.mock("@/features/expense", () => ({
   useExpenseCategories: () => ({ data: [], isLoading: false }),
   useSearchExpenses: () => ({ data: [], isLoading: false }),
   useDeleteExpense: () => ({ mutate: () => {}, isPending: false }),
-  // 삭제 확인창의 환급 미리보기 — 이 파일은 그 갈래를 보지 않는다.
-  useRefundPreview: () => ({
-    data: undefined,
-    isPending: false,
-    isError: true,
-  }),
+  // 지운·환불한 뒤의 토스트 — 이 파일은 그 갈래를 보지 않는다.
+  useLedgerResultToast: () => () => {},
   useRefundExpense: () => ({ mutate: () => {}, isPending: false }),
   useCancelRefund: () => ({ mutate: () => {}, isPending: false }),
 }));

@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreditCard, EyeOff, Plus, Search, Trash2, Wallet } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
 import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
 import { Input } from "@/shared/ui/input";
@@ -22,7 +22,9 @@ import {
 } from "@/shared/ui/select";
 import { useAssets } from "@/features/asset";
 import { useDefaultCurrency } from "@/features/user";
-import { KRW } from "@/shared/lib/porest/format";
+import { KRW, formatDay, money } from "@/shared/lib/porest/format";
+import { formatMonthShort, todayLocalKey } from "@/shared/lib/date";
+import { pendingCycleOnOldDay } from "@/entities/expense";
 import {
   MAX_BALANCE,
   blockNonDigitKey,
@@ -255,8 +257,29 @@ export function AssetEditDialog({
   // 다시 부르는데, setState 로 두면 그 호출이 아직 `false` 인 값을 읽는다.
   const unlockedRef = useRef(false);
   // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
+  //
+  // 신용카드는 이 칸이 **이월 금액**(카드를 등록할 때 적은 이전 미결제 사용액)이다(D7).
+  // 지금 잔액(이월 + 그 뒤 사용)으로 채우면 이름만 고쳐 저장해도 서버가 그 값을 이월로
+  // 받아 빚이 두 배가 됐다(QA 23차 1). 이월이 없으면 0 이다.
   const [balanceStr, setBalanceStr] = useState<string>(
-    item ? KRW(Math.abs(item.balance ?? 0)) : "0",
+    item
+      ? KRW(
+          Math.abs(
+            (item.assetType === "CREDIT_CARD"
+              ? item.carryoverAmount
+              : item.balance) ?? 0,
+          ),
+        )
+      : "0",
+  );
+  /**
+   * 결제일을 바꿀 때 한 번 받는 확인(D5). state 가 아니라 ref 다 — 확인창의
+   * `onConfirm` 에서 곧바로 `handleSubmit()` 을 다시 부르는데, setState 로 두면 그 호출이
+   * 아직 `false` 인 값을 읽는다(금액 숨김 해제 확인과 같은 자리).
+   */
+  const paymentDayConfirmedRef = useRef(false);
+  const [paymentDayConfirm, setPaymentDayConfirm] = useState<string | null>(
+    null,
   );
 
   // 통화·환율 — 세 묶음(계좌·카드·투자) 모두에 칸이 있다(D1).
@@ -601,10 +624,32 @@ export function AssetEditDialog({
    * 같은 문구를 쓴다. 한도를 안 적었으면(0) 견줄 값이 없어 아무 말도 안 한다.
    */
   const isCreditCardEdit = editingGroup === "card" && cardType === "CREDIT";
+  /** 신용카드로 저장돼 있던 자산을 고치는 중 — 이월 금액·결제일 규칙이 여기에만 걸린다. */
+  const isExistingCreditCard =
+    !isNew && item?.assetType === "CREDIT_CARD" && isCreditCardEdit;
+  /** 이월 거래가 든 회차의 결제일이 됐다 — 이월 금액 칸은 읽기 전용이다(D15). */
+  const carryoverLocked =
+    isExistingCreditCard && item?.carryoverLocked === true;
+  /** 지금 미결제 잔액 — 이월 칸 옆에 읽기 전용으로 둔다(D7). 선결제로 남은 돈은 0 이다. */
+  const currentUnpaid = isExistingCreditCard
+    ? Math.max(0, -(item?.balance ?? 0))
+    : 0;
   const limitAmount =
     isCreditCardEdit || isOverdraft ? parseAmount(creditLimit) : 0;
+  /**
+   * 한도와 견줄 사용액. 기존 신용카드는 칸이 이월 금액이라 칸 값만으로는 사용액이 아니다 —
+   * 지금 미결제 잔액에서 이월을 고친 만큼을 더하고 뺀 값이 저장 뒤 사용액이다.
+   */
+  const usageForLimit = isExistingCreditCard
+    ? Math.max(
+        0,
+        currentUnpaid -
+          Math.abs(item?.carryoverAmount ?? 0) +
+          parseAmount(balanceStr),
+      )
+    : parseAmount(balanceStr);
   const overLimitBy =
-    limitAmount > 0 ? Math.max(0, parseAmount(balanceStr) - limitAmount) : 0;
+    limitAmount > 0 ? Math.max(0, usageForLimit - limitAmount) : 0;
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -635,6 +680,32 @@ export function AssetEditDialog({
     if (!canSubmit) return;
     if (needsUnlock && !unlockedRef.current) {
       setUnlockOpen(true);
+      return;
+    }
+    // 결제일을 바꾸면 바로 적용되지 않는다 — 아직 결제 전인 회차는 옛 결제일에 결제되고
+    // 그 다음 회차부터 새 결제일이다(D5). 모르고 바꾸면 이번 달 결제가 안 나간 줄 안다.
+    const oldDay = item?.paymentDay ?? null;
+    const newDay = paymentDay.trim() ? parseInt(paymentDay, 10) : null;
+    if (
+      isExistingCreditCard &&
+      oldDay != null &&
+      newDay != null &&
+      newDay !== oldDay &&
+      !paymentDayConfirmedRef.current
+    ) {
+      const pending = pendingCycleOnOldDay(
+        oldDay,
+        item?.cardClosedThrough,
+        todayLocalKey(),
+      );
+      const month = Number(pending.month.slice(5, 7));
+      setPaymentDayConfirm(
+        t("editDialog.paymentDayChangeConfirm", {
+          month,
+          monthName: formatMonthShort(month),
+          oldDate: formatDay(pending.paymentDate).md,
+        }),
+      );
       return;
     }
     // 칸에는 절대값만 들어온다(부호 키를 막았다) — 부호는 아래에서 종류가 붙인다.
@@ -684,6 +755,17 @@ export function AssetEditDialog({
       // 체크카드는 잔액을 들지 않는다 — 사용액은 연결 계좌에서 빠져 있다.
       // 신용카드 잔액은 미결제 사용액이라 음수 — 사용자가 양수를 쳐도 뒤집어 보낸다.
       const cardBalance = isCredit ? -Math.abs(parsedBalance) : 0;
+      /**
+       * 수정의 금액 칸 — 신용카드는 `balance` 를 **안 싣는다**. 서버가 신용카드 PUT 의
+       * balance 를 무시하고(옛 앱이 보내도 무해하게), 이월 금액은 전용 키로만 받는다(D7).
+       * 이월 회차가 닫혔으면(D15) 칸이 잠겨 값이 같으므로 키째 뺀다(없으면 유지).
+       * 체크카드는 종전대로 0 이다.
+       */
+      const cardAmountField = isCredit
+        ? carryoverLocked
+          ? {}
+          : { carryoverAmount: Math.abs(parsedBalance) }
+        : { balance: cardBalance };
 
       if (isNew) {
         onCreate({
@@ -702,7 +784,7 @@ export function AssetEditDialog({
         onUpdate({
           assetName: resolvedName,
           assetType: type,
-          balance: cardBalance,
+          ...cardAmountField,
           institution,
           color,
           ...currencyFields,
@@ -1520,7 +1602,11 @@ export function AssetEditDialog({
             </Label>
             <Select
               value={paymentDay || undefined}
-              onValueChange={(v) => setPaymentDay(v)}
+              onValueChange={(v) => {
+                // 다시 고르면 앞서 받은 확인은 무른다 — 다른 날을 골랐을 수 있다(D5).
+                paymentDayConfirmedRef.current = false;
+                setPaymentDay(v);
+              }}
             >
               <SelectTrigger>
                 <SelectValue
@@ -1595,10 +1681,23 @@ export function AssetEditDialog({
             {overLimitBy > 0 && (
               <Badge variant="error">{t("editDialog.overLimitBadge")}</Badge>
             )}
+            {/* 이 칸은 이월 금액이라 지금 갚을 돈과 다르다 — 지금 미결제 잔액을 옆에 읽기
+                전용으로 둬서 둘을 헷갈리지 않게 한다(D7). */}
+            {isExistingCreditCard && (
+              <span
+                data-testid="current-unpaid"
+                className="num ml-auto text-[11.5px] text-[var(--fg-tertiary)]"
+              >
+                {t("editDialog.currentUnpaid", {
+                  balance: money(currentUnpaid),
+                })}
+              </span>
+            )}
           </div>
           <Input
             id="asset-edit-balance"
             inputMode="numeric"
+            disabled={carryoverLocked}
             value={balanceStr}
             onChange={(e) =>
               setBalanceStr(sanitizeAmountInput(e.target.value, MAX_BALANCE))
@@ -1629,10 +1728,21 @@ export function AssetEditDialog({
               })}
             </p>
           )}
-          {editingGroup === "card" && (
-            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-              {t("editDialog.cardBalanceHelp")}
+          {/* 이월 거래가 든 회차가 결제됐으면 그 금액은 이미 청구가 끝났다 — 고치면 끝난
+              회차의 기록이 흔들린다(D15). 서버도 값이 달라지면 400 으로 막는다. */}
+          {carryoverLocked ? (
+            <p
+              data-testid="carryover-locked"
+              className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5"
+            >
+              {t("editDialog.carryoverLocked")}
             </p>
+          ) : (
+            editingGroup === "card" && (
+              <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+                {t("editDialog.cardBalanceHelp")}
+              </p>
+            )
           )}
           {isOverdraft && (
             <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
@@ -1846,6 +1956,21 @@ export function AssetEditDialog({
           onVerified={() => {
             unlockedRef.current = true;
             setUnlockOpen(false);
+            handleSubmit();
+          }}
+        />
+      )}
+      {/* 결제일 변경 — 다음 회차부터다(D5). 취소하면 저장도 안 한다(폼은 그대로 남는다). */}
+      {paymentDayConfirm && (
+        <ConfirmDialog
+          title={t("editDialog.paymentDayChangeTitle")}
+          message={paymentDayConfirm}
+          confirmLabel={tCommon("save")}
+          loading={isSubmitting}
+          onCancel={() => setPaymentDayConfirm(null)}
+          onConfirm={() => {
+            paymentDayConfirmedRef.current = true;
+            setPaymentDayConfirm(null);
             handleSubmit();
           }}
         />

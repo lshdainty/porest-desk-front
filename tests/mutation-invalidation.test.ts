@@ -156,6 +156,13 @@ const ROWS: Row[] = [
     change: "ledger",
     call: () => expenses.useDeleteExpense(),
   },
+  // 고쳐 쓰기 — 옛 거래가 사라지고 새 거래가 생긴다(D13). 삭제·생성과 같은 범위다.
+  {
+    file: EXPENSES,
+    hook: "useReplaceExpense",
+    change: "ledger",
+    call: () => expenses.useReplaceExpense(),
+  },
   {
     file: SMS,
     hook: "useCommitSms",
@@ -176,16 +183,18 @@ const ROWS: Row[] = [
     call: () => splits.useDeleteAllExpenseSplits(),
   },
   // 자산·카드
+  // 추가·수정은 거래까지 움직인다 — 카드 이월이 거래 한 건이고, 결제일·결제계좌는 청구를,
+  // 잔액은 잔액 앵커를 바꾼다. `"asset"` 만 털면 가계부에 이월 거래가 안 보였다(QA 23차).
   {
     file: ASSETS,
     hook: "useCreateAsset",
-    change: "asset",
+    change: "ledger",
     call: () => assets.useCreateAsset(),
   },
   {
     file: ASSETS,
     hook: "useUpdateAsset",
-    change: "asset",
+    change: "ledger",
     call: () => assets.useUpdateAsset(),
   },
   {

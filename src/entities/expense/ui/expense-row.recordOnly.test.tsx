@@ -1,5 +1,7 @@
 // 목록 행의 "기록만" 배지 — 결제가 끝난 회차에 뒤늦게 적은 카드 지출(닫힌 회차 R2).
 // 합계에는 들어가므로 흐리지 않고 배지만 단다. 환불된 거래에는 "환불됨" 만 남긴다.
+// **통째로 기록용인 거래에만** 단다(D10) — 할부가 닫힌·열린 회차에 걸쳐 일부만 기록용이면
+// 행 배지는 거짓이 된다(상세가 "이 중 N원" 으로 말한다).
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -64,6 +66,26 @@ describe("기록만 배지", () => {
   it("표식이 있으면 단다", () => {
     render({ ...base, cardSettledThrough: "2026-08-31" });
     expect(text()).toContain("recordOnly");
+  });
+
+  it("기록만 남긴 금액이 거래 금액과 같을 때만 단다", () => {
+    render({
+      ...base,
+      cardSettledThrough: "2026-08-31",
+      recordOnlyAmount: 25_000,
+    });
+    expect(text()).toContain("recordOnly");
+  });
+
+  it("할부의 지난 회차분만 기록용이면 행엔 안 단다 — 나머지는 정상 청구다", () => {
+    render({
+      ...base,
+      amount: 90_000,
+      installmentMonths: 3,
+      cardSettledThrough: "2026-08-31",
+      recordOnlyAmount: 30_000,
+    });
+    expect(text()).not.toContain("recordOnly");
   });
 
   it("정상 거래에는 없다", () => {

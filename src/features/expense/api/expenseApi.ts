@@ -7,7 +7,6 @@ import type {
   MonthlyTrend,
   MerchantSummary,
   HeatmapCell,
-  RefundPreview,
   DeleteExpenseResult,
 } from "@/entities/expense";
 
@@ -60,10 +59,31 @@ export const expenseApi = {
   },
 
   /**
+   * 고쳐 쓰기(D13) — 결제가 끝나 돈 칸이 잠긴 거래를 **새 거래로 교체**한다.
+   *
+   * 본문은 새로 만들 때(`POST /expense`)와 같다. 서버가 한 트랜잭션에서 옛 거래를 지우고
+   * 새 거래를 만들며 분할·더치페이·반복 연결·일정·할 일 연결을 옮긴다. `splits` 를 실으면
+   * 그 분할로 옮기고, 안 실으면 옛 분할을 그대로 옮긴다(합이 새 금액과 안 맞으면 400).
+   *
+   * 응답은 **새 거래**다(새 rowId). 선결제 환급이 생겼으면 `refundedAmount` 가 실린다.
+   */
+  replaceExpense: async (
+    id: number,
+    data: ExpenseFormValues,
+  ): Promise<Expense> => {
+    const resp: ApiResponse<Expense> = await apiClient.post(
+      `/v1/expense/${id}/replace`,
+      data,
+    );
+    return resp.data;
+  },
+
+  /**
    * 환불 마크 — 원거래에 표식을 찍는다. 수입 행을 만들지 않는다.
    *
-   * 환불일을 안 주면 서버가 지금으로 찍는다. 카드였고 그 회차를 이미 냈다면 남는 돈만큼
-   * 결제계좌로 환급 이체가 함께 생긴다(응답의 `refundTransferRowId`).
+   * 환불일을 안 주면 서버가 지금으로 찍는다. 환불일은 거래일부터 오늘까지다(D16).
+   * 결제가 끝난 회차의 카드 거래면 통계에서만 빠지고 통장은 그대로다(D1). 열린 회차에서
+   * 미리 낸 돈이 남으면 결제계좌로 돌려준다(응답의 `refundedAmount`, D3·D4).
    */
   refund: async (id: number, refundedAt?: string): Promise<Expense> => {
     const resp: ApiResponse<Expense> = await apiClient.post(
@@ -73,7 +93,10 @@ export const expenseApi = {
     return resp.data;
   },
 
-  /** 환불 취소 — 표식·환급 이체를 무르고 원거래를 되살린다. */
+  /**
+   * 환불 취소 — 표식을 걷고 원거래를 되살린다. 옛 환불이 만든 환급 이체가 묶여 있으면
+   * (`refundTransferRowId`) 그 이체도 되돌린다.
+   */
   cancelRefund: async (id: number): Promise<Expense> => {
     const resp: ApiResponse<Expense> = await apiClient.delete(
       `/v1/expense/${id}/refund`,
@@ -82,52 +105,8 @@ export const expenseApi = {
   },
 
   /**
-   * 지우면 결제계좌로 얼마가 돌아오는지 **미리** 센다(설계 13-1).
-   *
-   * 쿼리를 비우면 삭제 미리보기다. 수정 미리보기는 바뀔 값만 싣는다. 서버는 DB 를
-   * 바꾸지 않는다.
-   *
-   * 확인창을 네트워크에 묶지 않으려고 **3초**에서 끊는다 — 그때는 화면이 금액 없는
-   * 문구로 넘어간다(`paidDeleteFallback`). 확인 버튼은 이 호출을 기다리지 않는다.
-   */
-  refundPreview: async (
-    id: number,
-    params?: {
-      amount?: number;
-      assetRowId?: number | null;
-      expenseDate?: string;
-      installmentMonths?: number | null;
-    },
-  ): Promise<RefundPreview> => {
-    const resp: ApiResponse<RefundPreview> = await apiClient.get(
-      `/v1/expense/${id}/refund-preview`,
-      { params, timeout: 3000 },
-    );
-    return resp.data;
-  },
-
-  /**
-   * 새 카드 지출을 저장하면 어떻게 되는지 **미리** 센다 — 결제가 끝난 회차면 기록만
-   * 남고(`newRecordAmount`), 오늘이 결제일이면 결제계좌에서 추가로 빠진다
-   * (`sameDayExtraPayment`). 서버는 DB 를 바꾸지 않는다. 3초에서 끊는다 — 저장 확인을
-   * 네트워크에 묶지 않는다.
-   */
-  cardSavePreview: async (params: {
-    assetRowId: number;
-    amount: number;
-    expenseDate: string;
-    installmentMonths?: number | null;
-  }): Promise<RefundPreview> => {
-    const resp: ApiResponse<RefundPreview> = await apiClient.get(
-      `/v1/expense/card-save-preview`,
-      { params, timeout: 3000 },
-    );
-    return resp.data;
-  },
-
-  /**
-   * 지운다. 결제 완료 회차의 카드 거래였다면 결제계좌로 돌려준 금액이 함께 온다 —
-   * 화면이 "결제계좌로 N원이 환급됐어요" 를 말할 재료다(설계 13-1).
+   * 지운다. 열린 회차에서 미리 낸 돈이 남아 결제계좌로 돌려줬다면 그 금액이 함께 온다 —
+   * 화면이 "미리 낸 돈 중 N원이 계좌로 돌아왔어요" 를 말할 재료다(D4).
    */
   deleteExpense: async (id: number): Promise<DeleteExpenseResult> => {
     const resp: ApiResponse<DeleteExpenseResult | null> =

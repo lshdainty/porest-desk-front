@@ -153,6 +153,24 @@ export interface Asset {
   /** 이번 달(1일~말일) 사용 합계 — CHECK_CARD 전용, 서버 계산(예정 제외·환불 상계).
       연결계좌 즉시 차감으로 잔액이 늘 0 이라, 행·상세는 잔액 대신 이 값을 보여준다 */
   monthlyUsedAmount?: number | null;
+  /**
+   * 신용카드의 **이월 금액** — 카드를 등록할 때 적은 "이전 미결제 사용액"(없으면 0).
+   * 신용카드가 아니면 null. 카드 수정 폼의 그 칸이 이 값으로 열린다(D7).
+   *
+   * `balance` 와 다르다 — 잔액은 지금 미결제 총액(이월 + 그 뒤 사용)이다. 폼을 잔액으로
+   * 채워 그대로 저장하면 이월 거래가 잔액만큼 새로 잡혀 빚이 두 배가 됐다(QA 23차 1).
+   */
+  carryoverAmount?: number | null;
+  /** 이월 거래가 든 회차의 결제일이 됐다 — 이월 금액 칸은 읽기 전용이다(D15). */
+  carryoverLocked?: boolean;
+  /**
+   * 이 날짜(`yyyy-MM-dd`) 이하 거래는 **결제가 끝난 회차**다 — 결제일이 오늘(서울) 이하인
+   * 가장 최근 회차의 말일. 닫힌 회차가 없거나 결제일 없는 카드·신용카드 아님이면 null.
+   *
+   * 회차는 서버가 센다(결제일 변경 이력 D5 · 서울 시계 D11). 화면은 거래 날짜와 이 값만
+   * 견준다.
+   */
+  cardClosedThrough?: string | null;
   createAt: string;
   modifyAt: string;
 }
@@ -225,11 +243,27 @@ export interface AssetUpdateFormValues {
   creditLimit?: number | null;
   paymentDay?: number | null;
   paymentAssetRowId?: number | null;
+  /**
+   * 신용카드 이월 금액(양수, D7). 안 보내면 유지. 신용카드는 서버가 `balance` 를
+   * **무시**하므로 이월 금액은 이 키로만 바뀐다. 이월 회차가 닫혔으면(`carryoverLocked`)
+   * 값이 달라질 때 400 이다(D15).
+   */
+  carryoverAmount?: number;
   /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
   holdings?: AssetHolding[];
 }
 
-export type BillingStatus = "PENDING" | "COMPLETED" | "FAILED" | "SKIPPED";
+/**
+ * 청구 기록 상태. `REFUNDED` 는 그 회차에서 결제계좌로 돌려준 환급(선결제가 남았을 때, D3),
+ * `RECORD_REFUNDED` 는 폐지된 기록용 환급의 옛 기록이다 — 둘 다 `history` 에 섞여 온다.
+ */
+export type BillingStatus =
+  | "PENDING"
+  | "COMPLETED"
+  | "FAILED"
+  | "SKIPPED"
+  | "REFUNDED"
+  | "RECORD_REFUNDED";
 
 export interface BillingItem {
   rowId: number;
@@ -262,6 +296,8 @@ export interface InstallmentDue {
   amount: number;
   /** 중도 전액 상환으로 남은 원금을 몰아 받은 회차인지 — "정리됨" 배지 + 되돌리기를 그린다. */
   paidOff: boolean;
+  /** 결제가 끝난 회차에 걸린 기록용 회차분 — "· 기록만" 을 붙인다(D10). 옛 서버면 없다. */
+  recordOnly?: boolean;
 }
 
 export interface CardBilling {
@@ -298,19 +334,30 @@ export interface CardBilling {
   closedCycles?: ClosedCycle[];
 }
 
-/** 닫힌 회차 하나 — 명세서 머리 금액은 `paidAmount + recordedOnlyAmount`. */
+/**
+ * 닫힌 회차 하나 — 명세서 머리 금액은 **지금 기록 합** `recordedAmount` 다(D10).
+ * 실제로 계좌에서 나간 돈(`paidAmount`)과 다르면 머리 아래 한 줄로 말한다.
+ */
 export interface ClosedCycle {
   periodStart: string;
   periodEnd: string;
+  /** 그 회차에 실제로 적용된 결제일(결제일을 바꿨어도 그 회차 것, D5). */
   paymentDate: string;
   /** 앱이 결제계좌에서 실제로 뺀 순 금액(결제 − 환급). */
   paidAmount: number;
-  /** 기록만 남긴 금액 — 현실에선 결제됐지만 계좌에서는 안 빠졌다. */
+  /**
+   * 그 회차의 **지금 기록 합**(일시불 지출 − 수입 + 할부 회차분, 환불 제외, 기록용 포함).
+   * 옛 서버면 없다 — 그때는 `paidAmount + recordedOnlyAmount` 로 본다.
+   */
+  recordedAmount?: number;
+  /** 하위 호환 — `max(0, recordedAmount − paidAmount)`. */
   recordedOnlyAmount: number;
   /** 카드 등록 전 회차 — "실제와 맞지 않을 수 있어요" 주의 문구. */
   preRegistration: boolean;
-  /** 이 회차 거래를 지우거나 환불하면 결제계좌로 돌려주는 마지막 날. */
-  refundableUntil: string;
+  /** 폐지된 환급 기한(D1) — 이제 늘 null. 옛 서버면 날짜가 온다. */
+  refundableUntil: string | null;
+  /** 그 회차의 할부 회차분 — 거래 날짜가 앞 달이라 이용 내역에는 안 나온다(24차 8). */
+  installmentDues?: InstallmentDue[];
 }
 
 /** 회차 하나 — 청구 응답의 nextCycle. */
