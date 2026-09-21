@@ -718,6 +718,7 @@ asset,assetDetail.periodPick,기간 선택,Select period
 asset,assetDetail.noUsage,이용 내역이 없어요.,No usage history yet.
 asset,assetDetail.billingHistory,청구 이력,Billing history
 asset,assetDetail.paymentDateLabel,결제일,Payment date
+asset,assetDetail.paymentDayMissing,결제일을 넣어 주세요,Please set a payment day
 asset,assetDetail.payConfirm,결제 예정액 <strong>{{amount}}</strong>을 지금 결제 처리할까요?,Pay <strong>{{amount}}</strong> now?
 asset,assetDetail.paymentDateNote,결제일은 {{date}} 입니다.,The payment date is {{date}}.
 asset,assetDetail.payAction,결제하기,Pay
