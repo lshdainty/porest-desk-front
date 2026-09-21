@@ -25,7 +25,7 @@ import {
   formatYearQuarter,
 } from "@/shared/lib/date";
 import { niceAxis, niceCeil } from "@/shared/lib/porest/chartAxis";
-import { isRefundedTx, isScheduledTx } from "@/entities/expense";
+import { countableTx } from "@/entities/expense";
 import {
   HideCard,
   MaskAmount,
@@ -2103,13 +2103,13 @@ export const StatsPage = () => {
           label: `${d.getMonth() + 1}/${d.getDate()}`,
         });
       }
-      // 서버 집계와 같은 규칙 — 환불된 것과 아직 안 온 건 세지 않는다.
-      // 안 그러면 같은 화면의 저축률 위젯(서버 값)과 선 그래프가 어긋난다.
-      for (const e of exps) {
+      // 서버 집계와 같은 규칙 — 환불된 것·아직 안 온 것·카드 이월은 세지 않는다
+      // (`countableTx` 한 곳). 안 그러면 같은 화면의 저축률 위젯(서버 값)과 선 그래프가
+      // 어긋난다 — 이월을 빼먹어 카드 등록일에 지출이 치솟았다(23차 12).
+      for (const e of countableTx(exps)) {
         const key = e.expenseDate.slice(0, 10);
         const bucket = byDay.get(key);
         if (!bucket) continue;
-        if (isScheduledTx(e.expenseDate) || isRefundedTx(e)) continue;
         if (e.expenseType === "INCOME") bucket.income += e.amount;
         else bucket.expense += e.amount;
       }
@@ -3075,10 +3075,11 @@ export const StatsPage = () => {
       (cmpNowEnd.getTime() - startOfDay(period.from).getTime()) / 86400000,
     ) + 1,
   );
-  const nowTxCount = (monthExpensesQ.data ?? []).filter(
+  // 건수도 합계와 같은 거래만 센다 — 환불된 것·카드 이월·아직 안 온 것은 뺀다(23차 12).
+  const nowTxCount = countableTx(monthExpensesQ.data ?? []).filter(
     (e) => e.expenseType === "EXPENSE",
   ).length;
-  const prevTxCount = (prevMonthExpensesQ.data ?? []).filter(
+  const prevTxCount = countableTx(prevMonthExpensesQ.data ?? []).filter(
     (e) => e.expenseType === "EXPENSE",
   ).length;
 
@@ -3634,8 +3635,9 @@ export const StatsPage = () => {
         arr[idx] = (arr[idx] ?? 0) + e.amount;
       }
     };
-    add(now, monthExpensesQ.data);
-    add(prev, prevMonthExpensesQ.data);
+    // 요일별도 합계와 같은 거래만 — 환불된 것·카드 이월·아직 안 온 것은 뺀다(23차 12).
+    add(now, countableTx(monthExpensesQ.data ?? []));
+    add(prev, countableTx(prevMonthExpensesQ.data ?? []));
     return { now, prev };
   })();
   const wkMax = Math.max(1, ...wkAgg.now, ...wkAgg.prev);
