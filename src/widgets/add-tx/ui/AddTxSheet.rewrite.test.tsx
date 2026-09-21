@@ -287,10 +287,10 @@ describe("돈 칸 잠금(D12)", () => {
   it("잠긴 거래의 저장은 비울 수 있는 돈 칸을 싣지 않는다 — 서버가 지금 값을 지킨다", async () => {
     render(locked);
     setValue(byValue("김밥천국")!, "김밥나라");
+    // 확인창 없이 한 번에 나간다 — 잠긴 거래는 돈 칸이 안 바뀌어 물을 게 없다(2026-09-21).
     await click(buttons("save")[0]!);
-    // 결제가 끝난 회차라 확인창이 한 번 묻는다.
-    await click(lastSave());
 
+    expect(bodyText()).not.toContain("closedCycle.");
     expect(st.update).not.toBeNull();
     expect(st.update!.merchant).toBe("김밥나라");
     for (const key of [

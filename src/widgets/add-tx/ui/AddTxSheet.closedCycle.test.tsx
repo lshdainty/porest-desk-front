@@ -5,10 +5,13 @@
 // 않는다(D4). 예전엔 미리보기를 불러 문장을 골랐고, 그 조회가 늦거나 실패하면 묻지 않고
 // 저장해 예고 없이 돈이 움직였다(QA 24차 1). 여기서 잠그는 것:
 //   (1) 물어야 할 자리(닫힌 회차)에서만 묻고, 열린 회차·카드 아닌 거래는 바로 저장한다
-//   (2) 확인해야 저장이 나간다 — 새 거래·문자 저장·편집 저장 모두
-//   (3) 할부가 닫힌 회차와 열린 회차에 걸치면 "지난 회차분만" 으로 말한다
-//   (4) 저장 응답에 미리 낸 돈의 환급이 실리면 토스트 훅으로 넘긴다(D4)
-//   (5) 시트 제목이 빈 채로 그려지지 않는다(a262255 회귀)
+//   (2) 확인해야 저장이 나간다 — 새 거래·문자 저장, 그리고 열린 회차 거래를 닫힌 회차
+//       날짜·카드로 옮기는 편집 저장(새 날짜·새 카드 기준)
+//   (3) 잠긴 거래(moneyLocked)의 편집 저장은 묻지 않는다 — 카테고리·가맹점·메모만 바뀌어
+//       돈과 무관하다(사용자 확정 2026-09-21). 확인창은 돈과 기록이 갈리는 자리에만 남긴다
+//   (4) 할부가 닫힌 회차와 열린 회차에 걸치면 "지난 회차분만" 으로 말한다
+//   (5) 저장 응답에 미리 낸 돈의 환급이 실리면 토스트 훅으로 넘긴다(D4)
+//   (6) 시트 제목이 빈 채로 그려지지 않는다(a262255 회귀)
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,6 +25,8 @@ declare global {
 const st = vi.hoisted(() => ({
   create: null as Record<string, unknown> | null,
   update: null as Record<string, unknown> | null,
+  /** 수정 PUT 이 몇 번 나갔나 — 확인창 없이 한 번에 나가는지 본다. */
+  updates: 0,
   sms: null as Record<string, unknown> | null,
   /** 수정 응답 — 열린 회차에서 미리 낸 돈이 돌아오면 금액이 실린다. */
   updateReply: { refundedAmount: null } as Record<string, unknown>,
@@ -52,6 +57,7 @@ vi.mock("@/features/expense", () => ({
       opts?: { onSuccess?: (r: unknown) => void },
     ) => {
       st.update = data;
+      st.updates += 1;
       opts?.onSuccess?.(st.updateReply);
     },
     isPending: false,
@@ -66,7 +72,13 @@ vi.mock("@/features/expense", () => ({
 }));
 vi.mock("@/features/asset", () => ({
   useAssets: () => ({
-    data: { assets: [{ ...card, cardClosedThrough: st.closedThrough }, bank] },
+    data: {
+      assets: [
+        { ...card, cardClosedThrough: st.closedThrough },
+        otherCard,
+        bank,
+      ],
+    },
     isLoading: false,
   }),
   useCreateTransfer: () => ({ mutate: () => {}, isPending: false }),
@@ -147,6 +159,19 @@ const card = {
   sortOrder: 0,
 };
 
+/** 다른 신용카드 — 9월 회차까지 결제가 끝났다(결제일 5일). 옮겨 가면 새 카드 기준으로 가른다. */
+const otherCard = {
+  rowId: 10,
+  assetName: "삼성카드",
+  assetType: "CREDIT_CARD",
+  paymentDay: 5,
+  paymentAssetRowId: 1,
+  cardClosedThrough: "2026-09-30",
+  balance: 0,
+  isIncludedInTotal: "Y",
+  sortOrder: 1,
+};
+
 /** 입출금 계좌 — 회차가 없다. */
 const bank = {
   rowId: 3,
@@ -191,12 +216,22 @@ beforeEach(() => {
   __resetPointerBlockForTest();
   st.create = null;
   st.update = null;
+  st.updates = 0;
   st.sms = null;
   st.updateReply = { refundedAmount: null };
   st.notified = [];
   st.smsDate = "2026-08-20T10:00:00";
   st.smsInstallment = null;
   st.closedThrough = "2026-08-31";
+  // Radix Select 는 포인터 캡처·스크롤 API 를 쓴다 — jsdom 엔 없어서 채워 준다.
+  const proto = window.HTMLElement.prototype as unknown as Record<
+    string,
+    unknown
+  >;
+  proto.hasPointerCapture = () => false;
+  proto.setPointerCapture = () => {};
+  proto.releasePointerCapture = () => {};
+  proto.scrollIntoView = () => {};
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -315,26 +350,63 @@ describe("새 카드 지출", () => {
   });
 });
 
-describe("카드 거래 수정", () => {
-  it("결제가 끝난 회차의 거래면 저장 전에 같은 한 줄을 묻는다", async () => {
-    st.closedThrough = "2026-09-30";
-    render(cardExpense);
-    await click(sheetSave());
-
-    expect(bodyText()).toContain("closedCycle.note");
-    expect(st.update).toBeNull();
-
-    await click(dialogSave());
-
-    expect(st.update).not.toBeNull();
+/** 계좌·카드 select 를 키보드로 열어 고른다(포인터는 jsdom 에서 안 뜬다). */
+function pickAsset(from: string, to: string) {
+  const trigger = [
+    ...document.body.querySelectorAll<HTMLButtonElement>("[role='combobox']"),
+  ].find((b) => b.textContent?.trim() === from);
+  if (!trigger) throw new Error(`자산 select 를 찾지 못했다: ${from}`);
+  act(() => {
+    trigger.focus();
+    trigger.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    );
   });
+  const option = [...document.body.querySelectorAll("[role='option']")].find(
+    (el) => el.textContent?.trim() === to,
+  );
+  if (!option) throw new Error(`자산 항목을 찾지 못했다: ${to}`);
+  act(() =>
+    option.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    ),
+  );
+}
 
-  it("열린 회차의 거래는 묻지 않고 저장한다", async () => {
-    render(cardExpense);
+describe("카드 거래 수정", () => {
+  it("잠긴 거래(결제 끝남)의 저장은 묻지 않고 바로 PUT 한 번 — 카테고리·가맹점·메모만 바뀐다", async () => {
+    st.closedThrough = "2026-09-30";
+    render({ ...cardExpense, moneyLocked: true });
+    setValue(byValue("김밥천국")!, "김밥나라");
     await click(sheetSave());
 
     expect(bodyText()).not.toContain("closedCycle.");
-    expect(st.update).not.toBeNull();
+    expect(st.updates).toBe(1);
+    expect(st.update!.merchant).toBe("김밥나라");
+  });
+
+  it("열린 회차의 거래는 다른 카드로 옮겨 그 카드의 닫힌 회차에 들면 묻는다 — 새 카드 기준", async () => {
+    // 현대카드로는 9/5 가 열린 회차지만, 삼성카드는 9월 회차까지 결제가 끝났다.
+    render(cardExpense);
+    pickAsset("현대카드", "삼성카드");
+    await click(sheetSave());
+
+    expect(bodyText()).toContain("closedCycle.note");
+    expect(st.updates).toBe(0);
+
+    await click(dialogSave());
+
+    expect(st.updates).toBe(1);
+    expect(st.update!.assetRowId).toBe(10);
+  });
+
+  it("열린 회차 거래를 열린 회차 안에서 고치면 묻지 않고 저장한다", async () => {
+    render(cardExpense);
+    setValue(byValue("2026-09-05")!, "2026-09-10");
+    await click(sheetSave());
+
+    expect(bodyText()).not.toContain("closedCycle.");
+    expect(st.updates).toBe(1);
   });
 
   it("열린 회차 거래를 닫힌 회차 날짜로 옮기면 묻는다 — 저장하면 기록만 남는다", async () => {
@@ -343,6 +415,7 @@ describe("카드 거래 수정", () => {
     await click(sheetSave());
 
     expect(bodyText()).toContain("closedCycle.note");
+    expect(st.updates).toBe(0);
     expect(st.update).toBeNull();
   });
 
