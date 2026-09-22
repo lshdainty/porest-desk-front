@@ -20,6 +20,15 @@ import { useTheme } from "@/shared/ui/theme-context";
  *   2. toastOptions.style — 각 toast 인스턴스에 inline style 강제 (specificity 최강)
  * 두 단계로 박아 라이브러리 기본 black 토스트가 새지 않도록 함.
  *
+ * 부품(아이콘·제목·설명·버튼)은 `!`(important) 유틸리티로 덮는다. sonner 기본 규칙이
+ * `[data-sonner-toast][data-styled=true] [data-title]` 같은 속성 선택자 셋이라 보통
+ * 유틸리티는 진다. 예전 classNames 는 `group-[.toast]:` 를 달았는데 `.group.toast` 조상이
+ * 없어 한 번도 적용되지 않았다 — 제목이 13px/500 시스템 글꼴, 버튼이 24px 검정으로
+ * 떠 있었다(2026-09-22 브라우저 실측).
+ *
+ * 버튼은 글 아래 줄 오른쪽 끝(sonner.md 2026-09-22) — toast 는 flex-wrap, content 가
+ * 아이콘 옆 한 줄 전체를 차지해 버튼이 다음 줄로 간다.
+ *
  * 다크 모드 자동 전환: var(--color-surface-default) 등은 src/index.css 의 [data-theme='dark']
  * 블록에서 *-dark 토큰으로 자동 swap. 따로 isDark 분기 불필요.
  *
@@ -131,15 +140,29 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
           padding: "var(--spacing-md) var(--spacing-lg)",
           minHeight: "52px",
           boxSizing: "border-box",
-          alignItems: "center",
+          // sonner.md ⓐ — 기본값(gap 6 · 가운데 정렬 · 한 줄)을 덮는다. 줄 묶음은 최소
+          // 높이 안에서 세로 가운데, 줄 안에서는 위로 — 아이콘이 제목 첫 줄에 붙는다.
+          gap: "var(--spacing-md)",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          alignContent: "center",
+          // toaster 가 ui-sans-serif 를 박아 둔다 — 앱 글꼴(Pretendard)로 되돌린다.
+          fontFamily: "var(--font-sans)",
         },
         classNames: {
-          title: "group-[.toast]:text-title-sm group-[.toast]:font-semibold",
-          description: "group-[.toast]:text-body-sm",
+          // ⓑ 20×20 — 기본 상자는 16 이라 20px 아이콘이 넘치고 글과의 간격이 좁았다.
+          // 좌우 음수·양수 margin 도 걷는다(간격은 container gap 하나가 맡는다).
+          icon: "!size-5 !m-0 !items-start",
+          // content — 아이콘 옆 한 줄 전체. 버튼이 옆에 설 자리가 없어 아래 줄로 간다.
+          content:
+            "!min-w-0 !grow !basis-[calc(100%-20px-var(--spacing-md))] !gap-[var(--spacing-xs)]",
+          title: "!text-title-sm !font-semibold",
+          description:
+            "!text-body-sm !font-normal !text-[var(--color-text-secondary)]",
           actionButton:
-            "group-[.toast]:inline-flex group-[.toast]:items-center group-[.toast]:justify-center group-[.toast]:gap-[var(--spacing-sm)] group-[.toast]:whitespace-nowrap group-[.toast]:rounded-sm group-[.toast]:font-sans group-[.toast]:font-medium group-[.toast]:transition-[box-shadow] group-[.toast]:duration-[var(--motion-duration-fast)] group-[.toast]:ease-[var(--motion-ease-out)] group-[.toast]:bg-primary group-[.toast]:text-text-on-accent group-[.toast]:shadow-sm hover:group-[.toast]:brightness-105 group-[.toast]:h-8 group-[.toast]:px-[var(--spacing-sm)] group-[.toast]:text-caption",
+            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !bg-primary !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
           cancelButton:
-            "group-[.toast]:inline-flex group-[.toast]:items-center group-[.toast]:justify-center group-[.toast]:gap-[var(--spacing-sm)] group-[.toast]:whitespace-nowrap group-[.toast]:rounded-sm group-[.toast]:font-sans group-[.toast]:font-medium group-[.toast]:transition-[box-shadow] group-[.toast]:duration-[var(--motion-duration-fast)] group-[.toast]:ease-[var(--motion-ease-out)] group-[.toast]:border group-[.toast]:h-8 group-[.toast]:px-[var(--spacing-sm)] group-[.toast]:text-caption",
+            "!inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !border !border-[var(--color-border-default)] !bg-[var(--color-surface-default)] !text-[var(--color-text-primary)] !h-8 !px-[var(--spacing-sm)] !text-caption",
         },
       }}
       {...rest}

@@ -17,6 +17,7 @@ declare global {
 
 const st = vi.hoisted(() => ({
   toasts: [] as {
+    kind: "success" | "info";
     message: string;
     opts?: {
       action?: { label: string; onClick: () => void };
@@ -40,7 +41,9 @@ vi.mock("react-router-dom", () => ({
 vi.mock("sonner", () => ({
   toast: {
     success: (message: string, opts?: (typeof st.toasts)[number]["opts"]) =>
-      st.toasts.push({ message, opts }),
+      st.toasts.push({ kind: "success", message, opts }),
+    info: (message: string, opts?: (typeof st.toasts)[number]["opts"]) =>
+      st.toasts.push({ kind: "info", message, opts }),
   },
 }));
 
@@ -85,6 +88,8 @@ describe("미리 낸 돈이 돌아왔을 때(D4)", () => {
       `closedCycle.prepaidRefunded|${money(30_000)}`,
     );
     expect(money(30_000)).toMatch(/원|₩/);
+    // 돈이 돌아왔다 — 성공(초록 체크).
+    expect(st.toasts[0]!.kind).toBe("success");
     // 열린 회차의 환급이라 고칠 잔액이 없다 — 버튼 없이 기본 시간이다.
     expect(st.toasts[0]!.opts).toBeUndefined();
   });
@@ -106,6 +111,8 @@ describe("결제가 끝난 회차의 거래였을 때(D9)", () => {
     expect(st.toasts).toHaveLength(1);
     const { message, opts } = st.toasts[0]!;
     expect(message).toBe("closedCycle.note");
+    // 통장이 그대로라는 안내다 — 성공이 아니라 안내(파란 i). 앱과 같다.
+    expect(st.toasts[0]!.kind).toBe("info");
     expect(opts?.action?.label).toBe("closedCycle.fixBalance");
     // 누를지 정할 시간 — 버튼이 달린 토스트는 기본(4초)보다 오래 둔다.
     expect(opts?.duration).toBeGreaterThanOrEqual(6000);
@@ -137,5 +144,7 @@ describe("결제가 끝난 회차의 거래였을 때(D9)", () => {
       `closedCycle.prepaidRefunded|${money(20_000)}`,
     );
     expect(st.toasts[0]!.opts?.action?.label).toBe("closedCycle.fixBalance");
+    // 금액이 있으면 성공이 먼저다.
+    expect(st.toasts[0]!.kind).toBe("success");
   });
 });
