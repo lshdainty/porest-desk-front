@@ -58,9 +58,9 @@ export function useLedgerResultToast() {
           ? t("closedCycle.note")
           : null;
     if (!message) return;
-    toast.success(
-      message,
-      action ? { action, duration: ACTION_TOAST_MS } : undefined,
-    );
+    // 돈이 돌아왔으면 성공, 통장이 그대로라는 안내면 안내(sonner.md Kinds — info 는
+    // "정보/안내"). 예전엔 둘 다 success 라 안내에 초록 체크가 붙었다 — 앱은 info 였다.
+    const show = refunded > 0 ? toast.success : toast.info;
+    show(message, action ? { action, duration: ACTION_TOAST_MS } : undefined);
   };
 }
