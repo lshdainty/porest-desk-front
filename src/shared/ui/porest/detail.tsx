@@ -171,7 +171,12 @@ export function DetailSection({
   );
 }
 
-/** 원형 퀵 액션 — 44 원(sunken / active brand-subtle) + 라벨, 우상단 뱃지. */
+/**
+ * 원형 퀵 액션 — 44 원(sunken / active brand-subtle) + 라벨, 우상단 뱃지.
+ *
+ * `disabled` 는 button.md 의 비활성과 같다 — 통째로 opacity 0.5 · not-allowed, 눌러도 아무
+ * 반응이 없다. 모양이 그대로면 눌러도 안 되는 버튼을 계속 누르게 된다.
+ */
 export function DetailQuickAction({
   icon: Icon,
   label,
@@ -189,7 +194,7 @@ export function DetailQuickAction({
     <button
       type="button"
       className={cn(
-        "relative flex flex-col items-center gap-2 border-0 bg-transparent px-1 py-2 cursor-pointer",
+        "relative flex flex-col items-center gap-2 border-0 bg-transparent px-1 py-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}

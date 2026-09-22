@@ -176,3 +176,35 @@ describe("빠른 동작은 개수와 무관하게 한 줄이다", () => {
     expect(columns).toBe("repeat(4, 1fr)");
   });
 });
+
+// 자동으로 만들어진 거래(이월 · 매도 손익 · 이체 이자)는 반복·더치페이의 원본이 될 수 없다.
+// 이월로 반복을 만들면 매달 "이전 미결제 사용액" 이라는 일반 지출이 생겼다. 숨기지 않고
+// 끈다(사용자 결정 2026-09-22) — 서버도 EXP_050 으로 거절한다.
+describe("자동 거래의 반복 설정·더치페이", () => {
+  const button = (label: string) =>
+    [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === label,
+    ) as HTMLButtonElement | undefined;
+
+  it("이월 거래면 두 버튼이 보이되 꺼져 있다", () => {
+    render({ ...baseExpense, autoSource: "CARD_CARRYOVER" }, { mobile: false });
+
+    expect(button("txDetail.recurring")?.disabled).toBe(true);
+    expect(button("txDetail.dutchPay")?.disabled).toBe(true);
+  });
+
+  it("매도 손익·이체 이자도 같다", () => {
+    for (const autoSource of ["TRADE_REALIZED", "TRANSFER_INTEREST"]) {
+      render({ ...baseExpense, autoSource }, { mobile: false });
+      expect(button("txDetail.recurring")?.disabled, autoSource).toBe(true);
+      expect(button("txDetail.dutchPay")?.disabled, autoSource).toBe(true);
+    }
+  });
+
+  it("보통 거래는 켜져 있다", () => {
+    render(baseExpense, { mobile: false });
+
+    expect(button("txDetail.recurring")?.disabled).toBe(false);
+    expect(button("txDetail.dutchPay")?.disabled).toBe(false);
+  });
+});

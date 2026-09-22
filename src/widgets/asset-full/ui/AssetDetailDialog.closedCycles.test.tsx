@@ -339,6 +339,8 @@ describe("닫힌 회차 화면", () => {
     expect(rows).not.toBeNull();
     expect(rows!.textContent).toContain("QC90000");
     expect(rows!.textContent).toContain("assetDetail.installmentSeq");
+    // 원금 — 다가오는 회차 줄·앱과 같은 모양(사용자 결정 2026-09-22).
+    expect(rows!.textContent).toContain("assetDetail.installmentPrincipal");
     expect(rows!.textContent).toContain("recordOnly");
     expect(rows!.textContent).toContain("30,000");
   });

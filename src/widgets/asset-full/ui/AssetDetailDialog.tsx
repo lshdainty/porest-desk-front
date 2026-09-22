@@ -1135,6 +1135,13 @@ function CardDetailBody({
                     seq: due.sequence,
                     total: due.installmentMonths,
                   })}
+                  {/* 원금 — 다가오는 회차 줄·앱과 같은 모양(사용자 결정 2026-09-22). */}
+                  {" · "}
+                  <MaskAmount card="asset.detail" mask="•••">
+                    {t("assetDetail.installmentPrincipal", {
+                      amount: money(due.principalAmount),
+                    })}
+                  </MaskAmount>
                   {due.recordOnly && ` · ${tc("recordOnly")}`}
                 </div>
               </div>
