@@ -1300,7 +1300,7 @@ user,withdraw.blockedSubscriptionUntil,구독이 {{date}} 까지 남아 있어 �
 user,withdraw.blockedOther,아직 해지할 수 없는 상태예요,Your account cannot be stopped right now
 user,withdraw.blockedHint,구독을 먼저 해지하시면 남은 기간이 끝난 뒤에 이용 해지를 할 수 있어요.,Cancel your subscription first — you can stop desk once the paid period ends.
 user,withdrawn.title,이용 해지가 끝났어요,Your desk account is closed
-user,withdrawn.body,"그동안 desk 를 써 주셔서 고마웠어요. 남은 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요.","Thank you for using desk. Remaining data is kept and then destroyed under our privacy policy."
+user,withdrawn.body,"그동안 desk 를 써 주셔서 감사했습니다. 남은 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요.","Thank you for using desk. Remaining data is kept and then destroyed under our privacy policy."
 user,withdrawn.rejoin,같은 아이디와 이메일로는 다시 가입할 수 없어요.,You cannot sign up again with the same ID or email address.
 user,withdrawn.toLogin,로그인 화면으로,Go to sign in
 budget,add,추가,Add
