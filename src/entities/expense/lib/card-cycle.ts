@@ -152,3 +152,32 @@ export function pendingCycleOnOldDay(
     paymentDate: cardCyclePaymentDate(`${month}-01`, oldPaymentDay),
   };
 }
+
+/**
+ * 새 카드의 결제 대기 청구분 칸(2026-09-22 사용자 결정).
+ *
+ * 결제일 전에 카드를 등록하면 실제 카드사는 지난달 청구분을 다가오는 결제일에, 이번 달 쓴
+ * 금액을 그다음 결제일에 뺀다. 오늘이 이번 달 결제일(지난달 회차의 결제일) 전이면 그 회차가
+ * 결제를 기다린다 — 두 날짜를 준다. 결제일 당일부터는 닫힌 회차라(D2) "오늘보다 뒤" 로 가른다.
+ * 결제일이 없거나 이미 지났으면 null(칸 하나 — 종전 그대로).
+ *
+ * @returns dueDate 청구분이 결제되는 날 · afterDate 그 뒤 쓴 금액이 결제되는 날(`yyyy-MM-dd`)
+ */
+export function pendingBillWindow(
+  todayKey: string,
+  paymentDay: number | null | undefined,
+): { dueDate: string; afterDate: string } | null {
+  if (paymentDay == null || !Number.isFinite(paymentDay) || paymentDay < 1) {
+    return null;
+  }
+  const thisMonth = todayKey.slice(0, 7);
+  const dueDate = cardCyclePaymentDate(
+    `${shiftMonth(thisMonth, -1)}-01`,
+    paymentDay,
+  );
+  if (dueDate <= todayKey) return null;
+  return {
+    dueDate,
+    afterDate: cardCyclePaymentDate(`${thisMonth}-01`, paymentDay),
+  };
+}

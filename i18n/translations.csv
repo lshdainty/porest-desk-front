@@ -611,6 +611,11 @@ asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되�
 asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어 주세요.,Enter the amount not yet paid.
 asset,editDialog.currentUnpaid,지금 미결제 잔액 {{balance}},Unpaid now: {{balance}}
 asset,editDialog.carryoverLocked,결제가 끝나 고칠 수 없어요,"Already paid, so it can't be changed"
+asset,editDialog.dueCarryoverLabel,{{date}}에 결제될 금액 ({{unit}}),Due on {{date}} ({{unit}})
+asset,editDialog.dueCarryoverHelp,카드사 앱에 '결제 예정 금액'으로 보이는 금액이에요. 그날 결제계좌에서 빠져요.,The amount your card app shows as due. It leaves your payment account that day.
+asset,editDialog.carryoverAfterLabel,그 뒤 쓴 금액 ({{unit}}),Spent since then ({{unit}})
+asset,editDialog.carryoverAfterHelp,지난 청구 뒤로 쓴 금액이에요. {{date}}에 결제돼요.,Spent after the last statement. Paid on {{date}}.
+asset,editDialog.carryoverAfterHelpNoDate,지난 청구 뒤로 쓴 금액이에요.,Spent after the last statement.
 asset,editDialog.paymentDayChangeTitle,결제일 변경,Change payment day
 asset,editDialog.paymentDayChangeConfirm,바꾼 결제일은 다음 회차부터 적용돼요. {{month}}월분은 {{oldDate}}에 결제돼요,The new payment day applies from the next cycle. {{monthName}} charges are still paid on {{oldDate}}
 asset,editDialog.memoOptional,메모 (선택),Memo (optional)
@@ -1572,6 +1577,7 @@ expense,addTx.editTitle,거래 수정,Edit transaction
 expense,addTx.autoSource.TRADE_REALIZED,주식을 팔아 생긴 실현손익이에요. 금액은 매매 내역에서 계산됩니다.,Realized P/L from a sale. The amount is calculated from the trade.
 expense,addTx.autoSource.TRANSFER_INTEREST,이체에 붙은 이자예요. 금액은 이체 내역에서 계산됩니다.,Interest on a transfer. The amount is calculated from the transfer.
 expense,addTx.autoSource.CARD_CARRYOVER,카드를 등록할 때 적은 이전 미결제 사용액이에요. 금액은 카드 수정에서 바꿔요.,The unpaid balance entered when the card was added. Change the amount by editing the card.
+expense,addTx.autoSource.CARD_CARRYOVER_DUE,카드를 등록할 때 적은 이전 미결제 사용액이에요. 금액은 카드 수정에서 바꿔요.,The unpaid balance entered when the card was added. Change the amount by editing the card.
 expense,addTx.autoSource.default,자동으로 만들어진 거래예요. 원래 거래를 지우면 함께 사라집니다.,Created automatically. It disappears when the original is deleted.
 expense,addTx.transfer,이체,Transfer
 expense,addTx.add,추가,Add
