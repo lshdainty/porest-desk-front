@@ -49,6 +49,17 @@ const carryover = tx({
 });
 
 describe("카드 이월은 가계부 합계에서 빠진다", () => {
+  it("결제 대기 청구분(CARD_CARRYOVER_DUE)도 이월이다 — 합계·집계 목록에서 빠진다", () => {
+    const due = tx({
+      rowId: 3,
+      amount: 30_000,
+      autoSource: "CARD_CARRYOVER_DUE",
+    });
+    expect(isCardCarryoverTx(due)).toBe(true);
+    expect(expenseSum([tx({}), due])).toBe(12_000);
+    expect(countableTx([tx({}), due]).map((e) => e.rowId)).toEqual([1]);
+  });
+
   it("이월 30만이 있어도 그 달 지출은 12,000 이다", () => {
     expect(expenseSum([tx({}), carryover])).toBe(12_000);
   });

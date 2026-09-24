@@ -24,7 +24,7 @@ import { useAssets } from "@/features/asset";
 import { useDefaultCurrency } from "@/features/user";
 import { KRW, formatDay, money } from "@/shared/lib/porest/format";
 import { formatMonthShort, todayLocalKey } from "@/shared/lib/date";
-import { pendingCycleOnOldDay } from "@/entities/expense";
+import { pendingBillWindow, pendingCycleOnOldDay } from "@/entities/expense";
 import {
   MAX_BALANCE,
   blockNonDigitKey,
@@ -270,6 +270,15 @@ export function AssetEditDialog({
               : item.balance) ?? 0,
           ),
         )
+      : "0",
+  );
+  /**
+   * 신용카드의 결제 대기 청구분 칸(2026-09-22) — 기존 카드는 서버가 준 값으로 연다. 칸이 없으면
+   * 쓰지 않는다(`dueField` 가 정한다).
+   */
+  const [dueStr, setDueStr] = useState<string>(
+    item?.assetType === "CREDIT_CARD" && item.dueCarryover
+      ? KRW(Math.abs(item.dueCarryover.amount))
       : "0",
   );
   /**
@@ -634,6 +643,31 @@ export function AssetEditDialog({
   const currentUnpaid = isExistingCreditCard
     ? Math.max(0, -(item?.balance ?? 0))
     : 0;
+  /**
+   * 결제 대기 청구분 칸(2026-09-22 사용자 결정). 결제일 전에 카드를 등록하면 실제 카드사는
+   * 지난달 청구분을 다가오는 결제일에, 이번 달 쓴 금액을 그다음 결제일에 뺀다 — 한 칸으로
+   * 받으면 전부 다음 달에 빠져 한 달 동안 통장 잔액이 실제보다 많았다. 그래서 두 칸으로 받는다.
+   *  - 새 카드: 오늘이 이번 달 결제일 전이면 연다(결제일을 바꾸면 따라 바뀐다)
+   *  - 기존 카드: 서버가 칸을 줄 때만 — 청구분이 있거나 등록한 달의 그 회차가 아직 열려 있을 때.
+   *    그 회차 결제일이 되면 잠긴다(D15 와 같다)
+   */
+  const newCardBillWindow =
+    isNew && isCreditCardEdit
+      ? pendingBillWindow(
+          todayLocalKey(),
+          paymentDay.trim() ? parseInt(paymentDay, 10) : null,
+        )
+      : null;
+  const dueField: { paymentDate: string; locked: boolean } | null =
+    newCardBillWindow
+      ? { paymentDate: newCardBillWindow.dueDate, locked: false }
+      : isExistingCreditCard && item?.dueCarryover?.paymentDate
+        ? {
+            paymentDate: item.dueCarryover.paymentDate,
+            locked: item.dueCarryover.locked === true,
+          }
+        : null;
+  const dueAmount = dueField ? parseAmount(dueStr) : 0;
   const limitAmount =
     isCreditCardEdit || isOverdraft ? parseAmount(creditLimit) : 0;
   /**
@@ -645,9 +679,11 @@ export function AssetEditDialog({
         0,
         currentUnpaid -
           Math.abs(item?.carryoverAmount ?? 0) +
-          parseAmount(balanceStr),
+          parseAmount(balanceStr) -
+          Math.abs(item?.dueCarryover?.amount ?? 0) +
+          dueAmount,
       )
-    : parseAmount(balanceStr);
+    : parseAmount(balanceStr) + dueAmount;
   const overLimitBy =
     limitAmount > 0 ? Math.max(0, usageForLimit - limitAmount) : 0;
 
@@ -769,6 +805,18 @@ export function AssetEditDialog({
           ? {}
           : { carryoverAmount: Math.abs(parsedBalance) }
         : { balance: cardBalance };
+      /**
+       * 결제 대기 청구분 — 칸이 있을 때만 싣는다. 새 카드는 0 이면 안 싣고(없음), 수정은 잠기지
+       * 않았으면 0 도 싣는다(지운다). 잠겼으면 키째 뺀다(없으면 유지).
+       */
+      const dueCreateField =
+        isCredit && dueField && dueAmount > 0
+          ? { dueCarryoverAmount: dueAmount }
+          : {};
+      const dueUpdateField =
+        isCredit && dueField && !dueField.locked
+          ? { dueCarryoverAmount: dueAmount }
+          : {};
 
       if (isNew) {
         onCreate({
@@ -782,12 +830,14 @@ export function AssetEditDialog({
           isAmountHidden,
           cardCatalogRowId: catalogId,
           ...billingFields,
+          ...dueCreateField,
         });
       } else {
         onUpdate({
           assetName: resolvedName,
           assetType: type,
           ...cardAmountField,
+          ...dueUpdateField,
           institution,
           color,
           ...currencyFields,
@@ -1672,6 +1722,46 @@ export function AssetEditDialog({
         </div>
       ) : (
         <div>
+          {/* 결제 대기 청구분(2026-09-22) — 결제일 전에 등록하면 지난달 청구분은 다가오는
+              결제일에, 그 뒤 쓴 금액은 그다음 결제일에 빠진다. 칸 이름에 그 날짜를 쓴다. */}
+          {dueField && (
+            <div className="mb-4" data-testid="due-carryover">
+              <Label
+                htmlFor="asset-edit-due"
+                className="text-[13px] font-medium mb-2 block"
+              >
+                {t("editDialog.dueCarryoverLabel", {
+                  date: formatDay(dueField.paymentDate).md,
+                  unit,
+                })}
+              </Label>
+              <Input
+                id="asset-edit-due"
+                inputMode="numeric"
+                disabled={dueField.locked}
+                value={dueStr}
+                onChange={(e) =>
+                  setDueStr(sanitizeAmountInput(e.target.value, MAX_BALANCE))
+                }
+                onKeyDown={blockNonDigitKey}
+                onBlur={() => {
+                  const n = Number(dueStr) || 0;
+                  setDueStr(n ? KRW(n) : "0");
+                }}
+                onFocus={() =>
+                  setDueStr((prev) => {
+                    const bare = prev.replace(/,/g, "");
+                    return bare === "0" ? "" : bare;
+                  })
+                }
+              />
+              <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
+                {dueField.locked
+                  ? t("editDialog.carryoverLocked")
+                  : t("editDialog.dueCarryoverHelp")}
+              </p>
+            </div>
+          )}
           {/* 초과 배지는 **넘긴 값 옆**에 붙인다 — 한도 칸이 아니라 사용액 칸이
               사용자가 방금 고친 자리다. 저장은 그대로 열려 있다(QA #125). */}
           <div className="mb-2 flex items-center gap-2">
@@ -1679,7 +1769,9 @@ export function AssetEditDialog({
               htmlFor="asset-edit-balance"
               className="text-[13px] font-medium"
             >
-              {balanceLabel}
+              {dueField
+                ? t("editDialog.carryoverAfterLabel", { unit })
+                : balanceLabel}
             </Label>
             {overLimitBy > 0 && (
               <Badge variant="error">{t("editDialog.overLimitBadge")}</Badge>
@@ -1743,7 +1835,13 @@ export function AssetEditDialog({
           ) : (
             editingGroup === "card" && (
               <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-                {t("editDialog.cardBalanceHelp")}
+                {dueField
+                  ? newCardBillWindow
+                    ? t("editDialog.carryoverAfterHelp", {
+                        date: formatDay(newCardBillWindow.afterDate).md,
+                      })
+                    : t("editDialog.carryoverAfterHelpNoDate")
+                  : t("editDialog.cardBalanceHelp")}
               </p>
             )
           )}

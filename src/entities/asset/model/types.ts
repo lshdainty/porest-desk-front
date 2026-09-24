@@ -164,6 +164,16 @@ export interface Asset {
   /** 이월 거래가 든 회차의 결제일이 됐다 — 이월 금액 칸은 읽기 전용이다(D15). */
   carryoverLocked?: boolean;
   /**
+   * 신용카드의 **결제 대기 청구분** 칸(2026-09-22) — 결제일 전에 카드를 등록할 때 따로 적은
+   * 지난달 청구분. 청구분이 있거나 등록한 달의 그 회차 결제일이 아직 안 왔으면 값(폼이 칸을
+   * 그린다), 아니면 null. `paymentDate` 는 그 회차의 결제일 — 칸 이름에 쓴다.
+   */
+  dueCarryover?: {
+    amount: number;
+    locked: boolean;
+    paymentDate: string | null;
+  } | null;
+  /**
    * 이 날짜(`yyyy-MM-dd`) 이하 거래는 **결제가 끝난 회차**다 — 결제일이 오늘(서울) 이하인
    * 가장 최근 회차의 말일. 닫힌 회차가 없거나 결제일 없는 카드·신용카드 아님이면 null.
    *
@@ -215,6 +225,11 @@ export interface AssetFormValues {
   creditLimit?: number | null;
   paymentDay?: number | null;
   paymentAssetRowId?: number | null;
+  /**
+   * 신용카드: 결제를 기다리던 지난달 청구분(양수) — 다가오는 결제일에 청구된다. `balance` 는
+   * 그 뒤 쓴 금액이다. 결제 대기 청구분이 없을 때 보내면 400(AST_035). 0 이면 안 보낸다.
+   */
+  dueCarryoverAmount?: number;
   /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
   holdings?: AssetHolding[];
 }
@@ -257,6 +272,11 @@ export interface AssetUpdateFormValues {
    * 값이 달라질 때 400 이다(D15).
    */
   carryoverAmount?: number;
+  /**
+   * 신용카드 결제 대기 청구분(양수). 안 보내면 유지, 0 이면 지운다. 등록한 달의 그 회차 결제일
+   * 전까지만 — 지나면 400(AST_034), 등록한 달이 아니면 400(AST_035).
+   */
+  dueCarryoverAmount?: number;
   /** 투자 보유 항목 전체 교체 (INVESTMENT 전용, 미전달 시 유지) */
   holdings?: AssetHolding[];
 }

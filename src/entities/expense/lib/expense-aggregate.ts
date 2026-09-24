@@ -34,13 +34,16 @@ export function isRefundedTx(e: Expense): boolean {
 }
 
 /**
- * 카드 이월 거래인가 — 카드를 만들 때 적은 "이전 미결제 사용액"(D4).
+ * 카드 이월 거래인가 — 카드를 만들 때 적은 "이전 미결제 사용액"(D4)과 그중 결제를 기다리던
+ * 지난달 청구분(`CARD_CARRYOVER_DUE`, 2026-09-22).
  *
  * 등록 전에 이미 쓴 돈이라 그 달의 지출이 아니다. 목록에는 보이고(자동 생성이라 수정·삭제는
  * 잠겨 있다) 합계에서만 빠진다.
  */
 export function isCardCarryoverTx(e: Expense): boolean {
-  return e.autoSource === "CARD_CARRYOVER";
+  return (
+    e.autoSource === "CARD_CARRYOVER" || e.autoSource === "CARD_CARRYOVER_DUE"
+  );
 }
 
 /**

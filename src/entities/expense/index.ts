@@ -45,6 +45,7 @@ export {
   cardCyclePaymentDate,
   closedCycleSpan,
   cyclePaymentDate,
+  pendingBillWindow,
   pendingCycleOnOldDay,
   type ClosedCycleSpan,
 } from "./lib/card-cycle";

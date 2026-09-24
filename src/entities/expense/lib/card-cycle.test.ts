@@ -3,6 +3,7 @@ import {
   cardCyclePaymentDate,
   closedCycleSpan,
   cyclePaymentDate,
+  pendingBillWindow,
   pendingCycleOnOldDay,
 } from "./card-cycle";
 
@@ -108,5 +109,41 @@ describe("옛 결제일로 결제되는 회차", () => {
       month: "2026-09",
       paymentDate: "2026-10-21",
     });
+  });
+});
+
+// 새 카드의 결제 대기 청구분 칸(2026-09-22 사용자 결정) — 서버 `dueCycleFor` 와 같은 규칙이다.
+// 오늘이 이번 달 결제일 전이면 지난달 회차가 결제를 기다린다. 결제일 당일부터는 닫혔다(D2).
+describe("pendingBillWindow", () => {
+  it("9/10 · 결제일 12일 — 지난달 청구분은 9/12, 그 뒤 쓴 금액은 10/12 에 결제된다", () => {
+    expect(pendingBillWindow("2026-09-10", 12)).toEqual({
+      dueDate: "2026-09-12",
+      afterDate: "2026-10-12",
+    });
+  });
+
+  it("결제일 당일·그 뒤면 기다리는 청구분이 없다", () => {
+    expect(pendingBillWindow("2026-09-12", 12)).toBeNull();
+    expect(pendingBillWindow("2026-09-20", 12)).toBeNull();
+  });
+
+  it("그 달에 없는 결제일은 말일 — 9월(30일)의 31일 결제는 9/30, 10월은 10/31", () => {
+    expect(pendingBillWindow("2026-09-10", 31)).toEqual({
+      dueDate: "2026-09-30",
+      afterDate: "2026-10-31",
+    });
+  });
+
+  it("해가 바뀌어도 센다 — 1/5 · 결제일 20일", () => {
+    expect(pendingBillWindow("2027-01-05", 20)).toEqual({
+      dueDate: "2027-01-20",
+      afterDate: "2027-02-20",
+    });
+  });
+
+  it("결제일이 없으면 칸이 없다", () => {
+    expect(pendingBillWindow("2026-09-10", null)).toBeNull();
+    expect(pendingBillWindow("2026-09-10", undefined)).toBeNull();
+    expect(pendingBillWindow("2026-09-10", Number.NaN)).toBeNull();
   });
 });
