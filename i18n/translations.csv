@@ -1487,7 +1487,7 @@ category,parentCategory,상위 카테고리,Parent category
 category,optional,(선택),(optional)
 category,rootOption,— 최상위 카테고리로 두기 —,— Keep as top-level —
 category,selectParent,상위 카테고리 선택,Select parent category
-category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 연결된 거래를 옮긴 뒤 새로 만들어 주세요.,"You can move it under a different parent. To promote it to top-level, move its linked transactions and create it anew."
+category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨 주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."
 category,name,이름,Name
 category,namePlaceholder,"예: 반려동물, 부수입","e.g. Pets, Side income"
 category,colorN,색상 {{n}},Color {{n}}
