@@ -295,6 +295,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             value={monthKey}
             onChange={setMonthKey}
             variant="borderless"
+            allowFuture
           />
           <Button
             variant="ghost"
@@ -326,7 +327,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             description={t("manager.description")}
             actions={
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <MonthPicker value={monthKey} onChange={setMonthKey} />
+                <MonthPicker
+                  value={monthKey}
+                  onChange={setMonthKey}
+                  allowFuture
+                />
                 <Button
                   variant="secondary"
                   size="sm"

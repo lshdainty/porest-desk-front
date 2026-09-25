@@ -264,12 +264,19 @@ export function MonthPicker({
   onChange,
   align = "right",
   variant = "outline",
+  allowFuture = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   align?: "right" | "left";
   /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만. */
   variant?: "outline" | "borderless";
+  /**
+   * 다음 달 이후도 고를 수 있다 — 예산처럼 미리 정해 두는 화면(사용자 결정 2026-09-25).
+   * 기본은 이번 달까지다(홈·통계처럼 지나간 달만 뜻이 있는 화면). 종전엔 데스크톱 예산 설정만
+   * 다음 달부터 막혀 모바일·앱과 갈렸다(QA 30 17).
+   */
+  allowFuture?: boolean;
 }) {
   const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
@@ -381,15 +388,18 @@ export function MonthPicker({
       </div>
       <button
         onClick={() => setViewY(viewY + 1)}
-        disabled={viewY >= curY}
+        disabled={!allowFuture && viewY >= curY}
         style={{
           background: "transparent",
           border: 0,
-          color: viewY >= curY ? "var(--fg-tertiary)" : "var(--fg-secondary)",
+          color:
+            !allowFuture && viewY >= curY
+              ? "var(--fg-tertiary)"
+              : "var(--fg-secondary)",
           padding: 4,
-          cursor: viewY >= curY ? "not-allowed" : "pointer",
+          cursor: !allowFuture && viewY >= curY ? "not-allowed" : "pointer",
           display: "inline-flex",
-          opacity: viewY >= curY ? 0.4 : 1,
+          opacity: !allowFuture && viewY >= curY ? 0.4 : 1,
         }}
       >
         <ChevronRight size={16} />
@@ -403,7 +413,8 @@ export function MonthPicker({
     >
       {Array.from({ length: 12 }, (_, i) => i + 1).map((mm) => {
         const isSel = viewY === y && mm === m;
-        const isFuture = viewY > curY || (viewY === curY && mm > curM);
+        const isFuture =
+          !allowFuture && (viewY > curY || (viewY === curY && mm > curM));
         return (
           <button
             key={mm}
