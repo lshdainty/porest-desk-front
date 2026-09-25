@@ -125,8 +125,21 @@ export const INVALIDATION_MAP = {
    * 적립도 목표의 모은 금액만 올린다. 서버가 거래·잔액을 안 건드리므로 가계부는 그대로다.
    */
   "saving-goal": [savingGoalKeys.all],
-  /** 반복 거래 예약이 바뀐다 — 추가·수정·삭제·켜고 끄기. 실제 거래는 예정일에 생긴다. */
-  "recurring-transaction": [recurringTransactionKeys.all],
+  /**
+   * 반복 거래 예약이 바뀐다 — 추가·수정·삭제·켜고 끄기.
+   *
+   * 추가·수정·다시 켜기에서 **오늘이 회차면 서버가 그 거래를 바로 기록한다**(QA 30 1 —
+   * 종전엔 자정 배치를 기다려 다음 날 날짜로 찍혔다). 거래가 생기므로 가계부 쪽도 함께 늙는다.
+   */
+  "recurring-transaction": [
+    recurringTransactionKeys.all,
+    expenseKeys.all,
+    assetKeys.all,
+    cardKeys.all,
+    expenseSplitKeys.all,
+    dutchPayKeys.all,
+    dashboardKeys.all,
+  ],
 
   /** 알림이 바뀐다 — 읽음·모두 읽음·삭제. 목록과 안 읽은 개수가 한 접두다. */
   notification: [notificationKeys.all],

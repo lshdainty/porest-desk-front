@@ -220,7 +220,8 @@ export function CalendarLabelsSection({ mobile }: { mobile: boolean }) {
                         name: label.labelName,
                       }),
                     },
-                    onSelect: () => setConfirmDelete(label),
+                    // 스와이프가 위 confirm 으로 이미 물었다 — 여기서 확인창을 또 열면 두 번 묻는다(QA 30 15).
+                    onSelect: () => deleteMut.mutateAsync(label.rowId),
                   },
                 ];
                 return (

@@ -736,7 +736,16 @@ const EXPECTED_MAP: Record<ChangeKind, string[]> = {
   "expense-template": ["expenses/templates"],
   "dutch-pay": ["dutch-pay"],
   "saving-goal": ["saving-goals"],
-  "recurring-transaction": ["recurring-transactions"],
+  // 오늘 회차를 바로 기록한다(QA 30 1) — 거래가 생기므로 가계부 접두도 함께.
+  "recurring-transaction": [
+    "recurring-transactions",
+    "expenses",
+    "assets",
+    "cards",
+    "expense-splits",
+    "dutch-pay",
+    "dashboard",
+  ],
   notification: ["notifications"],
   "oauth-link": ["oauth"],
   "device-session": ["deviceSessions"],

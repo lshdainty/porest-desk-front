@@ -20,9 +20,7 @@ import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { InputTimePicker } from "@/shared/ui/input-time-picker";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { ModalFooter } from "@/shared/ui/porest/modal-footer";
-import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
 import {
-  CAT_PALETTE,
   CHART_PAIRS,
   getPaletteByColor,
 } from "@/shared/lib/porest/chart-palette";
@@ -189,7 +187,6 @@ export const EventForm = ({
   const endDate = useWatch({ control, name: "endDate" });
   // 서버(CAL_002)가 거절할 범위는 누르기 전에 막는다 — 둘 다 같은 형식(날짜 또는 날짜T시각)이라 문자열 비교로 충분하다.
   const dateRangeInvalid = !!startDate && !!endDate && endDate < startDate;
-  const selectedColor = useWatch({ control, name: "color" });
   const isAllDay = useWatch({ control, name: "isAllDay" });
   const selectedLabelRowId = useWatch({ control, name: "labelRowId" });
   const selectedCalendarRowId = useWatch({ control, name: "calendarRowId" });
@@ -431,21 +428,9 @@ export const EventForm = ({
             </div>
           )}
 
-          {/* Color swatches — 디자인시스템 차트 10색 (ColorSwatchGroup) */}
-          <div className="flex flex-col gap-2">
-            <Label>{t("form.color")}</Label>
-            <ColorSwatchGroup
-              columns={5}
-              value={selectedColor}
-              onValueChange={(v) => setValue("color", v, { shouldDirty: true })}
-              options={CAT_PALETTE.map((p) => ({
-                value: p.baseHex,
-                bg: p.bg,
-                fg: p.color,
-              }))}
-            />
-          </div>
-
+          {/* 일정마다 고르는 색 칸은 두지 않는다(사용자 결정 2026-09-25) — 화면은 라벨·캘린더
+              색으로 칠해서 고른 색이 한 번도 보이지 않았다(QA 30 12). 저장값은 캘린더를 고를 때
+              그 캘린더 색으로 채운 그대로다. */}
           {/* All-day switch */}
           <div className="flex items-center gap-2">
             <Switch

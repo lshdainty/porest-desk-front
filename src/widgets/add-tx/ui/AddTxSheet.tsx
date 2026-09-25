@@ -38,7 +38,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
@@ -1477,15 +1476,9 @@ export function AddTxSheet({
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>{t("addTx.parent")}</SelectLabel>
-                          <SelectItem value={String(selectedParentId)}>
-                            {categories.find(
-                              (c) => c.rowId === selectedParentId,
-                            )?.categoryName ?? t("addTx.parent")}
-                          </SelectItem>
-                        </SelectGroup>
-                        <SelectSeparator />
+                        {/* 상위 자신은 고를 수 없다 — 이 칸은 하위가 있는 상위에서만 뜨고, 하위가
+                            있는 상위에는 서버가 거래를 안 받는다(EXP_009). 종전엔 첫 칸에 상위가 있어
+                            고르면 저장에서 "상위 카테고리에는 거래를 등록할 수 없어요" 였다(QA 30 13). */}
                         <SelectGroup>
                           <SelectLabel>{t("addTx.detail")}</SelectLabel>
                           {(childrenByParent.get(selectedParentId) ?? []).map(

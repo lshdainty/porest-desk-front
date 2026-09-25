@@ -70,12 +70,16 @@ function GoalCard({
   idx,
   onEdit,
   onDelete,
+  onDeleteConfirmed,
 }: {
   goal: SavingGoal;
   mobile: boolean;
   idx: number;
   onEdit: (g: SavingGoal) => void;
+  /** 확인창을 연다 — 데스크톱 삭제 버튼. */
   onDelete: (g: SavingGoal) => void;
+  /** 이미 물었다 — 스와이프의 confirm 뒤. 여기서 또 확인창을 열면 두 번 묻는다(QA 30 15). */
+  onDeleteConfirmed: (g: SavingGoal) => Promise<unknown>;
 }) {
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
@@ -118,7 +122,7 @@ function GoalCard({
             title: t("savingGoal.deleteTitle"),
             message: t("savingGoal.deleteConfirm", { title: goal.title }),
           },
-          onSelect: () => onDelete(goal),
+          onSelect: () => onDeleteConfirmed(goal),
         },
       ]}
     >
@@ -450,6 +454,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
                 idx={i}
                 onEdit={setEditing}
                 onDelete={setConfirmDelete}
+                onDeleteConfirmed={(g) => deleteMut.mutateAsync(g.rowId)}
               />
             ))}
           </div>

@@ -1444,6 +1444,7 @@ export const BudgetPage = () => {
         value={monthKey}
         onChange={setMonthKey}
         variant="borderless"
+        allowFuture
       />
       <Button
         variant="ghost"

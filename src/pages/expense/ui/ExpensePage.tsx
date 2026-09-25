@@ -106,6 +106,9 @@ import {
   activeConditionCount,
   filterSpan,
   matchesFilter,
+  monthPeriodOf,
+  samePeriod,
+  type FilterPeriodRange,
   type FilterValue,
 } from "@/features/expense/model/filter";
 import { countableTx, expenseSum, incomeSum } from "@/entities/expense";
@@ -1408,15 +1411,21 @@ function AssetFilterBadge({
  *
  * 기간은 항상 걸려 있고 '빼고' 는 포함 조건이 아니라서 세지 않는다. 다만 사람 눈에는
  * 그 둘도 "필터가 걸린 상태" 이므로, 조건이 0 이어도 기간이 여러 칸이거나 '빼고' 가
- * 있으면 1 로 쳐서 배지를 띄운다.
+ * 있으면 1 로 쳐서 배지를 띄운다. 기간이 한 칸이어도 **보고 있는 달과 다르면** 마찬가지다 —
+ * 기간만 8/10~8/20 으로 걸면 목록·합계는 바뀌는데 버튼은 그냥 "필터" 였다(QA 30 10).
  */
-function filterActiveCount(v: FilterValue | null): number {
+function filterActiveCount(
+  v: FilterValue | null,
+  viewPeriod: FilterPeriodRange,
+): number {
   if (!v) return 0;
   const n = activeConditionCount(v);
   if (n > 0) return n;
   const hasExclude =
     v.categories.exclude.length > 0 || v.assets.exclude.length > 0;
-  return v.periods.length > 1 || hasExclude ? 1 : 0;
+  const periodChanged =
+    v.periods.length === 1 && !samePeriod(v.periods[0]!, viewPeriod);
+  return v.periods.length > 1 || hasExclude || periodChanged ? 1 : 0;
 }
 
 /** 행 클릭 → 상세 TxDetailDialog → 편집 버튼 → AddTxSheet. Desktop/Mobile 공용. */
@@ -1532,7 +1541,8 @@ function ExpenseDesktop() {
     categoriesQ.data ?? null,
   );
 
-  const activeCount = filterActiveCount(filterValue);
+  const viewPeriod = monthPeriodOf(month);
+  const activeCount = filterActiveCount(filterValue, viewPeriod);
 
   // calendar 모드는 viewport fit (스크롤 없이 캘린더가 남은 공간 fill) — AppLayout 의
   // scroll wrapper 가 flex-col 이므로 페이지를 flex-1 + min-h-0 으로 부모 전체 차지.
@@ -1609,6 +1619,7 @@ function ExpenseDesktop() {
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
+          defaultPeriod={viewPeriod}
           categories={categoriesQ.data ?? []}
           assets={assetsQ.data?.assets ?? []}
           onClose={() => setFilterOpen(false)}
@@ -1727,7 +1738,8 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     assetId,
     categoriesQ.data ?? null,
   );
-  const activeCount = filterActiveCount(filterValue);
+  const viewPeriod = monthPeriodOf(month);
+  const activeCount = filterActiveCount(filterValue, viewPeriod);
 
   // 인사이트 — 지난달 지출 대비 / 없으면 이번 달 최다 지출 카테고리.
   const prevRange = monthRange(shiftMonthKey(month, -1));
@@ -1926,7 +1938,9 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           <FilterChipsRow
             filterValue={filterValue}
             onChange={(v) =>
-              setFilterValue(v && filterActiveCount(v) > 0 ? v : null)
+              setFilterValue(
+                v && filterActiveCount(v, viewPeriod) > 0 ? v : null,
+              )
             }
             assetName={asset?.assetName}
             onClearAsset={clear}
@@ -2323,6 +2337,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
+          defaultPeriod={viewPeriod}
           categories={categoriesQ.data ?? []}
           assets={assetsQ.data?.assets ?? []}
           onClose={() => setFilterOpen(false)}

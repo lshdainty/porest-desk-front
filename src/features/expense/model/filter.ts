@@ -168,6 +168,36 @@ function fmtYmd(d: Date): string {
 }
 
 /**
+ * 보고 있는 달의 기본 기간 — 필터를 처음 열거나 초기화할 때 쓴다.
+ *
+ * 이번 달이면 종전과 같은 "이번 달"(1일~오늘) 프리셋이다. 다른 달을 보고 있으면 그 달 1일~말일
+ * 이다. 종전엔 늘 오늘 기준 이번 달이라, 8월을 보다가 필터를 열면 9월이 잡혀 있었다(QA 30 10).
+ */
+export function monthPeriodOf(monthKey: string): FilterPeriodRange {
+  const today = new Date();
+  const thisMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  if (monthKey === thisMonth) return resolvePeriod("month");
+  const [ys, ms] = monthKey.split("-");
+  const y = Number(ys);
+  const m = Number(ms);
+  const last = new Date(y, m, 0).getDate();
+  const mm = String(m).padStart(2, "0");
+  return {
+    preset: "custom",
+    start: `${y}-${mm}-01`,
+    end: `${y}-${mm}-${String(last).padStart(2, "0")}`,
+  };
+}
+
+/** 두 기간이 같은 날들을 가리키는가 — 프리셋 이름은 안 본다. */
+export function samePeriod(
+  a: FilterPeriodRange,
+  b: FilterPeriodRange,
+): boolean {
+  return a.start === b.start && a.end === b.end;
+}
+
+/**
  * 프리셋을 실제 범위로 바꾼다.
  *
  * v1 은 프리셋 이름만 들고 다니다 목록 화면에서 범위를 계산했다. v2 는 기간이 여러

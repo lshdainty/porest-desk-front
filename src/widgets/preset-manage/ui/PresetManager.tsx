@@ -319,7 +319,8 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
                     }),
                     loading: deleteMut.isPending,
                   },
-                  onSelect: () => setConfirmDelete(p),
+                  // 스와이프가 위 confirm 으로 이미 물었다 — 여기서 확인창을 또 열면 두 번 묻는다(QA 30 15).
+                  onSelect: () => deleteMut.mutateAsync(p.rowId),
                 },
               ];
               return (

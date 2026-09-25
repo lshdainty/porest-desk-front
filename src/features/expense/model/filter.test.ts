@@ -8,12 +8,14 @@
 //   ① 기간은 **항상 AND** (periods 안에서만 OR)
 //   ② 제외(빼고)는 **항상 AND** — match 와 무관하게 먼저 걸러진다
 //   ③ 포함 조건은 켜진 것만 보고, match=all 이면 전부 / any 면 하나라도
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_FILTER,
   activeConditionCount,
   filterSpan,
   matchesFilter,
+  monthPeriodOf,
+  samePeriod,
   type FilterRow,
   type FilterValue,
 } from "./filter";
@@ -313,5 +315,50 @@ describe("배지·범위 계산", () => {
       end: "2026-09-30",
     });
     expect(filterSpan(f())).toBeNull();
+  });
+});
+
+// 필터의 기본 기간은 보고 있는 달이다(QA 30 10). 종전엔 늘 오늘 기준 이번 달이라, 8월을 보다가
+// 필터를 열면 9월이 잡혀 있었다. 기간 하나만 바꿔 걸어도 배지가 뜨려면 "보고 있는 달과 같은가" 를
+// 날짜로 비교할 수 있어야 한다.
+describe("보고 있는 달의 기본 기간", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("지난 달을 보고 있으면 그 달 1일~말일(직접 입력 기간)", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 8, 25, 12, 0));
+    expect(monthPeriodOf("2026-08")).toEqual({
+      preset: "custom",
+      start: "2026-08-01",
+      end: "2026-08-31",
+    });
+    expect(monthPeriodOf("2026-02").end).toBe("2026-02-28");
+  });
+
+  it("이번 달을 보고 있으면 종전과 같은 '이번 달'(1일~오늘)", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 8, 25, 12, 0));
+    expect(monthPeriodOf("2026-09")).toEqual({
+      preset: "month",
+      start: "2026-09-01",
+      end: "2026-09-25",
+    });
+  });
+
+  it("같은 날들이면 프리셋 이름이 달라도 같은 기간이다", () => {
+    expect(
+      samePeriod(
+        { preset: "month", start: "2026-09-01", end: "2026-09-25" },
+        { preset: "custom", start: "2026-09-01", end: "2026-09-25" },
+      ),
+    ).toBe(true);
+    expect(
+      samePeriod(
+        { preset: "custom", start: "2026-08-10", end: "2026-08-20" },
+        { preset: "custom", start: "2026-08-01", end: "2026-08-31" },
+      ),
+    ).toBe(false);
   });
 });
