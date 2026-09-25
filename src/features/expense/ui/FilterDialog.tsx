@@ -72,6 +72,7 @@ function RowRemove({ onClick, label }: { onClick: () => void; label: string }) {
 
 export function FilterDialog({
   initial,
+  defaultPeriod,
   categories,
   assets,
   onClose,
@@ -79,6 +80,8 @@ export function FilterDialog({
   mobile,
 }: {
   initial?: FilterValue | null;
+  /** 보고 있는 달의 기간 — 처음 열 때와 초기화에 쓴다(`monthPeriodOf`). 없으면 이번 달. */
+  defaultPeriod?: FilterPeriodRange;
   categories: ExpenseCategory[];
   assets: Asset[];
   onClose: () => void;
@@ -94,7 +97,9 @@ export function FilterDialog({
 
   const [match, setMatch] = useState<MatchMode>(start.match);
   const [periods, setPeriods] = useState<FilterPeriodRange[]>(
-    start.periods.length > 0 ? start.periods : [resolvePeriod("month")],
+    start.periods.length > 0
+      ? start.periods
+      : [defaultPeriod ?? resolvePeriod("month")],
   );
   const [types, setTypes] = useState<ExpenseType[]>(start.types);
   const [cats, setCats] = useState<IncludeExclude>(start.categories);
@@ -123,7 +128,7 @@ export function FilterDialog({
 
   const reset = () => {
     setMatch("all");
-    setPeriods([resolvePeriod("month")]);
+    setPeriods([defaultPeriod ?? resolvePeriod("month")]);
     setTypes(DEFAULT_FILTER.types);
     setCats({ include: [], exclude: [] });
     setAccs({ include: [], exclude: [] });
