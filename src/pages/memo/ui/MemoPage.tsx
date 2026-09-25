@@ -347,13 +347,38 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
   const pinned = filtered.filter((m) => m.isPinned);
   const others = filtered.filter((m) => !m.isPinned);
 
-  const onSave = (values: MemoFormValues, id?: number) => {
+  /**
+   * 저장 — 고정은 저장 본문에 칸이 없고 `PATCH /memo/{id}/pin` 하나로만 바뀐다. 그래서 폼의
+   * '상단에 고정' 이 지금과 다르면 저장 뒤 그 경로를 한 번 부른다. 종전엔 스위치를 켜고 저장해도
+   * 고정되지 않았고, 데스크톱 카드의 핀은 해제 전용이라 새로 고정할 길이 없었다(QA 30 8).
+   */
+  const onSave = (
+    values: MemoFormValues,
+    id: number | undefined,
+    pin: boolean,
+  ) => {
+    const wasPinned =
+      id != null && memos.find((m) => m.rowId === id)?.isPinned === true;
+    const syncPin = (rowId: number) => {
+      if (pin !== wasPinned) togglePin.mutate(rowId);
+    };
     if (id != null)
       updateMemo.mutate(
         { id, data: values },
-        { onSuccess: () => setEditing(null) },
+        {
+          onSuccess: () => {
+            syncPin(id);
+            setEditing(null);
+          },
+        },
       );
-    else createMemo.mutate(values, { onSuccess: () => setEditing(null) });
+    else
+      createMemo.mutate(values, {
+        onSuccess: (created) => {
+          syncPin(created.rowId);
+          setEditing(null);
+        },
+      });
   };
 
   const AddBtn = (
@@ -995,7 +1020,11 @@ function MemoEditDialog({
   tags: string[];
   mobile: boolean;
   onClose: () => void;
-  onSave: (values: MemoFormValues, id?: number) => void;
+  onSave: (
+    values: MemoFormValues,
+    id: number | undefined,
+    pinned: boolean,
+  ) => void;
   submitting?: boolean;
 }) {
   const { t } = useTranslation("memo");
@@ -1029,6 +1058,7 @@ function MemoEditDialog({
         color,
       },
       memo?.rowId,
+      pinned,
     );
   };
 
