@@ -163,7 +163,9 @@ export function HoldingsEmpty({
         {desc ?? t("connect.holdingsDesc")}
       </div>
       <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-        <Link to="/desk/settings">{t("connect.action")}</Link>
+        {/* 증권 연결은 설정의 계정 절에 있다(SecuritiesGate 와 같은 자리) — 절 없이 보내면
+            첫 절(카테고리 관리)이 열렸다(QA 30 16). */}
+        <Link to="/desk/settings?section=account">{t("connect.action")}</Link>
       </Button>
     </div>
   );
