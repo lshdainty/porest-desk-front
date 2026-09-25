@@ -27,7 +27,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
@@ -340,14 +339,8 @@ export function PresetEditDialog({
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>{t("addTx.parent")}</SelectLabel>
-                        <SelectItem value={String(selectedParentId)}>
-                          {categories.find((c) => c.rowId === selectedParentId)
-                            ?.categoryName ?? t("addTx.parent")}
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectSeparator />
+                      {/* 상위 자신은 고를 수 없다 — 하위가 있는 상위는 프리셋도 거래도 안 받는다
+                          (EXPENSE_CATEGORY_NOT_LEAF). 거래 추가와 같은 자리(QA 30 13). */}
                       <SelectGroup>
                         <SelectLabel>{t("addTx.detail")}</SelectLabel>
                         {(childrenByParent.get(selectedParentId) ?? []).map(

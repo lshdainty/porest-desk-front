@@ -28,7 +28,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
@@ -503,14 +502,8 @@ export function RecurringAddDialog({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>{tExpense("addTx.parent")}</SelectLabel>
-                      <SelectItem value={String(selectedParentId)}>
-                        {categories.find((c) => c.rowId === selectedParentId)
-                          ?.categoryName ?? tExpense("addTx.parent")}
-                      </SelectItem>
-                    </SelectGroup>
-                    <SelectSeparator />
+                    {/* 상위 자신은 고를 수 없다 — 하위가 있는 상위는 반복 거래를 안 받는다
+                        (EXPENSE_CATEGORY_NOT_LEAF). 거래 추가와 같은 자리(QA 30 13). */}
                     <SelectGroup>
                       <SelectLabel>{tExpense("addTx.detail")}</SelectLabel>
                       {(childrenByParent.get(selectedParentId) ?? []).map(
