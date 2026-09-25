@@ -221,11 +221,24 @@ export function DutchPayFromTxDialog({
 
   const handleSave = () => {
     if (!matched) return;
+    // 결제자는 늘 나다 — 이 거래를 내가 결제했다. 종전엔 isPayer 를 안 실어 서버가 첫 사람을
+    // 결제자로 골랐는데, "나도 포함" 을 끄면 첫 사람이 친구라 친구가 결제자로 저장됐다(QA 30 3).
     const payload: ParticipantFormValues[] = participants.map((p, i) => ({
       userRowId: p.userRowId ?? null,
       participantName: p.name.trim(),
       amount: computedAmounts[i] ?? 0,
+      isPayer: p.isMe,
     }));
+    // "나도 포함" 을 끄면 "내가 전액 결제, 다른 사람 몫만 받아요" — 나는 결제자로 들어가고 내 몫은
+    // 0원이다(서버는 결제자에게만 0원을 받는다). 목록에는 안 그린다.
+    if (!includeMyself) {
+      payload.unshift({
+        userRowId: meRowId,
+        participantName: meName,
+        amount: 0,
+        isPayer: true,
+      });
+    }
     const data: DutchPayFormValues = {
       sourceExpenseRowId: expense.rowId,
       title: defaultTitle,
