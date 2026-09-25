@@ -219,7 +219,8 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                         count,
                       }),
                     },
-                    onSelect: () => setConfirmDelete(tag),
+                    // 스와이프가 위 confirm 으로 이미 물었다 — 여기서 확인창을 또 열면 두 번 묻는다(QA 30 15).
+                    onSelect: () => deleteMut.mutateAsync(tag.rowId),
                   },
                 ];
                 return (
