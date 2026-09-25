@@ -292,3 +292,21 @@ describe("캘린더는 미전달 그대로다", () => {
     expect(sent.calendarRowId).toBeUndefined();
   });
 });
+
+// 일정마다 고르는 색 칸은 없다(사용자 결정 2026-09-25) — 화면은 라벨·캘린더 색으로 칠해서
+// 고른 색이 한 번도 보이지 않았다(QA 30 12).
+describe("색상 칸 (QA 30 12)", () => {
+  it("일정 폼에 색상 칸이 없다", () => {
+    act(() =>
+      root.render(
+        <EventForm
+          event={null}
+          labels={labels}
+          onSubmit={() => {}}
+          onClose={() => {}}
+        />,
+      ),
+    );
+    expect(document.body.textContent).not.toContain("form.color");
+  });
+});
