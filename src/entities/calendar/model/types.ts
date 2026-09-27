@@ -48,9 +48,9 @@ export interface CalendarEventFormValues {
   description?: string | null;
   eventType: CalendarEventType;
   /**
-   * 색. 화면에 고르는 칸이 있고 <b>비울 수가 없다</b>(팔레트에서 하나를 고르거나,
-   * 캘린더·기본색이 시드한다). 그래서 늘 지금 값이 그대로 나간다 — 널 허용 칸이지만
-   * (`Optional<String> color`) 이 화면에선 지울 일이 없다.
+   * 색. 화면에 고르는 칸은 없다 — 일정은 라벨·캘린더 색으로 그려져 고른 색이 닿지 않아
+   * 걷었다(QA 30 12). 새 일정·캘린더를 바꿀 때는 그 캘린더 색으로 채우고, 수정은 지금 값이
+   * 그대로 나간다. 널 허용 칸이지만(`Optional<String> color`) 이 화면에선 지울 일이 없다.
    */
   color: string;
   startDate: string;
@@ -78,6 +78,13 @@ export interface CalendarEventFormValues {
    * 화면에도 '캘린더 없음' 이 없어 비울 수가 없다 — 그래서 미전달 그대로 둔다.
    */
   calendarRowId?: number;
+  /**
+   * 반복 일정에서 **연 회차의 원래 시작** — 조회가 그 회차에 내려 준 `startDate` 그대로(수정 전용).
+   * 수정은 반복 전체에 적용되는데 폼은 연 회차의 날짜로 채워진다. 이 값이 없으면 서버가 폼의 날짜를
+   * 반복의 새 시작으로 써서, 뒤 회차를 열어 저장만 해도 앞 회차들이 사라졌다(QA 30 2). 실으면
+   * 그 회차에서 바뀐 만큼만 반복 전체가 옮겨진다. 반복이 아니면 싣지 않는다(`withOpenedOccurrence`).
+   */
+  occurrenceStartDate?: string;
 }
 
 export interface CalendarAggregateData {

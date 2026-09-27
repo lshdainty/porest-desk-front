@@ -29,7 +29,11 @@ import {
 
 import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
 import { MINUS, money } from "@/shared/lib/porest/format";
-import type { CalendarEvent, Holiday } from "@/entities/calendar";
+import type {
+  CalendarEvent,
+  CalendarEventFormValues,
+  Holiday,
+} from "@/entities/calendar";
 import {
   isCardCarryoverTx,
   isRefundedTx,
@@ -498,4 +502,21 @@ export function convertCalendarEventToIEvent(
     recurrenceId: calendarEvent.recurrenceId ?? null,
     reminders: calendarEvent.reminders ?? [],
   };
+}
+
+/**
+ * 반복 일정의 수정 본문에 **연 회차의 원래 시작**을 싣는다(QA 30 2).
+ *
+ * 조회는 회차마다 그 회차의 날짜로 내려오고 수정 폼도 그 날짜로 채워진다. 그 날짜만 보내면
+ * 서버가 반복의 시작을 그 회차로 옮겨, 뒤 회차를 열어 아무것도 안 바꾸고 저장해도 앞 회차들이
+ * 사라졌다. 연 회차를 알려 주면 서버가 그 회차에서 바뀐 만큼만 반복 전체를 옮긴다.
+ * 반복이 아닌 일정은 본문을 그대로 둔다.
+ */
+export function withOpenedOccurrence(
+  data: CalendarEventFormValues,
+  opened: Pick<CalendarEvent, "rrule" | "startDate">,
+): CalendarEventFormValues {
+  return opened.rrule
+    ? { ...data, occurrenceStartDate: opened.startDate }
+    : data;
 }

@@ -62,6 +62,30 @@ describe("일정 수정 PUT 본문", () => {
   });
 });
 
+describe("반복 일정 수정 — 연 회차의 원래 시작(QA 30 2)", () => {
+  it("occurrenceStartDate 를 조회가 준 모양 그대로 싣는다", async () => {
+    await calendarApi.updateEvent(7, {
+      ...workEvent,
+      isAllDay: false,
+      startDate: "2026-09-21T10:00",
+      endDate: "2026-09-21T11:00",
+      rrule: "FREQ=WEEKLY",
+      occurrenceStartDate: "2026-09-21T10:00:00",
+    });
+
+    expect(bodyOf(put)).toMatchObject({
+      startDate: "2026-09-21T10:00:00",
+      occurrenceStartDate: "2026-09-21T10:00:00",
+    });
+  });
+
+  it("안 실은 수정은 키가 없다 — 서버가 보낸 날짜를 그대로 새 시작으로 쓴다", async () => {
+    await calendarApi.updateEvent(7, workEvent);
+
+    expect(bodyOf(put)).not.toHaveProperty("occurrenceStartDate");
+  });
+});
+
 describe("일정 생성 POST 본문", () => {
   // 생성은 반대다 — 아직 종류가 없는 행이라 화면이 정해 줘야 한다.
   // 서버도 값이 없으면 PERSONAL 로 채운다(CalendarEvent.createEvent).

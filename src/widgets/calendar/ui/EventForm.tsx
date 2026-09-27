@@ -261,8 +261,8 @@ export const EventForm = ({
    * 화면은 지워진 척 닫히고 옛 설명·장소·라벨·반복이 서버에 남았다(QA #112).
    *
    * 손대지 않는 칸도 이유가 있다.
-   * - `color` — 팔레트에서 하나를 고르는 칸이라 **비울 수가 없다.** 널 허용 칸이지만
-   *   (`Optional<String> color`) 지금 값이 늘 그대로 나가면 되므로 위 전개로 충분하다.
+   * - `color` — 고르는 칸이 없다(QA 30 12). 캘린더 색으로 채우거나 지금 값이라 **비는 일이
+   *   없다.** 널 허용 칸이지만(`Optional<String> color`) 위 전개로 충분하다.
    * - `calendarRowId` — 혼자만 `Optional` 이 **아니다.** 서버가 맨 `Long` 으로 받아
    *   "null 이면 안 옮긴다" 로 읽으므로(`updateEvent` 의 `if (calendarRowId != null)`)
    *   키를 빼든 `null` 을 싣든 결과가 같고, 화면에도 '캘린더 없음' 이 없다.
