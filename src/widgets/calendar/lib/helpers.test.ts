@@ -3,8 +3,12 @@ import { i18n } from "@/shared/i18n/config";
 import {
   convertCalendarEventToIEvent,
   convertExpenseToIEvent,
+  withOpenedOccurrence,
 } from "./helpers";
-import type { CalendarEvent } from "@/entities/calendar";
+import type {
+  CalendarEvent,
+  CalendarEventFormValues,
+} from "@/entities/calendar";
 import type { Expense } from "@/entities/expense";
 
 /**
@@ -109,5 +113,36 @@ describe("convertCalendarEventToIEvent.eventType", () => {
 
   it("일정이 아닌 소스(지출)는 종류가 없다 — 지어내지 않는다", () => {
     expect(convertExpenseToIEvent(tx({})).eventType).toBeNull();
+  });
+});
+
+describe("withOpenedOccurrence — 반복 일정은 연 회차를 함께 알린다(QA 30 2)", () => {
+  const form: CalendarEventFormValues = {
+    title: "헬스",
+    eventType: "PERSONAL",
+    color: "#2c70bf",
+    startDate: "2026-09-21T10:00",
+    endDate: "2026-09-21T11:00",
+    isAllDay: false,
+    rrule: "FREQ=WEEKLY",
+  };
+
+  it("반복 일정 — 셋째 회차를 열었으면 그 회차의 원래 시작을 싣는다", () => {
+    const out = withOpenedOccurrence(form, {
+      rrule: "FREQ=WEEKLY",
+      startDate: "2026-09-21T10:00:00",
+    });
+
+    expect(out.occurrenceStartDate).toBe("2026-09-21T10:00:00");
+    expect(out.startDate).toBe(form.startDate);
+  });
+
+  it("반복이 아닌 일정은 본문을 그대로 둔다", () => {
+    const out = withOpenedOccurrence(form, {
+      rrule: null,
+      startDate: "2026-09-21T10:00:00",
+    });
+
+    expect(out).not.toHaveProperty("occurrenceStartDate");
   });
 });

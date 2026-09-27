@@ -15,6 +15,7 @@ import { useIsMobile } from "@/shared/hooks";
 import { DndProviderWrapper } from "@/widgets/calendar/ui/dnd/dnd-provider";
 import { DayEventsDialog } from "@/widgets/calendar/ui/DayEventsDialog";
 import { EventDetailPopover } from "@/widgets/calendar/ui/EventDetailPopover";
+import { withOpenedOccurrence } from "@/widgets/calendar/lib/helpers";
 
 import { CalendarAgendaView } from "@/widgets/calendar/ui/agenda-view/calendar-agenda-view";
 import { CalendarAgendaViewSkeleton } from "@/widgets/calendar/ui/agenda-view/calendar-agenda-view-skeleton";
@@ -134,8 +135,13 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   const handleSubmitEdit = useCallback(
     (data: CalendarEventFormValues) => {
       if (!editingEvent) return;
+      // 반복 일정은 연 회차를 함께 알린다 — 안 알리면 서버가 그 회차 날짜를 반복의
+      // 새 시작으로 써서 앞 회차들이 사라졌다(QA 30 2).
       updateEvent.mutate(
-        { id: editingEvent.rowId, data },
+        {
+          id: editingEvent.rowId,
+          data: withOpenedOccurrence(data, editingEvent),
+        },
         {
           onSuccess: () => setEditingEvent(null),
         },
