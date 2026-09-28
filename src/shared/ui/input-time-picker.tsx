@@ -19,6 +19,12 @@ interface InputTimePickerProps {
   placeholder?: string;
   disabled?: boolean;
   id?: string;
+  /**
+   * 다 친 시각(`HH:MM`)만 알린다. 켜면 키를 누르는 동안의 미완성 값(`1`, `11:` …)은 칸 안에만
+   * 두고, 칸을 떠날 때 미완성이면 마지막 값으로 되돌린다 — `InputDatePicker` 의 같은 이름과
+   * 같다. 받은 값으로 날짜를 계산하는 호스트(일정 폼의 종료 자동 보정)가 켠다.
+   */
+  commitOnComplete?: boolean;
 }
 
 export function InputTimePicker({
@@ -28,9 +34,12 @@ export function InputTimePicker({
   placeholder = "HH:MM",
   disabled = false,
   id,
+  commitOnComplete = false,
 }: InputTimePickerProps) {
   const { t } = useTranslation("common");
   const [open, setOpen] = React.useState(false);
+  // 치는 중인 미완성 값 — `commitOnComplete` 일 때만 쓴다. null 이면 받은 값을 보인다.
+  const [draft, setDraft] = React.useState<string | null>(null);
   const hourListRef = React.useRef<HTMLDivElement>(null);
   const minuteListRef = React.useRef<HTMLDivElement>(null);
 
@@ -52,12 +61,25 @@ export function InputTimePicker({
 
   const setHour = (h: string) => {
     const next = `${h}:${currentMin || "00"}`;
+    setDraft(null);
     onValueChange?.(next);
   };
   const setMinute = (m: string) => {
     const next = `${currentHour || "00"}:${m}`;
+    setDraft(null);
     onValueChange?.(next);
     setOpen(false);
+  };
+
+  const handleInputChange = (next: string) => {
+    if (commitOnComplete) {
+      if (!isValidTime(next)) {
+        setDraft(next);
+        return;
+      }
+      setDraft(null);
+    }
+    onValueChange?.(next);
   };
 
   React.useEffect(() => {
@@ -76,11 +98,12 @@ export function InputTimePicker({
     <div className="relative flex gap-2">
       <Input
         id={id}
-        value={value || ""}
+        value={draft ?? (value || "")}
         placeholder={placeholder}
         className="pr-10 num"
         disabled={disabled}
-        onChange={(e) => onValueChange?.(e.target.value)}
+        onChange={(e) => handleInputChange(e.target.value)}
+        onBlur={() => setDraft(null)}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") {
             e.preventDefault();

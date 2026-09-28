@@ -1,5 +1,5 @@
 export { cn } from "./cn";
-export { formatDate, getLocale } from "./date";
+export { formatDate, getLocale, isCompleteDate } from "./date";
 export {
   formatCurrency,
   formatNumber,

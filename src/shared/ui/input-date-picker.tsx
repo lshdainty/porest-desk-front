@@ -1,4 +1,4 @@
-import { getLocale } from "@/shared/lib";
+import { getLocale, isCompleteDate } from "@/shared/lib";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
 import { Input } from "@/shared/ui/input";
@@ -39,6 +39,16 @@ interface InputDatePickerProps {
   id?: string;
   startMonth?: Date;
   endMonth?: Date;
+  /**
+   * 다 친 날짜만 알린다. 켜면 키를 누르는 동안의 미완성 값(`2`, `2026-0` …)은 칸 안에만
+   * 두고, 달력에 있는 날이 완성될 때만 `onValueChange` 를 부른다. 칸을 떠날 때 미완성이면
+   * 마지막 값으로 되돌린다.
+   *
+   * 받은 값에 다른 값을 이어 붙이거나(날짜 + 시각) 날짜로 계산하는 호스트가 켠다 — 미완성
+   * 값이 그대로 흘러가면 `2T10:00` 같은 값이 칸에 되써져 입력이 깨졌다(일정 폼). 받은 글자를
+   * 그대로 들고 있다가 저장할 때 검사하는 호스트(거래 시트 등)는 끈 채로 둔다.
+   */
+  commitOnComplete?: boolean;
 }
 
 const DEFAULT_START_MONTH = new Date(1900, 0, 1);
@@ -53,8 +63,11 @@ export function InputDatePicker({
   id,
   startMonth = DEFAULT_START_MONTH,
   endMonth = DEFAULT_END_MONTH,
+  commitOnComplete = false,
 }: InputDatePickerProps) {
   const [open, setOpen] = React.useState(false);
+  // 치는 중인 미완성 값 — `commitOnComplete` 일 때만 쓴다. null 이면 받은 값을 보인다.
+  const [draft, setDraft] = React.useState<string | null>(null);
 
   const dateString = value instanceof Date ? formatDate(value) : value || "";
   const date = React.useMemo(() => parseDate(dateString), [dateString]);
@@ -70,6 +83,7 @@ export function InputDatePicker({
   }, [date]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
+    setDraft(null);
     if (selectedDate) {
       if (onValueChange) {
         onValueChange(formatDate(selectedDate));
@@ -83,6 +97,13 @@ export function InputDatePicker({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
+    if (commitOnComplete) {
+      if (!isCompleteDate(inputValue)) {
+        setDraft(inputValue);
+        return;
+      }
+      setDraft(null);
+    }
     if (onValueChange) {
       onValueChange(inputValue);
     }
@@ -100,11 +121,12 @@ export function InputDatePicker({
     <div className="relative flex gap-2">
       <Input
         id={id}
-        value={value instanceof Date ? formatDate(value) : value || ""}
+        value={draft ?? dateString}
         placeholder={placeholder}
         className="pr-10"
         disabled={disabled}
         onChange={handleInputChange}
+        onBlur={() => setDraft(null)}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") {
             e.preventDefault();
