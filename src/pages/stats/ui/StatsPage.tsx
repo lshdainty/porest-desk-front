@@ -4088,7 +4088,9 @@ function RangePickerSheet({
         }}
       >
         <div style={{ flex: 1 }}>
+          {/* 다 친 날짜만 받는다 — 미완성 값을 버리던 탓에 키보드로는 한 글자도 안 쳐졌다. */}
           <InputDatePicker
+            commitOnComplete
             value={toISODate(from)}
             onValueChange={(v) => {
               const d = fromISODate(v);
@@ -4102,6 +4104,7 @@ function RangePickerSheet({
         <span style={{ color: "var(--fg-tertiary)" }}>~</span>
         <div style={{ flex: 1 }}>
           <InputDatePicker
+            commitOnComplete
             value={toISODate(to)}
             onValueChange={(v) => {
               const d = fromISODate(v);

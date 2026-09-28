@@ -155,6 +155,41 @@ describe("InputDatePicker", () => {
   });
 });
 
+/** 다 친 날짜만 받아들이는 호스트 — 통계 기간 칸이 이렇다(`fromISODate` 가 되는 값만 반영). */
+function StrictHost({ commit, seen }: { commit: boolean; seen: string[] }) {
+  const [value, setValue] = useState("2026-09-10");
+  return (
+    <InputDatePicker
+      value={value}
+      commitOnComplete={commit}
+      onValueChange={(v) => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+          seen.push(v);
+          setValue(v);
+        }
+      }}
+    />
+  );
+}
+
+describe("다 친 날짜만 받는 호스트(통계 기간)", () => {
+  it("끈 채로는 누를 때마다 칸이 원래 날짜로 되써져 한 글자도 안 쳐진다", () => {
+    const seen: string[] = [];
+    act(() => root.render(<StrictHost commit={false} seen={seen} />));
+    typeInto(input(), "2026-09-30");
+    expect(seen).toEqual([]);
+    expect(input().value).toBe("2026-09-10");
+  });
+
+  it("켜면 치는 동안 칸에 남고, 다 치면 바뀐다", () => {
+    const seen: string[] = [];
+    act(() => root.render(<StrictHost commit seen={seen} />));
+    typeInto(input(), "2026-09-30");
+    expect(seen).toEqual(["2026-09-30"]);
+    expect(input().value).toBe("2026-09-30");
+  });
+});
+
 describe("InputTimePicker", () => {
   it("끈 채로는 종전 그대로", () => {
     const seen: string[] = [];
