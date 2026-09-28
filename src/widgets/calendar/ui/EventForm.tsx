@@ -88,8 +88,12 @@ const ensureEndAfterStart = (
   allDay: boolean,
 ): string => {
   if (allDay) return newStart > currentEnd ? newStart : currentEnd;
-  if (new Date(newStart) < new Date(currentEnd)) return currentEnd;
-  const d = new Date(newStart);
+  const start = new Date(newStart);
+  // 시작이 날짜로 안 읽히면 종료를 건드리지 않는다. 종전엔 키를 누르는 동안의 미완성 값이
+  // 여기까지 와서 종료에 `NaN-NaN-NaNTNaN:NaN` 이 적혔고, 그대로 저장까지 나갔다.
+  if (isNaN(start.getTime())) return currentEnd;
+  if (start < new Date(currentEnd)) return currentEnd;
+  const d = new Date(start);
   d.setHours(d.getHours() + 1);
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -468,11 +472,15 @@ export const EventForm = ({
           </div>
 
           {/* allDay=true 는 시작/종료 같은 row, false 는 row stack — date input width 확보 */}
+          {/* 날짜·시각 칸은 다 친 값만 받는다(commitOnComplete). 받은 값에 시각을 이어 붙이고
+              종료를 보정하는데, 키를 누를 때마다 미완성 값이 들어오면 `2T10:00` 이 칸에 되써져
+              입력이 깨지고 종료는 NaN 이 됐다(2026-09-28 QA). */}
           <div className={isAllDay ? "grid grid-cols-2 gap-3" : "space-y-3"}>
             <div className="flex flex-col gap-2">
               <Label>{t("form.startDate")}</Label>
               {isAllDay ? (
                 <InputDatePicker
+                  commitOnComplete
                   value={startDate}
                   onValueChange={(d) => {
                     setValue("startDate", d, { shouldDirty: true });
@@ -488,6 +496,7 @@ export const EventForm = ({
               ) : (
                 <div className="grid grid-cols-[1fr_116px] gap-2">
                   <InputDatePicker
+                    commitOnComplete
                     value={startDate.substring(0, 10)}
                     onValueChange={(d) => {
                       const time =
@@ -504,6 +513,7 @@ export const EventForm = ({
                     }}
                   />
                   <InputTimePicker
+                    commitOnComplete
                     value={startDate.substring(11, 16)}
                     onValueChange={(t) => {
                       const date = getValues("startDate").substring(0, 10);
@@ -526,6 +536,7 @@ export const EventForm = ({
               <Label>{t("form.endDate")}</Label>
               {isAllDay ? (
                 <InputDatePicker
+                  commitOnComplete
                   value={endDate}
                   onValueChange={(d) =>
                     setValue("endDate", d, { shouldDirty: true })
@@ -534,6 +545,7 @@ export const EventForm = ({
               ) : (
                 <div className="grid grid-cols-[1fr_116px] gap-2">
                   <InputDatePicker
+                    commitOnComplete
                     value={endDate.substring(0, 10)}
                     onValueChange={(d) => {
                       const time =
@@ -544,6 +556,7 @@ export const EventForm = ({
                     }}
                   />
                   <InputTimePicker
+                    commitOnComplete
                     value={endDate.substring(11, 16)}
                     onValueChange={(t) => {
                       const date = getValues("endDate").substring(0, 10);
