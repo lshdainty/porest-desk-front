@@ -2392,6 +2392,27 @@ subscription,broker.toastDisconnected,{{broker}} 연결을 해제했어요,Disco
 subscription,broker.toastDisconnectFailed,해제에 실패했어요,Disconnect failed
 subscription,broker.toastPrimaryChanged,이제 {{broker}} 시세로 자산을 평가해요,Assets are now valued with {{broker}}
 subscription,broker.toastPrimaryFailed,기본 증권사를 바꾸지 못했어요,Couldn't change the primary provider
+subscription,apiToken.title,API 토큰,API tokens
+subscription,apiToken.desc,내 증권사 키로 시세·차트를 내 프로그램에서 불러올 수 있어요,Read prices and charts from your own programs with your securities key
+subscription,apiToken.scopeHint,"토큰으로는 시세·차트·환율 조회만 할 수 있어요. 잔고와 가계부는 열리지 않고, 구독이 끝나면 토큰도 함께 멈춰요.","Tokens can only read prices, candles and exchange rates. Holdings and your ledger stay closed, and tokens stop working when your subscription ends."
+subscription,apiToken.empty,아직 만든 토큰이 없어요,No tokens yet
+subscription,apiToken.nameLabel,토큰 이름,Token name
+subscription,apiToken.namePlaceholder,예: 보고서 차트,e.g. Report chart
+subscription,apiToken.issue,토큰 만들기,Create token
+subscription,apiToken.created,발급 {{date}},Created {{date}}
+subscription,apiToken.lastUsed,마지막 사용 {{date}},Last used {{date}}
+subscription,apiToken.neverUsed,아직 안 썼어요,Not used yet
+subscription,apiToken.revoke,폐기,Revoke
+subscription,apiToken.revokeAria,{{name}} 토큰 폐기,Revoke token {{name}}
+subscription,apiToken.issuedTitle,토큰을 만들었어요,Token created
+subscription,apiToken.issuedDesc,지금만 볼 수 있어요. 닫으면 다시 확인할 수 없으니 먼저 복사해 두세요.,This is the only time you can see it. Copy it now — it can't be shown again.
+subscription,apiToken.tokenLabel,토큰,Token
+subscription,apiToken.copy,토큰 복사,Copy token
+subscription,apiToken.exampleLabel,호출 예시,Example request
+subscription,apiToken.done,확인,Done
+subscription,apiToken.toastCopied,복사했어요,Copied
+subscription,apiToken.toastRevoked,토큰을 폐기했어요,Token revoked
+subscription,apiToken.loadFailed,토큰 목록을 불러오지 못했어요,Couldn't load your tokens
 subscription,gate.title,증권 구독이 필요해요,Securities needs a subscription
 subscription,gate.desc,"실시간 시세·종목 검색·관심종목은 Pro 구독에 들어 있어요. 구독하면 이 화면이 바로 열려요.","Real-time quotes, search and watchlists are part of Pro. Subscribe and this screen opens right away."
 subscription,gate.action,구독 보기,See plans

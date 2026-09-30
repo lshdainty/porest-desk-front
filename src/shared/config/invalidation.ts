@@ -162,6 +162,8 @@ export const INVALIDATION_MAP = {
     subscriptionKeys.brokerConnections(),
     subscriptionKeys.myFeatures(),
   ],
+  /** 프로그램용 API 토큰이 바뀐다 — 발급·폐기. 목록 하나만 늙는다. */
+  "api-token": [subscriptionKeys.apiTokens()],
 } as const satisfies Record<string, readonly QueryKey[]>;
 
 /** 서버 상태를 바꾸는 변경의 이름. 뮤테이션은 이 중 하나를 고른다. */

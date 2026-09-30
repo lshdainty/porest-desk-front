@@ -101,3 +101,31 @@ export const useSetPrimaryBroker = () => {
     onSuccess: () => invalidateFor(queryClient, "broker-connection"),
   });
 };
+
+/**
+ * 프로그램용 API 토큰 목록. 증권사 연동 다이얼로그를 열 때만 읽는다.
+ *
+ * 목록에는 원문이 없다 — 원문은 발급 응답(`useIssueApiToken`)에서 한 번 보고 끝이다.
+ */
+export const useApiTokens = () =>
+  useQuery({
+    queryKey: subscriptionKeys.apiTokens(),
+    queryFn: () => subscriptionApi.getApiTokens(),
+    staleTime: 60_000,
+  });
+
+export const useIssueApiToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => subscriptionApi.issueApiToken(name),
+    onSuccess: () => invalidateFor(queryClient, "api-token"),
+  });
+};
+
+export const useRevokeApiToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (rowId: number) => subscriptionApi.revokeApiToken(rowId),
+    onSuccess: () => invalidateFor(queryClient, "api-token"),
+  });
+};
