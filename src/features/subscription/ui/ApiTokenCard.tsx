@@ -33,6 +33,20 @@ const NAME_MAX_LENGTH = 50;
 const EXAMPLE_PATH = "/v1/securities/candles?symbol=005930&interval=1m";
 
 /**
+ * 호출 예시에 적는 **전체 주소**.
+ *
+ * dev·운영 빌드의 `config.apiBaseUrl` 은 `/api` 같은 상대 경로다 — 화면과 API 가 같은 출처에 있어
+ * 브라우저에게는 그걸로 충분하다. 하지만 이 예시를 쓰는 건 사용자의 프로그램이고, 거기에는 "지금
+ * 이 화면의 출처" 가 없다. 상대 경로를 그대로 보여 주면 어디로 부르라는 건지 알 수 없는 예시가 된다
+ * (처음에 그렇게 나갔다). 절대 주소로 설정된 빌드에서는 그 주소가 그대로 나온다.
+ */
+const exampleUrl = () =>
+  new URL(
+    `${config.apiBaseUrl}${EXAMPLE_PATH}`,
+    window.location.origin,
+  ).toString();
+
+/**
  * 프로그램용 API 토큰 카드 — 발급 / 목록 / 폐기.
  *
  * desk 는 사용자마다 **자기 증권사 키로 자기 데이터**를 대신 조회해 준다. 브라우저·앱은
@@ -275,7 +289,7 @@ export function ApiTokenCard() {
               <FieldLabel>{t("apiToken.exampleLabel")}</FieldLabel>
               <Textarea
                 readOnly
-                value={`curl -H "Authorization: Bearer ${issued.token}" "${config.apiBaseUrl}${EXAMPLE_PATH}"`}
+                value={`curl -H "Authorization: Bearer ${issued.token}" "${exampleUrl()}"`}
                 onFocus={(e) => e.currentTarget.select()}
                 spellCheck={false}
                 rows={4}

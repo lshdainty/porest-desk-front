@@ -19,6 +19,8 @@ const state = vi.hoisted(() => ({
   issuedName: null as string | null,
   revoked: null as number | null,
   toasts: [] as string[],
+  // dev·운영 빌드는 상대 경로(`/api`)다 — 화면과 API 가 같은 출처라서. 그 값을 기본으로 둔다.
+  config: { apiBaseUrl: "/api" },
 }));
 
 vi.mock("react-i18next", () => ({
@@ -35,9 +37,7 @@ vi.mock("sonner", () => ({
     error: () => {},
   },
 }));
-vi.mock("@/shared/config", () => ({
-  config: { apiBaseUrl: "https://desk.example/api" },
-}));
+vi.mock("@/shared/config", () => ({ config: state.config }));
 vi.mock("../model/useSubscription", () => ({
   useApiTokens: () => ({
     data: state.tokens,
@@ -120,6 +120,7 @@ const tokenInput = () =>
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   state.tokens = [];
+  state.config.apiBaseUrl = "/api";
   state.issuedName = null;
   state.revoked = null;
   state.toasts = [];
@@ -196,12 +197,37 @@ describe("ApiTokenCard", () => {
     expect(tokenInput()!.value).toBe(RAW);
     const example = document.body.querySelector("textarea")!.value;
     expect(example).toContain(`Authorization: Bearer ${RAW}`);
-    expect(example).toContain(
-      "https://desk.example/api/v1/securities/candles?symbol=005930&interval=1m",
-    );
     // 원문을 보는 동안에는 새로 만드는 칸을 치운다 — 한 번에 하나만 본다
     expect(buttonNamed("apiToken.issue")).toBeUndefined();
     expect(document.body.textContent).toContain("apiToken.issuedDesc");
+  });
+
+  // 이 예시를 쓰는 건 사용자의 프로그램이다 — 거기에는 "지금 이 화면의 출처" 가 없다.
+  // 상대 경로가 그대로 나가면(`"/api/v1/..."`) 어디로 부르라는 건지 알 수 없다. 처음에 그렇게 나갔다.
+  it("호출 예시의 주소는 전체 주소다 — 빌드의 API 주소가 상대 경로여도", () => {
+    render();
+    typeName("보고서 차트");
+
+    click(buttonNamed("apiToken.issue")!);
+
+    const example = document.body.querySelector("textarea")!.value;
+    expect(window.location.origin).toMatch(/^https?:\/\//);
+    expect(example).toContain(
+      `"${window.location.origin}/api/v1/securities/candles?symbol=005930&interval=1m"`,
+    );
+    expect(example).not.toContain('"/api/');
+  });
+
+  it("API 주소가 절대 주소로 설정된 빌드에서는 그 주소가 그대로 나온다", () => {
+    state.config.apiBaseUrl = "https://api.desk.example/api";
+    render();
+    typeName("보고서 차트");
+
+    click(buttonNamed("apiToken.issue")!);
+
+    expect(document.body.querySelector("textarea")!.value).toContain(
+      '"https://api.desk.example/api/v1/securities/candles?symbol=005930&interval=1m"',
+    );
   });
 
   it("확인을 누르면 원문이 화면에서 사라진다", async () => {
