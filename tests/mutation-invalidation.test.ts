@@ -706,6 +706,18 @@ const ROWS: Row[] = [
     change: "broker-connection",
     call: () => subscriptions.useSetPrimaryBroker(),
   },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useIssueApiToken",
+    change: "api-token",
+    call: () => subscriptions.useIssueApiToken(),
+  },
+  {
+    file: SUBSCRIPTIONS,
+    hook: "useRevokeApiToken",
+    change: "api-token",
+    call: () => subscriptions.useRevokeApiToken(),
+  },
 ];
 
 /** 표가 비우는 접두 — 표를 고치면 여기도 고쳐야 한다. */
@@ -755,6 +767,7 @@ const EXPECTED_MAP: Record<ChangeKind, string[]> = {
     "subscription/securities-credentials",
     "subscription/features",
   ],
+  "api-token": ["subscription/api-tokens"],
 };
 
 // 레포 루트 기준으로 읽는다. `import.meta.url` 은 안 쓴다 — 테스트 러너 안에서는

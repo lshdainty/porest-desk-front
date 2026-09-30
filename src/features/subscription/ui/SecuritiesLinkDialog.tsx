@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Unplug } from "lucide-react";
 import { ModalShell } from "@/shared/ui/porest/dialogs";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { ApiTokenCard } from "@/features/subscription/ui/ApiTokenCard";
 import { BrokerConnectCard } from "@/features/subscription/ui/BrokerConnectCard";
 import { useBrokerConnections } from "@/features/subscription/model/useSubscription";
 
@@ -78,6 +79,12 @@ export function SecuritiesLinkDialog({
             showPrimaryAction={connectedCount > 1}
           />
         ))}
+
+        {/*
+          증권사 카드 아래에 둔다 — 토큰은 위에서 연결한 키로 가는 길이라 읽는 순서가 그렇다.
+          연결이 하나도 없어도 감추지 않는다. 연결을 끊은 뒤에도 남은 토큰을 보고 폐기할 수 있어야 한다.
+        */}
+        {connections && <ApiTokenCard />}
       </div>
     </ModalShell>
   );

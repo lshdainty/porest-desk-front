@@ -48,6 +48,31 @@ export interface SubscriptionPlan {
   durationMonths: number | null;
 }
 
+/**
+ * 프로그램용 API 토큰 목록의 한 줄.
+ *
+ * **원문은 없다** — 서버에도 해시만 남는다. `tokenPrefix` 는 어느 토큰인지 알아보기 위한
+ * 앞부분(`pdk_` + 8자)이고, 그것만으로는 호출할 수 없다.
+ */
+export interface ApiToken {
+  rowId: number;
+  name: string;
+  tokenPrefix: string;
+  /** 서버 `[UTC]` */
+  createAt: string;
+  /** 서버 `[UTC]`. 분 단위로 묶어 기록한다. 안 썼으면 null */
+  lastUsedAt: string | null;
+}
+
+/** 방금 발급한 토큰. `token` 원문은 이 응답에서만 볼 수 있다. */
+export interface IssuedApiToken {
+  rowId: number;
+  name: string;
+  token: string;
+  tokenPrefix: string;
+  createAt: string;
+}
+
 export const subscriptionApi = {
   getMyFeatures: async (): Promise<MyFeatures> => {
     const resp: ApiResponse<MyFeatures> = await apiClient.get(
@@ -110,5 +135,24 @@ export const subscriptionApi = {
     await apiClient.put(
       `/v1/users/me/securities-credentials/${broker}/primary`,
     );
+  },
+
+  getApiTokens: async (): Promise<ApiToken[]> => {
+    const resp: ApiResponse<ApiToken[]> = await apiClient.get(
+      "/v1/users/me/api-tokens",
+    );
+    return resp.data ?? [];
+  },
+
+  issueApiToken: async (name: string): Promise<IssuedApiToken> => {
+    const resp: ApiResponse<IssuedApiToken> = await apiClient.post(
+      "/v1/users/me/api-tokens",
+      { name },
+    );
+    return resp.data;
+  },
+
+  revokeApiToken: async (rowId: number): Promise<void> => {
+    await apiClient.delete(`/v1/users/me/api-tokens/${rowId}`);
   },
 };

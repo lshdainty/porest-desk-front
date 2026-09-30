@@ -158,6 +158,7 @@ export const subscriptionKeys = {
   mySubscription: () => [...subscriptionKeys.all, "me"] as const,
   brokerConnections: () =>
     [...subscriptionKeys.all, "securities-credentials"] as const,
+  apiTokens: () => [...subscriptionKeys.all, "api-tokens"] as const,
 };
 
 export const stockKeys = {
