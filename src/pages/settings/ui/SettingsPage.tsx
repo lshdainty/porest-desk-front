@@ -1215,10 +1215,12 @@ function AccountSection({
         />
         <AccountRow
           mobile={mobile}
-          icon={<Trash2 size={20} style={{ color: "var(--status-danger)" }} />}
+          icon={
+            <Trash2 size={20} style={{ color: "var(--color-fg-critical)" }} />
+          }
           label={t("account.withdraw.label")}
           desc={t("account.withdraw.desc")}
-          labelColor="var(--status-danger)"
+          labelColor="var(--color-fg-critical)"
           isLast
           onClick={() => setConfirmWithdraw(true)}
         />

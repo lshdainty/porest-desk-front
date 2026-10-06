@@ -99,6 +99,16 @@ const EmbedStockChartPage = lazy(() =>
   })),
 );
 
+// 개발 전용 — 컴포넌트 라이브러리 카탈로그(src/shared/ds). 운영 빌드에서는 import.meta.env.DEV 가
+// false 라 import 째 빠진다.
+const DsCatalogPage = import.meta.env.DEV
+  ? lazy(() =>
+      import("@/shared/ds/catalog/CatalogPage").then((m) => ({
+        default: m.CatalogPage,
+      })),
+    )
+  : null;
+
 const Loading = () => (
   <div className="flex h-screen items-center justify-center">
     <Spinner size="lg" />
@@ -118,6 +128,9 @@ export const AppRouter = () => {
           <Route path="/withdrawn" element={<WithdrawnPage />} />
           {/* 앱 받기 — 로그인 없이 열린다. 링크만 알면 누구나 받을 수 있게(사용자 결정). */}
           <Route path="/download" element={<DownloadPage />} />
+          {DsCatalogPage && (
+            <Route path="/dev/ds" element={<DsCatalogPage />} />
+          )}
           {/* 임베드 차트 — ProtectedRoute 밖 (querystring 의 60초 embed_token 으로 인증) */}
           <Route
             path="/embed/stocks/:symbol"

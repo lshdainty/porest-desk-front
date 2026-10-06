@@ -318,12 +318,12 @@ export const EventForm = ({
                 required: t("form.titleRequired"),
                 maxLength: TITLE_MAX,
               })}
-              className={cn(errors.title && "border-destructive")}
+              className={cn(errors.title && "border-stroke-critical-solid")}
               placeholder={t("form.titlePlaceholder")}
               maxLength={TITLE_MAX}
             />
             {errors.title && (
-              <p className="text-xs text-destructive">{errors.title.message}</p>
+              <p className="text-xs text-fg-critical">{errors.title.message}</p>
             )}
           </div>
 

@@ -205,7 +205,7 @@ const EventDetailPopover = ({
                 whiteSpace: "nowrap",
                 color:
                   dd >= 0 && dd <= 3
-                    ? "var(--status-danger)"
+                    ? "var(--color-fg-critical)"
                     : "var(--fg-tertiary)",
                 background: "var(--bg-muted)",
                 padding: "3px 10px",
@@ -420,7 +420,7 @@ const EventDetailPopover = ({
             variant="ghost"
             size="sm"
             onClick={onDelete}
-            className="text-destructive hover:text-destructive"
+            className="text-fg-critical hover:text-fg-critical"
             style={{ marginRight: "auto" }}
           >
             <Trash2 className="mr-1 size-3.5" />

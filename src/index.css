@@ -42,66 +42,14 @@
   --swatch-lift: 0%;
   /* 색 스와치 체크박스의 체크 표시 색 — fill 대비(라이트: 진한 fill→흰 체크) */
   --swatch-check: #ffffff;
-  --bg-canvas: var(--color-bg-page);
-  --bg-surface: var(--color-surface-default);
-  --bg-surface-raised: var(--color-surface-default);
-  --bg-sunken: var(--color-surface-input);
-  --bg-muted: var(--color-surface-input);
   --bg-section-warm: var(--color-surface-input);
-  --bg-inverse: var(--color-text-primary);
-  --bg-brand: var(--color-primary);
-  --bg-brand-hover: var(--color-primary);
-  --bg-brand-press: var(--color-primary);
-  --bg-brand-subtle: color-mix(in srgb, var(--color-primary) 8%, transparent);
-  --bg-brand-muted: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  --fg-primary: var(--color-text-primary);
-  --fg-secondary: var(--color-text-secondary);
-  --fg-tertiary: var(--color-text-tertiary);
-  --fg-disabled: var(--color-text-disabled);
-  --fg-placeholder: var(--color-text-tertiary);
-  --fg-on-brand: var(--color-text-on-accent);
   --fg-on-warm: var(--color-text-primary);
-  --fg-brand: var(--color-primary);
-  --fg-brand-strong: var(--color-primary);
-  --fg-link: var(--color-primary);
   --fg-link-hover: var(--color-primary);
-  --border-subtle: var(--color-border-default);
-  --border-default: var(--color-border-default);
-  --border-strong: var(--color-border-strong);
-  --border-focus: var(--color-border-focus);
-  --border-brand: var(--color-primary);
   --border-warm: var(--color-border-default);
-  --status-success: var(--color-success);
-  --status-success-subtle: color-mix(
-    in srgb,
-    var(--color-success) 12%,
-    transparent
-  );
-  --status-success-fg: var(--color-success);
-  --status-warning: var(--color-warning);
-  --status-warning-subtle: color-mix(
-    in srgb,
-    var(--color-warning) 12%,
-    transparent
-  );
-  --status-warning-fg: var(--color-warning);
-  --status-danger: var(--color-error);
-  --status-danger-subtle: color-mix(
-    in srgb,
-    var(--color-error) 12%,
-    transparent
-  );
-  --status-danger-fg: var(--color-error);
-  --status-info: var(--color-info);
-  --status-info-subtle: color-mix(in srgb, var(--color-info) 12%, transparent);
-  --status-info-fg: var(--color-info);
 
   /* Interaction tints */
   --bg-hover-subtle: var(--color-surface-input);
   --bg-hover-strong: var(--color-surface-input);
-  --bg-row-hover: var(--color-surface-input);
-  --bg-table-head: var(--color-bg-page);
-  --bg-disabled: var(--color-surface-input);
   --bg-track: var(--color-border-default);
 
   /* Brand-tinted interaction surfaces */
@@ -112,30 +60,15 @@
     var(--color-primary) 14%,
     transparent
   );
-  --border-brand-soft: var(--color-primary-light);
   --border-brand-mid: var(--color-primary);
 
   /* Warm (Bark) tinted surfaces — Porest엔 warm 톤 없음, surface-input으로 통합 */
   --bg-warm-tint: var(--color-surface-input);
   --bg-warm-tint-strong: var(--color-surface-input);
-  --bg-warm-press: var(--color-border-default);
   --fg-on-warm-strong: var(--color-text-primary);
 
-  /* Status interaction colors */
-  --status-success-border: var(--color-success);
-  --status-warning-border: var(--color-warning);
-  --status-danger-border: var(--color-error);
-  --status-danger-press: var(--color-error);
-  --status-info-border: var(--color-info);
-
-  /* On-color text for solid status fills */
-  --fg-on-danger: #fff;
-  --fg-on-success: #fff;
-
   /* Tx semantic — 거래 종류별 색 (지출=danger 톤, 수입=brand 톤, 이체=info 톤) */
-  --fg-expense: var(--status-danger-fg);
   --fg-income: var(--fg-brand);
-  --fg-transfer: var(--status-info-fg);
   --bg-expense-subtle: var(--status-danger-subtle);
   --bg-income-subtle: var(--bg-brand-subtle);
   --bg-transfer-subtle: var(--status-info-subtle);
@@ -182,7 +115,8 @@
     1
   ); /* SoT 미정의 — progress bar width 애니메이션 */
 
-  /* Z-index — porest-tokens.css `--z-*` SoT 사용 (base 0 / dropdown 1000 / sticky 1100 / drawer 1200 / modal 1300 / toast 1400).
+  /* Z-index — porest-tokens.css `--z-*` SoT 사용 (v116 층 이름: base auto / sticky 50 / modal 100 · 101 / floating 200 /
+   * tooltip 210 / alert 300 · 301 / snackbar 400 / dev 9999 — porest-design specs/z-index.md).
    * 옛 legacy scale (1/100/200/300/400/500) 은 cascade 우선 override 였음 — 제거 후 SoT 자동 적용.
    * --z-overlay 는 SoT 미정의 (0 사용처라 단순 제거). Tailwind 기본 z-N (z-50 등) 은 별개 scale 보존. */
 
@@ -260,68 +194,14 @@
   /* Semantic alias — Porest 토큰이 *-dark로 활성됐으니 light와 동일 매핑으로 dark 자동 적용 */
   --swatch-lift: 38%;
   --swatch-check: #1a1f2e; /* 다크: fill 이 light variant → 어두운 체크로 대비 */
-  --bg-canvas: var(--color-bg-page);
-  --bg-surface: var(--color-surface-default);
-  /* 다크 raised = #2d3346 — surface(#242938) 한 단계 위 패널 (design tokens.css 정합).
-     모바일 카드 다이어트 keep 카드(raised + shadow-lg)가 surface 배경 위에서 떠 보이게. */
-  --bg-surface-raised: #2d3346;
-  --bg-sunken: var(--color-surface-input);
-  --bg-muted: var(--color-surface-input);
   --bg-section-warm: var(--color-surface-input);
-  --bg-inverse: var(--color-text-primary);
-  --bg-brand: var(--color-primary);
-  --bg-brand-hover: var(--color-primary);
-  --bg-brand-press: var(--color-primary);
-  --bg-brand-subtle: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  --bg-brand-muted: color-mix(in srgb, var(--color-primary) 22%, transparent);
-  --fg-primary: var(--color-text-primary);
-  --fg-secondary: var(--color-text-secondary);
-  --fg-tertiary: var(--color-text-tertiary);
-  --fg-disabled: var(--color-text-disabled);
-  --fg-placeholder: var(--color-text-tertiary);
-  --fg-on-brand: var(--color-text-on-accent);
   --fg-on-warm: var(--color-text-primary);
-  --fg-brand: var(--color-primary-light);
-  --fg-brand-strong: var(--color-primary-light);
-  --fg-link: var(--color-primary-light);
   --fg-link-hover: var(--color-primary-light);
-  --border-subtle: var(--color-border-default);
-  --border-default: var(--color-border-default);
-  --border-strong: var(--color-border-strong);
-  --border-focus: var(--color-border-focus-light);
-  --border-brand: var(--color-primary-light);
   --border-warm: var(--color-border-default);
-  --status-success: var(--color-success);
-  --status-success-subtle: color-mix(
-    in srgb,
-    var(--color-success) 18%,
-    transparent
-  );
-  --status-success-fg: var(--color-success-light);
-  --status-warning: var(--color-warning);
-  --status-warning-subtle: color-mix(
-    in srgb,
-    var(--color-warning) 18%,
-    transparent
-  );
-  --status-warning-fg: var(--color-warning-light);
-  --status-danger: var(--color-error);
-  --status-danger-subtle: color-mix(
-    in srgb,
-    var(--color-error) 18%,
-    transparent
-  );
-  --status-danger-fg: var(--color-error-light);
-  --status-info: var(--color-info);
-  --status-info-subtle: color-mix(in srgb, var(--color-info) 18%, transparent);
-  --status-info-fg: var(--color-info-light);
 
   /* Interaction tints */
   --bg-hover-subtle: var(--color-surface-input);
   --bg-hover-strong: var(--color-surface-input);
-  --bg-row-hover: var(--color-surface-input);
-  --bg-table-head: var(--color-bg-page);
-  --bg-disabled: var(--color-surface-input);
   --bg-track: var(--color-border-default);
 
   /* 예산 카드(디자인 p-card--brand 정합): 다크 = cobalt(primary-light) @12% 알파.
@@ -336,26 +216,11 @@
     var(--color-primary-light) 22%,
     transparent
   );
-  --border-brand-soft: color-mix(
-    in srgb,
-    var(--color-primary) 35%,
-    transparent
-  );
   --border-brand-mid: var(--color-primary-light);
 
   --bg-warm-tint: var(--color-surface-input);
   --bg-warm-tint-strong: var(--color-surface-input);
-  --bg-warm-press: var(--color-border-default);
   --fg-on-warm-strong: var(--color-text-primary);
-
-  --status-success-border: var(--color-success);
-  --status-warning-border: var(--color-warning);
-  --status-danger-border: var(--color-error);
-  --status-danger-press: var(--color-error-light);
-  --status-info-border: var(--color-info);
-
-  --fg-on-danger: #fff;
-  --fg-on-success: #fff;
 
   /* shadcn mapping */
   --background: var(--bg-canvas);
@@ -402,6 +267,69 @@
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: var(--border-focus);
   --surface-hero: var(--bg-brand-subtle);
+}
+
+/* 옛 로컬 이름 → 역할 색 — porest-design DESIGN.md v102 표의 "Desk 웹 이름" 칸 그대로(앱 적용 5A, 2026-10-06).
+ * 역할 색이 라이트 · 다크를 스스로 따라가므로(porest-tokens.css 의 다크 블록) 두 모드가 같은 식이다.
+ * .dark 에도 적는다 — 하위 요소에 .dark 를 단 곳(카탈로그의 다크 판)에서 역할 색의 다크 값으로 다시 계산되게.
+ * 새 코드는 이 이름 말고 역할 이름(--color-fg-neutral …)을 쓴다. 화면을 옮기면 걷는다. */
+:root,
+.dark,
+[data-theme="dark"] {
+  /* 글자 */
+  --fg-primary: var(--color-fg-neutral);
+  --fg-secondary: var(--color-fg-neutral-muted);
+  --fg-tertiary: var(--color-fg-neutral-subtle);
+  --fg-placeholder: var(--color-fg-placeholder);
+  --fg-disabled: var(--color-fg-disabled);
+  --fg-on-brand: var(--color-static-white);
+  --fg-on-danger: var(--color-static-white);
+  --fg-on-success: var(--color-static-white);
+  --fg-brand: var(--color-fg-brand);
+  --fg-link: var(--color-fg-brand);
+  --fg-brand-strong: var(--color-fg-brand-contrast);
+  --status-danger-fg: var(--color-fg-critical);
+  --fg-expense: var(--color-fg-critical);
+  --status-success-fg: var(--color-fg-positive);
+  --status-warning-fg: var(--color-fg-warning);
+  --status-info-fg: var(--color-fg-informative);
+  --fg-transfer: var(--color-fg-informative);
+  /* 배경 */
+  --bg-canvas: var(--color-bg-layer-basement);
+  --bg-table-head: var(--color-bg-layer-basement);
+  --bg-surface: var(--color-bg-layer-default);
+  --bg-row-hover: var(--color-bg-layer-default-pressed);
+  --bg-surface-raised: var(--color-bg-layer-floating);
+  --bg-sunken: var(--color-bg-neutral-weak);
+  --bg-muted: var(--color-bg-neutral-weak);
+  --bg-warm-press: var(--color-bg-neutral-weak-pressed);
+  --bg-inverse: var(--color-bg-neutral-inverted);
+  --bg-disabled: var(--color-bg-disabled);
+  --status-danger: var(--color-bg-critical-solid);
+  --status-danger-press: var(--color-bg-critical-solid-pressed);
+  --status-danger-subtle: var(--color-bg-critical-weak);
+  --status-success: var(--color-bg-positive-solid);
+  --status-success-subtle: var(--color-bg-positive-weak);
+  --status-warning: var(--color-bg-warning-solid);
+  --status-warning-subtle: var(--color-bg-warning-weak);
+  --status-info: var(--color-bg-informative-solid);
+  --status-info-subtle: var(--color-bg-informative-weak);
+  --bg-brand: var(--color-bg-brand-solid);
+  --bg-brand-hover: var(--color-bg-brand-solid-pressed);
+  --bg-brand-press: var(--color-bg-brand-solid-pressed);
+  --bg-brand-subtle: var(--color-bg-brand-weak);
+  --bg-brand-muted: var(--color-bg-brand-weak-pressed);
+  /* 선 */
+  --border-subtle: var(--color-stroke-neutral-subtle);
+  --border-default: var(--color-stroke-neutral-weak);
+  --border-strong: var(--color-stroke-neutral-solid);
+  --status-danger-border: var(--color-stroke-critical-solid);
+  --status-success-border: var(--color-stroke-positive-solid);
+  --status-warning-border: var(--color-stroke-warning-solid);
+  --status-info-border: var(--color-stroke-informative-solid);
+  --border-focus: var(--color-stroke-focus-ring);
+  --border-brand: var(--color-stroke-brand-solid);
+  --border-brand-soft: var(--color-stroke-brand-weak);
 }
 
 @theme inline {

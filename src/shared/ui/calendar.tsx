@@ -20,7 +20,7 @@ import { buttonVariants } from "@/shared/ui/button-variants";
  *   - day cell: rounded-full(원형 40×40, preview .cal-cell SoT, Toss 톤)
  *   - today: outline 2px primary(테두리만, fill 없음 — selected와 시각 분리,
  *     사용자가 오늘 보면서 다른 날 선택 가능)
- *   - selected: bg-primary fill + text-text-on-accent
+ *   - selected: bg-bg-brand-solid fill + text-text-on-accent
  *   - weekday header: text-text-tertiary + caption 크기 + font-semibold + uppercase
  *   - month caption: text-title-sm + text-text-primary + font-medium
  *
@@ -60,7 +60,7 @@ function Calendar({
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
         months: cn(
-          "flex gap-4 flex-col md:flex-row relative",
+          "flex gap-4 flex-col min-[736px]:flex-row relative",
           defaultClassNames.months,
         ),
         month: cn("flex flex-col w-full gap-4", defaultClassNames.month),
@@ -233,11 +233,11 @@ function CalendarDayButton({
         "dark:hover:text-text-primary",
         "[&>span]:text-xs [&>span]:opacity-70",
         // data variants 는 base 보다 후순 — cascade 에서 후순이 우선되어 base rounded-full 을 정확히 override.
-        // single selection: bg-primary fill (preview .cal-cell--selected SoT)
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-text-on-accent data-[selected-single=true]:rounded-full",
+        // single selection: bg-bg-brand-solid fill (preview .cal-cell--selected SoT)
+        "data-[selected-single=true]:bg-bg-brand-solid data-[selected-single=true]:text-text-on-accent data-[selected-single=true]:rounded-full",
         // range start/end: 셀 가운데 강한 primary 원 (셀 bg 는 td level 에서 좌/우 절반 그라데이션)
-        "data-[range-start=true]:bg-primary data-[range-start=true]:text-text-on-accent data-[range-start=true]:rounded-full",
-        "data-[range-end=true]:bg-primary data-[range-end=true]:text-text-on-accent data-[range-end=true]:rounded-full",
+        "data-[range-start=true]:bg-bg-brand-solid data-[range-start=true]:text-text-on-accent data-[range-start=true]:rounded-full",
+        "data-[range-end=true]:bg-bg-brand-solid data-[range-end=true]:text-text-on-accent data-[range-end=true]:rounded-full",
         // range middle: button transparent + 사각형. 시각은 td level 의 cell bg(color-mix primary 12%) 가 담당.
         "data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-none",
         defaultClassNames.day,

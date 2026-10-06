@@ -339,7 +339,7 @@ export function FilterDialog({
                   style={
                     off
                       ? {
-                          borderColor: "var(--status-danger)",
+                          borderColor: "var(--color-stroke-critical-solid)",
                           background: "var(--status-danger-subtle)",
                           color: "var(--fg-expense)",
                           textDecoration: "line-through",

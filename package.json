@@ -14,6 +14,8 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "i18n:generate": "node scripts/generate-i18n.mjs",
+    "design:sync": "node scripts/sync-design.mjs",
+    "ds:check": "node scripts/check-ds-spec.mjs",
     "test": "vitest run"
   },
   "dependencies": {
@@ -95,6 +97,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "jsdom": "^30.0.1",
+    "playwright": "1.56.1",
     "prettier": "^3.9.6",
     "tw-animate-css": "^1.4.0",
     "typescript": "~5.9.3",

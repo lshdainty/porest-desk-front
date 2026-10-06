@@ -42,7 +42,7 @@ export function NotificationsPopover({
           width: 380,
           maxWidth: "calc(100vw - 32px)",
           maxHeight: "min(640px, calc(100vh - 80px))",
-          zIndex: "var(--z-sticky)",
+          zIndex: "var(--z-floating)",
           background: "var(--bg-surface)",
           border: "1px solid var(--border-subtle)",
           borderRadius: "var(--radius-xl)",

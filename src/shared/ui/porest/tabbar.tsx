@@ -206,7 +206,7 @@ export function TabBarFab({
       <span
         className={cn(
           "inline-flex items-center justify-center rounded-full",
-          "bg-[var(--color-primary)] text-[var(--fg-on-brand)] shadow-[var(--shadow-sm)]",
+          "bg-bg-brand-solid text-[var(--fg-on-brand)] shadow-[var(--shadow-sm)]",
           "transition-[width,height,margin] duration-[var(--motion-duration-base)] ease-[var(--motion-ease-out)]",
           compact ? "w-9 h-9 mt-0" : "w-11 h-11 -mt-1.5",
         )}

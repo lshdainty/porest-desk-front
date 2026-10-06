@@ -452,7 +452,10 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                     </span>
                     {mf.required && (
                       <span
-                        style={{ color: "var(--status-danger)", marginLeft: 3 }}
+                        style={{
+                          color: "var(--color-fg-critical)",
+                          marginLeft: 3,
+                        }}
                       >
                         *
                       </span>
@@ -743,7 +746,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 alignItems: "center",
                 justifyContent: "center",
                 background: "var(--bg-success-subtle, var(--bg-brand-subtle))",
-                color: "var(--status-success, var(--fg-brand-strong))",
+                color: "var(--color-fg-positive)",
               }}
             >
               <Check size={30} strokeWidth={2.6} />

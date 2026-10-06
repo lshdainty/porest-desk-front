@@ -20,7 +20,7 @@ export function CardPerformanceBar({ performance, className }: Props) {
 
   const pct = Math.round(performance.achievementRate * 100);
   const barColor = performance.isAchieved
-    ? "bg-green-500"
+    ? "bg-bg-positive-solid"
     : pct >= 70
       ? "bg-amber-500"
       : "bg-rose-500";
@@ -38,7 +38,7 @@ export function CardPerformanceBar({ performance, className }: Props) {
         <span
           className={
             performance.isAchieved
-              ? "text-green-600 font-medium"
+              ? "text-fg-positive font-medium"
               : "text-muted-foreground"
           }
         >

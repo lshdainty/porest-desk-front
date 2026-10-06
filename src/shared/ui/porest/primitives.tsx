@@ -538,7 +538,7 @@ export function MonthPicker({
               borderRadius: "var(--radius-card)",
               boxShadow: "var(--shadow-lg)",
               padding: 14,
-              zIndex: "var(--z-sticky)",
+              zIndex: "var(--z-floating)",
               width: 260,
             } as React.CSSProperties
           }

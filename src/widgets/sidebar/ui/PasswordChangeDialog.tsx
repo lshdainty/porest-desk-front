@@ -106,7 +106,7 @@ const PasswordMatch = ({
   return (
     <p
       className={`flex items-center gap-1.5 text-xs ${
-        matched ? "text-[var(--status-success-fg)]" : "text-destructive"
+        matched ? "text-[var(--status-success-fg)]" : "text-fg-critical"
       }`}
       aria-live="polite"
     >
@@ -222,7 +222,7 @@ export const PasswordChangeDialog = ({
                 className="flex items-center gap-1.5"
               >
                 {t("currentPassword")}
-                <span className="text-destructive">*</span>
+                <span className="text-fg-critical">*</span>
               </Label>
               <Input
                 id="currentPassword"
@@ -231,7 +231,7 @@ export const PasswordChangeDialog = ({
                 {...form.register("currentPassword")}
               />
               {form.formState.errors.currentPassword && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-fg-critical">
                   {form.formState.errors.currentPassword.message}
                 </p>
               )}
@@ -242,7 +242,7 @@ export const PasswordChangeDialog = ({
                 className="flex items-center gap-1.5"
               >
                 {t("newPassword")}
-                <span className="text-destructive">*</span>
+                <span className="text-fg-critical">*</span>
               </Label>
               <Input
                 id="newPassword"
@@ -251,7 +251,7 @@ export const PasswordChangeDialog = ({
                 {...form.register("newPassword")}
               />
               {form.formState.errors.newPassword && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-fg-critical">
                   {form.formState.errors.newPassword.message}
                 </p>
               )}
@@ -264,7 +264,7 @@ export const PasswordChangeDialog = ({
                 className="flex items-center gap-1.5"
               >
                 {t("confirmPassword")}
-                <span className="text-destructive">*</span>
+                <span className="text-fg-critical">*</span>
               </Label>
               <Input
                 id="confirmPassword"
@@ -274,7 +274,7 @@ export const PasswordChangeDialog = ({
               />
               {/* 불일치는 아래 PasswordMatch 가 입력 중에 이미 보여주므로, 여기선 미입력 에러만 남긴다 */}
               {form.formState.errors.confirmPassword && !confirmPassword && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-fg-critical">
                   {form.formState.errors.confirmPassword.message}
                 </p>
               )}

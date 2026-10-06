@@ -9,7 +9,7 @@ const WEEK_DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
 /**
  * 실제 MonthDayCell 미러 — 모바일은 셀 보더 없음(lg 이상만 grid line),
  * 이벤트 placeholder 는 실제 칩과 동일한 높이: 모바일 h-4(앱 타이트 칩) /
- * 데스크톱·태블릿 h-5.5 lg:h-6.5 (실제 MonthEventBadge 분기 정합).
+ * 데스크톱·태블릿 h-5.5 min-[834px]:h-6.5 (실제 MonthEventBadge 분기 정합).
  */
 const DayCellSkeleton = ({
   isSunday,
@@ -22,7 +22,7 @@ const DayCellSkeleton = ({
 }) => {
   return (
     <div
-      className={`flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 ${isSunday ? "lg:border-l-0" : ""}`}
+      className={`flex h-full flex-col gap-1 min-[834px]:border-l min-[834px]:border-t py-1.5 min-[834px]:pb-2 min-[834px]:pt-1 ${isSunday ? "min-[834px]:border-l-0" : ""}`}
     >
       {/* 실제 MonthDayCell 과 같이 날짜 자리를 셀 정중앙에 둔다 — 다르면 로딩에서
           데이터로 넘어갈 때 날짜 원이 좌우로 튄다. */}
@@ -34,7 +34,7 @@ const DayCellSkeleton = ({
         {Array.from({ length: chips }).map((_, i) => (
           <Skeleton
             key={i}
-            className={`${isMobile ? "h-4" : "h-5.5 lg:h-6.5"} mx-0.5 lg:mx-1 rounded-sm lg:rounded-md`}
+            className={`${isMobile ? "h-4" : "h-5.5 min-[834px]:h-6.5"} mx-0.5 min-[834px]:mx-1 rounded-sm min-[834px]:rounded-md`}
           />
         ))}
       </div>

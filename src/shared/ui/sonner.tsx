@@ -8,7 +8,7 @@ import { useTheme } from "@/shared/ui/theme-context";
  *   toast: surface-raised + radius-md + shadow-md (테두리 없음)
  *   title: text-title-sm 600
  *   description: text-body-sm + text-secondary
- *   actionButton: button.md Size sm — h-8 + text-caption + radius-sm + bg-primary +
+ *   actionButton: button.md Size sm — h-8 + text-caption + radius-sm + bg-bg-brand-solid +
  *                 shadow-sm + hover:brightness-105 + transition-[box-shadow]
  *   cancelButton: 같은 sm 골격 + outline (border-default + surface-default)
  *
@@ -160,7 +160,7 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
           description:
             "!text-body-sm !font-normal !text-[var(--color-text-secondary)]",
           actionButton:
-            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !bg-primary !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
+            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !bg-bg-brand-solid !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
           cancelButton:
             "!inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !border !border-[var(--color-border-default)] !bg-[var(--color-surface-default)] !text-[var(--color-text-primary)] !h-8 !px-[var(--spacing-sm)] !text-caption",
         },

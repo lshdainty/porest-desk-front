@@ -101,7 +101,7 @@ const MonthYearPickerContent = ({
               className={cn(
                 "rounded py-2 text-sm font-medium transition-colors",
                 isSelected
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  ? "bg-bg-brand-solid text-primary-foreground hover:bg-bg-brand-solid-pressed"
                   : "hover:bg-accent text-foreground",
               )}
             >
@@ -123,7 +123,7 @@ const MonthYearPickerContent = ({
       >
         <button
           // 오늘로 = primary-light(다크에서 --fg-brand-strong→primary-light swap)로 가독성 확보.
-          // primary(--color-primary)는 다크 배경에서 잘 안 보임. 선택 월 박스는 bg-primary 유지.
+          // primary(--color-primary)는 다크 배경에서 잘 안 보임. 선택 월 박스는 브랜드 채움(bg-bg-brand-solid).
           className="flex items-center gap-1 text-sm font-medium text-[var(--fg-brand-strong)] hover:opacity-80"
           onClick={() => {
             onToday();
@@ -233,14 +233,14 @@ const CalendarHeader = ({ events }: IProps) => {
 
   // ── 데스크톱/태블릿: 기존 헤더 + 날짜 텍스트 → Popover picker ──
   return (
-    <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-4 border-b p-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
       <div className="flex items-center gap-3">
         {/* Today 날짜 버튼 */}
         <button
           className="flex size-14 flex-col items-start overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           onClick={handleTodayClick}
         >
-          <p className="flex h-6 w-full items-center justify-center bg-primary text-center text-xs font-semibold text-primary-foreground">
+          <p className="flex h-6 w-full items-center justify-center bg-bg-brand-solid text-center text-xs font-semibold text-primary-foreground">
             {format(
               new Date(),
               i18n.language.startsWith("ko") ? "M월" : "MMM",
@@ -301,9 +301,9 @@ const CalendarHeader = ({ events }: IProps) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+      <div className="flex flex-wrap items-center gap-2 min-[834px]:gap-3">
         <CalendarSourceToggle />
-        <div className="hidden h-6 w-px bg-border lg:block" />
+        <div className="hidden h-6 w-px bg-border min-[834px]:block" />
 
         <div className="inline-flex">
           <Button

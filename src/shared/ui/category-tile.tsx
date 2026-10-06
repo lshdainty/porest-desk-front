@@ -52,7 +52,7 @@ export function CategoryTile({
             : "transparent",
         // 비활성 보더 제거(design 신판) — transparent 로 두어 active 전환 시 1px 시프트 방지.
         border: excluded
-          ? "1px solid var(--status-danger)"
+          ? "1px solid var(--color-stroke-critical-solid)"
           : active
             ? "1px solid var(--border-brand)"
             : "1px solid transparent",

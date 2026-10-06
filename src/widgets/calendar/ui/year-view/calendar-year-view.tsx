@@ -58,7 +58,8 @@ const YearViewDayCell = ({
       <div
         className={cn(
           "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-          isToday(date) && "bg-primary font-semibold text-primary-foreground",
+          isToday(date) &&
+            "bg-bg-brand-solid font-semibold text-primary-foreground",
         )}
         style={{
           color: isToday(date)
@@ -204,7 +205,7 @@ const CalendarYearView = ({ allEvents }: IProps) => {
 
   return (
     <div className="w-full h-full overflow-y-auto scrollbar-hide p-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[736px]:grid-cols-2 min-[834px]:grid-cols-3 min-[1069px]:grid-cols-4">
         {months.map((month) => (
           <YearViewMonth
             key={month.toString()}

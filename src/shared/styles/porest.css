@@ -362,15 +362,17 @@
   position: relative;
   overflow: hidden;
 }
-/* dark: primary-light(#5FA0E5) → primary(#0147AD) 그라데이션. 어두운 페이지에서
+/* dark: primary-light → 브랜드 채움 그라데이션. 어두운 페이지에서
    카드를 밝게 도드라지게 + 디자인 시스템 dark brand 원칙(fg/border 전부 primary-light)
    정합. --bg-brand 자체를 바꾸면 채움 버튼 전체에 영향 → hero 전용 오버라이드.
-   app tokens.dart bgHeroGradientStart(cobalt400)/End(cobalt500)와 정합. */
+   끝은 채움 역할(bg-brand-solid)이다 — primary 는 v108 부터 글자 역할(fg-brand)의 별칭이라
+   다크에서 primary-light 와 같은 밝은 값이 되어 그라데이션이 사라진다(2026-10-06).
+   app tokens.dart bgHeroGradientStart/End 와 정합. */
 .dark .balance-hero {
   background: linear-gradient(
     135deg,
     var(--color-primary-light) 0%,
-    var(--color-primary) 100%
+    var(--color-bg-brand-solid) 100%
   );
 }
 .balance-hero::after {
