@@ -1,8 +1,5 @@
 import type { ComponentType } from "react";
 
-import { ButtonDemo } from "@/shared/ds/button/button.demo";
-import { ProgressCircleDemo } from "@/shared/ds/progress-circle/progress-circle.demo";
-
 /**
  * 컴포넌트 라이브러리(src/shared/ds) 등록부 — 개발 전용 카탈로그(/dev/ds)가 그린다.
  *
@@ -10,13 +7,25 @@ import { ProgressCircleDemo } from "@/shared/ds/progress-circle/progress-circle.
  * (Button ← Progress Circle, Chip ← Field · Scroll Fog, Dialog ← Alert Dialog · Bottom Sheet …).
  * 묶음은 porest-design 에서 스펙을 정할 때 묶은 단위와 같다.
  *
- * 컴포넌트를 만들면 그 줄에 demo 를 단다 — 스펙의 변형 · 크기 · 상태를 모두 그린 화면.
  * spec 은 porest-design specs/components/<이름>.md 의 이름이고, 값은 src/shared/ds/spec/<이름>.json 이다.
+ * 컴포넌트 폴더도 같은 이름이다(src/shared/ds/<이름>/).
+ *
+ * 데모는 그 폴더의 <이름>.demo.tsx 가 내보내는 컴포넌트 하나다 — 스펙의 변형 · 크기 · 상태를 모두 그린 화면.
+ * 파일을 두면 저절로 붙는다(아래 DEMOS) — 이 파일은 고치지 않는다.
  */
 export type DsEntry = {
   name: string;
   spec: string;
   demo?: ComponentType;
+};
+
+const DEMOS = import.meta.glob<Record<string, ComponentType>>(
+  "../*/*.demo.tsx",
+  { eager: true },
+);
+const demoFor = (spec: string) => {
+  const mod = DEMOS[`../${spec}/${spec}.demo.tsx`];
+  return mod ? Object.values(mod)[0] : undefined;
 };
 
 export type DsFamily = {
@@ -25,17 +34,13 @@ export type DsFamily = {
   entries: DsEntry[];
 };
 
-export const DS_FAMILIES: DsFamily[] = [
+const FAMILIES: DsFamily[] = [
   {
     id: "button",
     title: "1 버튼",
     entries: [
-      {
-        name: "Progress Circle",
-        spec: "progress-circle",
-        demo: ProgressCircleDemo,
-      },
-      { name: "Button", spec: "button", demo: ButtonDemo },
+      { name: "Progress Circle", spec: "progress-circle" },
+      { name: "Button", spec: "button" },
     ],
   },
   {
@@ -149,6 +154,14 @@ export const DS_FAMILIES: DsFamily[] = [
     entries: [{ name: "List", spec: "list" }],
   },
 ];
+
+export const DS_FAMILIES: DsFamily[] = FAMILIES.map((family) => ({
+  ...family,
+  entries: family.entries.map((entry) => ({
+    ...entry,
+    demo: demoFor(entry.spec),
+  })),
+}));
 
 /** 역할 색 — 카탈로그 첫 화면의 색 판. 화면 · 컴포넌트는 이 이름만 부른다(DESIGN.md v102). */
 export const DS_ROLE_SWATCHES: { group: string; names: string[] }[] = [

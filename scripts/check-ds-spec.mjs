@@ -7,16 +7,16 @@
  *      겹치고, 그 위에 그 상태의 값을 겹친다(사이트 · 앱 테스트와 같은 방식).
  *   2. 견본이 놓인 판(라이트 · 다크)의 값을 고른다.
  *   3. 계산된 스타일을 읽어 맞춘다. hovered · pressed · focused 는 실제로 올리고 · 누르고 · 탭해서 잰다.
- * 무엇을 어느 CSS 로 재는지는 컴포넌트마다 MEASURE 에 적는다 — 적지 않은 값(커서 · 모션 · 문장으로 된 값)은
- * 재지 않는다.
+ * 무엇을 어느 CSS 로 재는지는 컴포넌트 폴더의 <이름>.measure.mjs 에 적는다 — 적지 않은 값(커서 · 모션 ·
+ * 문장으로 된 값)은 재지 않는다. 컴포넌트를 더할 때 이 파일은 고치지 않는다.
  *
  * 사용: npm run ds:check            (모든 컴포넌트)
  *       npm run ds:check -- button  (이름을 주면 그것만)
  * Playwright 의 Chromium 이 필요하다 — 처음 한 번 `npx playwright install chromium`.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 import { createServer } from "vite";
 
@@ -103,71 +103,48 @@ const samePx = (expected, actual) =>
 
 // ── 컴포넌트마다 무엇을 어디서 재나 ──────────────────────────
 //
-// 키는 "슬롯.속성"(스펙 JSON 의 이름), 값은 [요소, 읽을 CSS 속성들, 비교].
-// 요소: "root"(견본 자체) 또는 견본 안의 CSS 선택자. 비교는 (스펙 값, { 속성: 계산값 }) → 참 · 거짓.
-// 넷째 칸(있으면)은 그 조합 · 상태의 스펙 값 전체를 받아 참이면 그 값을 재지 않는다.
-const px = (prop) => [[prop], (e, v) => samePx(e, v[prop])];
-const color = (prop) => [[prop], (e, v) => sameColor(e, v[prop])];
-const exact = (prop) => [[prop], (e, v) => String(e) === v[prop]];
-// 글자 — 크기 · 줄 높이만 잰다. 굵기는 컴포넌트가 따로 정한다(label.fontWeight)
-const typography = [
-  ["font-size", "line-height"],
-  (e, v) =>
-    samePx(e.fontSize, v["font-size"]) &&
-    samePx(e.lineHeight, v["line-height"]),
-];
+// src/shared/ds/<이름>/<이름>.measure.mjs 의 default — 키는 "슬롯.속성"(스펙 JSON 의 이름),
+// 값은 [요소, 재는 법, CSS 속성, { skipIf }].
+//   요소     "root"(견본 자체) 또는 견본 안의 CSS 선택자. 그 견본에 없으면 재지 않는다.
+//   재는 법  px(숫자 값을 그 속성의 px 로) · color · exact(글 그대로) · typography(글자 크기 · 줄 높이)
+//   skipIf   그 조합 · 상태의 스펙에 이 키가 있으면 재지 않는다(다른 키가 같은 CSS 를 덮을 때)
+const measures = {};
+async function measureFor(spec) {
+  if (!(spec in measures)) {
+    const file = resolve(ROOT, `src/shared/ds/${spec}/${spec}.measure.mjs`);
+    measures[spec] = existsSync(file)
+      ? (await import(pathToFileURL(file).href)).default
+      : null;
+  }
+  return measures[spec];
+}
 
-const MEASURE = {
-  "progress-circle": {
-    "root.size": ["root", ...px("width")],
-    "root.thickness": [
-      "[data-slot=progress-circle-track]",
-      ...px("stroke-width"),
-    ],
-    "root.track": ["[data-slot=progress-circle-track]", ...color("stroke")],
-    "root.range": ["[data-slot=progress-circle-range]", ...color("stroke")],
-    "range.linecap": [
-      "[data-slot=progress-circle-range]",
-      ...exact("stroke-linecap"),
-    ],
-  },
-  button: {
-    "root.height": ["root", ...px("height")],
-    "root.width": ["root", ...px("width")],
-    "root.radius": ["root", ...px("border-top-left-radius")],
-    "root.background": ["root", ...color("background-color")],
-    // 로딩에서는 label.color(투명)가 같은 CSS color 를 덮는다 — 그때는 그것을 잰다
-    "root.foreground": ["root", ...color("color"), (e) => "label.color" in e],
-    "root.borderColor": ["root", ...color("border-top-color")],
-    "root.borderWidth": ["root", ...px("border-top-width")],
-    "root.paddingX": ["root", ...px("padding-left")],
-    "root.paddingY": ["root", ...px("padding-top")],
-    "root.padding": ["root", ...px("padding-top")],
-    "root.gap": ["root", ...px("column-gap")],
-    "label.typography": ["root", ...typography],
-    "label.fontWeight": ["root", ...exact("font-weight")],
-    "label.color": ["root", ...color("color")],
-    "prefixIcon.size": ["svg:not([data-slot])", ...px("width")],
-    "suffixIcon.size": ["svg:not([data-slot])", ...px("width")],
-    "icon.size": ["svg:not([data-slot])", ...px("width")],
-    "progressCircle.size": ["[data-slot=progress-circle]", ...px("width")],
-    "progressCircle.thickness": [
-      "[data-slot=progress-circle-track]",
-      ...px("stroke-width"),
-    ],
-    "progressCircle.track": [
-      "[data-slot=progress-circle-track]",
-      ...color("stroke"),
-    ],
-    "progressCircle.range": [
-      "[data-slot=progress-circle-range]",
-      ...color("stroke"),
-    ],
-    "focusRing.width": ["root", ...px("outline-width")],
-    "focusRing.offset": ["root", ...px("outline-offset")],
-    "focusRing.color": ["root", ...color("outline-color")],
-  },
-};
+/** 스펙 값 하나를 재는 법 — [읽을 CSS 속성들, 비교]. 잴 수 없는 값(문장)이면 null */
+function howToCompare(kind, prop, want) {
+  switch (kind) {
+    case "px":
+      return typeof want === "number"
+        ? [[prop], (v) => samePx(want, v[prop])]
+        : null;
+    case "color":
+      return typeof want === "string" && parseColor(want)
+        ? [[prop], (v) => sameColor(want, v[prop])]
+        : null;
+    case "exact":
+      return [[prop], (v) => String(want) === v[prop]];
+    case "typography":
+      return want && typeof want === "object"
+        ? [
+            ["font-size", "line-height"],
+            (v) =>
+              samePx(want.fontSize, v["font-size"]) &&
+              samePx(want.lineHeight, v["line-height"]),
+          ]
+        : null;
+    default:
+      throw new Error(`재는 법을 모른다: ${kind}`);
+  }
+}
 
 // ── 재기 ───────────────────────────────────────────────────
 
@@ -196,7 +173,7 @@ for (const handle of specimens) {
     mode: el.closest("[data-theme=dark]") ? "dark" : "light",
   }));
   if (only.length && !only.includes(info.spec)) continue;
-  const measure = MEASURE[info.spec];
+  const measure = await measureFor(info.spec);
   if (!measure) continue;
   specs[info.spec] ??= loadSpec(info.spec);
   const expected = resolveState(specs[info.spec], info.combo, info.state);
@@ -220,11 +197,11 @@ for (const handle of specimens) {
     const how = measure[key];
     if (!how) continue;
     const want = pick(raw, info.mode);
-    if (typeof want === "string" && !/^(#|transparent|round)/.test(want)) {
-      continue; // 문장으로 된 값(부품이 정함 …)
-    }
-    const [target, props, cmp, skip] = how;
-    if (skip?.(expected)) continue;
+    const [target, kind, cssProp, { skipIf } = {}] = how;
+    if (skipIf && skipIf in expected) continue;
+    const compare = howToCompare(kind, cssProp, want);
+    if (!compare) continue; // 문장으로 된 값(부품이 정함 …)
+    const [props, cmp] = compare;
     const actual = await root.evaluate(
       (el, { target, props }) => {
         const node = target === "root" ? el : el.querySelector(target);
@@ -239,7 +216,7 @@ for (const handle of specimens) {
     // 그 견본에 없는 부분(로딩이 아닐 때의 로딩 원, 아이콘 없는 버튼의 아이콘)은 재지 않는다
     if (actual === null) continue;
     checked++;
-    if (!cmp(want, actual)) {
+    if (!cmp(actual)) {
       failed++;
       console.log(
         `✗ ${label} — ${key}: 스펙 ${JSON.stringify(want)} · 실제 ${JSON.stringify(actual)}`,
