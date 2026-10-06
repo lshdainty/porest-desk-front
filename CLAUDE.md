@@ -11,10 +11,15 @@
 ## WHAT (산출물)
 
 `porest-design`에 정의된 디자인 시스템을 React/TS로 구현한 클라이언트:
-- `src/shared/ds/<name>.tsx` — **새 컴포넌트 라이브러리**(2026-10-06~). porest-design 에서 SEED 와 비교해 확정한
+- `src/shared/ds/<name>/` — **새 컴포넌트 라이브러리**(2026-10-06~). porest-design 에서 SEED 와 비교해 확정한
   스펙(사이트에 그림 페이지가 있는 42개)만 만든다. 레시피(`recipes/shadcn/components/ui/<name>.tsx`)를 첫 판으로
-  가져와 이 레포 규칙(경로 · 파일 나누기 · 손 메모이제이션 없음)에 맞춘다. 만든 것은 개발 전용 카탈로그
-  `/dev/ds`(`src/shared/ds/catalog`)에서 라이트 · 다크로 본다.
+  가져와 이 레포 규칙(경로 · 파일 나누기 · 손 메모이제이션 없음)에 맞춘다. 폴더 하나에 `<name>.tsx`(컴포넌트만 —
+  빠른 새로 고침) · `<name>-variants.ts`(cva) · `<name>.demo.tsx`(카탈로그 견본) · `<name>.test.tsx`(동작) ·
+  `index.ts`(내보내기)를 둔다. 만든 것은 개발 전용 카탈로그 `/dev/ds`(`src/shared/ds/catalog`)에서 라이트 · 다크로 본다.
+- **스펙대로인지는 `npm run ds:check` 가 잰다** — 카탈로그를 크로미움에 띄워 견본(`Specimen`)마다 스펙 값
+  (`src/shared/ds/spec/*.json`)을 풀고 계산된 스타일과 맞춘다. 올림 · 누름 · 키보드 포커스는 실제로 해서 잰다.
+  컴포넌트를 만들면 견본과 검사기의 `MEASURE`(무엇을 어느 CSS 로 재나)를 같이 단다. Playwright 크로미움이
+  필요하다(처음 한 번 `npx playwright install chromium`). 아직 CI 에는 없다 — 커밋 전에 돌린다.
 - `src/shared/ui/<name>.tsx` — **옛 컴포넌트**. 화면을 하나씩 `shared/ds` 로 옮기는 동안만 남는다 — 새로 쓰지 않는다.
   옮기는 순서는 "먼저 라이브러리를 다 만들고, 화면은 나중에 화면 단위로" 다.
 - `src/shared/styles/porest-tokens.css` · `src/shared/ds/spec/*.json` — porest-design 이 내보낸 파일. **손으로 고치지

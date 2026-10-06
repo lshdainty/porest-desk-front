@@ -1,5 +1,8 @@
 import type { ComponentType } from "react";
 
+import { ButtonDemo } from "@/shared/ds/button/button.demo";
+import { ProgressCircleDemo } from "@/shared/ds/progress-circle/progress-circle.demo";
+
 /**
  * 컴포넌트 라이브러리(src/shared/ds) 등록부 — 개발 전용 카탈로그(/dev/ds)가 그린다.
  *
@@ -27,8 +30,12 @@ export const DS_FAMILIES: DsFamily[] = [
     id: "button",
     title: "1 버튼",
     entries: [
-      { name: "Progress Circle", spec: "progress-circle" },
-      { name: "Button", spec: "button" },
+      {
+        name: "Progress Circle",
+        spec: "progress-circle",
+        demo: ProgressCircleDemo,
+      },
+      { name: "Button", spec: "button", demo: ButtonDemo },
     ],
   },
   {
