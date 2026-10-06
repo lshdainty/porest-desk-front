@@ -19,8 +19,10 @@
   `/dev/ds`(`src/shared/ds/catalog`)에서 라이트 · 다크로 본다 — 데모 파일을 두면 등록부를 고치지 않아도 붙는다.
 - **스펙대로인지는 `npm run ds:check` 가 잰다** — 카탈로그를 크로미움에 띄워 견본(`Specimen`)마다 스펙 값
   (`src/shared/ds/spec/*.json`)을 풀고 계산된 스타일과 맞춘다. 올림 · 누름 · 키보드 포커스는 실제로 해서 잰다.
-  컴포넌트를 만들면 견본과 `<name>.measure.mjs`(무엇을 어느 CSS 로 재나)를 같이 단다. Playwright 크로미움이
+  컴포넌트를 만들면 견본과 `<name>.measure.mjs`(무엇을 어느 CSS 로 재나)를 같이 단다. 한 폴더가 스펙 둘을
+  그리면(avatar 의 Avatar Stack) 그 폴더에 `<스펙>.measure.mjs` 를 함께 둔다. Playwright 크로미움이
   필요하다(처음 한 번 `npx playwright install chromium`). 아직 CI 에는 없다 — 커밋 전에 돌린다.
+  잴 수 없는 값(문장 · 비율 · 그림자 · 시간)은 그 measure 파일 머리에 까닭을 적고 동작 테스트가 맡는다.
 - `src/shared/ui/<name>.tsx` — **옛 컴포넌트**. 화면을 하나씩 `shared/ds` 로 옮기는 동안만 남는다 — 새로 쓰지 않는다.
   옮기는 순서는 "먼저 라이브러리를 다 만들고, 화면은 나중에 화면 단위로" 다.
 - `src/shared/styles/porest-tokens.css` · `src/shared/ds/spec/*.json` — porest-design 이 내보낸 파일. **손으로 고치지

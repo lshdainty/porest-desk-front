@@ -14,7 +14,7 @@
  *       npm run ds:check -- button  (이름을 주면 그것만)
  * Playwright 의 Chromium 이 필요하다 — 처음 한 번 `npx playwright install chromium`.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium } from "playwright";
@@ -109,10 +109,19 @@ const samePx = (expected, actual) =>
 //   재는 법  px(숫자 값을 그 속성의 px 로) · color · exact(글 그대로) · typography(글자 크기 · 줄 높이)
 //   skipIf   그 조합 · 상태의 스펙에 이 키가 있으면 재지 않는다(다른 키가 같은 CSS 를 덮을 때)
 const measures = {};
+// 잴 자리 파일 — 보통 그 스펙 이름의 폴더에 있다. 한 폴더가 스펙 둘을 그리면(avatar 의 Avatar Stack) 그 폴더에
+// <스펙>.measure.mjs 를 함께 둔다
 async function measureFor(spec) {
   if (!(spec in measures)) {
-    const file = resolve(ROOT, `src/shared/ds/${spec}/${spec}.measure.mjs`);
-    measures[spec] = existsSync(file)
+    const own = resolve(ROOT, `src/shared/ds/${spec}/${spec}.measure.mjs`);
+    const file = existsSync(own)
+      ? own
+      : readdirSync(resolve(ROOT, "src/shared/ds"))
+          .map((dir) =>
+            resolve(ROOT, `src/shared/ds/${dir}/${spec}.measure.mjs`),
+          )
+          .find((f) => existsSync(f));
+    measures[spec] = file
       ? (await import(pathToFileURL(file).href)).default
       : null;
   }
@@ -151,14 +160,28 @@ function howToCompare(kind, prop, want) {
 const server = await createServer({
   root: ROOT,
   logLevel: "silent",
-  server: { port: 5290, strictPort: false },
+  // 재는 동안 다른 파일이 바뀌어도 페이지를 다시 불러오지 않는다(재던 견본이 사라진다)
+  server: { port: 5290, strictPort: false, hmr: false },
 });
 await server.listen();
 const url = new URL("dev/ds", server.resolvedUrls.local[0]).href;
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+// 로케일을 정해 둔다 — LANG 이 없는 셸에서는 "en-US@posix" 가 되어 개발 도구가 Intl.Locale 에서 멈추고
+// 앱이 그려지지 않는다
+const page = await browser.newPage({
+  viewport: { width: 1440, height: 900 },
+  locale: "ko-KR",
+});
 await page.goto(url, { waitUntil: "networkidle" });
+// 네트워크가 멎어도 카탈로그(견본 수백 개)는 아직 그리는 중일 수 있다 — 견본이 생기고, 그 수가 더 늘지 않을 때까지
+await page.waitForSelector("[data-spec]", { timeout: 60_000 });
+for (let last = -1; ;) {
+  const count = await page.locator("[data-spec]").count();
+  if (count === last) break;
+  last = count;
+  await page.waitForTimeout(500);
+}
 
 let failed = 0;
 let checked = 0;
