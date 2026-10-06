@@ -11,9 +11,25 @@
 ## WHAT (산출물)
 
 `porest-design`에 정의된 디자인 시스템을 React/TS로 구현한 클라이언트:
-- `src/shared/ui/<name>.tsx` — porest-design `specs/components/<name>.md` SoT 미러
-- `src/shared/styles/porest-tokens.css` / `src/index.css` — porest-design `exports/tokens.desk.css` 미러
+- `src/shared/ds/<name>.tsx` — **새 컴포넌트 라이브러리**(2026-10-06~). porest-design 에서 SEED 와 비교해 확정한
+  스펙(사이트에 그림 페이지가 있는 42개)만 만든다. 레시피(`recipes/shadcn/components/ui/<name>.tsx`)를 첫 판으로
+  가져와 이 레포 규칙(경로 · 파일 나누기 · 손 메모이제이션 없음)에 맞춘다. 만든 것은 개발 전용 카탈로그
+  `/dev/ds`(`src/shared/ds/catalog`)에서 라이트 · 다크로 본다.
+- `src/shared/ui/<name>.tsx` — **옛 컴포넌트**. 화면을 하나씩 `shared/ds` 로 옮기는 동안만 남는다 — 새로 쓰지 않는다.
+  옮기는 순서는 "먼저 라이브러리를 다 만들고, 화면은 나중에 화면 단위로" 다.
+- `src/shared/styles/porest-tokens.css` · `src/shared/ds/spec/*.json` — porest-design 이 내보낸 파일. **손으로 고치지
+  않는다** — `npm run design:sync`(옆 폴더 `../porest-design`, 다르면 `PORESTDESIGN_DIR`)로 다시 가져온다.
+  토큰 CSS 는 다크 블록을 포함한다 — 역할 색(`--color-fg-neutral` …)이 라이트 · 다크를 스스로 따라간다.
+- `src/index.css` — 옛 로컬 이름(`--fg-primary` · `--bg-canvas` …)을 DESIGN.md v102 표대로 역할 색에 잇는다.
+  새 코드는 역할 이름(`text-fg-neutral` · `bg-bg-brand-solid` …)을 쓴다.
 - `src/pages/**/*.tsx` / `src/features/**/*.tsx` — 위 컴포넌트를 사용한 화면 — spec 위반 inline override 금지
+
+### 화면 폭 — 옛 화면은 지금 값으로 고정(2026-10-06)
+
+토큰의 중단점이 SEED 값이 됐다(`sm` 480 · `md` 768 · `lg` 1280 · `xl` 1440). 옛 화면의 반응형 클래스는
+겉모습이 바뀌지 않게 옛 값(640 · 736 · 834 · 1069)을 적어 고정했다 — `min-[834px]:` 처럼 보이는 것이 그것이다.
+화면을 옮길 때 새 이름(`md:` · `lg:`)으로 바꾼다. **새 코드는 이름 있는 중단점만 쓴다.** 시트 ↔ 대화상자 ·
+Menu Sheet ↔ Menu · 칸 52 ↔ 40 은 스펙대로 1280 에서 바뀐다. 셸(모바일 ↔ 사이드바)은 지금처럼 768 이다.
 
 ## HOW (작업 규칙 — 절대 4 규칙)
 
@@ -43,7 +59,7 @@
 ## 금지 사항
 
 - **컴포넌트 사용 시 inline `className`/`style`로 spec 토큰을 override 금지** — 예:
-  - `<Button className="rounded-[var(--radius-tile)]">` ❌ (Button spec은 `radius-sm` 4px 고정)
+  - `<Button className="rounded-[var(--radius-tile)]">` ❌ (Button spec은 크기마다 모서리가 정해져 있다 — 8 · 12 · 알약)
   - `<Input className="h-12">` ❌ (Input spec sizes 표 외 값 금지)
   - 정당한 inline은 spec 외 영역 (layout, position, gap, margin)만.
 
