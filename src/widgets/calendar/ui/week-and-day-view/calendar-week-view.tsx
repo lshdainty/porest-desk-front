@@ -114,7 +114,7 @@ const WeekViewMultiDayEventsRow = ({
   if (!hasEventsInWeek) return null;
 
   return (
-    <div className="hidden overflow-hidden sm:flex">
+    <div className="hidden overflow-hidden min-[640px]:flex">
       <div className="w-18 border-b" />
       <div className="grid flex-1 grid-cols-7 divide-x border-b border-l">
         {weekDays.map((day, dayIndex) => (
@@ -313,12 +313,12 @@ const CalendarWeekView = ({
 
   return (
     <div className="w-full h-full">
-      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground sm:hidden">
+      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground min-[640px]:hidden">
         <p>{t("calendar:weekView.notAvailable")}</p>
         <p>{t("calendar:weekView.switchView")}</p>
       </div>
 
-      <div className="hidden h-full flex-col sm:flex">
+      <div className="hidden h-full flex-col min-[640px]:flex">
         <div>
           <WeekViewMultiDayEventsRow
             selectedDate={selectedDate}

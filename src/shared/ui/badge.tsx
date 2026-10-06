@@ -27,11 +27,11 @@ const badgeVariants = cva(
       variant: {
         // solid
         default:
-          "border-transparent bg-primary text-text-on-accent hover:brightness-105",
+          "border-transparent bg-bg-brand-solid text-text-on-accent hover:brightness-105",
         secondary:
           "border-transparent bg-surface-input text-text-primary hover:bg-border-default",
         destructive:
-          "border-transparent bg-error text-text-on-accent hover:brightness-105",
+          "border-transparent bg-bg-critical-solid text-text-on-accent hover:brightness-105",
         // soft (semantic, color-mix 16% bg) — 텍스트는 status-*-fg (다크에서 light variant, 앱 statusXxxFg 정합)
         info: "border-transparent bg-[color-mix(in_srgb,var(--color-info)_16%,transparent)] text-[color:var(--status-info-fg)] hover:bg-[color-mix(in_srgb,var(--color-info)_24%,transparent)]",
         success:

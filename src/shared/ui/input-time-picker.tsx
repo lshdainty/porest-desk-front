@@ -181,7 +181,7 @@ const TimeColumn = React.forwardRef<HTMLDivElement, TimeColumnProps>(
               className={cn(
                 "block w-full rounded px-2 py-1 text-sm tabular-nums transition-colors",
                 isActive
-                  ? "bg-primary text-text-on-accent"
+                  ? "bg-bg-brand-solid text-text-on-accent"
                   : "text-text-primary hover:bg-surface-input hover:text-text-primary",
               )}
             >

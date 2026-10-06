@@ -37,7 +37,7 @@ const Slider = React.forwardRef<
       {...props}
     >
       <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-surface-input">
-        <SliderPrimitive.Range className="absolute h-full bg-primary" />
+        <SliderPrimitive.Range className="absolute h-full bg-bg-brand-solid" />
         {ticks != null &&
           ticks > 1 &&
           Array.from({ length: ticks }).map((_, i) => {

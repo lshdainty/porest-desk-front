@@ -12,12 +12,12 @@ const CalendarWeekViewSkeleton = () => {
   return (
     <div className="w-full h-full">
       {/* Mobile message */}
-      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground sm:hidden">
+      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground min-[640px]:hidden">
         <div className="h-4 w-48 bg-muted animate-pulse rounded" />
         <div className="h-4 w-32 mt-1 bg-muted animate-pulse rounded" />
       </div>
 
-      <div className="hidden h-full flex-col sm:flex">
+      <div className="hidden h-full flex-col min-[640px]:flex">
         {/* Multi-day events row skeleton */}
         <div className="border-b">
           <div className="flex">

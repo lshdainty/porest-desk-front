@@ -435,7 +435,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
           </PopoverAnchor>
           {/* 새 상세(시간블록·D-day) 레이아웃 폭 확보 — 디자인 dialog(md) 근사 */}
           <PopoverContent
-            className="w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto"
+            className="w-[calc(100vw-2rem)] min-[640px]:w-96 max-h-[80vh] overflow-y-auto"
             sideOffset={8}
             collisionPadding={16}
           >

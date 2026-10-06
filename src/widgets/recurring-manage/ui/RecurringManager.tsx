@@ -962,7 +962,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
             fontSize: "var(--text-label-sm)",
             fontWeight: "600",
             boxShadow: "var(--shadow-lg)",
-            zIndex: "var(--z-sticky)",
+            zIndex: "var(--z-snackbar)",
           }}
         >
           {toast}

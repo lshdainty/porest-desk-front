@@ -291,7 +291,7 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
 function ExpenseCalendarSkeleton() {
   return (
     <Card
-      className="max-w-[430px] lg:max-w-none h-full min-h-0"
+      className="max-w-[430px] min-[834px]:max-w-none h-full min-h-0"
       style={{ overflow: "hidden" }}
     >
       <div className="flex flex-col h-full">
@@ -308,7 +308,7 @@ function ExpenseCalendarSkeleton() {
           {Array.from({ length: 42 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col items-start gap-1 p-1 lg:p-2 lg:border-l lg:border-t border-[var(--border-subtle)]"
+              className="flex flex-col items-start gap-1 p-1 min-[834px]:p-2 min-[834px]:border-l min-[834px]:border-t border-[var(--border-subtle)]"
             >
               <SkeletonBase className="size-6 rounded-full" />
               <SkeletonBase className="h-2 w-8 mt-auto" />
@@ -671,7 +671,7 @@ function ExpenseCalendar({
         </div>
       ) : (
         <Card
-          className="lg:max-w-none h-full min-h-0"
+          className="min-[834px]:max-w-none h-full min-h-0"
           style={{ overflow: "hidden" }}
         >
           {calInner}

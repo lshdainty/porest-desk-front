@@ -145,7 +145,7 @@ const AlertDialogFooter = ({
       // 누를 폭이 안 나온다 — dialog.md 114-116 · drawer.md footer 와 같은 규칙.
       // footer 18 22 — 헤더 위와 같은 값이다(dialog.md Layout).
       "flex shrink-0 items-center gap-[var(--spacing-sm)] px-[22px] py-[18px]",
-      "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
+      "[&>button]:flex-1 min-[640px]:justify-end min-[640px]:[&>button]:flex-none",
       className,
     )}
     {...props}

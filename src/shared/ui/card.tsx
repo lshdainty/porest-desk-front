@@ -20,9 +20,9 @@ import { cn } from "@/shared/lib/index";
  * - variant=brand (v6): bg-brand-subtle + 1px border-brand + shadow 없음. 브랜드 틴트 강조
  *   ('현재 플랜' 배너, selected/active). App PCard.brand 정합. 보더는 사용처에서
  *   border-brand-soft 로 override 가능(은은한 강조).
- * - CardHeader: flex flex-col gap-xs p-lg md:p-xl.
- * - CardContent: p-lg md:p-xl, CardHeader/CardFooter 다음에 올 땐 pt-0.
- * - CardFooter: flex items-center p-lg md:p-xl pt-0.
+ * - CardHeader: flex flex-col gap-xs p-lg min-[736px]:p-xl.
+ * - CardContent: p-lg min-[736px]:p-xl, CardHeader/CardFooter 다음에 올 땐 pt-0.
+ * - CardFooter: flex items-center p-lg min-[736px]:p-xl pt-0.
  */
 
 const cardVariants = cva(
@@ -80,7 +80,7 @@ const CardHeader = React.forwardRef<
     ref={ref}
     data-slot="card-header"
     className={cn(
-      "flex flex-col gap-[var(--spacing-xs)] p-[var(--spacing-lg)] md:p-[var(--spacing-xl)]",
+      "flex flex-col gap-[var(--spacing-xs)] p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-xl)]",
       className,
     )}
     {...props}
@@ -123,7 +123,7 @@ const CardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "p-[var(--spacing-lg)] md:p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
+      "p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
       className,
     )}
     {...props}
@@ -139,7 +139,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center p-[var(--spacing-lg)] md:p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
+      "flex items-center p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-xl)] [&:not(:first-child)]:pt-0",
       className,
     )}
     {...props}

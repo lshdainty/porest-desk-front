@@ -371,7 +371,7 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
             style={{
               marginTop: 8,
               fontSize: "var(--text-caption)",
-              color: "var(--status-danger)",
+              color: "var(--color-fg-critical)",
             }}
           >
             {t("section.dateError")}

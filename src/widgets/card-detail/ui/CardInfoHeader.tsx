@@ -20,9 +20,9 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
   const companyName = decodeHtml(s.company?.name ?? "");
 
   const body = (
-    <div className="flex flex-col gap-5 sm:flex-row">
+    <div className="flex flex-col gap-5 min-[640px]:flex-row">
       {s.imgUrl && (
-        <div className="relative shrink-0 self-center sm:self-start">
+        <div className="relative shrink-0 self-center min-[640px]:self-start">
           <img
             src={s.imgUrl}
             alt={cardName}
@@ -49,7 +49,7 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
               </Badge>
             )}
           </div>
-          <h2 className="truncate text-xl font-semibold leading-tight sm:text-2xl">
+          <h2 className="truncate text-xl font-semibold leading-tight min-[640px]:text-2xl">
             {cardName}
           </h2>
           <div className="flex flex-wrap gap-1.5">

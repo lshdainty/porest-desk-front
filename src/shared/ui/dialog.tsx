@@ -156,7 +156,7 @@ const DialogFooter = ({
       // 데스크탑(≥640px)은 우측 정렬. 모바일에서 우측 정렬 compact 로 두면
       // 화면 구석의 작은 알약이 돼 한 손으로 누를 폭이 안 나온다.
       "flex shrink-0 items-center gap-2 px-[22px] py-[18px]",
-      "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
+      "[&>button]:flex-1 min-[640px]:justify-end min-[640px]:[&>button]:flex-none",
       className,
     )}
     {...props}

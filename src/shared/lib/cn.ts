@@ -2,37 +2,109 @@ import { type ClassValue, clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
 /**
- * 프로젝트 커스텀 font-size 유틸(`text-caption` 등 — porest-tokens.css `--text-*`)을
- * twMerge 에 font-size 그룹으로 등록.
+ * porest 토큰 스케일을 twMerge 에 알린다 — porest-design `recipes/shadcn/lib/utils.ts` 와 같다.
  *
- * 기본 설정의 twMerge 는 모르는 `text-*` 클래스를 색상 그룹으로 분류해서
- * `text-text-primary` / `text-[var(--fg-brand)]` 같은 색상 클래스와 충돌로 보고
- * 지워버린다 (예: Button accent+sm 에서 브랜드색 소실 → 흰색 상속).
+ * 기본 설정은 porest 이름을 그 자리의 스케일로 읽지 못한다.
+ *   - `text-t4` · `text-caption` 을 글자 크기가 아니라 글자 색으로 읽어, 앞의 `text-fg-neutral` ·
+ *     `text-[var(--fg-brand)]` 를 지운다(Button accent+sm 에서 브랜드색이 사라져 흰색을 이어받았다).
+ *   - `px-x4` · `rounded-r2` 를 여백 · 모서리로 못 읽어, 뒤에서 덮어 쓴 `p-0` · `rounded-full` 과
+ *     둘 다 남긴다 — 그러면 어느 쪽이 이길지 CSS 순서가 정한다.
+ * 이름은 porest-tokens.css 의 `--spacing-*` · `--radius-*` · `--text-*` 와 같다. 토큰을 더하면 여기도 더한다.
  */
+const SPACING = [
+  "x0_5",
+  "x1",
+  "x1_5",
+  "x2",
+  "x2_5",
+  "x3",
+  "x3_5",
+  "x4",
+  "x4_5",
+  "x5",
+  "x6",
+  "x7",
+  "x8",
+  "x9",
+  "x10",
+  "x12",
+  "x13",
+  "x14",
+  "x16",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+  "3xl",
+  "global-gutter",
+  "between-chips",
+  "component-default",
+  "between-text",
+  "nav-to-title",
+  "screen-bottom",
+];
+const RADIUS = [
+  "r0_5",
+  "r1",
+  "r1_5",
+  "r2",
+  "r2_5",
+  "r3",
+  "r3_5",
+  "r4",
+  "r5",
+  "r6",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+];
+const TEXT = [
+  "t1",
+  "t2",
+  "t3",
+  "t4",
+  "t5",
+  "t6",
+  "t7",
+  "t8",
+  "t9",
+  "t10",
+  "t11",
+  "t12",
+  "t13",
+  "t14",
+  "screen-title",
+  "article-body",
+  "article-note",
+  "display-xl",
+  "display-lg",
+  "display-md",
+  "display-sm",
+  "title-lg",
+  "title-md",
+  "title-sm",
+  "body-lg",
+  "body-md",
+  "body-sm",
+  "label-md",
+  "label-sm",
+  "caption",
+  "badge",
+  "overline",
+];
+
 const twMerge = extendTailwindMerge({
   extend: {
-    classGroups: {
-      "font-size": [
-        {
-          text: [
-            "display-xl",
-            "display-lg",
-            "display-md",
-            "display-sm",
-            "title-lg",
-            "title-md",
-            "title-sm",
-            "body-lg",
-            "body-md",
-            "body-sm",
-            "label-md",
-            "label-sm",
-            "caption",
-            "badge",
-            "overline",
-          ],
-        },
-      ],
+    theme: {
+      spacing: SPACING,
+      radius: RADIUS,
+      // 글자 크기는 사용자 글자 설정을 따르는 것(rem)과 고정(-static) 둘 다
+      text: [...TEXT, ...TEXT.map((t) => `${t}-static`)],
     },
   },
 });

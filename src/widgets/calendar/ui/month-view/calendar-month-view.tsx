@@ -183,10 +183,10 @@ const MonthDayCell = ({
     <div
       className={cn(
         // 모바일 (< 1024px) 에선 셀 사이 grid line 제거 (사용자 요청). lg 이상만 표시.
-        "flex h-full flex-col gap-1 lg:border-l lg:border-t py-1.5 lg:pb-2 lg:pt-1 select-none",
-        isSunday && "lg:border-l-0",
+        "flex h-full flex-col gap-1 min-[834px]:border-l min-[834px]:border-t py-1.5 min-[834px]:pb-2 min-[834px]:pt-1 select-none",
+        isSunday && "min-[834px]:border-l-0",
         isSelected &&
-          "bg-blue-100/50 dark:bg-blue-900/20 shadow-[inset_0_0_0_2px_rgba(59,130,246,0.5)]",
+          "bg-bg-informative-weak shadow-[inset_0_0_0_2px_rgba(59,130,246,0.5)]",
       )}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
@@ -233,10 +233,10 @@ const MonthDayCell = ({
                 !currentMonth && "opacity-50",
               )}
             >
-              <span className="sm:hidden">
+              <span className="min-[640px]:hidden">
                 +{cellEvents.length - maxVisibleEvents}
               </span>
-              <span className="hidden sm:inline">
+              <span className="hidden min-[640px]:inline">
                 {t("monthView.more", {
                   count: cellEvents.length - maxVisibleEvents,
                 })}
@@ -257,9 +257,9 @@ const MonthDayCell = ({
             step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합).
             flex-shrink-0 — 아래 event slot 들이 expense 자르지 않게. */}
         {hasExpense && (
-          <div className="flex flex-col items-start gap-0.5 px-1 lg:px-2 leading-none font-semibold overflow-hidden flex-shrink-0">
+          <div className="flex flex-col items-start gap-0.5 px-1 min-[834px]:px-2 leading-none font-semibold overflow-hidden flex-shrink-0">
             {/* 모바일: 글자 수별 step text-[NNpx] (11/10/9/8). lg+: text-base (16px) 고정.
-                inline style fontSize 사용 시 className lg:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
+                inline style fontSize 사용 시 className min-[834px]:text-base 가 override 안 됨 — Tailwind class 만 사용. */}
             {expenseSummary.expense !== 0 &&
               (() => {
                 // 순액이 음수면 부호가 뒤집힌다 — 지금 식으로는 안 나오지만,
@@ -283,7 +283,7 @@ const MonthDayCell = ({
                   <span
                     className={cn(
                       mobileFs,
-                      "lg:text-base whitespace-nowrap leading-tight num",
+                      "min-[834px]:text-base whitespace-nowrap leading-tight num",
                     )}
                     style={{ color: "var(--fg-expense)" }}
                   >
@@ -311,7 +311,7 @@ const MonthDayCell = ({
                   <span
                     className={cn(
                       mobileFs,
-                      "lg:text-base whitespace-nowrap leading-tight num",
+                      "min-[834px]:text-base whitespace-nowrap leading-tight num",
                     )}
                     style={{ color: "var(--fg-income)" }}
                   >
@@ -334,7 +334,7 @@ const MonthDayCell = ({
               return (
                 <div
                   key={eventKey}
-                  className={isMobile ? "h-4" : "h-5.5 lg:h-6.5"}
+                  className={isMobile ? "h-4" : "h-5.5 min-[834px]:h-6.5"}
                 >
                   {event && (
                     <MonthEventBadge
@@ -418,11 +418,12 @@ const MonthEventBadge = ({
   const positionClasses = {
     // 멀티데이 바: 시작/종료(외곽)만 round, 중간은 full-bleed 연속. 보이는 border 의존 제거 →
     // 연결 변(邊) margin 0 + lg border-l(1px) 은 -ml-px 로 bridge. lg 라운딩도 명시 override
-    // (base rounded-none 만으론 base 의 lg:rounded-md 가 안 덮여 중간이 둥글어지는 버그 fix).
+    // (base rounded-none 만으론 base 의 min-[834px]:rounded-md 가 안 덮여 중간이 둥글어지는 버그 fix).
     first:
-      "relative z-10 mr-0 lg:mr-0 rounded-r-none lg:rounded-r-none [&>span]:mr-2.5",
-    middle: "relative z-10 mx-0 lg:mx-0 lg:-ml-px rounded-none lg:rounded-none",
-    last: "relative z-10 ml-0 lg:ml-0 lg:-ml-px rounded-l-none lg:rounded-l-none",
+      "relative z-10 mr-0 min-[834px]:mr-0 rounded-r-none min-[834px]:rounded-r-none [&>span]:mr-2.5",
+    middle:
+      "relative z-10 mx-0 min-[834px]:mx-0 min-[834px]:-ml-px rounded-none min-[834px]:rounded-none",
+    last: "relative z-10 ml-0 min-[834px]:ml-0 min-[834px]:-ml-px rounded-l-none min-[834px]:rounded-l-none",
     none: "",
   };
 
@@ -431,10 +432,12 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        "mx-0.5 lg:mx-1 flex size-auto select-none items-center justify-between gap-1 whitespace-nowrap rounded-sm lg:rounded-md border text-[length:var(--text-badge)] lg:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "mx-0.5 min-[834px]:mx-1 flex size-auto select-none items-center justify-between gap-1 whitespace-nowrap rounded-sm min-[834px]:rounded-md border text-[length:var(--text-badge)] min-[834px]:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         // 모바일(<768px): 앱 _EventBar 정합 타이트 칩(16px·좌우 4px·leading-none).
         // 데스크톱/태블릿(≥768px): 원래 높이/패딩(22px → lg 26px, 좌우 4 → lg 8px).
-        isMobile ? "h-4 leading-none px-1" : "h-5.5 lg:h-6.5 px-1 lg:px-2",
+        isMobile
+          ? "h-4 leading-none px-1"
+          : "h-5.5 min-[834px]:h-6.5 px-1 min-[834px]:px-2",
         positionClasses[position],
         // 가운데 라벨이 다음 칸까지 뻗어야 해서 라벨 호스트 조각만 overflow 를 열고
         // z 를 이웃(z-10)보다 올린다. positionClasses 뒤에 둬야 한다 — 앞에 두면
@@ -462,7 +465,7 @@ const MonthEventBadge = ({
       }}
     >
       {position === "last" && !event.isAllDay && (
-        <div className="ml-auto hidden lg:block">
+        <div className="ml-auto hidden min-[834px]:block">
           <span>
             {format(new Date(event.startDate), timeFormat, { locale })}
           </span>
@@ -494,7 +497,7 @@ const MonthEventBadge = ({
           )}
 
           {renderBadgeText && !isMultiDay && !event.isAllDay && (
-            <span className="hidden lg:inline">
+            <span className="hidden min-[834px]:inline">
               {format(new Date(event.startDate), timeFormat, { locale })}
             </span>
           )}
@@ -613,7 +616,7 @@ const MonthViewContent = ({
       <div
         className={cn(
           "grid grid-cols-7 flex-shrink-0",
-          mobileHeaderBorder && "border-b lg:border-b-0",
+          mobileHeaderBorder && "border-b min-[834px]:border-b-0",
         )}
       >
         {weekDays.map((day, index) => {

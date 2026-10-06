@@ -382,13 +382,13 @@ const CalendarDayView = ({
       </div>
 
       {/* Side panel */}
-      <div className="hidden w-64 divide-y border-l md:block">
+      <div className="hidden w-64 divide-y border-l min-[736px]:block">
         <div className="flex-1 space-y-3">
           {currentEvents.length > 0 ? (
             <div className="flex items-start gap-2 px-4 pt-4">
               <span className="relative mt-[5px] flex size-2.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex size-2.5 rounded-full bg-green-600" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-bg-positive-solid opacity-75" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-bg-positive-solid" />
               </span>
               <p className="text-sm font-semibold text-foreground">
                 {t("dayView.happeningNow")}

@@ -24,10 +24,10 @@ import {
 } from "../model/useNotifications";
 
 const notificationTypeIcons: Record<NotificationType, React.ReactNode> = {
-  EVENT_REMINDER: <Calendar size={14} className="text-blue-500" />,
-  BUDGET_ALERT: <Wallet size={14} className="text-red-500" />,
-  TODO_REMINDER: <CheckSquare size={14} className="text-green-500" />,
-  SYSTEM: <Info size={14} className="text-gray-500" />,
+  EVENT_REMINDER: <Calendar size={14} className="text-fg-informative" />,
+  BUDGET_ALERT: <Wallet size={14} className="text-fg-critical" />,
+  TODO_REMINDER: <CheckSquare size={14} className="text-fg-positive" />,
+  SYSTEM: <Info size={14} className="text-fg-neutral-subtle" />,
 };
 
 export const NotificationBell = () => {
@@ -147,7 +147,7 @@ export const NotificationBell = () => {
                       e.stopPropagation();
                       deleteNotification.mutate(notification.rowId);
                     }}
-                    className="mt-0.5 h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-destructive"
+                    className="mt-0.5 h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-fg-critical"
                     aria-label="delete"
                   >
                     {!deleteNotification.isPending && <Trash2 size={12} />}

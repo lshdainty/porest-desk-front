@@ -29,7 +29,7 @@ export const toggleVariants = cva(
           "flex-1 gap-0 rounded-[var(--radius-sm)] bg-transparent px-3 py-1 whitespace-nowrap",
           "text-[length:var(--text-caption)] font-semibold leading-none text-text-secondary",
           "hover:bg-transparent hover:text-text-secondary",
-          "data-[state=on]:bg-primary data-[state=on]:text-text-on-accent",
+          "data-[state=on]:bg-bg-brand-solid data-[state=on]:text-text-on-accent",
         ].join(" "),
         // POREST .p-seg__btn--subtle — segmented item, 토스 절제 톤.
         // spec toggle-group.md visual=subtle 정합 — surface-input 채움 + 검정 + semi.

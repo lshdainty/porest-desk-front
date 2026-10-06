@@ -276,7 +276,7 @@ export function WithdrawDialog({
               }}
             />
             {reauthError && (
-              <p className="text-sm text-destructive">{reauthError}</p>
+              <p className="text-sm text-fg-critical">{reauthError}</p>
             )}
             <Button
               variant="link"
@@ -312,7 +312,7 @@ export function WithdrawDialog({
               </Button>
             </div>
             {reauthError && (
-              <p className="text-sm text-destructive">{reauthError}</p>
+              <p className="text-sm text-fg-critical">{reauthError}</p>
             )}
             <p className="text-sm text-[var(--fg-secondary)]">
               {t("withdraw.codeHint")}

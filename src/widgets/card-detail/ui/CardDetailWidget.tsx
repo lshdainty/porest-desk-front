@@ -52,8 +52,8 @@ export function CardDetailWidget({
       <div className={mobile ? "space-y-9" : "space-y-4"}>
         {/* CardInfoHeader: 카드 이미지(h-32 w-52) + 회사명/카드명/배지 */}
         <Shell mobile={mobile}>
-          <div className="flex flex-col gap-5 sm:flex-row">
-            <SkeletonBase className="h-32 w-52 shrink-0 self-center rounded-lg sm:self-start" />
+          <div className="flex flex-col gap-5 min-[640px]:flex-row">
+            <SkeletonBase className="h-32 w-52 shrink-0 self-center rounded-lg min-[640px]:self-start" />
             <div className="flex-1 space-y-2">
               <SkeletonBase className="h-4 w-1/3" />
               <SkeletonBase className="h-7 w-2/3" />
@@ -96,7 +96,7 @@ export function CardDetailWidget({
 
   if (error || !detail) {
     return (
-      <div className="text-sm text-destructive">{t("detail.loadError")}</div>
+      <div className="text-sm text-fg-critical">{t("detail.loadError")}</div>
     );
   }
 

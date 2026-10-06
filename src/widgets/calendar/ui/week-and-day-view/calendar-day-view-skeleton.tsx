@@ -60,7 +60,7 @@ const CalendarDayViewSkeleton = () => {
       </div>
 
       {/* Side panel skeleton */}
-      <div className="hidden w-64 divide-y border-l md:block">
+      <div className="hidden w-64 divide-y border-l min-[736px]:block">
         <div className="p-4">
           <div className="h-[280px] w-full rounded bg-muted animate-pulse" />
         </div>

@@ -20,7 +20,7 @@ export const CardDetailPage = () => {
 
   if (!assetRowId || Number.isNaN(assetId)) {
     return (
-      <div className="p-6 text-sm text-destructive">
+      <div className="p-6 text-sm text-fg-critical">
         {t("cardDetail.invalidAssetId")}
       </div>
     );
@@ -28,7 +28,7 @@ export const CardDetailPage = () => {
 
   return (
     // max-w-3xl 금지 — porest --spacing-3xl 이 Tailwind 스케일을 가려 48px 로 컴파일됨.
-    <div className="mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 md:p-6">
+    <div className="mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 min-[736px]:p-6">
       <Button
         variant="ghost"
         size="sm"
@@ -44,8 +44,8 @@ export const CardDetailPage = () => {
           {/* CardInfoHeader: 카드 이미지(h-32 w-52) + 회사명/카드명/배지 — 모바일은 셸 카드 없이 */}
           {mobile ? (
             <>
-              <div className="flex flex-col gap-5 sm:flex-row">
-                <SkeletonBase className="h-32 w-52 shrink-0 self-center rounded-lg sm:self-start" />
+              <div className="flex flex-col gap-5 min-[640px]:flex-row">
+                <SkeletonBase className="h-32 w-52 shrink-0 self-center rounded-lg min-[640px]:self-start" />
                 <div className="flex-1 space-y-2">
                   <SkeletonBase className="h-4 w-1/3" />
                   <SkeletonBase className="h-7 w-2/3" />
@@ -67,8 +67,8 @@ export const CardDetailPage = () => {
           ) : (
             <>
               <Card>
-                <CardContent className="flex flex-col gap-5 p-5 sm:flex-row">
-                  <SkeletonBase className="h-32 w-52 shrink-0 self-center rounded-lg sm:self-start" />
+                <CardContent className="flex flex-col gap-5 p-5 min-[640px]:flex-row">
+                  <SkeletonBase className="h-32 w-52 shrink-0 self-center rounded-lg min-[640px]:self-start" />
                   <div className="flex-1 space-y-2">
                     <SkeletonBase className="h-4 w-1/3" />
                     <SkeletonBase className="h-7 w-2/3" />

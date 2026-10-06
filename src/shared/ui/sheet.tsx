@@ -48,9 +48,9 @@ const sheetVariants = cva(
         top: "inset-x-0 top-0 border-b border-border-default data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
           "inset-x-0 bottom-0 border-t border-border-default data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r border-border-default data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-[24rem]",
+        left: "inset-y-0 left-0 h-full w-3/4 border-r border-border-default data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left min-[640px]:max-w-[24rem]",
         right:
-          "inset-y-0 right-0 h-full w-3/4 border-l border-border-default data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-[24rem]",
+          "inset-y-0 right-0 h-full w-3/4 border-l border-border-default data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right min-[640px]:max-w-[24rem]",
       },
     },
     defaultVariants: {
@@ -95,7 +95,7 @@ const SheetHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col gap-[var(--spacing-xs)] text-center sm:text-left",
+      "flex flex-col gap-[var(--spacing-xs)] text-center min-[640px]:text-left",
       className,
     )}
     {...props}
@@ -109,7 +109,7 @@ const SheetFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-[var(--spacing-sm)] sm:flex-row sm:justify-end",
+      "flex flex-col-reverse gap-[var(--spacing-sm)] min-[640px]:flex-row min-[640px]:justify-end",
       className,
     )}
     {...props}
