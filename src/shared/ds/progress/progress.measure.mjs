@@ -6,6 +6,8 @@
 //   fill.transitionDuration  "300ms" — 계산된 값은 "0.3s" 로 적혀 글 그대로 맞출 수 없다
 export default {
   "root.gap": ["root", "px", "row-gap"],
+  // 이름 줄 — 이름 ↔ 오른쪽 글 사이 8(progress.yaml header.gap, 2026-10-08 스펙에 올랐다)
+  "header.gap": ["[data-slot=progress-header]", "px", "column-gap"],
   "label.typography": ["[data-slot=progress-label]", "typography"],
   "label.fontWeight": ["[data-slot=progress-label]", "exact", "font-weight"],
   "label.foreground": ["[data-slot=progress-label]", "color", "color"],

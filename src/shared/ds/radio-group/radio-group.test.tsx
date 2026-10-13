@@ -213,6 +213,110 @@ describe("RadioGroup · Radio", () => {
     expect(radio("매월").className).not.toMatch(/opacity/);
   });
 
+  // 폼 안에서는 Radix 가 숨은 input 의 크기를 재려고 ResizeObserver 를 쓴다 — jsdom 에 없다
+  const stubResizeObserver = () =>
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+
+  const pressEnter = (el: Element) =>
+    act(() => {
+      el.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+  it("Enter 는 폼을 제출한다 — 폼의 기본 버튼을 누르고, 고르지 않는다(고르기는 Space · 화살표)", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(
+      <form onSubmit={onSubmit}>
+        <Repeat defaultValue="none" />
+        <button type="submit">저장</button>
+      </form>,
+    );
+    pressEnter(radio("매월"));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(checked()).toEqual(["true", "false", "false"]);
+  });
+
+  it("Enter — 폼이 없거나 기본 버튼이 막혀 있으면 아무 일도 없다 · 부르는 쪽 onKeyDown 도 그대로 불린다", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    const onKeyDown = vi.fn();
+    render(
+      <RadioGroup aria-label="반복" onKeyDown={onKeyDown}>
+        <Radio value="none" label="반복 없음" />
+      </RadioGroup>,
+    );
+    pressEnter(radio("반복 없음"));
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+
+    render(
+      <form onSubmit={onSubmit}>
+        <Repeat defaultValue="none" />
+        <button type="submit" disabled>
+          저장
+        </button>
+      </form>,
+    );
+    pressEnter(radio("매월"));
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("Field 의 막힘 · 오류 · 필수를 받는다 — 묶음 aria-disabled · 칸마다 disabled, radiogroup 의 aria-invalid · aria-required", () => {
+    const onValueChange = vi.fn();
+    render(
+      <Field label="반복" disabled invalid required>
+        <RadioGroup onValueChange={onValueChange}>
+          <Radio value="none" label="반복 없음" />
+          <Radio value="monthly" label="매월" />
+        </RadioGroup>
+      </Field>,
+    );
+    const group = container.querySelector("[role=radiogroup]")!;
+    expect(group.getAttribute("aria-disabled")).toBe("true");
+    expect(group.getAttribute("aria-invalid")).toBe("true");
+    expect(group.getAttribute("aria-required")).toBe("true");
+    expect(radios().every((r) => r.disabled)).toBe(true);
+    act(() => radio("매월").click());
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it("묶음에 직접 준 disabled 가 Field 의 막힘보다 이긴다 · Field 밖이면 아무것도 걸지 않는다", () => {
+    render(
+      <Field label="반복" disabled>
+        <RadioGroup disabled={false}>
+          <Radio value="none" label="반복 없음" />
+        </RadioGroup>
+      </Field>,
+    );
+    const group = container.querySelector("[role=radiogroup]")!;
+    expect(group.hasAttribute("aria-disabled")).toBe(false);
+    expect(radios()[0]!.disabled).toBe(false);
+
+    // Field 밖 — 새로 그려 묶음(radiogroup)을 직접 찾는다
+    act(() => root.render(<Repeat defaultValue="none" />));
+    const bare = container.querySelector("[role=radiogroup]")!;
+    expect(bare.hasAttribute("aria-disabled")).toBe(false);
+    expect(bare.hasAttribute("aria-invalid")).toBe(false);
+    // Radix 가 required 가 아니면 늘 aria-required="false" 를 단다 — Field 밖이면 "true" 가 아니다
+    expect(bare.getAttribute("aria-required")).not.toBe("true");
+  });
+
   it("크기 · 톤 · 굵기는 동그라미 · 점 · 줄 · 라벨이 함께 받는다", () => {
     render(
       <RadioGroup aria-label="크기" defaultValue="bold">

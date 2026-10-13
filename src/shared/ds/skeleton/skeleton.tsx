@@ -44,6 +44,8 @@ import { useWaitPhase, type WaitPhase } from "./use-wait-phase";
  *   시간표 — 0 ~ 1초는 fallback 을 보이지 않게 그려(visibility) 높이만 지킨다 — 1초 안에 오면 아무것도 깜빡이지 않는다.
  *   1초부터 fallback, 5초부터 오래 걸림 글 "평소보다 오래 걸리고 있어요." 한 줄(t4 · 400 · fg-neutral-muted · 단어 단위 줄바꿈) —
  *   스켈레톤이면 첫 스켈레톤 위에 왼쪽 맞춤으로 16 띄워, 원이면 원 아래에 가운데 맞춤으로 16 띄워 둔다. 스켈레톤 · 원은 그대로다.
+ *   영역이 목록 카드(body="list")의 바로 아래 자식이면 오래 걸림 글과 실패의 Result Section 이 좌우 24 를 갖는다 — 목록 카드는 카드
+ *   여백이 없고 줄이 제 24 를 가지므로(스켈레톤 줄도 List 줄이라 그대로). 내용 카드 안이면 카드의 24 그대로 — 더하지 않는다(23B).
  *   기다리는 동안 영역에 aria-busy="true" — 다 오거나 실패하면 푼다. 기다린 뒤 내용으로 바뀌면 투명도로 나타난다(motion-duration-d3 ·
  *   motion-ease-enter, 모션 줄이기면 바로 — 토큰 키프레임 fade-in). 처음부터 내용이 있으면(받아 둔 것) 그대로 보인다.
  *   원 모드는 영역이 가운데 맞춤 세로 묶음이 되고, 부모가 세로 flex 면 남는 높이를 채운다(Result Section 과 같다).
@@ -242,9 +244,11 @@ function LoadingAnnouncer({ children }: { children?: React.ReactNode }) {
 LoadingAnnouncer.displayName = "LoadingAnnouncer";
 
 // ── 기다리는 영역 ─────────────────────────────────────────────
-// 오래 걸림 글 — t4 · 400 · fg-neutral-muted, 단어 단위 줄바꿈(v114)
+// 오래 걸림 글 — t4 · 400 · fg-neutral-muted, 단어 단위 줄바꿈(v114).
+// 영역이 목록 카드(body="list")의 바로 아래 자식이면 좌우 24 — 목록 카드는 줄마다 24 를 가져 카드 여백이 없다(23B 와 같은 원칙 —
+// 어느 카드에서나 글이 카드 끝에서 24). 스켈레톤 줄은 List 의 24 를 그대로 가진다. 내용 카드 안이면 카드가 24 를 준다 — 더하지 않는다
 const SLOW =
-  "m-0 text-t4 font-normal text-fg-neutral-muted break-keep [overflow-wrap:break-word]";
+  "m-0 text-t4 font-normal text-fg-neutral-muted break-keep [overflow-wrap:break-word] [[data-slot=card][data-body=list]>[data-slot=loading-region]>&]:px-x6";
 
 // 기다린 뒤 내용으로 — 투명도 0 → 1, motion-duration-d3 · motion-ease-enter(모션 줄이기면 바로)
 const ENTER =

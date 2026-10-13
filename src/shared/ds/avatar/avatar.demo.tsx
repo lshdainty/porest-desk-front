@@ -178,14 +178,21 @@ export const AvatarDemo = () => (
           ))}
         </AvatarStack>
       </DemoRow>
-      <DemoRow label="시트 안(floating)">
-        <div className="rounded-r2 bg-bg-layer-floating p-x3">
-          <AvatarStack size={36} surface="floating">
-            {PEOPLE.map((name) => (
-              <Avatar key={name} name={name} />
-            ))}
-          </AvatarStack>
-        </div>
+      <DemoRow label="시트 안(floating) — 링이 bg-layer-floating(다크에서 화면 바탕과 다르다)">
+        {[24, 36, 56].map((size) => (
+          <div key={size} className="rounded-r2 bg-bg-layer-floating p-x3">
+            <Specimen
+              spec="avatar-stack"
+              combo={{ size: String(size), surface: "floating" }}
+            >
+              <AvatarStack size={size as AvatarSize} surface="floating">
+                {PEOPLE.map((name) => (
+                  <Avatar key={name} name={name} />
+                ))}
+              </AvatarStack>
+            </Specimen>
+          </div>
+        ))}
       </DemoRow>
     </DemoBlock>
   </div>

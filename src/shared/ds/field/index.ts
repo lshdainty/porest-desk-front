@@ -4,7 +4,9 @@ export {
   setNativeValue,
   sliceGraphemes,
   useField,
+  submitImplicitly,
   useFieldControl,
   useFieldGroup,
+  useFieldGroupState,
   useTextControl,
 } from "./field-context";

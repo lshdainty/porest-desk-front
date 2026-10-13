@@ -336,6 +336,87 @@ describe("Checkbox", () => {
     act(() => control().click());
     expect(new FormData(form).get("remember")).toBeNull();
   });
+
+  // 폼 안에서는 Radix 가 숨은 input 의 크기를 재려고 ResizeObserver 를 쓴다 — jsdom 에 없다
+  const stubResizeObserver = () =>
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+
+  const pressEnter = (el: Element) =>
+    act(() => {
+      el.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+  it("Enter 는 폼을 제출한다 — 폼의 기본 버튼을 누르고, 칸은 바뀌지 않는다(Space 만 켜고 끈다)", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    const form = render(
+      <form onSubmit={onSubmit}>
+        <Checkbox label="이 카드 기억하기" />
+        <button type="submit">저장</button>
+      </form>,
+    );
+    expect(form).toBeTruthy();
+    pressEnter(control());
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(control().getAttribute("aria-checked")).toBe("false");
+  });
+
+  it("Enter — 폼이 없거나 기본 버튼이 없거나 막혀 있으면 아무 일도 없다", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(<Checkbox label="폼 없음" />);
+    pressEnter(control());
+
+    render(
+      <form onSubmit={onSubmit}>
+        <Checkbox label="기본 버튼 없음" />
+      </form>,
+    );
+    pressEnter(control());
+
+    render(
+      <form onSubmit={onSubmit}>
+        <Checkbox label="막힌 기본 버튼" />
+        <button type="submit" disabled>
+          저장
+        </button>
+      </form>,
+    );
+    pressEnter(control());
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("Enter — 부르는 쪽이 onKeyDown 에서 막으면(preventDefault) 제출하지 않는다", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(
+      <form onSubmit={onSubmit}>
+        <Checkbox label="막기" onKeyDown={(e) => e.preventDefault()} />
+        <button type="submit">저장</button>
+      </form>,
+    );
+    pressEnter(control());
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
 });
 
 describe("CheckboxGroup", () => {
@@ -372,8 +453,58 @@ describe("CheckboxGroup", () => {
     expect(describedBy(group)).toEqual([
       "내보낼 데이터를 하나 이상 골라 주세요.",
     ]);
-    // 오류는 칸을 바꾸지 않는다 — 칸에 aria-invalid 를 달지 않는다
-    expect(controls().some((c) => c.hasAttribute("aria-invalid"))).toBe(false);
+    // 오류는 칸마다 aria-invalid 로 건다 — role=group 은 aria-invalid 를 받지 않아 묶음에는 걸지 않는다(SEED useFieldset,
+    // porest-design 2026-10-08). 모양은 바뀌지 않는다 — 오류는 묶음 아래 글이다
+    expect(group.hasAttribute("aria-invalid")).toBe(false);
+    expect(group.hasAttribute("aria-required")).toBe(false);
+    expect(
+      controls().every((c) => c.getAttribute("aria-invalid") === "true"),
+    ).toBe(true);
+  });
+
+  it("Field 의 막힘은 묶음 aria-disabled 와 칸마다 disabled — 막힌 Field 안의 칸은 눌리지 않는다", () => {
+    const onCheckedChange = vi.fn();
+    render(
+      <Field label="내보낼 데이터" disabled>
+        <CheckboxGroup>
+          <Checkbox label="거래 내역" onCheckedChange={onCheckedChange} />
+          <Checkbox label="예산" />
+        </CheckboxGroup>
+      </Field>,
+    );
+    const group = container.querySelector("[role=group]")!;
+    expect(group.getAttribute("aria-disabled")).toBe("true");
+    expect(controls().every((c) => c.disabled)).toBe(true);
+    act(() => control().click());
+    expect(onCheckedChange).not.toHaveBeenCalled();
+  });
+
+  it("묶음에 직접 준 disabled · aria-invalid 가 Field 보다 이기고, 칸에 준 disabled 가 묶음보다 이긴다", () => {
+    render(
+      <Field label="내보낼 데이터" disabled invalid>
+        <CheckboxGroup disabled={false} aria-invalid={false}>
+          <Checkbox label="거래 내역" />
+          <Checkbox label="예산" disabled />
+        </CheckboxGroup>
+      </Field>,
+    );
+    const group = container.querySelector("[role=group]")!;
+    expect(group.hasAttribute("aria-disabled")).toBe(false);
+    expect(controls()[0]!.disabled).toBe(false);
+    expect(controls()[0]!.hasAttribute("aria-invalid")).toBe(false);
+    // 칸에 직접 준 disabled 가 묶음 값보다 이긴다
+    expect(controls()[1]!.disabled).toBe(true);
+  });
+
+  it("Field 밖의 묶음은 아무것도 걸지 않는다 — 막힘 · 오류 없음", () => {
+    const group = render(
+      <CheckboxGroup aria-label="내보낼 데이터">
+        <Checkbox label="거래 내역" />
+      </CheckboxGroup>,
+    );
+    expect(group.hasAttribute("aria-disabled")).toBe(false);
+    expect(controls()[0]!.disabled).toBe(false);
+    expect(controls()[0]!.hasAttribute("aria-invalid")).toBe(false);
   });
 
   it("묶음에 준 이름 · 설명이 이긴다 — 설명은 Field 의 설명 뒤에 잇는다", () => {

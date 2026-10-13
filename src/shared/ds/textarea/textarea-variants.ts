@@ -36,7 +36,7 @@ export const textareaVariants = cva(
 
 // 입력(<textarea>)의 최소 높이 — 자동 높이는 3줄, 고정 높이는 2줄
 export const textareaValueVariants = cva(
-  "block w-full resize-none border-0 bg-transparent px-[var(--textarea-px)] py-[var(--textarea-py)] outline-none [font:inherit] disabled:cursor-not-allowed",
+  "block w-full resize-none border-0 bg-transparent px-[var(--textarea-px)] py-[var(--textarea-py)] caret-fg-neutral outline-none [font:inherit] disabled:cursor-not-allowed",
   {
     variants: {
       size: { large: "", medium: "", responsive: "" },

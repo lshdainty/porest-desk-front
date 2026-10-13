@@ -89,6 +89,81 @@ describe("Button", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  it("누른 동작이 끝날 때까지 한 번 — onClick 이 돌려준 Promise 가 끝나기 전의 누름은 버리고, 끝나면 다시 누를 수 있다", async () => {
+    let finish!: () => void;
+    const onClick = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const btn = render(<Button onClick={onClick}>저장</Button>);
+    act(() => btn.click());
+    act(() => btn.click());
+    act(() => btn.click());
+    expect(onClick).toHaveBeenCalledTimes(1);
+
+    await act(async () => finish());
+    act(() => btn.click());
+    expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
+  it("버리는 누름은 제출도 막는다 — 끝나기 전에 Enter · Space 로 다시 눌러도 폼이 한 번만 간다", async () => {
+    let finish!: () => void;
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    const form = render(
+      <form onSubmit={onSubmit}>
+        <Button
+          type="submit"
+          onClick={() =>
+            new Promise<void>((resolve) => {
+              finish = resolve;
+            })
+          }
+        >
+          저장
+        </Button>
+      </form>,
+    );
+    const btn = form.querySelector("button")!;
+    act(() => btn.click());
+    act(() => btn.click());
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    await act(async () => finish());
+  });
+
+  it("Promise 가 거부돼도 잠금은 풀린다 — 거부는 그대로 넘어가 삼키지 않는다", async () => {
+    const unhandled = vi.fn();
+    process.on("unhandledRejection", unhandled);
+    let fail!: (reason: Error) => void;
+    const onClick = vi.fn(
+      () =>
+        new Promise<void>((_, reject) => {
+          fail = reject;
+        }),
+    );
+    const btn = render(<Button onClick={onClick}>저장</Button>);
+    act(() => btn.click());
+    await act(async () => {
+      fail(new Error("저장 실패"));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    act(() => btn.click());
+    expect(onClick).toHaveBeenCalledTimes(2);
+    expect(unhandled).toHaveBeenCalled();
+    process.off("unhandledRejection", unhandled);
+  });
+
+  it("Promise 를 돌려주지 않으면 잠그지 않는다 — 연달아 눌러도 그때마다 불린다", () => {
+    const onClick = vi.fn();
+    const btn = render(<Button onClick={onClick}>저장</Button>);
+    act(() => btn.click());
+    act(() => btn.click());
+    expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
   it("누르는 순간 축소 기준 길이를 재고, 부르는 쪽의 onPointerDown 도 부른다", () => {
     const onPointerDown = vi.fn();
     const btn = render(<Button onPointerDown={onPointerDown}>저장</Button>);
