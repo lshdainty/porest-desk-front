@@ -2,6 +2,7 @@ export {
   Checkbox,
   CheckboxGroup,
   Checkmark,
+  type CheckboxGroupProps,
   type CheckboxProps,
   type CheckmarkProps,
 } from "./checkbox";

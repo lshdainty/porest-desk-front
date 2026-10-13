@@ -23,10 +23,14 @@ import { cva } from "class-variance-authority";
  *   배율 = (기준 − 2) ÷ 기준, 기준 = max(높이, 폭 ÷ 4, 24). 누르는 순간 크기를 재서 --press-basis 로 넘기고,
  *   크기마다 높이를 기본값으로 둔다. 모션 줄이기면 축소하지 않는다.
  *   disabled 는 전용 색(bg-disabled · fg-disabled) — 흐리게 하지 않는다.
+ *   누름은 누른 동작이 끝날 때까지 한 번이다 — onClick 이 Promise 를 돌려주면 이행 · 거부될 때까지 다음 누름(포인터 · Enter · Space)을
+ *   버린다(시간 창은 없다, 사용자 결정 2026-10-08). 돌려주지 않으면 잠그지 않는다 — button.tsx.
  *   loading 은 누름 색 위 로딩 원 + 누르기 막기 + aria-busy. 라벨은 글자 · 아이콘 색만 투명하게 해 폭을 그대로 둔다 —
  *   자식을 따로 감싸지 않으므로 부르는 쪽의 [&>span] · [&>svg] 규칙이 그대로 먹는다. asChild 와 함께 쓰지 않는다.
  *   로딩 원은 Progress Circle(progress-circle.tsx) — size · tone inherit 로 이 버튼이 정한 --progress-size(14 · 14 · 16 · 18) ·
  *   --progress-thickness(2) · --progress-track · --progress-range 를 따른다. 장식이다(aria-hidden) — 버튼의 aria-busy 가 알린다.
+ *   Brand Outline 의 원은 stroke-brand-solid(Progress Circle brand 톤 — 다크는 밝은 짝, 다크 바탕 위 Desk 6.10:1). 채움 색
+ *   bg-brand-solid 는 다크에서도 짙어 투명한 버튼 위에서 1.73:1 이었다(2026-10-08 까지).
  *
  * 누르는 영역은 보이는 크기와 따로 44×44 까지 넓힌다(::before).
  */
@@ -58,7 +62,7 @@ export const buttonVariants = cva(
         criticalSolid:
           "bg-bg-critical-solid text-static-white hover:bg-bg-critical-solid-pressed active:bg-bg-critical-solid-pressed aria-busy:bg-bg-critical-solid-pressed [--progress-track:color-mix(in_srgb,var(--color-static-white)_30%,transparent)] [--progress-range:var(--color-static-white)]",
         brandOutline:
-          "border border-stroke-neutral-weak bg-transparent text-fg-brand hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-bg-brand-weak-pressed)] [--progress-range:var(--color-bg-brand-solid)]",
+          "border border-stroke-neutral-weak bg-transparent text-fg-brand hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-bg-brand-weak-pressed)] [--progress-range:var(--color-stroke-brand-solid)]",
         neutralOutline:
           "border border-stroke-neutral-weak bg-transparent text-fg-neutral hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-gray-500)] [--progress-range:var(--color-fg-neutral)]",
         ghost:

@@ -22,12 +22,14 @@ import { AFFIX_EDGE, textInputVariants } from "./input-variants";
  *
  * 테두리는 상자 안쪽 1px(inset shadow), 포커스 · 오류의 2px 는 ::after 로 안쪽에 덧그린다 — 굵어져도 내용이
  * 밀리지 않고, 색만 100ms 로 나타난다(SEED). 포커스는 마우스 · 터치로 눌러도 보인다(입력 중). 읽기 전용이면
- * 포커스 테두리가 없고, 오류는 포커스해도 빨간 2px 그대로다.
+ * 포커스 테두리가 없고(포커스 표시를 두지 않는다 — SEED 와 같다, 사용자 결정 2026-10-08), 오류는 포커스해도 빨간 2px 그대로다.
  * 비활성 · 읽기 전용은 회색 바탕(bg-disabled)으로 가른다 — 흐리게 하지 않는다(v106). 밑줄형은 바탕이 없어
  * 읽기 전용을 글자 색(fg-neutral-muted)으로 가른다.
  *
  * 크기: large 52(밑줄 40) · medium 40(밑줄 34) · responsive(웹 기본 — 1280 미만 large · 이상 medium). 앱은 늘 large.
- * 지우기 버튼(clearable)은 값이 있고 막히지 않았을 때만 — 누르면 값을 비우고 입력에 포커스를 둔다.
+ * 지우기 버튼(clearable)은 값이 있고 막히지 않았을 때만 — 누르면 값을 비우고 입력에 포커스를 둔다. 누르는 영역은 보이는 원(22 · 18)
+ * 둘레로 44(::before — 상자가 overflow-hidden 이라 상자 밖은 잘린다, medium 40 은 44 × 40).
+ * 캐럿은 글자색(caret-fg-neutral), 고른 글은 기기 기본 하이라이트 — ::selection 을 두지 않는다(2026-10-08).
  * 붙이개 글(prefix · suffix)은 입력의 설명으로도 읽힌다(단위 "원" 이 화면 읽기 프로그램에도 들리게).
  */
 
@@ -153,7 +155,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           data-slot="text-input-value"
           className={cn(
-            "min-w-0 flex-1 self-stretch border-0 bg-transparent p-0 outline-none [font:inherit]",
+            "min-w-0 flex-1 self-stretch border-0 bg-transparent p-0 caret-fg-neutral outline-none [font:inherit]",
             "first:pl-[var(--text-input-px)] last:pr-[var(--text-input-px)] disabled:cursor-not-allowed",
             // 브라우저 자동 완성의 바탕색을 지운다 — 글자색은 칸 그대로(SEED)
             "[&:-webkit-autofill]:bg-clip-text [&:-webkit-autofill]:[-webkit-text-fill-color:var(--color-fg-neutral)] [&:-webkit-autofill]:[transition:background-color_9999s_9999s]",
@@ -200,7 +202,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             data-slot="text-input-clear"
             onClick={clear}
             className={cn(
-              "flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-fg-neutral-subtle",
+              "relative flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-fg-neutral-subtle",
+              // 누르는 영역 44 — 보이는 원 둘레로(상자 밖은 상자가 자른다)
+              "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
               "[&>svg]:size-[var(--text-input-clear)]",
               AFFIX_EDGE,
             )}

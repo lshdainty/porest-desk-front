@@ -67,13 +67,18 @@ describe("ScrollFog", () => {
     expect(el.className).toContain("overflow-y-auto");
     expect(el.className).toContain("scroll-py-[20px]");
 
-    // 토큰에 방향을 붙인 흐림 둘 사이에 불투명한 층 — 위는 0 에서, 가운데는 깊이(20) 아래에서, 아래는 끝에서
+    // 흐린 쪽마다 상자 전체 크기의 층 하나(방향을 붙인 토큰) — 단계는 그 쪽 깊이(20)의 몫이라 깊이 안에서 불투명에 닿는다
     const image = mask(el, "mask-image");
-    expect(image).toContain("#000000ff 100%");
+    expect(image).toContain("to bottom");
     expect(image).toContain("to top");
-    expect(image).toContain("linear-gradient(#000, #000)");
-    expect(mask(el, "mask-position")).toBe("0 0, 0 20px, 0 100%");
+    expect(image).toContain("#000000ff calc(20px * 1)");
+    expect(image).not.toContain("linear-gradient(#000, #000)");
+    expect(mask(el, "mask-size")).toBe("100% 100%, 100% 100%");
+    expect(mask(el, "mask-position")).toBe("0 0, 0 0");
     expect(mask(el, "mask-repeat")).toBe("no-repeat");
+    // 두 층은 곱한다 — 상자가 두 깊이의 합보다 낮아도 두 흐림이 더해지지 않는다(2026-10-08 이전엔 이어 붙여 더해졌다)
+    expect(mask(el, "mask-composite")).toBe("intersect");
+    expect(mask(el, "-webkit-mask-composite")).toBe("source-in");
     // 사파리 — 접두어 속성도 같은 값
     expect(mask(el, "-webkit-mask-image")).toBe(image);
 
@@ -87,7 +92,10 @@ describe("ScrollFog", () => {
       const el = render(<ScrollFog use={use}>내용</ScrollFog>);
       expect(el.dataset.use).toBe(use);
       expect(el.dataset.fogAxis).toBe("y");
-      expect(mask(el, "mask-position")).toBe("0 0, 0 20px, 0 100%");
+      // 위는 깊이 20 · 아래는 깊이 80 — 단계가 그 쪽 깊이의 몫이다
+      const image = mask(el, "mask-image");
+      expect(image).toContain("#000000ff calc(20px * 1)");
+      expect(image).toContain("#000000ff calc(80px * 1)");
       expect(el.className).toContain("scroll-pt-[20px]");
       expect(el.className).toContain("scroll-pb-[80px]");
       expect(content(el).className).toContain("pt-[20px]");
@@ -101,7 +109,7 @@ describe("ScrollFog", () => {
     const image = mask(el, "mask-image");
     expect(image).toContain("to right");
     expect(image).toContain("to left");
-    expect(mask(el, "mask-position")).toBe("0 0, 20px 0, 100% 0");
+    expect(mask(el, "mask-position")).toBe("0 0, 0 0");
     for (const cls of [
       "overflow-x-auto",
       "overflow-y-hidden",
@@ -129,7 +137,7 @@ describe("ScrollFog", () => {
       </ScrollFog>,
     );
     expect(el.dataset.fogAxis).toBe("x");
-    expect(mask(el, "mask-position")).toBe("0 0, 20px 0, 100% 0");
+    expect(mask(el, "mask-image")).toContain("to right");
     // 부르는 쪽의 넘침이 box 의 세로 넘침을 덮는다
     expect(el.className).not.toContain("overflow-y-auto");
     expect(content(el).className).toContain(
@@ -185,12 +193,16 @@ describe("useScrollFog", () => {
   it("다른 부품의 스크롤 상자에 같은 흐림을 걸고, 끄면(null) 걷는다", () => {
     const el = render(<Body use="overlayBody" />);
     expect(el.dataset.fogAxis).toBe("y");
-    expect(mask(el, "mask-position")).toBe("0 0, 0 20px, 0 100%");
+    expect(mask(el, "mask-image")).toContain("calc(80px * 1)");
+    expect(mask(el, "mask-composite")).toBe("intersect");
 
     render(<Body use={null} />);
     expect(el.hasAttribute("data-fog-axis")).toBe(false);
     expect(mask(el, "mask-image")).toBe("");
     expect(mask(el, "-webkit-mask-image")).toBe("");
     expect(mask(el, "mask-position")).toBe("");
+    // 합성 방식도 함께 걷는다
+    expect(mask(el, "mask-composite")).toBe("");
+    expect(mask(el, "-webkit-mask-composite")).toBe("");
   });
 });

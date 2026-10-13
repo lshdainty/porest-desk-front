@@ -11,18 +11,23 @@ import { buttonVariants } from "./button-variants";
 
 export interface ButtonProps
   extends
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onClick">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   /** 누름 색 위 로딩 원 + 누르기 막기 + aria-busy. asChild 와 함께 쓰지 않는다(Slot 은 자식 하나). */
   loading?: boolean;
+  /** 누름. Promise 를 돌려주면 그것이 끝날 때(이행 · 거부)까지 다음 누름을 버린다 — 비동기 동작은 Promise 를 돌려준다(mutateAsync). */
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => unknown;
 }
 
-// 로딩 중 누르기 — 제출도, 부모로 올라가는 것도 막는다
+// 버리는 누르기(로딩 중 · 누른 동작이 끝나기 전) — 제출도, 부모로 올라가는 것도 막는다
 function swallow(e: React.MouseEvent<HTMLButtonElement>) {
   e.preventDefault();
   e.stopPropagation();
 }
+
+const isThenable = (v: unknown): v is PromiseLike<unknown> =>
+  typeof (v as PromiseLike<unknown> | null)?.then === "function";
 
 // 누르는 순간 기준 길이 max(높이, 폭 ÷ 4, 24) 를 --press-basis 로 — 폭이 넓은 버튼(w-full)도 세로 2px 만 준다.
 function setPressBasis(e: React.PointerEvent<HTMLElement>) {
@@ -57,13 +62,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       setPressBasis(e);
       onPointerDown?.(e);
     };
+    // 누른 동작이 끝날 때까지 한 번 — onClick 이 돌려준 Promise 가 끝나기 전의 누름은 버린다. finally 는 거부를 그대로 넘긴다
+    // (부르는 쪽이 잡지 않은 오류는 전처럼 한 번 알려진다)
+    const inFlight = React.useRef(false);
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (inFlight.current) return swallow(e);
+      const result = onClick?.(e);
+      if (!isThenable(result)) return;
+      inFlight.current = true;
+      void Promise.resolve(result).finally(() => {
+        inFlight.current = false;
+      });
+    };
     if (asChild) {
       return (
         <Slot
           ref={ref}
           className={classes}
           onPointerDown={handlePointerDown}
-          onClick={onClick}
+          onClick={handleClick}
           {...props}
         >
           {children}
@@ -78,7 +95,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         onPointerDown={handlePointerDown}
         // 로딩 중엔 포인터뿐 아니라 키보드(Enter · Space) 누르기도 삼킨다 — 두 번 제출 방지(submit 도 막는다)
-        onClick={loading ? swallow : onClick}
+        onClick={loading ? swallow : handleClick}
         {...props}
       >
         {children}
