@@ -110,37 +110,47 @@ export const listPrefixVariants = cva(
   },
 );
 
-// 본문 — 제목 + 설명. 누르는 줄은 이것이 버튼 · 링크다. 폭이 내용을 따르는 flex 항목이라 min-w-0(긴 낱말이 칸 안에서 끊긴다)
+// 본문 — 제목 + 설명. 누르는 줄은 이것이 버튼 · 링크다. 남는 폭을 쓰고(flex-1), 뒤 붙이개가 길면 먼저 양보하되
+// 한 글자(1em)까지만 준다 — 뒤 여백 10 은 따로 더한다(스펙 body.minWidth 1em · Q-001 A). 제목 · 설명은 칸 끝에서 끊는다
 export const listBodyVariants = cva(
-  "flex min-w-0 flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
+  "flex min-w-[calc(1em+var(--spacing-x2_5))] flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
 );
 
-export const listTitleVariants = cva("font-sans text-t5 font-normal", {
-  variants: {
-    disabled: { true: "text-fg-disabled", false: "text-fg-neutral" },
+// 제목 · 글 설명 — 평소엔 단어 단위, 본문이 낱말 하나보다 좁아질 때만 글자 사이에서 끊는다(overflow-wrap: anywhere)
+export const listTitleVariants = cva(
+  "font-sans text-t5 font-normal [overflow-wrap:anywhere]",
+  {
+    variants: {
+      disabled: { true: "text-fg-disabled", false: "text-fg-neutral" },
+    },
+    defaultVariants: { disabled: false },
   },
-  defaultVariants: { disabled: false },
-});
+);
 
 // 강조 줄을 올리거나 누르는 동안 — 짙은 강조 바탕 위라 설명 · 값 글자를 한 단계 짙게
 const HIGHLIGHT_MUTED =
   "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:text-fg-neutral-muted group-has-[[data-list-action]:not([data-disabled]):active]/list-item:text-fg-neutral-muted";
 
-export const listDetailVariants = cva("font-sans text-t3", {
-  variants: {
-    disabled: { true: "text-fg-disabled", false: "text-fg-neutral-subtle" },
-    highlighted: { true: "", false: "" },
+export const listDetailVariants = cva(
+  "font-sans text-t3 [overflow-wrap:anywhere]",
+  {
+    variants: {
+      disabled: { true: "text-fg-disabled", false: "text-fg-neutral-subtle" },
+      highlighted: { true: "", false: "" },
+    },
+    compoundVariants: [
+      { disabled: false, highlighted: true, className: HIGHLIGHT_MUTED },
+    ],
+    defaultVariants: { disabled: false, highlighted: false },
   },
-  compoundVariants: [
-    { disabled: false, highlighted: true, className: HIGHLIGHT_MUTED },
-  ],
-  defaultVariants: { disabled: false, highlighted: false },
-});
+);
 
-// 뒤 붙이개 — 값 글자(t5 · 옅은 색) · 화살표 18. 안의 버튼 · 링크는 줄의 ::after 위로 올라 따로 눌린다.
+// 뒤 붙이개 — 줄지 않고 본문이 양보한다(value=node: 금액 · 화살표 · 컨트롤 · 작은 버튼은 한 덩어리).
+// 글로 넘긴 값(value=text: 이메일 · 계좌번호 · 긴 이름)은 본문이 1em 이 된 뒤에야 줄고 줄 끝에서 끊는다 — 본문 위로 넘치지 않는다(Q-001 A).
+// 값 글자(t5 · 옅은 색) · 화살표 18. 안의 버튼 · 링크는 줄의 ::after 위로 올라 따로 눌린다.
 // 강조 줄을 올리거나 누르면 값 글자만 짙어진다 — 화살표는 그대로 옅은 색
 export const listSuffixVariants = cva(
-  "flex shrink-0 items-center gap-x1 font-sans text-t5 [&>svg]:size-x4_5 [&>svg]:shrink-0 [&_a]:relative [&_a]:z-1 [&_button]:relative [&_button]:z-1",
+  "flex items-center gap-x1 font-sans text-t5 [&>svg]:size-x4_5 [&>svg]:shrink-0 [&_a]:relative [&_a]:z-1 [&_button]:relative [&_button]:z-1",
   {
     variants: {
       disabled: {
@@ -148,6 +158,10 @@ export const listSuffixVariants = cva(
         false: "text-fg-neutral-subtle",
       },
       highlighted: { true: "", false: "" },
+      value: {
+        node: "shrink-0",
+        text: "min-w-0 shrink [overflow-wrap:anywhere]",
+      },
     },
     compoundVariants: [
       {
@@ -156,7 +170,7 @@ export const listSuffixVariants = cva(
         className: `${HIGHLIGHT_MUTED} [&>svg]:text-fg-neutral-subtle`,
       },
     ],
-    defaultVariants: { disabled: false, highlighted: false },
+    defaultVariants: { disabled: false, highlighted: false, value: "node" },
   },
 );
 

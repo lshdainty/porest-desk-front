@@ -915,6 +915,7 @@ const NestedDemo = () => {
                 }
                 title="기타"
                 detail="지출 · 하위 없음"
+                expandLabel="기타 하위 카테고리"
                 onClick={noop}
               />
             </List>
@@ -991,7 +992,7 @@ const NestedDemo = () => {
         <Cell width={400}>
           <Specimen
             spec="list"
-            combo={{ nest: "parent", expanded: "expanded" }}
+            combo={{ nest: "parent", expanded: "expanded", mode: "fixed" }}
           >
             <List aria-label="지출 카테고리 · 편집 모드(꺾쇠 없이 늘 펼침)">
               <ListParentItem
@@ -1001,7 +1002,8 @@ const NestedDemo = () => {
                   </Tile>
                 }
                 title="취미"
-                detail="expandLabel 이 없으면 꺾쇠 자리를 비우고 늘 펼친다"
+                detail="collapsible={false} 면 꺾쇠 자리를 비우고 늘 펼친다"
+                collapsible={false}
                 onClick={noop}
               >
                 <Children names={["영화", "게임"]} color="violet" />
@@ -1121,7 +1123,7 @@ const NestedStatesDemo = () => (
 // ── 가장 나쁜 값 ─────────────────────────────────────────────
 
 const WorstDemo = () => (
-  <DemoBlock title="가장 나쁜 값 — 아주 긴 제목 · 1억이 넘는 금액 · 띄어쓰기 없는 긴 낱말 · 접힌 하위 줄이 많은 부모. 폰 폭 320 · 360. 스펙대로 그린 모습이다 — 뒤 붙이개가 줄지 않아 아주 긴 값 앞에서 본문이 눌린다(질문 후보)">
+  <DemoBlock title="가장 나쁜 값 — 아주 긴 제목 · 1억이 넘는 금액 · 띄어쓰기 없는 긴 낱말 · 접힌 하위 줄이 많은 부모. 폰 폭 320 · 360. 뒤 붙이개는 줄지 않고 본문이 1em 까지 양보한다 · 제목 · 글 설명은 칸 끝에서 끊고 · 글로 넘긴 값은 줄 끝에서 끊어 본문 위로 넘치지 않는다(Q-001 A)">
     <DemoRow label="긴 제목 · 큰 금액 320">
       <Cell width={320}>
         <Specimen spec="list" combo={{ align: "top" }}>
@@ -1163,6 +1165,33 @@ const WorstDemo = () => (
                   -1,234,567,890,123원
                 </b>
               }
+            />
+          </List>
+        </Specimen>
+      </Cell>
+    </DemoRow>
+    <DemoRow label="글 값 · 긴 이메일 계좌 320 · 360">
+      <Cell width={320}>
+        <Specimen spec="list" combo={{}}>
+          <List aria-label="가장 나쁜 값 · 글 값 320">
+            <ListItem
+              title="이메일"
+              suffix="porest.desk.design.system.long.address@example-company-domain.co.kr"
+            />
+            <ListItem
+              title="계좌번호"
+              suffix="1002-123-456789-0123456789-0123456789"
+            />
+          </List>
+        </Specimen>
+      </Cell>
+      <Cell width={360}>
+        <Specimen spec="list" combo={{}}>
+          <List aria-label="가장 나쁜 값 · 긴 제목과 긴 글 값 360">
+            <ListItem
+              title="포레스트 체크카드 · 개인 사업자 연결 계정 이름"
+              detail="porest-desk-design-system-account-identifier-0123456789"
+              suffix="주식회사 포레스트 데스크 디자인 시스템 연구소 대표자 명의"
             />
           </List>
         </Specimen>

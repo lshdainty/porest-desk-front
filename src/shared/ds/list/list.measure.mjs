@@ -64,12 +64,30 @@ export default {
   "tile.color": [TILE, "color", "color"],
   "body.gap": [BODY, "px", "row-gap"],
   "body.paddingRight": [BODY, "px", "padding-right"],
+  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth("1em")는 글자 단위 값이라 재지 않는다 — 계산값이 26px(1em + 뒤 여백 10)로
+  // 풀려 스펙 글과 맞지 않는다. list.test.tsx 가 클래스로 본다
+  "body.flexGrow": [BODY, "exact", "flex-grow"],
   "title.typography": ["[data-slot=list-title]", "typography"],
   "title.fontWeight": ["[data-slot=list-title]", "exact", "font-weight"],
+  "title.overflowWrap": ["[data-slot=list-title]", "exact", "overflow-wrap"],
   "title.foreground": ["[data-slot=list-title]", "color", "color"],
   "detail.typography": ["[data-slot=list-detail]", "typography"],
   "detail.foreground": ["[data-slot=list-detail]", "color", "color"],
+  // 글 설명만 — Tag Group 설명은 그 스펙대로 한 줄 말줄임이라 [data-slot=list-detail] 가 글일 때만 잰다
+  "detail.overflowWrap": [
+    "[data-slot=list-detail]:not(:has([data-slot=tag-group]))",
+    "exact",
+    "overflow-wrap",
+  ],
   "suffix.gap": [SUFFIX, "px", "column-gap"],
+  // 금액 · 화살표 · 컨트롤은 줄지 않고, 글로 넘긴 값만 본문이 1em 이 된 뒤에 준다 — list-suffix 의 data-value 로 가른다
+  "suffix.shrink": [`${SUFFIX}[data-value=node]`, "exact", "flex-shrink"],
+  "suffixText.shrink": [`${SUFFIX}[data-value=text]`, "exact", "flex-shrink"],
+  "suffixText.overflowWrap": [
+    `${SUFFIX}[data-value=text]`,
+    "exact",
+    "overflow-wrap",
+  ],
   // 값 글자는 뒤 붙이개 자리가 글자 모양을 정하고 안의 글이 그대로 받는다
   "suffixText.typography": [SUFFIX, "typography"],
   "suffixText.foreground": [SUFFIX, "color", "color"],
