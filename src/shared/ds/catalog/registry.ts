@@ -163,6 +163,8 @@ const FAMILIES: DsFamily[] = [
       { name: "Table", spec: "table" },
       { name: "Table Pagination", spec: "table-pagination" },
       { name: "Pagination", spec: "pagination" },
+      { name: "Chart", spec: "chart" },
+      { name: "Swipe Actions", spec: "swipe-actions" },
     ],
   },
 ];
