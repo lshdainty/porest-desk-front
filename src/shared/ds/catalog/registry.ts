@@ -155,6 +155,11 @@ const FAMILIES: DsFamily[] = [
     title: "13 목록",
     entries: [{ name: "List", spec: "list" }],
   },
+  {
+    id: "data",
+    title: "14 데이터",
+    entries: [{ name: "Card", spec: "card" }],
+  },
 ];
 
 export const DS_FAMILIES: DsFamily[] = FAMILIES.map((family) => ({
