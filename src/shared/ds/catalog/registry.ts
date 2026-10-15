@@ -99,6 +99,7 @@ const FAMILIES: DsFamily[] = [
       { name: "Chip", spec: "chip" },
       { name: "Tabs", spec: "tabs" },
       { name: "Segmented Control", spec: "segmented-control" },
+      { name: "Toggle", spec: "toggle" },
     ],
   },
   {
