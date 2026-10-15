@@ -52,6 +52,8 @@ import {
   formatAxisWon,
   formatWon,
   type ChartColor,
+  chartDonutRadii,
+  chartDonutThickness,
 } from "./chart-variants";
 
 declare global {
@@ -799,6 +801,14 @@ describe("ChartDonutLegend · ChartDonutCenter", () => {
         e.textContent!.endsWith("원"),
       ),
     ).toBe(true);
+  });
+
+  it("도넛 두께는 지름 ÷ 10 + 6(정수) — 120 → 18 · 160 → 22 · 180 → 24, 반지름은 지름 ÷ 2 에서 두께를 뺀다(Q-012-5)", () => {
+    expect(chartDonutThickness(120)).toBe(18);
+    expect(chartDonutThickness(160)).toBe(22);
+    expect(chartDonutThickness(180)).toBe(24);
+    expect(chartDonutRadii(160)).toEqual({ innerRadius: 58, outerRadius: 80 });
+    expect(chartDonutRadii(120)).toEqual({ innerRadius: 42, outerRadius: 60 });
   });
 
   const withCenter = (

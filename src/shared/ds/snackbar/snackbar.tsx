@@ -59,6 +59,10 @@ import {
  *   높을 때). 감싼 요소가 붙고 · 떨어지고 · 크기가 바뀌고 · 창 크기가 바뀌고 · 새 띠가 뜰 때 다시 잰다(스크롤은 재지
  *   않는다 — 스크롤하는 본문 요소는 감싸지 않는다). 자리가 옮겨 갈 때는 200ms easing, 모션 줄이기면 바로.
  *
+ * 화면 키보드도 피할 자리다 — 띠는 키보드 바로 위 8 에 선다(2026-10-15 사용자 결정 Q-003-1). 폰 브라우저는 키보드가 올라와도
+ *   레이아웃 화면을 줄이지 않아 position: fixed 의 아래가 키보드 뒤에 남는다 — 보이는 화면(visualViewport)의 아래 끝에서 레이아웃 화면
+ *   아래까지를 재어 피할 자리와 둘 중 큰 쪽을 쓴다. 보이는 화면이 바뀔 때 다시 잰다(손가락으로 확대한 동안은 세지 않는다).
+ *
  * 손 메모이제이션을 두지 않는다 — 레시피가 useCallback · useMemo 로 묶어 두던 것(닫기 · 걷기 · 재기 · 내려 줄 값)은
  *   늘 같은 것(useReducer 의 dispatch, 처음 그릴 때 한 번 만든 값)으로 바꿨다. 테스트는 컴파일하지 않은 코드를 돌므로,
  *   그것을 기다리는 이펙트(시간 · 걷기 · 피할 자리 등록)가 Provider 가 다시 그릴 때마다 다시 돌지 않게 하려는 것이다.
@@ -365,7 +369,14 @@ function createAvoidance(setOffset: (offset: number) => void) {
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0) top = Math.min(top, r.top);
     }
-    setOffset(Math.max(0, viewport - top));
+    // 화면 키보드 — 보이는 화면(visualViewport)의 아래 끝이 레이아웃 화면 아래보다 위면 그 차이(키보드가 가린 높이).
+    // 손가락으로 확대한 동안(scale ≠ 1)은 세지 않는다
+    const vv = window.visualViewport;
+    const keyboard =
+      vv && Math.abs(vv.scale - 1) < 0.01
+        ? viewport - (vv.offsetTop + vv.height)
+        : 0;
+    setOffset(Math.max(0, viewport - top, Math.round(keyboard)));
   };
   const avoid = (el: HTMLElement) => {
     avoided.add(el);
@@ -406,8 +417,14 @@ function SnackbarProvider({ children }: { children?: React.ReactNode }) {
   React.useEffect(() => {
     setContainer(document.body);
     window.addEventListener("resize", avoidance.measure);
+    // 화면 키보드가 올라오고 내려갈 때 · 보이는 화면이 밀릴 때
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", avoidance.measure);
+    vv?.addEventListener("scroll", avoidance.measure);
     return () => {
       window.removeEventListener("resize", avoidance.measure);
+      vv?.removeEventListener("resize", avoidance.measure);
+      vv?.removeEventListener("scroll", avoidance.measure);
       avoidance.disconnect();
     };
   }, [avoidance]);

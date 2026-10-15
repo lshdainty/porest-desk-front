@@ -10,6 +10,7 @@ import {
   HelpBubbleTrigger,
 } from "./help-bubble";
 import { BUBBLE_POSITION } from "./help-bubble-variants";
+import { useBubbleEdgePadding } from "./bubble-edge-padding";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -168,6 +169,47 @@ describe("HelpBubble", () => {
         ?.getAttribute("aria-hidden"),
     ).toBe("true");
     expect(el.dataset.side).toBe("top");
+  });
+
+  it("열리면 제목 · 설명을 status 자리에 알리고, 닫히면 비운다 — 초점은 트리거에 남는다(Q-004-2)", async () => {
+    render(<Info />);
+    const status = () =>
+      document.querySelector<HTMLElement>("[data-slot=help-bubble-status]")!;
+    expect(status().getAttribute("role")).toBe("status");
+    expect(status().getAttribute("aria-live")).toBe("polite");
+    expect(status().textContent).toBe("");
+    open();
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    expect(status().textContent).toBe(`${LEAVE.title} ${LEAVE.description}`);
+    expect(document.activeElement).toBe(trigger());
+    act(() => trigger().click());
+    expect(status().textContent).toBe("");
+  });
+
+  it("화면 끝의 트리거 — 화살표를 가운데에 두도록 그쪽 가장자리 여백만 0 까지 줄인다(Q-004-1)", () => {
+    vi.spyOn(document.documentElement, "clientWidth", "get").mockReturnValue(
+      360,
+    );
+    const anchor = document.createElement("button");
+    vi.spyOn(anchor, "getBoundingClientRect").mockReturnValue({
+      left: 0,
+      top: 100,
+      width: 40,
+      height: 40,
+    } as DOMRect);
+    function Probe() {
+      const padding = useBubbleEdgePadding({ current: anchor }, true, "top");
+      return <output data-testid="padding">{JSON.stringify(padding)}</output>;
+    }
+    render(<Probe />);
+    // 가운데 20 → 20 − 20 = 0, 반대쪽은 가운데가 멀어 16 그대로
+    expect(
+      JSON.parse(
+        document.querySelector("[data-testid=padding]")!.textContent ?? "{}",
+      ),
+    ).toEqual({ top: 16, bottom: 16, left: 0, right: 16 });
   });
 
   it("다시 누르면 닫는다", () => {

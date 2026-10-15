@@ -41,7 +41,7 @@ import {
  * 기준 = max(칸 높이, 칸 폭 ÷ 4, 24) 를 누르는 순간(포인터 · Space) 칸을 재서 --press-basis 로 넘긴다. 호버는 축소가 없고,
  * 모션 줄이기면 축소하지 않는다. 포커스 링은 키보드 포커스에만 칸 바깥 2px · 띄움 2px(알약을 따라 둥글다).
  * 알림 점(notification)은 6px fg-brand(브랜드 글자색 — bg-brand-solid 는 다크 트랙에서 안 보인다) — 글 끝에서 2 · 글 위쪽에
- * 띄워 칸 폭을 바꾸지 않는다. 보조 기술에는 "새 내용" 을 덧붙인다(점만으로 알리지 않는다). 고른 칸에는 점도 "새 내용" 도
+ * 띄워 칸 폭을 바꾸지 않는다. 보조 기술에는 "새 소식" 을 덧붙인다(점만으로 알리지 않는다). 고른 칸에는 점도 "새 소식" 도
  * 없다(고르면 사라진다).
  *
  * 키보드는 라디오 묶음 그대로다(Radix RadioGroup) — Tab 은 고른 칸 하나에만 서고, ← → ↑ ↓ 로 옮기면 바로 고른다(끝에서
@@ -188,7 +188,7 @@ export interface SegmentedControlItemProps extends Omit<
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>,
   "asChild"
 > {
-  /** 새 내용 — 알림 점 + 보조 기술에 "새 내용"(고른 칸에는 그리지 않는다). 내용을 보면 끈다 */
+  /** 새 소식 — 알림 점 + 보조 기술에 "새 소식"(고른 칸에는 그리지 않는다). 내용을 보면 끈다 */
   notification?: boolean;
 }
 
@@ -239,7 +239,7 @@ const SegmentedControlItem = React.forwardRef<
             />
           )}
         </span>
-        {notification && !checked && <span className="sr-only">새 내용</span>}
+        {notification && !checked && <span className="sr-only">새 소식</span>}
       </RadioGroupPrimitive.Item>
     );
   },

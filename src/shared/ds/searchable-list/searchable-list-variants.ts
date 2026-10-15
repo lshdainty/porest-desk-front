@@ -4,12 +4,15 @@
  * 컴포넌트와 규칙은 searchable-list.tsx 머리 주석이다.
  */
 
-// 줄 — 바탕 층(::before — 강조 · 누름, 줄지 않는다)과 콘텐츠 층(누르면 2px 거리 축소). 마우스로 올린 바탕만 색이 150ms 로 바뀐다
+// 줄 — 바탕 층(::before — 강조 · 누름, 줄지 않는다)과 콘텐츠 층(누르면 2px 거리 축소). 바탕은 줄 폭 전체(0 · 모서리 0)에서
+// 짚으면 좌우 6 · 모서리 10 으로 들어오며 150ms 에 색과 함께 바뀐다(Menu · List, Q-009-3). 화살표로 옮기는 동안은 전환 없이 바로
 export const OPTION = [
   "group/sl-option relative flex w-full cursor-pointer select-none outline-none",
-  "before:pointer-events-none before:absolute before:inset-y-0 before:inset-x-x1_5 before:rounded-r2_5 before:bg-transparent before:content-['']",
-  "data-[highlighted]:before:bg-bg-layer-default-pressed active:before:bg-bg-layer-default-pressed",
-  "data-[highlighted=pointer]:before:[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
+  "before:pointer-events-none before:absolute before:inset-y-0 before:inset-x-0 before:rounded-none before:bg-transparent before:content-['']",
+  "data-[highlighted]:before:inset-x-x1_5 data-[highlighted]:before:rounded-r2_5 data-[highlighted]:before:bg-bg-layer-default-pressed",
+  "active:before:inset-x-x1_5 active:before:rounded-r2_5 active:before:bg-bg-layer-default-pressed",
+  "before:[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),inset_var(--motion-duration-color-transition)_var(--motion-ease-easing),border-radius_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
+  "[[data-highlight-source=keyboard]_&]:before:transition-none",
 ].join(" ");
 
 export const OPTION_CONTENT = [

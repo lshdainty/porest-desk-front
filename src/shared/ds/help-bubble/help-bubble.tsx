@@ -10,6 +10,7 @@ import {
   BUBBLE_POSITION,
   BUBBLE_TITLE,
 } from "./help-bubble-variants";
+import { useBubbleEdgePadding } from "./bubble-edge-padding";
 
 /*
  * Porest Help Bubble — 구조는 SEED Help Bubble(2026-10-02). 수치 원본은 porest-design
@@ -31,7 +32,8 @@ import {
  * 아니라 하위 요소에 걸린 곳(카탈로그의 다크 판)에서는 body 의 말풍선이 라이트 색을 받는다. 그런 곳은 그 안의 요소로 띄운다.
  *
  * 초점(비모달 — 뒤 화면을 숨기지 않고 스크롤도 잠그지 않는다. 스크롤하면 트리거를 따라간다)
- *   - 열어도 초점을 옮기지 않는다(트리거에 남는다).
+ *   - 열어도 초점을 옮기지 않는다(트리거에 남는다). 대신 열릴 때 제목 · 설명을 한 번 알린다 — 트리거 옆에 늘 두는 화면 밖 자리
+ *     (role="status" · aria-live="polite")에 열린 뒤 글을 넣고 닫히면 비운다. 누르거나 처음부터 열려도 같다(2026-10-15 사용자 결정 Q-004-2).
  *   - 열린 동안 트리거(또는 기준)에서 Tab 은 말풍선으로 — 닫기 버튼이 있으면 그리로, 없으면 말풍선(role="dialog")으로
  *     (말풍선 둘레 바깥 2 에 2px stroke-focus-ring — 키보드 초점에만).
  *     말풍선에서 다시 Tab 으로 나가면 닫히고 초점은 트리거 다음 칸으로 간다. Shift+Tab 은 트리거로.
@@ -42,8 +44,11 @@ import {
  *
  * 모양: 폭은 내용만큼 최대 280(여백 포함), 위아래 10 · 좌우 12 · 모서리 12 · bg-neutral-inverted(다크는 밝은 말풍선) · 그림자 없음.
  * 제목 t3 13 / 18 · 700, 설명 t3 · 400(사이 2), 글자는 fg-neutral-inverted — 단어 단위로 줄을 바꾸고 줄바꿈 문자는 살린다.
- * 화살표는 12 × 8(끝 모서리 2) — 늘 트리거 가운데를 가리키고 말풍선 모서리와 14 를 남긴다(트리거가 작아 모자라면 말풍선을 민다).
- * 화살표 끝 ↔ 트리거 4(말풍선 몸통과는 12), 화면 가장자리와 16 — 모자라면 반대편으로 뒤집고 옆으로 민다. 쌓임은 z-tooltip 210(L4 —
+ * 화살표는 12 × 8(끝 모서리 2) — 늘 트리거 가운데를 가리키고 말풍선 모서리와 14 를 남긴다.
+ * 화살표 끝 ↔ 트리거 4(말풍선 몸통과는 12), 화면 가장자리와 16 — 모자라면 반대편으로 뒤집고 옆으로 민다.
+ * 셋이 부딪히면 화살표(트리거 가운데) → 모서리 14 → 가장자리 16 순서다 — 화면 끝의 트리거면 말풍선이 16 보다 가장자리에 붙는다(하한 없이 0 까지,
+ * 2026-10-15 사용자 결정 Q-004-1). Radix 는 화살표를 가운데에 못 두면 숨기므로(cannotCenterArrow) 트리거 쪽 가장자리 여백을
+ * min(16, 트리거 가운데 − 20)으로 줄여 말풍선을 그만큼 더 붙인다(useBubbleEdgePadding — bubble-edge-padding.ts). 쌓임은 z-tooltip 210(L4 —
  * 팝오버 · 메뉴 위). 닫기 버튼은 오른쪽 위 모서리에 붙은 38 투명 상자 · 아이콘 14(위 12 · 오른쪽 12 자리) · 누르는 영역 44 ·
  * 글과 4, 누르면 2px 거리 축소만(바탕 없음), 키보드 포커스는 안쪽 2px 링을 말풍선 글자색으로(브랜드 링은 짙은 말풍선 위에서 3:1 에
  * 못 미친다). 이름 "닫기".
@@ -52,7 +57,8 @@ import {
  */
 
 // 화살표 — 12 × 8, 끝 모서리 2(SEED getHelpBubbleArrowTipPath). Popover · Tooltip 의 Arrow 에 asChild 로 넣는다 —
-// Radix 가 넘기는 viewBox(30 × 10)를 덮어 쓴다
+// Radix 가 넘기는 viewBox(30 × 10)를 덮어 쓴다. visible — Radix 가 가운데를 못 가리킬 때 감싼 span 에 거는 visibility: hidden 을 받지 않는다
+// (화살표를 지우지 않는다 — Q-004-1. 가장자리 여백을 줄여 가운데를 지키므로 보통은 생기지 않는다)
 const BubbleArrow = React.forwardRef<
   SVGSVGElement,
   React.SVGProps<SVGSVGElement>
@@ -62,7 +68,7 @@ const BubbleArrow = React.forwardRef<
     aria-hidden
     {...props}
     viewBox="0 0 12 8"
-    className={cn("block fill-bg-neutral-inverted", className)}
+    className={cn("visible block fill-bg-neutral-inverted", className)}
   >
     <path d="M0,0 H12 L8,6 Q6,8 4,6 Z" />
   </svg>
@@ -136,6 +142,34 @@ export interface HelpBubbleProps {
   children?: React.ReactNode;
 }
 
+// 열림 알림 — 말풍선이 열린 뒤 제목 · 설명 글을 읽어 화면 밖 status 자리에 넣는다(초점은 옮기지 않는다). 자리는 늘 있고 글만 바뀌어야
+// 보조 기술이 읽으므로 한 프레임 뒤에 넣고, 닫히면 비워 다시 열 때 또 읽힌다
+function useOpenAnnouncement(
+  open: boolean,
+  contentRef: React.RefObject<HTMLDivElement | null>,
+) {
+  const [said, setSaid] = React.useState("");
+  React.useEffect(() => {
+    if (!open) {
+      setSaid("");
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      const content = contentRef.current;
+      const text = (slot: string) =>
+        content?.querySelector(`[data-slot="${slot}"]`)?.textContent?.trim() ??
+        "";
+      setSaid(
+        [text("help-bubble-title"), text("help-bubble-description")]
+          .filter(Boolean)
+          .join(" "),
+      );
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open, contentRef]);
+  return said;
+}
+
 function HelpBubble({
   open: openProp,
   defaultOpen,
@@ -145,12 +179,22 @@ function HelpBubble({
   const [open, setOpen] = useOpenState(openProp, defaultOpen, onOpenChange);
   const originRef = React.useRef<HTMLElement | null>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const said = useOpenAnnouncement(open, contentRef);
   const value = { open, setOpen, originRef, contentRef };
   return (
     <HelpBubbleContext.Provider value={value}>
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         {children}
       </PopoverPrimitive.Root>
+      <span
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-slot="help-bubble-status"
+        className="sr-only"
+      >
+        {said}
+      </span>
     </HelpBubbleContext.Provider>
   );
 }
@@ -275,6 +319,11 @@ const HelpBubbleContent = React.forwardRef<
     ref,
   ) => {
     const ctx = useHelpBubble("HelpBubbleContent");
+    const collisionPadding = useBubbleEdgePadding(
+      ctx.originRef,
+      ctx.open,
+      side,
+    );
     const titleId = React.useId();
     const descriptionId = React.useId();
     return (
@@ -285,6 +334,7 @@ const HelpBubbleContent = React.forwardRef<
           side={side}
           align={align}
           {...BUBBLE_POSITION}
+          collisionPadding={collisionPadding}
           aria-labelledby={titleId}
           aria-describedby={description != null ? descriptionId : undefined}
           className={cn(

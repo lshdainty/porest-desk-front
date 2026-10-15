@@ -181,7 +181,7 @@ describe("SegmentedControl", () => {
     expect(radios().every((r) => r.disabled)).toBe(true);
   });
 
-  it("알림 점은 안 고른 칸에만 — 보조 기술에는 “새 내용” 을 덧붙이고, 고르면 사라진다", () => {
+  it("알림 점은 안 고른 칸에만 — 보조 기술에는 “새 소식” 을 덧붙이고, 고르면 사라진다", () => {
     render(
       <SegmentedControl aria-label="할 일 보기" defaultValue="today">
         <SegmentedControlItem value="today">오늘</SegmentedControlItem>
@@ -190,12 +190,12 @@ describe("SegmentedControl", () => {
         </SegmentedControlItem>
       </SegmentedControl>,
     );
-    const done = radio("완료새 내용");
+    const done = radio("완료새 소식");
     const dot = done.querySelector(
       "[data-slot=segmented-control-notification]",
     )!;
     expect(dot.getAttribute("aria-hidden")).toBe("true");
-    expect(done.textContent).toBe("완료새 내용");
+    expect(done.textContent).toBe("완료새 소식");
     act(() => done.click());
     expect(
       done.querySelector("[data-slot=segmented-control-notification]"),

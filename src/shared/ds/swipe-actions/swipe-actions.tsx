@@ -131,7 +131,8 @@ const SwipeActionCell = React.forwardRef<
         aria-hidden
         data-slot="swipe-action-badge"
         className={swipeBadgeVariants({
-          tone: action.disabled ? "disabled" : kind,
+          kind,
+          disabled: !!action.disabled,
         })}
         style={{ inlineSize: SWIPE_BADGE_SIZE, blockSize: SWIPE_BADGE_SIZE }}
       >

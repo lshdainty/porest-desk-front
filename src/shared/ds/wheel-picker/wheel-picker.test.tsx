@@ -73,6 +73,9 @@ function render(node: ReactNode) {
   act(() => root.render(node));
 }
 
+// 누르기 · 키로 칸을 옮기는 시간(스펙 motion-duration-d4, Q-005)
+const MOVE_MS = 200;
+
 // 멈췄다고 보는 120ms 와 그다음 프레임까지
 const settle = () =>
   act(() => {
@@ -288,9 +291,9 @@ describe("WheelPicker", () => {
       <Month onIndexChange={onIndexChange} onValueChange={onValueChange} />,
     );
     key(column("연도"), "End");
-    // 스크롤을 알린 다음 프레임에 지나간 항목을 센다
+    // 200ms ease-out cubic 으로 가는 동안 지나간 항목을 센다
     act(() => {
-      vi.advanceTimersByTime(20);
+      vi.advanceTimersByTime(MOVE_MS + 20);
     });
     expect(onIndexChange.mock.calls).toEqual([
       [6, "2027"],
@@ -322,7 +325,7 @@ describe("WheelPicker", () => {
     render(<Haptic />);
     key(column("연도"), "ArrowDown");
     act(() => {
-      vi.advanceTimersByTime(20);
+      vi.advanceTimersByTime(MOVE_MS + 20);
     });
     expect(container.querySelector("[data-testid=ticks]")!.textContent).toBe(
       "1",
@@ -342,6 +345,15 @@ describe("WheelPicker", () => {
         )!
         .click(),
     );
+    // 브라우저 smooth 가 아니라 200ms ease-out cubic 을 직접 그린다 — 중간에는 아직 가는 중, 200ms 뒤 도착
+    act(() => {
+      vi.advanceTimersByTime(MOVE_MS / 2);
+    });
+    expect(year.scrollTop).toBeGreaterThan(5 * 44);
+    expect(year.scrollTop).toBeLessThan(7 * 44);
+    act(() => {
+      vi.advanceTimersByTime(MOVE_MS);
+    });
     expect(year.scrollTop).toBe(7 * 44);
     settle();
     expect(onValueChange).toHaveBeenCalledWith("2028", { stepDelta: 2 });

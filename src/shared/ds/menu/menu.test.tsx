@@ -304,24 +304,34 @@ describe("구조 · 접근성", () => {
     ).not.toContain("group-active");
   });
 
-  it("알약은 쉴 때도 좌우 8 · 모서리 12, 호버 · 누름 때 칠하고 키보드 링은 알약 안쪽 2px", async () => {
+  it("알약은 쉴 때 줄 폭 전체 · 모서리 0, 호버 · 누름에 좌우 8 · 모서리 12 로 들어오며 칠한다 — 키보드 링은 줄의 ::after 에 알약 자리로 고정", async () => {
     render(<Basic />);
     await open();
-    const pill = item("수정").querySelector("[data-slot=menu-item-pill]")!;
+    const row = item("수정");
+    const pill = row.querySelector("[data-slot=menu-item-pill]")!;
     expect(pill.getAttribute("aria-hidden")).toBe("true");
-    expect(pill.className).toContain("inset-x-x2");
-    expect(pill.className).toContain("rounded-r3");
+    expect(pill.className).toContain("inset-x-0");
+    expect(pill.className).toContain("rounded-none");
     expect(pill.className).toContain("bg-transparent");
+    for (const on of ["hover", "active"]) {
+      expect(pill.className).toContain(`group-${on}/menu-item:inset-x-x2`);
+      expect(pill.className).toContain(`group-${on}/menu-item:rounded-r3`);
+      expect(pill.className).toContain(
+        `group-${on}/menu-item:bg-bg-layer-floating-pressed`,
+      );
+    }
+    // 들임 · 모서리도 색과 함께 150ms 로 바뀐다
     expect(pill.className).toContain(
-      "group-hover/menu-item:bg-bg-layer-floating-pressed",
+      "inset_var(--motion-duration-color-transition)",
     );
     expect(pill.className).toContain(
-      "group-active/menu-item:bg-bg-layer-floating-pressed",
+      "border-radius_var(--motion-duration-color-transition)",
     );
-    expect(pill.className).toContain("group-focus-visible/menu-item:outline-2");
-    expect(pill.className).toContain(
-      "group-focus-visible/menu-item:-outline-offset-2",
-    );
+    // 키보드 링 — 줄의 ::after, 알약이 다 들어온 자리(8 · 12) 안쪽 2px
+    expect(row.className).toContain("after:inset-x-x2");
+    expect(row.className).toContain("after:rounded-r3");
+    expect(row.className).toContain("focus-visible:after:outline-2");
+    expect(row.className).toContain("focus-visible:after:-outline-offset-2");
     // 눌렀을 때만 콘텐츠가 2px 거리 축소 — 모션 줄이기면 하지 않는다
     const content = item("수정").querySelector(
       "[data-slot=menu-item-content]",

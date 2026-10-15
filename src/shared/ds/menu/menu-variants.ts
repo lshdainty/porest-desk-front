@@ -27,19 +27,21 @@ export const MENU_GROUP =
 export const MENU_GROUP_LABEL =
   "select-none px-x4 py-x2 text-t3 font-normal text-fg-neutral-subtle break-keep [overflow-wrap:break-word]";
 
-// 줄 — 위아래 10 · 좌우 16. 알약(MENU_PILL)이 호버 바탕과 키보드 링을 맡는다
-export const MENU_ITEM =
-  "group/menu-item relative flex cursor-pointer select-none items-center px-x4 py-x2_5 outline-none scroll-my-x2 data-[disabled]:cursor-not-allowed";
-
-// 알약 — 좌우 8 들어온 모서리 12 상자. 마우스를 올리거나(마우스가 있는 기기에서만) 누르면 칠해진다. 막힌 줄에는 없다.
-// 키보드로 옮긴 줄은 같은 자리에 안쪽 2px 링(바탕 없음) — 링을 알약에 그려 자리 · 모서리가 칠하는 바탕과 같다
-export const MENU_PILL = [
-  "pointer-events-none absolute inset-y-0 inset-x-x2 rounded-r3 bg-transparent",
-  "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
-  "group-focus-visible/menu-item:outline-2 group-focus-visible/menu-item:-outline-offset-2 group-focus-visible/menu-item:outline-stroke-focus-ring",
+// 줄 — 위아래 10 · 좌우 16. 키보드 위치는 ::after 의 링(알약이 다 들어온 자리 — 좌우 8 · 모서리 12 · 안쪽 2px, 바탕 없음)이다.
+// 링은 그 자리에 고정이라 들어오는 중인 호버 알약과 잠깐 폭이 다를 수 있다(menu.yaml focusRing)
+export const MENU_ITEM = [
+  "group/menu-item relative flex cursor-pointer select-none items-center px-x4 py-x2_5 outline-none scroll-my-x2",
+  "after:pointer-events-none after:absolute after:inset-y-0 after:inset-x-x2 after:rounded-r3 after:content-['']",
+  "focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-stroke-focus-ring",
+  "data-[disabled]:cursor-not-allowed",
 ].join(" ");
+
+// 알약 — 줄은 그대로, 마우스를 올리거나(마우스가 있는 기기에서만) 누르면 줄 폭 전체에서 좌우 0 → 8 들어오며 모서리 0 → 12 로
+// 둥글어지고 칠해진다 — 150ms(SEED menu-item, 2026-10-15 Q-009-3 안 B). 떠나면 거꾸로 펴지며 투명해진다. 막힌 줄에는 없다
+export const MENU_PILL =
+  "pointer-events-none absolute inset-y-0 inset-x-0 rounded-none bg-transparent [transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),inset_var(--motion-duration-color-transition)_var(--motion-ease-easing),border-radius_var(--motion-duration-color-transition)_var(--motion-ease-easing)]";
 export const MENU_PILL_ON =
-  "group-hover/menu-item:bg-bg-layer-floating-pressed group-active/menu-item:bg-bg-layer-floating-pressed";
+  "group-hover/menu-item:inset-x-x2 group-hover/menu-item:rounded-r3 group-hover/menu-item:bg-bg-layer-floating-pressed group-active/menu-item:inset-x-x2 group-active/menu-item:rounded-r3 group-active/menu-item:bg-bg-layer-floating-pressed";
 
 // 콘텐츠 층 — 아이콘 18 ↔ 이름 8. 누르는 동안만 준다(알약은 그대로)
 export const MENU_ITEM_CONTENT =

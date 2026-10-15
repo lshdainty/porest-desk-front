@@ -393,6 +393,42 @@ describe("Snackbar", () => {
     expect(region()!.style.getPropertyValue("--snackbar-avoid")).toBe("0px");
   });
 
+  it("화면 키보드가 올라오면 띠가 키보드 바로 위에 선다 — 확대 중에는 세지 않는다", () => {
+    vi.spyOn(document.documentElement, "clientHeight", "get").mockReturnValue(
+      800,
+    );
+    const vv = new EventTarget() as EventTarget & {
+      scale: number;
+      offsetTop: number;
+      height: number;
+    };
+    vv.scale = 1;
+    vv.offsetTop = 0;
+    vv.height = 800;
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: vv,
+    });
+    try {
+      act(() => root.render(<SnackbarProvider />));
+      expect(region()!.style.getPropertyValue("--snackbar-avoid")).toBe("0px");
+      vv.height = 500;
+      act(() => {
+        vv.dispatchEvent(new Event("resize"));
+      });
+      expect(region()!.style.getPropertyValue("--snackbar-avoid")).toBe(
+        "300px",
+      );
+      vv.scale = 2;
+      act(() => {
+        vv.dispatchEvent(new Event("resize"));
+      });
+      expect(region()!.style.getPropertyValue("--snackbar-avoid")).toBe("0px");
+    } finally {
+      Reflect.deleteProperty(window, "visualViewport");
+    }
+  });
+
   it("SnackbarAvoidOverlap 은 Provider 밖이면 자식을 그대로 그린다", () => {
     act(() =>
       root.render(
