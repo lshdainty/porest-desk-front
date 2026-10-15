@@ -167,6 +167,16 @@ const FAMILIES: DsFamily[] = [
       { name: "Swipe Actions", spec: "swipe-actions" },
     ],
   },
+  {
+    id: "frame-nav",
+    title: "15 화면 틀 · 이동",
+    entries: [
+      { name: "Top Navigation", spec: "top-navigation" },
+      { name: "Bottom Navigation", spec: "bottom-navigation" },
+      { name: "Side Navigation", spec: "side-navigation" },
+      { name: "Floating Action Button", spec: "floating-action-button" },
+    ],
+  },
 ];
 
 export const DS_FAMILIES: DsFamily[] = FAMILIES.map((family) => ({
