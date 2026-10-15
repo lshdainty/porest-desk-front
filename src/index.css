@@ -467,6 +467,11 @@
     line-height: 1.3;
   }
 
+  /*
+   * 전역 스크롤바 한 벌 — Scroll Area 스펙(2026-10-10): 6px 알약, 막대 stroke-neutral-solid, 바탕 투명, 올리거나 끌어도 모양이 그대로다.
+   * 크로미움 · 사파리는 webkit 규칙, Firefox 만 표준 두 줄을 건다 — 반드시 @supports not selector(::-webkit-scrollbar) 안에 둔다.
+   * 크로미움은 scrollbar-width · scrollbar-color 가 걸리면 webkit 규칙을 버려 6px 이 10px(thin) · 15px(color 만)이 된다.
+   */
   ::-webkit-scrollbar {
     @apply w-1.5 h-1.5;
   }
@@ -474,11 +479,17 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--border-strong);
-    border-radius: var(--radius-pill);
+    background: var(--color-stroke-neutral-solid);
+    border-radius: var(--radius-full);
   }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--border-strong);
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-stroke-neutral-solid) transparent;
+    }
   }
 
   :focus-visible {
