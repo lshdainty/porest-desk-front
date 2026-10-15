@@ -187,6 +187,16 @@ const FAMILIES: DsFamily[] = [
       { name: "Icon Picker", spec: "icon-picker" },
     ],
   },
+  {
+    id: "collapse",
+    title: "17 펼치고 접기 · 나누기",
+    entries: [
+      { name: "Collapsible", spec: "collapsible" },
+      { name: "Accordion", spec: "accordion" },
+      { name: "Scroll Area", spec: "scroll-area" },
+      { name: "Scroll Auto Hide", spec: "scroll-auto-hide" },
+    ],
+  },
 ];
 
 export const DS_FAMILIES: DsFamily[] = FAMILIES.map((family) => ({

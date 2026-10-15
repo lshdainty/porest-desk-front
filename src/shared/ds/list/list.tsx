@@ -5,6 +5,7 @@ import type { VariantProps } from "class-variance-authority";
 import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/shared/lib/cn";
+import { useExpandMotion } from "@/shared/ds/accordion";
 import { Checkmark, type CheckmarkProps } from "@/shared/ds/checkbox";
 import {
   Radiomark,
@@ -13,7 +14,6 @@ import {
 } from "@/shared/ds/radio-group";
 import { Switchmark, type SwitchmarkProps } from "@/shared/ds/switch";
 
-import { useExpandMotion } from "./list-expand-motion";
 import {
   LIST_EXPAND_SLOT,
   LIST_MARK_NO_SCALE,
