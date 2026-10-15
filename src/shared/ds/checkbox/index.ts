@@ -11,3 +11,7 @@ export {
   checkboxVariants,
   checkmarkVariants,
 } from "./checkbox-variants";
+export {
+  CheckboxGroupContext,
+  type CheckboxGroupState,
+} from "./checkbox-group-context";
