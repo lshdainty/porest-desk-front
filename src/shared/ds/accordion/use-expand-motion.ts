@@ -1,9 +1,9 @@
 import * as React from "react";
 
 /*
- * 하위 줄을 펼치고 접는 모션 — porest-design recipes/shadcn/components/ui/accordion.tsx 의 useExpandMotion 을 가져왔다.
- * Accordion · Collapsible 은 아직 이 레포에 없다(2026-10-15) — 만들 때 이 훅을 한 곳으로 옮겨 함께 쓴다(Collapsible · Tree View ·
- * List 의 하위 줄이 모두 "Accordion 과 같다", list.yaml motion).
+ * 펼치고 접는 모션 — porest-design recipes/shadcn/components/ui/accordion.tsx 의 useExpandMotion.
+ * Accordion · Collapsible · List 의 하위 줄(ListParentItem)이 모두 이 훅 하나를 쓴다("Accordion 과 같다", list.yaml motion).
+ * Tree View 는 HR 전용이라 이 레포에 없다.
  *
  * 높이 300ms motion-ease-easing(motion-duration-d6), 모션 줄이기면 높이를 움직이지 않고 150ms(d3) 서서히 나타나고 사라진다.
  * 접힌 뒤에는 hidden 이다(그리지 않는다 · 보조 기술도 읽지 않는다). 안의 자식은 그대로 두어 칸의 값 · aria-controls 가 이어진다.
