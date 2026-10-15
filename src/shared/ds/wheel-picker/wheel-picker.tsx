@@ -58,6 +58,7 @@ const VELOCITY_MAX_AGE = 80; // 마지막 움직임이 이보다 오래되면 �
 const RELEASE_MIN_DURATION = 220; // 놓은 뒤 맞추기 — 220 + 칸당 40, 최대 360
 const RELEASE_PER_ITEM = 40;
 const RELEASE_MAX_DURATION = 360;
+const MOVE_DURATION = 200; // 누르기 · 키로 칸을 옮길 때 — motion-duration-d4 · ease-out cubic(Q-005 A)
 const LOOP_BUFFER_VIEWPORTS = 12; // 반복 칼럼은 앞뒤로 12화면치 이어 그린다
 const LOOP_RECENTER_VIEWPORTS = 2; // 끝에서 2화면 안에 멈추면 가운데로 옮긴다
 
@@ -795,7 +796,20 @@ const WheelPickerColumn = React.forwardRef<
       e.stopPropagation();
     };
 
-    // 키 — ↑ ↓ Home End. 누르고 있으면(repeat) 바로바로, 아니면 부드럽게. 빠르게 거듭 누르면 가던 자리에서 이어 간다
+    // 칸 옮기기 — 200ms ease-out cubic(스냅을 끄고 맞춘 뒤 값을 정한다) 또는 바로(모션 줄이기 · 누르고 있는 키 · 반복 칼럼의 몰래 옮기기).
+    // 브라우저 smooth 는 칸 수마다 120 ~ 230ms 로 갈려 직접 그린다(Q-005)
+    const glide = (physical: number, smooth: boolean) => {
+      if (smooth) {
+        api.align(physical, MOVE_DURATION);
+        return;
+      }
+      api.cancelAlign();
+      api.col()?.removeAttribute("data-free");
+      api.scrollToPhysical(physical, "auto");
+      api.scheduleSettle();
+    };
+
+    // 키 — ↑ ↓ Home End. 누르고 있으면(repeat) 바로바로, 아니면 200ms. 빠르게 거듭 누르면 가던 자리에서 이어 간다
     const moveTo = (targetLogical: number, behavior: ScrollBehavior) => {
       const L = latest.current;
       if (L.disabled || L.count === 0) return;
@@ -827,8 +841,7 @@ const WheelPickerColumn = React.forwardRef<
         }
       }
       keyboardTargetRef.current = clamp(next, 0, L.total - 1);
-      api.scrollToPhysical(next, how);
-      api.scheduleSettle();
+      glide(next, how === "smooth");
     };
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -864,11 +877,7 @@ const WheelPickerColumn = React.forwardRef<
       if (disabled) return;
       notifyRef.current = true;
       keyboardTargetRef.current = null;
-      api.scrollToPhysical(
-        physical,
-        prefersReducedMotion() ? "auto" : "smooth",
-      );
-      api.scheduleSettle();
+      glide(physical, !prefersReducedMotion());
     };
 
     // 처음 자리 · 쓰는 쪽이 값을 바꿨을 때 — 사용자가 만지는 동안은 덮어쓰지 않는다

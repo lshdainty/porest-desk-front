@@ -148,6 +148,19 @@ export function formatAxisWon(value: number): string {
   );
 }
 
+/** 도넛 두께 — 지름 ÷ 10 + 6 을 정수로(120 → 18 · 160 → 22 · 180 → 24). 문턱 없이 지름을 따라 고르게 굵어진다(Q-012-5 C) */
+export const chartDonutThickness = (diameter: number) =>
+  Math.round(diameter / 10 + 6);
+
+/** 도넛 지름에서 Pie 의 반지름 — 차트 높이를 지름과 같게 두고 <Pie {...chartDonutRadii(160)}> 로 펼친다 */
+export const chartDonutRadii = (diameter: number) => {
+  const outerRadius = diameter / 2;
+  return {
+    innerRadius: outerRadius - chartDonutThickness(diameter),
+    outerRadius,
+  };
+};
+
 /** 돈은 줄이지 않고 원까지(툴팁 · 지표 타일 · 도넛 가운데 · 열지도 칸 · 대체 표) — 빼기는 U+2212 */
 export const formatWon = (value: number) =>
   (value < 0 ? MINUS : "") +
@@ -216,7 +229,7 @@ export const TOOLTIP_SURFACE =
 export const LEGEND_TILE = [
   "flex min-w-[100px] flex-[1_1_0] cursor-pointer flex-col items-start rounded-r3 border-0 px-x3 py-x2_5 text-start font-sans",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
-  "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1] aria-disabled:cursor-default aria-disabled:active:[scale:1]",
+  "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1] aria-disabled:cursor-not-allowed aria-disabled:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
 ].join(" ");
 

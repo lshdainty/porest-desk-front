@@ -556,33 +556,36 @@ describe("모양 클래스(스펙) — 잴 수 없는 값", () => {
     expect(cls).toContain("focus-visible:-outline-offset-2");
   });
 
-  it("배지 색 — primary · destructive 는 글자색 채움 + 반전 아이콘, neutral 은 옅은 바탕 + 안쪽 1px 테두리, 막힘은 전용 색", () => {
-    expect(swipeBadgeVariants({ tone: "primary" })).toContain(
+  it("배지 색 — primary · destructive 는 글자색 채움 + 반전 아이콘, neutral 은 옅은 바탕 + 안쪽 1px 테두리, 막힘은 전용 색(neutral 테두리는 남는다)", () => {
+    expect(swipeBadgeVariants({ kind: "primary" })).toContain(
       "bg-fg-informative",
     );
-    expect(swipeBadgeVariants({ tone: "primary" })).toContain(
+    expect(swipeBadgeVariants({ kind: "primary" })).toContain(
       "text-fg-neutral-inverted",
     );
-    expect(swipeBadgeVariants({ tone: "destructive" })).toContain(
+    expect(swipeBadgeVariants({ kind: "destructive" })).toContain(
       "bg-fg-critical",
     );
-    expect(swipeBadgeVariants({ tone: "neutral" })).toContain(
+    expect(swipeBadgeVariants({ kind: "neutral" })).toContain(
       "bg-bg-neutral-weak",
     );
-    expect(swipeBadgeVariants({ tone: "neutral" })).toContain(
-      "inset_0_0_0_1px_var(--color-stroke-neutral-weak)",
-    );
-    expect(swipeBadgeVariants({ tone: "disabled" })).toContain(
-      "bg-bg-disabled",
-    );
-    expect(swipeBadgeVariants({ tone: "disabled" })).toContain(
-      "text-fg-disabled",
-    );
+    const ring = "inset_0_0_0_1px_var(--color-stroke-neutral-weak)";
+    expect(swipeBadgeVariants({ kind: "neutral" })).toContain(ring);
+    // 막히면 바탕 · 아이콘만 전용 색 — 채움 색은 걷고, neutral 의 안쪽 1px 은 남긴다
+    for (const kind of ["neutral", "primary", "destructive"] as const) {
+      const off = swipeBadgeVariants({ kind, disabled: true });
+      expect(off).toContain("bg-bg-disabled");
+      expect(off).toContain("text-fg-disabled");
+      expect(off).not.toContain("bg-fg-informative");
+      expect(off).not.toContain("bg-fg-critical");
+      expect(off).not.toContain("bg-bg-neutral-weak");
+      expect(off.includes(ring)).toBe(kind === "neutral");
+    }
     // 짙은 채움(다크에서 줄 바탕과 2.51)을 쓰지 않는다
-    expect(swipeBadgeVariants({ tone: "destructive" })).not.toContain(
+    expect(swipeBadgeVariants({ kind: "destructive" })).not.toContain(
       "bg-critical-solid",
     );
-    expect(swipeBadgeVariants({ tone: "primary" })).not.toContain(
+    expect(swipeBadgeVariants({ kind: "primary" })).not.toContain(
       "bg-informative-solid",
     );
   });

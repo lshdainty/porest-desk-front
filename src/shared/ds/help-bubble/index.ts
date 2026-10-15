@@ -13,3 +13,4 @@ export {
   BUBBLE_DESCRIPTION,
   BUBBLE_POSITION,
 } from "./help-bubble-variants";
+export { useBubbleEdgePadding } from "./bubble-edge-padding";

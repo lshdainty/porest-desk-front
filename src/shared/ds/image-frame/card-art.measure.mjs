@@ -8,7 +8,7 @@
 //     institution-colors.test.tsx 와 card-art.test.tsx 가 표 그대로 칠하는지 본다)
 //   issuer.overflowX  "말줄임" — 문장이다(테스트가 truncate · line-clamp 클래스를 본다)
 //   initial.fontSize  "면 높이의 40%" — 문장이다(테스트가 max(10px, round(40cqh)) 식을 본다). initial.lineHeight 는 배율이다
-// face.paddingX · face.paddingBottom 은 스펙에서 면의 값이지만 글 묶음(card-art-label)이 면 아래에 붙어 그 안쪽 여백을 가진다 — 그 요소로 잰다.
+// label.paddingX · label.paddingBottom — 글 묶음(card-art-label)이 면 왼쪽 아래에 붙어 가진 안쪽 여백(스펙의 label 슬롯, Q-013).
 // 글 묶음은 작은 면(96 미만)에서 숨는다(display none) — 계산된 값은 그래도 읽힌다.
 const LABEL = "[data-slot=card-art-label]";
 const ISSUER = "[data-slot=card-art-issuer]";
@@ -17,8 +17,8 @@ const INITIAL = "[data-slot=card-art-initial]";
 
 export default {
   "root.aspectRatio": ["root", "exact", "aspect-ratio"],
-  "face.paddingX": [LABEL, "px", "padding-left"],
-  "face.paddingBottom": [LABEL, "px", "padding-bottom"],
+  "label.paddingX": [LABEL, "px", "padding-left"],
+  "label.paddingBottom": [LABEL, "px", "padding-bottom"],
   "issuer.fontWeight": [ISSUER, "exact", "font-weight"],
   "issuer.typography": [ISSUER, "typography", "font-size"],
   "name.fontWeight": [NAME, "exact", "font-weight"],

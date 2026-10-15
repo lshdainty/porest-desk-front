@@ -33,6 +33,7 @@ import {
 import {
   assignChartColors,
   chartAxisProps,
+  chartDonutRadii,
   chartGridProps,
   formatAxisWon,
   formatWon,
@@ -348,8 +349,7 @@ const Donut = ({
               data={slices}
               dataKey="amount"
               nameKey="name"
-              innerRadius={size / 2 - 22}
-              outerRadius={size / 2}
+              {...chartDonutRadii(size)}
               isAnimationActive={false}
             />
           </PieChart>
@@ -533,7 +533,7 @@ export const ChartDemo = () => (
       </CardBody>
     </DemoBlock>
 
-    <DemoBlock title="카테고리 비율 — 도넛(두께 22) · 가운데 합계는 원까지 · 목록 범례 · 저장된 빨강(경조사)과 같은 색이 두 번 나오지 않는다 · 하위 있는 줄만 누르는 줄">
+    <DemoBlock title="카테고리 비율 — 도넛(지름 160 — 두께 22) · 가운데 합계는 원까지 · 목록 범례 · 저장된 빨강(경조사)과 같은 색이 두 번 나오지 않는다 · 하위 있는 줄만 누르는 줄">
       <div className="flex flex-wrap items-start gap-x4">
         <CardBody width={380}>
           <Donut
@@ -547,7 +547,7 @@ export const ChartDemo = () => (
             items={CATEGORIES}
             id="d-donut-phone"
             size={120}
-            label="10월 카테고리별 지출(폰 지름 120 — 두께 22)"
+            label="10월 카테고리별 지출(폰 지름 120 — 두께 18)"
           />
         </CardBody>
       </div>

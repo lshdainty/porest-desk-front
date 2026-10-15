@@ -97,19 +97,36 @@ export const swipeActionVariants = cva(
 );
 
 // 원형 배지 — 색은 여기만(트레이는 칠하지 않는다). primary · destructive 는 그 동작의 글자색 + 반전 아이콘(두 모드 모두 줄 바탕과 3:1 이상),
-// neutral 은 옅은 바탕 + 안쪽 1px 테두리, 막힌 칸(disabled)은 전용 색 — 흐리게 하지 않는다. 아이콘 18(size-4.5)
+// neutral 은 옅은 바탕 + 안쪽 1px 테두리, 막힌 칸(disabled)은 전용 색 — 흐리게 하지 않는다. 아이콘 18(size-4.5).
+// kind × disabled — 막히면 바탕 · 아이콘만 전용 색으로 바뀌고 neutral 의 안쪽 1px stroke-neutral-weak 은 남는다(v106, Q-012-4)
 export const swipeBadgeVariants = cva(
   "flex shrink-0 items-center justify-center rounded-full [&>svg]:size-4.5",
   {
     variants: {
-      tone: {
-        neutral:
-          "bg-bg-neutral-weak text-fg-neutral shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
-        primary: "bg-fg-informative text-fg-neutral-inverted",
-        destructive: "bg-fg-critical text-fg-neutral-inverted",
-        disabled: "bg-bg-disabled text-fg-disabled",
+      kind: {
+        neutral: "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
+        primary: "",
+        destructive: "",
       },
+      disabled: { true: "bg-bg-disabled text-fg-disabled", false: "" },
     },
-    defaultVariants: { tone: "neutral" },
+    compoundVariants: [
+      {
+        kind: "neutral",
+        disabled: false,
+        className: "bg-bg-neutral-weak text-fg-neutral",
+      },
+      {
+        kind: "primary",
+        disabled: false,
+        className: "bg-fg-informative text-fg-neutral-inverted",
+      },
+      {
+        kind: "destructive",
+        disabled: false,
+        className: "bg-fg-critical text-fg-neutral-inverted",
+      },
+    ],
+    defaultVariants: { kind: "neutral", disabled: false },
   },
 );

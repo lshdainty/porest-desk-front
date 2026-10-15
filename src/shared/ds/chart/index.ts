@@ -37,6 +37,8 @@ export {
   MINUS,
   assignChartColors,
   chartAxisProps,
+  chartDonutRadii,
+  chartDonutThickness,
   chartGridProps,
   chartVar,
   formatAxisWon,

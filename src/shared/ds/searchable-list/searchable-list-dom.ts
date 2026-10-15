@@ -53,3 +53,41 @@ export function revealOption(
   else if (rect.bottom > box.bottom)
     scroller.scrollTop += rect.bottom - box.bottom;
 }
+
+// ── 거르는 규칙 ───────────────────────────────────────────────
+// NFC 로 맞추고 소문자로 바꾸고 공백을 모두 지운다 — "kx 은행" · "KX은행" · 조합형 한글이 같은 글이 된다
+const foldForSearch = (text: string) =>
+  text.normalize("NFC").toLowerCase().replace(/\s+/g, "");
+
+/** 거르는 규칙 — 이름 · 별칭 중 하나에 검색어가 들어 있으면 true(빈 검색어는 모두 남긴다). 초성 검색은 하지 않는다 */
+export function matchesSearch(
+  query: string,
+  ...names: (string | null | undefined)[]
+): boolean {
+  const q = foldForSearch(query);
+  if (q === "") return true;
+  return names.some((name) => name != null && foldForSearch(name).includes(q));
+}
+
+// ── 첫 초점 ──────────────────────────────────────────────────
+/**
+ * 시트 · 팝오버의 onOpenAutoFocus 에 건다 — 표면 대신 검색칸에 첫 초점을 주고, 지금 값이 보이게 가운데로 스크롤한다.
+ * 열린 뒤 다시 옮기지 않는다(시트가 넘겨주는 한 번뿐이다).
+ */
+export function focusSearchableList(event: Event) {
+  const surface =
+    event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+  const input = surface?.querySelector<HTMLInputElement>(
+    '[data-slot="searchable-list-field"] input',
+  );
+  if (!surface || !input) return;
+  event.preventDefault();
+  input.focus({ preventScroll: true });
+  const current = surface.querySelector<HTMLElement>(
+    '[data-slot="searchable-list-item"][aria-selected="true"]',
+  );
+  const field = input.closest<HTMLElement>(
+    '[data-slot="searchable-list-field"]',
+  );
+  if (current) revealOption(current, field, "center");
+}

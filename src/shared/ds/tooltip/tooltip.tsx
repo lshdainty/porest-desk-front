@@ -7,8 +7,9 @@ import {
   BUBBLE_POSITION,
   BUBBLE_TITLE,
   BubbleArrow,
+  useBubbleEdgePadding,
 } from "@/shared/ds/help-bubble";
-import { useOpenState, type OpenChange } from "@/shared/ds/overlay";
+import { mergeRefs, useOpenState, type OpenChange } from "@/shared/ds/overlay";
 
 import {
   CLOSE_DELAY,
@@ -85,6 +86,10 @@ TooltipProvider.displayName = "TooltipProvider";
 type CloseReason = "escape" | "blur" | "press";
 
 type TooltipContextValue = {
+  /** 열려 있다 — 화면 끝 가장자리 여백을 재는 동안 */
+  open: boolean;
+  /** 트리거 — 가운데를 재어 화살표가 가운데에 남게 말풍선을 민다 */
+  triggerRef: React.MutableRefObject<HTMLButtonElement | null>;
   /** 이어서 열렸다 · 바로 닫힌다 — 모션 없이 */
   instant: boolean;
   /** 흐려지며 닫히던 중에 다른 툴팁이 열렸다 — 남은 사라짐 없이 보이지 않게 */
@@ -222,7 +227,10 @@ function Tooltip({
   };
 
   // 걷힘은 닫혀 있는 동안만 — 부르는 쪽이 open 으로 다시 열어도 보인다
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
   const value: TooltipContextValue = {
+    open,
+    triggerRef,
     instant,
     cut: cut && !open,
     hover: (part, inside) => {
@@ -316,7 +324,7 @@ const TooltipTrigger = React.forwardRef<
     const ctx = useTooltip("TooltipTrigger");
     return (
       <TooltipPrimitive.Trigger
-        ref={ref}
+        ref={mergeRefs(ref, ctx.triggerRef)}
         data-slot="tooltip-trigger"
         onPointerEnter={(e) => {
           onPointerEnter?.(e);
@@ -382,6 +390,11 @@ const TooltipContent = React.forwardRef<
     ref,
   ) => {
     const ctx = useTooltip("TooltipContent");
+    const collisionPadding = useBubbleEdgePadding(
+      ctx.triggerRef,
+      ctx.open,
+      side,
+    );
     return (
       <TooltipPrimitive.Portal container={container}>
         <TooltipPrimitive.Content
@@ -392,6 +405,7 @@ const TooltipContent = React.forwardRef<
           side={side}
           align={align}
           {...BUBBLE_POSITION}
+          collisionPadding={collisionPadding}
           className={cn(BUBBLE, BUBBLE_TITLE, TOOLTIP_CUT, className)}
           onPointerEnter={(e) => {
             onPointerEnter?.(e);

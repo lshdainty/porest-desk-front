@@ -3,12 +3,13 @@
 //
 // 견본의 첫 요소(root)는 무대다(overlay-stage.tsx) — 메뉴는 무대 안에 열린 표면이라 모두 선택자로 잰다. 호버 · 누름 견본은
 // 첫 요소가 첫 줄 위의 작은 상자라 검사기가 그 줄을 올리고 누른다. 견본은 조합의 톤에 맞는 줄만 담는다 — 첫 줄이 곧 재는 줄이다.
-// 키보드 초점 링은 알약 요소의 outline 으로 재고(menu.tsx — 링을 알약에 그린다), 호버 · 누름 바탕도 알약의 배경이다.
+// 호버 · 누름 바탕은 알약 요소의 배경 · inset · 모서리다(쉴 때 0 · 0, 호버 · 누름에 8 · 12 — 150ms 전환, Q-009-3).
 //
 // 재지 않는 것(문장 · 계산 · 의사 요소 · 모션이라 menu.test.tsx 가 맡는다)
 //   - content.shadow   계산된 box-shadow 는 색이 앞에 오는 다른 글이라 스펙 글과 같은지 글로 비교할 수 없다(모서리 · 바탕은 잰다)
 //   - content.offset(8) · content.align · content.maxHeight   Radix 의 자리 계산(sideOffset · align · available-height)이라 CSS 로 보이지 않는다
 //   - item.transition*   알약 바탕의 전환이라 알약 요소에 있다 — 계산값이 "0.15s" 라 스펙 글("150ms")과 글로 비교되지 않는다
+//   - focusRing.*   키보드 링은 줄의 ::after(알약이 다 들어온 자리 8 · 12 에 고정)라 의사 요소를 읽지 못하는 검사기가 잴 수 없다(클래스를 테스트가 맞춘다)
 //   - divider.*   묶음 사이 선은 ::before 의사 요소라 검사기가 읽지 못한다(클래스를 테스트가 맞춘다)
 //   - pressed item.scale · scaleDuration · scaleEasing   "콘텐츠 2px 거리 축소" 는 문장이다(기준 길이를 누르는 순간 잰다)
 //   - 열림 · 닫힘 모션(150ms · 100ms)   시간은 문장이다
@@ -48,7 +49,7 @@ export default {
   ],
   "suffixIcon.size": ["[data-slot=menu-item-suffix-icon] > svg", "px", "width"],
   "suffixIcon.color": ["[data-slot=menu-item-suffix-icon]", "color", "color"],
-  // 알약 — 좌우 8 들어온 모서리 12. 호버 · 누름에만 칠한다
+  // 알약 — 쉴 때 줄 폭 전체(0 · 모서리 0), 호버 · 누름에 좌우 8 들어온 모서리 12 로 칠한다
   "highlight.background": [PILL, "color", "background-color"],
   "highlight.insetX": [PILL, "px", "left"],
   "highlight.radius": [PILL, "px", "border-top-left-radius"],
@@ -57,12 +58,4 @@ export default {
   "groupLabel.foreground": [GROUP_LABEL, "color", "color"],
   "groupLabel.paddingY": [GROUP_LABEL, "px", "padding-top"],
   "groupLabel.paddingX": [GROUP_LABEL, "px", "padding-left"],
-  // 키보드 초점 링 — 알약 안쪽 2px
-  "focusRing.width": [`${ITEM}:focus-visible ${PILL}`, "px", "outline-width"],
-  "focusRing.offset": [`${ITEM}:focus-visible ${PILL}`, "px", "outline-offset"],
-  "focusRing.color": [
-    `${ITEM}:focus-visible ${PILL}`,
-    "color",
-    "outline-color",
-  ],
 };

@@ -173,7 +173,11 @@ export const TablePaginationDemo = () => (
       </DemoRow>
       <DemoRow label="빈 표 0-0">
         <Strip>
-          <Specimen spec="table-pagination" combo={{}} state="disabled">
+          <Specimen
+            spec="table-pagination"
+            combo={{ total: "empty" }}
+            state="disabled"
+          >
             <div>
               <TablePagination totalItems={0} />
             </div>

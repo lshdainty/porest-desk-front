@@ -108,6 +108,8 @@ const samePx = (expected, actual) =>
 //   요소     "root"(견본 자체) 또는 견본 안의 CSS 선택자. 그 견본에 없으면 재지 않는다.
 //   재는 법  px(숫자 값을 그 속성의 px 로) · color · exact(글 그대로) · typography(글자 크기 · 줄 높이)
 //   skipIf   그 조합 · 상태의 스펙에 이 키가 있으면 재지 않는다(다른 키가 같은 CSS 를 덮을 때)
+//   lookup   스펙 값이 다른 스펙을 가리키는 글일 때("Chip medium" — chip-tabs 의 chipSize) 그 글을 값으로 풀어 주는 함수.
+//            풀린 값을 재는 법(보통 px)대로 잰다. 못 풀면(null) 문장으로 보고 재지 않는다
 const measures = {};
 // 잴 자리 파일 — 보통 그 스펙 이름의 폴더에 있다. 한 폴더가 스펙 둘을 그리면(avatar 의 Avatar Stack) 그 폴더에
 // <스펙>.measure.mjs 를 함께 둔다
@@ -220,9 +222,11 @@ for (const handle of specimens) {
     const how = measure[key];
     if (!how) continue;
     const want = pick(raw, info.mode);
-    const [target, kind, cssProp, { skipIf } = {}] = how;
+    const [target, kind, cssProp, { skipIf, lookup } = {}] = how;
     if (skipIf && skipIf in expected) continue;
-    const compare = howToCompare(kind, cssProp, want);
+    const resolved = lookup ? lookup(want, info.mode) : want;
+    if (resolved === null || resolved === undefined) continue;
+    const compare = howToCompare(kind, cssProp, resolved);
     if (!compare) continue; // 문장으로 된 값(부품이 정함 …)
     const [props, cmp] = compare;
     const actual = await root.evaluate(

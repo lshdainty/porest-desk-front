@@ -18,6 +18,7 @@ import {
   SearchableListSkeleton,
   type SearchableListProps,
 } from "./searchable-list";
+import { focusSearchableList, matchesSearch } from "./searchable-list-dom";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -438,6 +439,46 @@ describe("줄 누르기 · 마우스", () => {
     expect(container.querySelectorAll("[data-highlighted]")).toHaveLength(1);
   });
 
+  it("마우스가 목록을 떠나면 마우스로 짚은 강조만 지운다 — 키보드로 짚은 강조는 남는다(Q-007-2)", () => {
+    render(<Banks />);
+    // React 의 onPointerLeave 는 pointerout(relatedTarget 이 목록 밖)으로 합성된다
+    const leave = (pointerType: string) =>
+      act(() => {
+        const out = new Event("pointerout", { bubbles: true });
+        Object.defineProperty(out, "pointerType", { value: pointerType });
+        Object.defineProperty(out, "relatedTarget", { value: document.body });
+        listbox()!.dispatchEvent(out);
+      });
+    act(() => {
+      const e = new Event("pointermove", { bubbles: true });
+      Object.defineProperty(e, "pointerType", { value: "mouse" });
+      options()[1]!.dispatchEvent(e);
+    });
+    expect(options()[1]!.getAttribute("data-highlighted")).toBe("pointer");
+    leave("mouse");
+    expect(container.querySelector("[data-highlighted]")).toBeNull();
+    key("ArrowDown");
+    expect(container.querySelector("[data-highlighted]")).not.toBeNull();
+    leave("mouse");
+    expect(
+      container
+        .querySelector("[data-highlighted]")!
+        .getAttribute("data-highlighted"),
+    ).toBe("keyboard");
+  });
+
+  it("matchesSearch — NFC · 대소문자 · 공백을 무시하고 이름 · 별칭 중 하나에 들면 맞다(초성은 아니다)", () => {
+    expect(matchesSearch("", "국민은행")).toBe(true);
+    expect(matchesSearch("kb", "국민은행", "KB")).toBe(true);
+    expect(matchesSearch("모아카드", "모아 카드")).toBe(true);
+    expect(matchesSearch("모아 카드", "모아카드")).toBe(true);
+    expect(matchesSearch("각", "국민은행")).toBe(false);
+    expect(matchesSearch("ㄱㅁ", "국민은행")).toBe(false);
+    expect(matchesSearch("x", undefined, null)).toBe(false);
+    // 조합형 한글(NFD)도 같은 글
+    expect(matchesSearch("국민".normalize("NFD"), "국민은행")).toBe(true);
+  });
+
   it("누르는 순간 기준 길이 max(높이, 폭 ÷ 4, 24) 를 잰다", () => {
     render(<Banks />);
     const row = options()[0]!;
@@ -529,28 +570,42 @@ describe("서버 검색 — 마지막 입력 뒤 300ms 에 한 번", () => {
 });
 
 describe("열릴 때 초점 · 지금 값 보이기", () => {
-  it("sheet 는 검색칸에 초점, inline 은 두지 않는다 — autoFocus 로 바꾼다", () => {
+  // 시트 · 팝오버(Radix FocusScope)가 열릴 때 표면에 보내는 이벤트를 흉내 낸다 — 표면(currentTarget)이 이벤트를 받는다
+  function openSurface(node: ReactNode) {
+    render(
+      <div
+        data-testid="surface"
+        ref={(el) => {
+          el?.addEventListener("open-focus", focusSearchableList);
+        }}
+      >
+        {node}
+      </div>,
+    );
+    const event = new Event("open-focus", { cancelable: true });
+    act(() => {
+      container.querySelector("[data-testid=surface]")!.dispatchEvent(event);
+    });
+    return event;
+  }
+
+  it("검색칸은 스스로 초점을 가져가지 않는다 — 시트 · 팝오버의 첫 초점은 focusSearchableList 로 넘겨받는다", () => {
     render(<Banks placement="sheet" />);
-    expect(document.activeElement).toBe(input());
-    render(<div />);
-    render(<Banks placement="inline" />);
     expect(document.activeElement).not.toBe(input());
     render(<div />);
     render(<Banks placement="inline" autoFocus />);
     expect(document.activeElement).toBe(input());
-    render(<div />);
-    render(<Banks placement="sheet" autoFocus={false} />);
-    expect(document.activeElement).not.toBe(input());
   });
 
-  it("초점이 다른 곳으로 덮이면(시트가 연 뒤 시트로 옮긴다) 한 프레임 뒤에 다시 둔다", () => {
-    vi.useFakeTimers();
-    render(<Banks placement="sheet" />);
-    act(() => (document.activeElement as HTMLElement).blur());
-    act(() => {
-      vi.advanceTimersByTime(32);
-    });
+  it("focusSearchableList — 첫 초점을 표면 대신 검색칸에 준다(기본 동작을 막는다)", () => {
+    const event = openSurface(<Banks placement="sheet" />);
+    expect(event.defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(input());
+  });
+
+  it("focusSearchableList — 검색칸이 없는 표면은 건드리지 않는다", () => {
+    const event = openSurface(<p>내용</p>);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("열면 지금 값이 붙은 검색칸 아래 영역의 가운데에 오게 스크롤한다", () => {
@@ -586,6 +641,11 @@ describe("열릴 때 초점 · 지금 값 보이기", () => {
         <Banks placement="sheet" defaultValue="우리은행" />
       </div>,
     );
+    act(() => {
+      const scroller = container.querySelector("[data-testid=scroller]")!;
+      scroller.addEventListener("open-focus", focusSearchableList);
+      scroller.dispatchEvent(new Event("open-focus", { cancelable: true }));
+    });
     // (500 + 23) − (40 + (200 − 40) ÷ 2) = 403
     expect(
       container.querySelector<HTMLElement>("[data-testid=scroller]")!.scrollTop,
@@ -742,19 +802,27 @@ describe("자리 · 모양 클래스", () => {
   it("강조 바탕은 좌우 6 들어온 누름 바탕 · 모서리 10, 마우스로 올린 바탕만 전환한다", () => {
     render(<Banks />);
     const c = classes(options()[0]!);
+    // 바탕은 줄 폭 전체(0 · 모서리 0)에서 짚으면 좌우 6 · 모서리 10 — 150ms 로 함께 바뀐다(Q-009-3 B)
     expect(c).toEqual(
       expect.arrayContaining([
-        "before:inset-x-x1_5",
-        "before:rounded-r2_5",
+        "before:inset-x-0",
+        "before:rounded-none",
+        "data-[highlighted]:before:inset-x-x1_5",
+        "data-[highlighted]:before:rounded-r2_5",
         "data-[highlighted]:before:bg-bg-layer-default-pressed",
+        "active:before:inset-x-x1_5",
+        "active:before:rounded-r2_5",
         "active:before:bg-bg-layer-default-pressed",
       ]),
     );
-    expect(c.join(" ")).toContain(
-      "data-[highlighted=pointer]:before:[transition:",
+    const joined = c.join(" ");
+    expect(joined).toContain("inset_var(--motion-duration-color-transition)");
+    expect(joined).toContain(
+      "border-radius_var(--motion-duration-color-transition)",
     );
-    expect(c.join(" ")).not.toContain(
-      "data-[highlighted=keyboard]:before:[transition",
+    // 화살표로 옮기는 동안(결과 목록이 keyboard 표식)은 전환 없이 바로
+    expect(c).toContain(
+      "[[data-highlight-source=keyboard]_&]:before:transition-none",
     );
   });
 
@@ -872,7 +940,10 @@ describe("팝오버 안 — 열면 초점이 검색칸, Esc 는 검색어 → �
         <PopoverTrigger asChild>
           <button type="button">열기</button>
         </PopoverTrigger>
-        <PopoverContent aria-label="은행 선택">
+        <PopoverContent
+          aria-label="은행 선택"
+          onOpenAutoFocus={focusSearchableList}
+        >
           <SearchableList
             query={query}
             onQueryChange={setQuery}

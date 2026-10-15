@@ -11,10 +11,7 @@
 //   root.paddingX  "24" — 첫 칸 앞 · 끝 칸 뒤만 24(칸의 first · last 여백)이고 표 상자 자체의 여백은 0 이다(줄 선이 상자 끝까지 간다)
 //   caption.display  "숨긴 글" — 문장이다(sr-only)
 //   headerRow.position · zIndex  표 상자가 스스로 스크롤할 때만 붙는다 — 페이지 스크롤 견본에는 없다(sticky 견본은 따로 두고 test 가 본다)
-//   headerCell.typography · cell.typography  "14 / 19" 인데 같은 규칙의 lineHeight 가 20 으로 덮는다(SEED 문서 표 14 / 20) — 줄 높이는
-//     headerCell.lineHeight · cell.lineHeight 가 재고, 글자 크기는 text-t4 로 test 가 본다
 //   cell.alignItems  "center" — 칸은 표 칸이라 vertical-align: middle 이다(align-items 가 아니다)
-//   cell.paddingY (rich)  72 줄은 칸 여백 12 보다 높이가 먼저다(48 + 24 + 선 1 = 73) — 위아래 여백 없이 72 안 세로 가운데. 한 줄 표에서만 잰다
 //   thumbnail.size  Image Frame 1:1 48 — 쓰는 쪽 부품이다(표는 그림 ↔ 글 12 만 정한다)
 //   badge.size  "Badge medium" · checkbox.display · checkbox.touchTarget · moreButton.touchTarget  문장이다
 //   sortButton.width  "칸 전체" — 문장이다(table.test.tsx)
@@ -28,8 +25,8 @@ const HEAD = "[data-slot=table-head]";
 const HEAD_MID = `${HEAD}:not(:first-child):not(:last-child):not(:has([data-slot=table-sort-button]))`;
 const BODY_ROW = "[data-slot=table-body] tr";
 const BODY_CELLS = "[data-slot=table-body] tr > *";
-// 한 줄 표의 가운데 칸 — 줄이 72 인 표는 칸 여백이 0 이라 따로 잰다
-const CELL_MID = `${TABLE}:not([data-row-height=rich]) [data-slot=table-cell]:not(:first-child):not(:last-child)`;
+// 가운데 칸 — 72 줄(rich)은 스펙이 칸 위아래 여백을 0 으로 둔다(cell.paddingY 0 — 높이가 먼저, Q-011-1) — 한 줄 표와 같은 키로 잰다
+const CELL_MID = `${TABLE} [data-slot=table-cell]:not(:first-child):not(:last-child)`;
 const CELL_MID_ANY = `${TABLE} [data-slot=table-cell]:not(:first-child):not(:last-child)`;
 const BAR = "[data-slot=table-bulk-bar]";
 // 지금 방향의 화살표(정렬된 열) · 정렬할 수 있는 열이면 ↑ — 둘 다 흐린 색
@@ -44,6 +41,7 @@ export default {
   "headerRow.borderBottomColor": [HEAD, "color", "border-bottom-color"],
   "headerCell.paddingY": [HEAD_MID, "px", "padding-top"],
   "headerCell.paddingX": [HEAD_MID, "px", "padding-left"],
+  "headerCell.typography": [HEAD, "typography"],
   "headerCell.lineHeight": [HEAD, "px", "line-height"],
   "headerCell.fontWeight": [HEAD, "exact", "font-weight"],
   "headerCell.foreground": [HEAD, "color", "color"],
@@ -56,6 +54,7 @@ export default {
   "row.transitionProperty": [BODY_ROW, "exact", "transition-property"],
   "cell.paddingY": [CELL_MID, "px", "padding-top"],
   "cell.paddingX": [CELL_MID_ANY, "px", "padding-left"],
+  "cell.typography": [CELL_MID_ANY, "typography"],
   "cell.lineHeight": [CELL_MID_ANY, "px", "line-height"],
   "cell.fontWeight": [CELL_MID_ANY, "exact", "font-weight"],
   "cell.foreground": [CELL_MID_ANY, "color", "color"],

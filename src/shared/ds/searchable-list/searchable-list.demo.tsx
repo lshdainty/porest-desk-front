@@ -29,14 +29,26 @@ import {
   SearchableListResults,
   SearchableListSkeleton,
 } from "./searchable-list";
+import { focusSearchableList, matchesSearch } from "./searchable-list-dom";
 
-// 거르는 것은 쓰는 쪽이다 — 공백 · 대소문자를 무시하고 글자 그대로 포함하는지 본다(견본의 규칙. 한글 초성 검색은 스펙에 없다)
-const normalize = (s: string) =>
-  s.normalize("NFC").toLowerCase().replace(/\s+/g, "");
-const matches = (name: string, query: string) =>
-  normalize(name).includes(normalize(query));
+// 거르는 것은 쓰는 쪽이다 — 공용 규칙 matchesSearch(NFC · 대소문자 · 공백 무시 · 이름 + 별칭, Q-007-1 C). 한글 초성 검색은 아직 정하지 않았다
+const matches = (query: string, ...names: string[]) =>
+  matchesSearch(query, ...names);
+
+// 별칭 — 이름 말고 부르는 말("KB" 로도 국민은행이 나온다)
+const BANK_ALIASES: Record<string, string[]> = {
+  국민은행: ["KB", "KB국민"],
+  신한은행: ["Shinhan"],
+  우리은행: ["Woori"],
+  하나은행: ["KEB", "Hana"],
+  카카오뱅크: ["Kakao", "카뱅"],
+  토스뱅크: ["Toss"],
+  케이뱅크: ["Kbank"],
+};
 
 type Bank = { id: string; name: string };
+const matchesBank = (b: Bank, query: string) =>
+  matches(query, b.name, ...(BANK_ALIASES[b.name] ?? []));
 const BANK_GROUPS: { label: string; banks: Bank[] }[] = [
   {
     label: "시중은행",
@@ -167,7 +179,7 @@ function BankPicker() {
   const [place, setPlace] = useState<HTMLDivElement | null>(null);
   const groups = BANK_GROUPS.map((g) => ({
     ...g,
-    banks: g.banks.filter((b) => matches(b.name, query)),
+    banks: g.banks.filter((b) => matchesBank(b, query)),
   })).filter((g) => g.banks.length > 0);
   const trigger = (
     <InputButton
@@ -200,7 +212,7 @@ function BankPicker() {
           {BANK_GROUPS.map((g) => (
             <SearchableListGroup key={g.label} label={g.label}>
               {g.banks
-                .filter((b) => matches(b.name, query))
+                .filter((b) => matchesBank(b, query))
                 .map((b) => (
                   <SearchableListItem
                     key={b.id}
@@ -221,7 +233,10 @@ function BankPicker() {
         {surface === "sheet" ? (
           <BottomSheet open={open} onOpenChange={setOpen} container={place}>
             {trigger}
-            <BottomSheetContent title="은행 선택">
+            <BottomSheetContent
+              title="은행 선택"
+              onOpenAutoFocus={focusSearchableList}
+            >
               {/* 본문 좌우 여백을 뺀다 — 검색칸 · 줄이 제 24 를 가진다 */}
               <BottomSheetBody className="px-0">{list}</BottomSheetBody>
             </BottomSheetContent>
@@ -234,6 +249,7 @@ function BankPicker() {
                 container={place}
                 aria-label="은행 선택"
                 align="start"
+                onOpenAutoFocus={focusSearchableList}
               >
                 <PopoverBody className="px-0">{list}</PopoverBody>
               </PopoverContent>
@@ -290,7 +306,9 @@ function ServerSearch() {
           ? { status: "error" }
           : {
               status: "ok",
-              data: CARDS.filter((c) => matches(`${c.name}${c.issuer}`, q)),
+              data: CARDS.filter((c) =>
+                matches(q, c.name, c.issuer, `${c.name}${c.issuer}`),
+              ),
             },
       );
     }, 700);
@@ -378,7 +396,7 @@ const MANY = Array.from({ length: 400 }, (_, i) => ({
 function ManyItems() {
   const [query, setQuery] = useState("");
   const [value, setValue] = useState<string | undefined>("s123");
-  const rows = MANY.filter((r) => matches(r.name, query));
+  const rows = MANY.filter((r) => matches(query, r.name));
   return (
     <div className="max-h-[420px] w-[360px] overflow-auto rounded-r3 border border-stroke-neutral-weak bg-bg-layer-default pb-x2">
       <SearchableList
