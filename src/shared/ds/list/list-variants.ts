@@ -1,0 +1,231 @@
+import { cva } from "class-variance-authority";
+
+/*
+ * Porest List — 구조는 SEED List(2026-10-01). 수치 원본은 porest-design specs/components/list.yaml · list-header.yaml
+ * (값은 src/shared/ds/spec/list.json · list-header.json). porest-design recipes/shadcn/components/ui/list.tsx 를 첫 판으로
+ * 가져왔다 — 이 파일은 변형 정의, 컴포넌트는 list.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
+ *
+ *   List · ListItem                  목록(ul) · 보기만 하는 줄
+ *   ListButtonItem · ListLinkItem    줄 전체가 버튼 · 링크(뒤 붙이개의 작은 버튼은 따로 눌린다)
+ *   ListSwitchItem · ListCheckItem · ListRadioItem   줄 전체가 라벨 — 줄 어디를 눌러도 끼운 컨트롤이 바뀐다
+ *   ListRadioGroup · ListCheckGroup  하나 고르기(role=radiogroup) · 여럿 고르기(fieldset) 묶음 — 줄은 li 대신 div
+ *   ListParentItem                   하위 줄을 접는 부모 줄(2026-10-10) — 줄 앞 꺾쇠 단추 44 + 하위 줄 묶음
+ *   ListDivider · ListHeader · ListTile   줄 사이 선(필요할 때만) · 목록 제목 · 내용 줄의 앞 타일
+ *
+ * 한 줄은 두 층이다 — 바탕 층(list-background: 누름 · 호버 · 강조 바탕, 줄지 않는다)과 콘텐츠 층(list-content: 앞 · 본문 · 뒤).
+ * 누르면 바탕이 좌우 6 들어와 모서리 10 이 되고(SEED), 콘텐츠 층만 2px 거리로 준다(기초 Feedback v104) —
+ * 배율 = (기준 − 2) ÷ 기준, 기준 = max(높이, 폭 ÷ 4, 24). Button 과 같이 누르는 순간(포인터 · 키) 줄을 재서 --press-basis 로 넘긴다.
+ * 호버는 마우스 있는 기기에서만 누름과 같은 바탕(v106). 줄 안의 스위치 · 체크 · 라디오는 따로 줄지 않는다.
+ * 누르는 줄의 버튼 · 링크는 ::after 로 콘텐츠 층 전체를 덮어 줄 어디를 눌러도 눌리고, 뒤 붙이개 안의 버튼 · 링크는 z-index 1 로
+ * 그 위에 올라 따로 눌린다(SEED 와 같은 짜임).
+ * 키보드 포커스 링(웹)은 줄 안쪽 2px 이다 — 화면 폭 줄은 바깥 링이 잘린다. 콘텐츠 층이 링을 그린다(바탕 층은 줄지 않으므로
+ * 링이 줄 때 같이 준다 — ::after 로 그렸을 때와 같은 모습이다. 가상 요소는 검사기가 읽지 못해 층에 직접 그린다).
+ * 컨트롤 줄은 끼운 컨트롤이 포커스를 받아 그 컨트롤의 링이 보이므로 줄의 링은 없다.
+ *
+ * 상태를 읽는 표식 — 누르는 줄의 버튼 · 링크 · 라벨(컨트롤 줄)과 끼운 컨트롤은 data-list-action 을 가진다.
+ * 줄(group/list-item)이 :has([data-list-action]:hover · :active) 로 바탕 · 축소 · 글자 색을 정한다. 컨트롤에도 다는 까닭 —
+ * 키보드(Space)로 누르면 :active 가 라벨이 아니라 컨트롤에 걸린다. 링은 본문(data-slot=list-body)의 포커스에서만 그린다.
+ * 막힌 줄은 data-disabled 가 붙어 그 표식에서 빠진다(호버 · 누름 · 축소가 없다).
+ *
+ * 글자: 제목 t5 · 400, 설명 t3 · fg-neutral-subtle(사용자 결정 — SEED 그대로). 좌우 여백은 spacing-global-gutter(24).
+ * 막힌 줄은 제목 · 설명 · 앞뒤 아이콘 · 값 글자가 모두 fg-disabled, 타일은 bg-disabled — 불투명도로 흐리게 하지 않는다(v106).
+ * 강조 줄은 바탕만 옅은 브랜드 색이고, 올리거나 누르는 동안 설명 · 값 글자만 fg-neutral-muted 로 한 단계 짙어진다
+ * (fg-neutral-subtle 은 짙은 강조 바탕 위에서 4.32:1 로 글자 기준에 모자란다). 화살표는 그대로다.
+ *
+ * 하위 줄(nest) — 부모 줄은 줄 앞 4(꺾쇠 단추 44 + 4 를 지나 앞 붙이개가 52), 하위 줄은 부모의 제목 자리 104 에서 시작한다
+ * (= 4 + 44 + 4 + 타일 40 + 12, 사용자 결정 17B). 누름 바탕은 줄 폭 그대로다.
+ */
+
+// 목록 — 줄을 세로로 잇는다. 배경 · 줄 사이 간격 없음(줄의 위아래 여백이 간격이다)
+export const listVariants = cva("flex w-full flex-col gap-0");
+
+// 줄 — 바탕 층과 콘텐츠 층의 컨테이너. 누르는 줄의 상태는 안쪽 [data-list-action](버튼 · 링크 · 라벨 · 컨트롤)에서 읽는다.
+// 기준 길이 기본값 24 — 누르는 순간 줄을 재서 인라인으로 덮는다(list.tsx 의 withPress)
+export const listItemVariants = cva(
+  "group/list-item relative flex w-full [--press-basis:24]",
+);
+
+// 바탕 층 — 누름 · 호버 · 강조 바탕. 콘텐츠 뒤에 깔리고 줄지 않는다. 눌리거나 올리면 좌우 6 들어와 모서리가 둥글어진다.
+// 모서리의 기본 10(radius-r2_5)은 --list-item-radius 로 바꾼다 — 카드 안에서는 카드 모서리 − 카드 가장자리에서 바탕까지 거리(동심 모서리)
+// 가운데 바탕 색은 변형에서 정한다 — 호버 · 누름의 색이 같은 속성이라 한 변형만 남게 한다
+export const listBackgroundVariants = cva(
+  [
+    "pointer-events-none absolute inset-y-0 inset-x-0 rounded-none",
+    "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),inset_var(--motion-duration-color-transition)_var(--motion-ease-easing),border-radius_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
+    "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:inset-x-x1_5",
+    "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:rounded-[var(--list-item-radius,var(--radius-r2_5))]",
+    "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:inset-x-x1_5",
+    "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:rounded-[var(--list-item-radius,var(--radius-r2_5))]",
+  ].join(" "),
+  {
+    variants: {
+      highlight: {
+        none: "bg-transparent [@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:bg-bg-layer-default-pressed group-has-[[data-list-action]:not([data-disabled]):active]/list-item:bg-bg-layer-default-pressed",
+        highlighted:
+          "bg-bg-brand-weak [@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:bg-bg-brand-weak-pressed group-has-[[data-list-action]:not([data-disabled]):active]/list-item:bg-bg-brand-weak-pressed",
+      },
+    },
+    defaultVariants: { highlight: "none" },
+  },
+);
+
+// 콘텐츠 층 — 앞 · 본문 · 뒤. 누르면 이 층만 준다. 위아래 12 · 좌우 24.
+// 부모 줄(nest=parent)은 왼쪽 4 — 꺾쇠 단추 44 + 4 를 지나 앞 붙이개가 52 에서 시작한다.
+// 하위 줄(nest=child)은 왼쪽 104 — 부모의 제목 자리(스펙 list.yaml 이 104 로 정했고 토큰에 없다)
+export const listContentVariants = cva(
+  [
+    "relative flex w-full py-x3",
+    "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
+    "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:[scale:calc(1-2/var(--press-basis))] motion-reduce:group-has-[[data-list-action]:not([data-disabled]):active]/list-item:[scale:1]",
+    // 키보드 포커스에만 줄 안쪽 링 2px
+    "has-[[data-slot=list-body]:focus-visible]:outline-2 has-[[data-slot=list-body]:focus-visible]:-outline-offset-2 has-[[data-slot=list-body]:focus-visible]:outline-stroke-focus-ring",
+  ].join(" "),
+  {
+    variants: {
+      align: {
+        center: "items-center",
+        top: "items-start",
+      },
+      nest: {
+        none: "px-global-gutter",
+        parent: "pl-x1 pr-global-gutter",
+        child: "pl-[104px] pr-global-gutter",
+      },
+    },
+    defaultVariants: { align: "center", nest: "none" },
+  },
+);
+
+// 앞 붙이개 — 아이콘 22(fg-neutral — 22 는 간격 토큰에 없어 스펙 list.yaml icon.size 값 그대로 쓴다). 막히면 아이콘 · 타일 모두 비활성 색(타일은 부르는 쪽의 카테고리 색을 덮는다)
+export const listPrefixVariants = cva(
+  "flex shrink-0 items-center pr-x3 [&>svg]:size-[22px] [&>svg]:shrink-0",
+  {
+    variants: {
+      disabled: {
+        true: "text-fg-disabled [&_[data-slot=list-tile]]:bg-bg-disabled [&_[data-slot=list-tile]]:text-fg-disabled",
+        false: "text-fg-neutral",
+      },
+    },
+    defaultVariants: { disabled: false },
+  },
+);
+
+// 본문 — 제목 + 설명. 누르는 줄은 이것이 버튼 · 링크다. 폭이 내용을 따르는 flex 항목이라 min-w-0(긴 낱말이 칸 안에서 끊긴다)
+export const listBodyVariants = cva(
+  "flex min-w-0 flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
+);
+
+export const listTitleVariants = cva("font-sans text-t5 font-normal", {
+  variants: {
+    disabled: { true: "text-fg-disabled", false: "text-fg-neutral" },
+  },
+  defaultVariants: { disabled: false },
+});
+
+// 강조 줄을 올리거나 누르는 동안 — 짙은 강조 바탕 위라 설명 · 값 글자를 한 단계 짙게
+const HIGHLIGHT_MUTED =
+  "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:text-fg-neutral-muted group-has-[[data-list-action]:not([data-disabled]):active]/list-item:text-fg-neutral-muted";
+
+export const listDetailVariants = cva("font-sans text-t3", {
+  variants: {
+    disabled: { true: "text-fg-disabled", false: "text-fg-neutral-subtle" },
+    highlighted: { true: "", false: "" },
+  },
+  compoundVariants: [
+    { disabled: false, highlighted: true, className: HIGHLIGHT_MUTED },
+  ],
+  defaultVariants: { disabled: false, highlighted: false },
+});
+
+// 뒤 붙이개 — 값 글자(t5 · 옅은 색) · 화살표 18. 안의 버튼 · 링크는 줄의 ::after 위로 올라 따로 눌린다.
+// 강조 줄을 올리거나 누르면 값 글자만 짙어진다 — 화살표는 그대로 옅은 색
+export const listSuffixVariants = cva(
+  "flex shrink-0 items-center gap-x1 font-sans text-t5 [&>svg]:size-x4_5 [&>svg]:shrink-0 [&_a]:relative [&_a]:z-1 [&_button]:relative [&_button]:z-1",
+  {
+    variants: {
+      disabled: {
+        true: "text-fg-disabled",
+        false: "text-fg-neutral-subtle",
+      },
+      highlighted: { true: "", false: "" },
+    },
+    compoundVariants: [
+      {
+        disabled: false,
+        highlighted: true,
+        className: `${HIGHLIGHT_MUTED} [&>svg]:text-fg-neutral-subtle`,
+      },
+    ],
+    defaultVariants: { disabled: false, highlighted: false },
+  },
+);
+
+// 누르는 줄의 본문 버튼 · 링크 — ::after 가 콘텐츠 층 전체를 덮는다(누르는 영역). 링은 콘텐츠 층이 그린다
+export const listActionVariants = cva(
+  [
+    "cursor-pointer appearance-none border-0 bg-transparent p-0 font-[inherit] text-[inherit] no-underline outline-none",
+    "after:absolute after:inset-0 after:content-['']",
+    "data-[disabled]:cursor-not-allowed",
+  ].join(" "),
+);
+
+// 컨트롤 줄 — 줄 전체가 라벨
+export const listControlVariants = cva(
+  "cursor-pointer select-none data-[disabled]:cursor-not-allowed",
+);
+
+// 끼운 컨트롤은 따로 줄지 않는다 — 줄의 콘텐츠가 함께 준다(v104). 라벨의 누름이 컨트롤로 넘어오므로 컨트롤 자신의 축소만 끈다
+export const LIST_MARK_NO_SCALE = "active:[scale:1]";
+
+// 줄 사이 선 — 필요할 때만. 기본은 줄 폭 전체, inset 이면 좌우 24 들인다
+export const listDividerVariants = cva(
+  "h-px shrink-0 bg-stroke-neutral-subtle",
+  {
+    variants: { inset: { true: "mx-global-gutter", false: "w-full" } },
+    defaultVariants: { inset: false },
+  },
+);
+
+// 목록 제목 — 목록 밖, 바로 위. 좌우 24(줄과 같다) · 위아래 8 · 제목과 오른쪽 버튼 사이 10
+export const listHeaderVariants = cva(
+  "flex w-full items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4",
+  {
+    variants: {
+      variant: {
+        mediumWeak: "font-medium text-fg-neutral-subtle",
+        boldSolid: "font-bold text-fg-neutral",
+      },
+    },
+    defaultVariants: { variant: "mediumWeak" },
+  },
+);
+
+// 내용 줄의 앞 타일 — 40 · 모서리 12(크기 × 0.3), 아이콘 20. 바탕 · 아이콘 색은 부르는 쪽이 카테고리 색(chart-{색}-weak · chart-{색})으로 준다
+export const listTileVariants = cva(
+  "inline-grid size-x10 shrink-0 place-items-center rounded-r3 [&>svg]:size-x5",
+);
+
+// ── 하위 줄 ─────────────────────────────────────────────────
+// 줄 앞 꺾쇠 단추 — 보이는 상자 = 누르는 영역 44 · 모서리 10 · 단추 뒤 4. 줄과 따로 눌린다(줄의 누름 바탕은 생기지 않는다):
+// 올리거나 누르면 단추만 bg-layer-default-pressed, 누르면 2px 거리 축소(기준 44 → 0.955). 키보드 포커스에만 단추 안쪽 2px 링.
+// 위아래 2 를 줄의 여백에 겹쳐 타일 40 줄의 높이(64)를 그대로 둔다. 줄의 버튼 ::after 위(z 1)에 놓인다
+export const listExpandButtonVariants = cva(
+  [
+    "relative z-1 -my-x0_5 mr-x1 inline-flex size-11 shrink-0 cursor-pointer appearance-none items-center justify-center rounded-r2_5 border-0 bg-transparent p-0 text-fg-neutral-subtle",
+    "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
+    "[--press-basis:44] [@media(hover:hover)]:hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
+    "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
+  ].join(" "),
+);
+
+// 꺾쇠 20 — 접혀 있으면 오른쪽(0°), 펼치면 아래(90° · 300ms easing, 모션 줄이기면 바로)
+export const listExpandIconVariants = cva(
+  "size-x5 shrink-0 [transition:rotate_var(--motion-duration-d6)_var(--motion-ease-easing)] motion-reduce:transition-none",
+  {
+    variants: { open: { true: "rotate-90", false: "rotate-0" } },
+    defaultVariants: { open: false },
+  },
+);
+
+// 하위가 없는 부모 줄 · 늘 펼쳐 두는 화면 — 꺾쇠 단추와 같은 폭의 빈 자리(부모 타일이 모두 52 에 선다)
+export const LIST_EXPAND_SLOT = "-my-x0_5 mr-x1 size-11 shrink-0";
