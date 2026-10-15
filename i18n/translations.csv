@@ -1376,12 +1376,6 @@ budget,countSet,{{count}}개 설정됨,{{count}} set
 budget,noCategoryBudgets,카테고리별 예산이 없어요,No category budgets
 budget,goSetBudget,예산 설정하러 가기 →,Go set a budget →
 budget,settings,설정,Settings
-card,loadingCard,카드 로드 중…,Loading card…
-card,selectCard,카드 선택,Select card
-card,searchPlaceholder,카드명 또는 발급사로 검색,Search by card name or issuer
-card,searching,검색 중…,Searching…
-card,noResults,검색 결과가 없습니다,No results found
-card,clearSelection,카드 선택 해제,Clear card selection
 card,noSpendingRequirement,전월 실적 조건 없음 (실적 무관 카드),No prior-month spending requirement
 card,achieved,달성,Achieved
 card,spendMoreForBenefit,{{amount}} 더 사용하면 다음 달 혜택 적용,Spend {{amount}} more to unlock next month's benefits
