@@ -6,7 +6,13 @@
 // 재지 않는 것 — root.offset(4) · root.margin(16) · arrow.margin(14)은 Radix 의 자리 계산(sideOffset · collisionPadding ·
 // arrowPadding)이라 CSS 로 보이지 않는다. closeButton.touchTarget(44)은 ::before 라 검사기가 읽지 못하고, 누름(2px 거리
 // 축소 · 150ms)은 문장이다. 누름 견본은 두지 않는다 — 검사기는 견본의 첫 요소(크기 0 인 자리)를 누른다.
-const BUBBLE = "[data-slot=help-bubble-content]";
+// Tooltip(opens: hover)도 이 스펙의 한 규칙이라 같은 값을 같은 줄로 잰다 — tooltip.json 은 없고(스펙 이름이 help-bubble 이다)
+// Tooltip 견본(tooltip/tooltip.demo.tsx)이 spec="help-bubble" · combo { opens: "hover" } 로 달린다. 말풍선 · 화살표는 slot 이
+// tooltip-content · tooltip-arrow 이고, 글은 제목 자리를 따로 두지 않고 말풍선이 곧 글이다(title.* 도 말풍선에서 잰다).
+const BUBBLE =
+  ":is([data-slot=help-bubble-content], [data-slot=tooltip-content])";
+const ARROW = "[data-slot=help-bubble-arrow], [data-slot=tooltip-arrow]";
+const TITLE = "[data-slot=help-bubble-title], [data-slot=tooltip-content]";
 const CLOSE = "[data-slot=help-bubble-close]";
 
 export default {
@@ -17,11 +23,11 @@ export default {
   "root.background": [BUBBLE, "color", "background-color"],
   "root.shadow": [BUBBLE, "exact", "box-shadow"],
   "root.zIndex": [BUBBLE, "exact", "z-index"],
-  "arrow.width": ["[data-slot=help-bubble-arrow]", "px", "width"],
-  "arrow.height": ["[data-slot=help-bubble-arrow]", "px", "height"],
-  "title.typography": ["[data-slot=help-bubble-title]", "typography"],
-  "title.fontWeight": ["[data-slot=help-bubble-title]", "exact", "font-weight"],
-  "title.foreground": ["[data-slot=help-bubble-title]", "color", "color"],
+  "arrow.width": [ARROW, "px", "width"],
+  "arrow.height": [ARROW, "px", "height"],
+  "title.typography": [TITLE, "typography"],
+  "title.fontWeight": [TITLE, "exact", "font-weight"],
+  "title.foreground": [TITLE, "color", "color"],
   "description.typography": [
     "[data-slot=help-bubble-description]",
     "typography",
