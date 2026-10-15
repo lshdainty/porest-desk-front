@@ -87,6 +87,7 @@ const FAMILIES: DsFamily[] = [
     title: "6 고르는 칸",
     entries: [
       { name: "Input Button", spec: "input-button" },
+      { name: "Searchable List", spec: "searchable-list" },
       { name: "Select", spec: "select" },
       { name: "Select Box", spec: "select-box" },
     ],
