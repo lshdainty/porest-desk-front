@@ -185,6 +185,8 @@ const FAMILIES: DsFamily[] = [
       { name: "Input OTP", spec: "input-otp" },
       { name: "Color Swatch", spec: "color-swatch" },
       { name: "Icon Picker", spec: "icon-picker" },
+      { name: "Quantity Picker", spec: "quantity-picker" },
+      { name: "Attachment Input", spec: "attachment-input" },
     ],
   },
 ];
