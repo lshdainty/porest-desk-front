@@ -154,10 +154,10 @@ describe("List · ListItem", () => {
       expect.arrayContaining(["text-t3", "text-fg-neutral-subtle"]),
     );
     expect(slot("list-detail", second)).toBeNull();
-    // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 min-w-0
+    // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 최소 폭 1em + 뒤 여백 10
     expect(classes(slot("list-body", second))).toEqual(
       expect.arrayContaining([
-        "min-w-0",
+        "min-w-[calc(1em+var(--spacing-x2_5))]",
         "flex-1",
         "flex-col",
         "gap-x0_5",
@@ -183,7 +183,6 @@ describe("List · ListItem", () => {
     expect(classes(slot("list-suffix"))).toEqual(
       expect.arrayContaining([
         "gap-x1",
-        "shrink-0",
         "text-t5",
         "text-fg-neutral-subtle",
         "[&>svg]:size-x4_5",
@@ -332,7 +331,7 @@ describe("ListButtonItem · ListLinkItem", () => {
         "after:absolute",
         "after:inset-0",
         "data-[disabled]:cursor-not-allowed",
-        "min-w-0",
+        "min-w-[calc(1em+var(--spacing-x2_5))]",
       ]),
     );
     click(button);
@@ -1137,21 +1136,21 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
     defaultOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
     onEdit?: () => void;
-    expandLabel?: string | null;
+    collapsible?: boolean;
   }) => (
     <List aria-label="지출 카테고리">
       <ListParentItem
         prefix={<ListTile />}
         title="식비"
         detail="지출 · 하위 2개"
-        expandLabel={
-          props.expandLabel === null
-            ? undefined
-            : (props.expandLabel ?? "식비 하위 카테고리")
-        }
-        open={props.open}
-        defaultOpen={props.defaultOpen}
-        onOpenChange={props.onOpenChange}
+        {...(props.collapsible === false
+          ? { collapsible: false as const }
+          : {
+              expandLabel: "식비 하위 카테고리",
+              open: props.open,
+              defaultOpen: props.defaultOpen,
+              onOpenChange: props.onOpenChange,
+            })}
         onClick={props.onEdit}
       >
         <ListButtonItem title="외식" />
@@ -1161,6 +1160,7 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
         prefix={<ListTile />}
         title="기타"
         detail="지출 · 하위 없음"
+        expandLabel="기타 하위 카테고리"
       />
     </List>
   );
@@ -1316,12 +1316,43 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
     );
   });
 
-  it("expandLabel 이 없으면(늘 펼쳐 두는 편집 모드) 꺾쇠 자리를 비우고 하위 줄은 늘 보인다", () => {
-    render(<Food expandLabel={null} />);
+  it("collapsible={false}(늘 펼친 편집 모드) — 꺾쇠 자리를 비우고(aria-hidden · 같은 폭) 하위 줄은 늘 보이며 aria-expanded 가 없다", () => {
+    render(<Food collapsible={false} />);
     expect(expandButton()).toBeNull();
-    expect(slots("list-expand-slot")).toHaveLength(2);
+    const slotEls = slots("list-expand-slot");
+    expect(slotEls).toHaveLength(2);
+    for (const el of slotEls) {
+      expect(el.getAttribute("aria-hidden")).toBe("true");
+      expect(classes(el)).toEqual(
+        expect.arrayContaining(["size-11", "mr-x1", "shrink-0"]),
+      );
+    }
     expect(subList().hidden).toBe(false);
     expect(subList().getAttribute("data-state")).toBe("open");
+    expect(container.querySelector("[aria-expanded]")).toBeNull();
+    // 줄 본문은 그대로 눌린다
+    expect(slot("list-body").tagName).toBe("BUTTON");
+  });
+
+  it("collapsible 은 기본 true — 접는 줄은 expandLabel 이 필수다(빠뜨리면 타입 오류), 늘 펼친 줄은 expandLabel · open 을 받지 않는다", () => {
+    render(
+      <List>
+        {/* @ts-expect-error 접는 줄(기본)은 expandLabel 이 필수다 */}
+        <ListParentItem title="식비">
+          <ListButtonItem title="외식" />
+        </ListParentItem>
+        {/* @ts-expect-error 늘 펼친 줄은 expandLabel 을 받지 않는다 */}
+        <ListParentItem
+          collapsible={false}
+          expandLabel="식비 하위 카테고리"
+          title="취미"
+        />
+        {/* @ts-expect-error 늘 펼친 줄은 open 을 받지 않는다 */}
+        <ListParentItem collapsible={false} open title="여행" />
+      </List>,
+    );
+    // 타입이 막는 것과 별개로 런타임은 안전하다 — expandLabel 없이도 그려진다
+    expect(slots("list-parent-item")).toHaveLength(3);
   });
 
   it("Tab 은 꺾쇠 단추 → 그 줄 → 펼친 하위 줄 → 다음 부모의 줄 — 접힌 하위 줄은 건너뛴다, 단추는 줄에 가려지지 않는다", () => {
@@ -1454,6 +1485,7 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
           className="btn-extra"
           rootProps={{ id: "food" }}
           title="식비"
+          expandLabel="식비 하위 카테고리"
         />
       </List>,
     );
@@ -1484,11 +1516,59 @@ describe("가장 나쁜 값", () => {
         /(^|\s)(truncate|line-clamp-\d|text-ellipsis|overflow-hidden|whitespace-nowrap)(\s|$)/,
       );
     }
-    expect(classes(slot("list-body"))).toContain("min-w-0");
+    // 본문은 한 글자(1em) + 뒤 여백 10 까지만 줄고, 제목 · 글 설명은 칸 끝에서 끊는다(Q-001 A)
+    expect(classes(slot("list-body"))).toEqual(
+      expect.arrayContaining([
+        "min-w-[calc(1em+var(--spacing-x2_5))]",
+        "flex-1",
+        "pr-x2_5",
+      ]),
+    );
+    expect(classes(slot("list-body"))).not.toContain("min-w-0");
+    expect(classes(slot("list-title"))).toContain("[overflow-wrap:anywhere]");
+    expect(classes(slot("list-detail"))).toContain("[overflow-wrap:anywhere]");
     expect(classes(slot("list-content"))).toContain("items-start");
   });
 
-  it("1억이 넘는 금액은 줄지 않는다(shrink-0) · 접힌 하위 줄이 많은 부모는 줄 하나 + 숨긴 묶음", () => {
+  it("뒤 붙이개 — 요소(금액 · 화살표 · 컨트롤)는 줄지 않고, 글로 넘긴 값(이메일 · 계좌)은 줄 끝에서 끊어 본문 위로 넘치지 않는다", () => {
+    render(
+      <List>
+        <ListItem title="금액" suffix={<b>-1,234,567,890,123원</b>} />
+        <ListItem title="화살표" suffix={<svg />} />
+        <ListItem
+          title="이메일"
+          suffix="porest.desk.design.system.long.address@example-company-domain.co.kr"
+        />
+        <ListItem title="횟수" suffix={12} />
+      </List>,
+    );
+    const [money, arrow, email, count] = slots("list-suffix");
+    for (const node of [money!, arrow!]) {
+      expect(node.getAttribute("data-value")).toBe("node");
+      expect(classes(node)).toContain("shrink-0");
+      expect(classes(node)).not.toContain("[overflow-wrap:anywhere]");
+    }
+    for (const text of [email!, count!]) {
+      expect(text.getAttribute("data-value")).toBe("text");
+      expect(classes(text)).toEqual(
+        expect.arrayContaining([
+          "min-w-0",
+          "shrink",
+          "[overflow-wrap:anywhere]",
+        ]),
+      );
+      expect(classes(text)).not.toContain("shrink-0");
+    }
+    // 말줄임으로 자르지 않는다(10A) — 글이 그대로 있다
+    expect(email!.textContent).toContain("example-company-domain.co.kr");
+    for (const el of container.querySelectorAll("*")) {
+      expect(el.className?.toString()).not.toMatch(
+        /(^|\s)(truncate|text-ellipsis|overflow-hidden|whitespace-nowrap)(\s|$)/,
+      );
+    }
+  });
+
+  it("1억이 넘는 금액은 줄지 않고(shrink-0 — 본문이 양보한다) · 접힌 하위 줄이 많은 부모는 줄 하나 + 숨긴 묶음", () => {
     render(
       <List>
         <ListButtonItem title="입출금 통장" suffix={<b>-123,456,789원</b>} />

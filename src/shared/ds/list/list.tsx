@@ -179,6 +179,9 @@ function Row({
 }: RowProps) {
   const Item = as as React.ElementType;
   const { className, ...rest } = itemProps ?? {};
+  // 글(string · number)로 넘긴 값은 줄 끝에서 끊고, 요소(금액 · 화살표 · 컨트롤)는 줄지 않는다(Q-001)
+  const suffixValue =
+    typeof suffix === "string" || typeof suffix === "number" ? "text" : "node";
   const parts = (
     <>
       {leading}
@@ -194,9 +197,11 @@ function Row({
       {has(suffix) && (
         <span
           data-slot="list-suffix"
+          data-value={suffixValue}
           className={listSuffixVariants({
             disabled: !!disabled,
             highlighted: !!highlighted,
+            value: suffixValue,
           })}
         >
           {suffix}
@@ -411,20 +416,35 @@ ListLinkItem.displayName = "ListLinkItem";
 
 // ── 하위 줄 ─────────────────────────────────────────────────
 
-export interface ListParentItemProps extends ListButtonItemProps {
-  /** 꺾쇠 단추의 고정 이름 — "{카테고리} 하위 카테고리". 하위가 있으면 준다(없으면 늘 펼쳐 두고 꺾쇠 자리를 비운다) */
-  expandLabel?: string;
+type ListParentFoldable = {
+  /** 접는 줄(기본) — 꺾쇠 단추로 하위 줄을 접고 편다 */
+  collapsible?: true;
+  /** 꺾쇠 단추의 고정 이름 — "{카테고리} 하위 카테고리". 접는 줄은 하위가 없어도 준다(필수 — 빠뜨리면 타입 오류) */
+  expandLabel: string;
   /** 하위 줄 펼침 — 쥐고 다룰 때 */
   open?: boolean;
   /** 처음 펼침 — 화면이 정한다(카테고리는 모두 펼친 채 연다) */
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** 하위 줄(ListButtonItem …) */
-  children?: React.ReactNode;
-}
+};
+
+type ListParentFixed = {
+  /** 늘 펼친 화면(편집 모드) — 꺾쇠 자리는 같은 폭으로 비우고(aria-hidden) 하위 줄은 늘 보이며 aria-expanded 가 없다(Q-002) */
+  collapsible: false;
+  expandLabel?: never;
+  open?: never;
+  defaultOpen?: never;
+  onOpenChange?: never;
+};
+
+export type ListParentItemProps = ListButtonItemProps &
+  (ListParentFoldable | ListParentFixed) & {
+    /** 하위 줄(ListButtonItem …) */
+    children?: React.ReactNode;
+  };
 
 // 하위 줄을 접는 부모 줄 — li > 줄(바탕 층 · 콘텐츠 층) + 하위 줄 묶음(ul). 줄을 누르면 onClick(편집), 꺾쇠 단추는 펼치고 접기만.
-// 한 목록에 ListParentItem 이 있으면 그 목록의 맨 위 단계 줄은 모두 ListParentItem 으로 둔다 — 타일 자리를 맞춘다(자식이 없으면 꺾쇠 자리를 비운다).
+// 한 목록에 ListParentItem 이 있으면 그 목록의 맨 위 단계 줄은 모두 ListParentItem 으로 둔다 — 타일 자리를 맞춘다(자식이 없으면 꺾쇠 자리를 비운다). 늘 펼친 편집 화면은 collapsible={false}.
 // Tab 은 꺾쇠 단추 → 그 줄 → 펼친 하위 줄 → 다음 부모의 꺾쇠 단추(DOM 순서)
 const ListParentItem = React.forwardRef<HTMLButtonElement, ListParentItemProps>(
   (
@@ -439,6 +459,7 @@ const ListParentItem = React.forwardRef<HTMLButtonElement, ListParentItemProps>(
       disabled,
       rootProps,
       type = "button",
+      collapsible = true,
       expandLabel,
       open: openProp,
       defaultOpen = false,
@@ -449,9 +470,9 @@ const ListParentItem = React.forwardRef<HTMLButtonElement, ListParentItemProps>(
     ref,
   ) => {
     const hasChildren = React.Children.toArray(children).length > 0;
-    const foldable = hasChildren && expandLabel != null;
+    const foldable = hasChildren && collapsible;
     const [inner, setInner] = React.useState(defaultOpen);
-    // 꺾쇠 단추가 없으면(늘 펼쳐 두는 화면) 하위 줄은 늘 보인다
+    // 늘 펼친 화면(collapsible={false})은 하위 줄이 늘 보인다
     const open = foldable ? (openProp ?? inner) : hasChildren;
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInner(next);
