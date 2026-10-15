@@ -27,6 +27,13 @@ declare global {
 let container: HTMLDivElement;
 let root: Root;
 let wide = false;
+// 격자 차례 — 묶음 차례대로 이어 붙인 칸의 자리(6열)
+const ORDER = new Map(
+  CATEGORY_ICON_SECTIONS.flatMap((section) => section.icons).map((icon, k) => [
+    icon.id,
+    k,
+  ]),
+);
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -52,10 +59,8 @@ beforeEach(() => {
   // 칸의 자리 — 6열 격자(칸 순서대로), 나머지는 0
   vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
     function (this: HTMLElement) {
-      const cell = this.closest<HTMLElement>('[role="option"]');
-      if (cell && cell === this) {
-        const all = Array.from(document.querySelectorAll('[role="option"]'));
-        const i = all.indexOf(this);
+      if (this.getAttribute("role") === "option") {
+        const i = ORDER.get(this.getAttribute("data-icon") ?? "") ?? 0;
         return {
           x: (i % 6) * 52,
           y: Math.floor(i / 6) * 52,
