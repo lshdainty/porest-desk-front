@@ -158,7 +158,10 @@ const FAMILIES: DsFamily[] = [
   {
     id: "data",
     title: "14 데이터",
-    entries: [{ name: "Card", spec: "card" }],
+    entries: [
+      { name: "Card", spec: "card" },
+      { name: "Table", spec: "table" },
+    ],
   },
 ];
 
