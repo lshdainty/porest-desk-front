@@ -4,4 +4,3 @@ export {
   useInfiniteCardCatalogs,
   useCardCatalogDetail,
 } from "./model/useCardCatalogs";
-export { CardCatalogCombobox } from "./ui/CardCatalogCombobox";
