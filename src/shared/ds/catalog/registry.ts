@@ -161,6 +161,7 @@ const FAMILIES: DsFamily[] = [
     entries: [
       { name: "Card", spec: "card" },
       { name: "Table", spec: "table" },
+      { name: "Table Pagination", spec: "table-pagination" },
     ],
   },
 ];
