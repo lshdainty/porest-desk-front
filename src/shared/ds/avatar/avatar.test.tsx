@@ -1,9 +1,9 @@
 // Avatar 의 동작 — 크기 · 색 · 테두리는 scripts/check-ds-spec.mjs 가 크로미움에서 스펙 값과 맞춘다.
 import { act, createRef, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Avatar, AvatarStack } from "./avatar";
+import { Avatar, AvatarPhotoEdit, AvatarStack } from "./avatar";
 import { avatarHue, avatarInitial } from "./avatar-variants";
 
 declare global {
@@ -187,6 +187,155 @@ describe("Avatar", () => {
     const avatar = render(<Avatar ref={ref} name="김민수" className="mt-x1" />);
     expect(ref.current).toBe(avatar);
     expect(avatar.className).toContain("mt-x1");
+  });
+});
+
+describe("Avatar — 올리는 중(uploading)", () => {
+  const bar = (el: HTMLElement) =>
+    el.querySelector<SVGElement>("[data-slot=progress-circle]");
+
+  it("uploadProgress 가 없으면 덮개가 없다 — 평소 모양 그대로", () => {
+    const avatar = render(<Avatar name="한지우" decorative={false} />);
+    expect(avatar.querySelector("[data-slot=avatar-upload]")).toBeNull();
+    expect(avatar.hasAttribute("data-uploading")).toBe(false);
+    expect(avatar.getAttribute("role")).toBe("img");
+  });
+
+  it('원 위 딤(라이트 50% · 다크 65%, 원 모양) 가운데 값 있는 원 24 staticWhite — 이름 "프로필 사진 올리는 중" · 값 글 40%', () => {
+    const avatar = render(
+      <Avatar
+        size={108}
+        name="한지우"
+        decorative={false}
+        uploadProgress={0.4}
+      />,
+    );
+    const overlay = avatar.querySelector<HTMLElement>(
+      "[data-slot=avatar-upload]",
+    )!;
+    expect(overlay.className).toEqual(
+      expect.stringContaining("bg-[var(--overlay-dim-light)]"),
+    );
+    expect(overlay.className).toContain("dark:bg-[var(--overlay-dim-dark)]");
+    expect(overlay.className).toContain("rounded-full");
+    expect(overlay.className).toContain("absolute inset-0");
+    const circle = bar(avatar)!;
+    expect(circle.getAttribute("data-size")).toBe("24");
+    expect(circle.getAttribute("data-tone")).toBe("staticWhite");
+    expect(circle.getAttribute("data-mode")).toBe("determinate");
+    expect(circle.getAttribute("aria-label")).toBe("프로필 사진 올리는 중");
+    expect(circle.getAttribute("aria-valuenow")).toBe("40");
+    expect(circle.getAttribute("aria-valuetext")).toBe("40%");
+    expect(avatar.hasAttribute("data-uploading")).toBe(true);
+  });
+
+  it("이름(uploadLabel)은 부르는 쪽이 바꿀 수 있고, 0 ~ 1 밖의 값은 끝에서 멈춘다", () => {
+    const avatar = render(
+      <Avatar
+        name="한지우"
+        uploadProgress={1.7}
+        uploadLabel="Uploading photo"
+      />,
+    );
+    expect(bar(avatar)!.getAttribute("aria-label")).toBe("Uploading photo");
+    expect(bar(avatar)!.getAttribute("aria-valuenow")).toBe("100");
+    act(() => root.render(<Avatar name="한지우" uploadProgress={-1} />));
+    expect(bar(container)!.getAttribute("aria-valuenow")).toBe("0");
+  });
+
+  it("올리는 동안은 숨기지 않는다 — 이름이 있으면 role=group(role=img 는 안의 진행 원을 읽지 않는다), 장식이어도 진행 원은 읽힌다", () => {
+    const named = render(
+      <Avatar name="한지우" decorative={false} uploadProgress={0.2} />,
+    );
+    expect(named.getAttribute("role")).toBe("group");
+    expect(named.getAttribute("aria-label")).toBe("한지우");
+    act(() => root.render(<Avatar name="한지우" uploadProgress={0.2} />));
+    const deco = container.firstElementChild!;
+    expect(deco.hasAttribute("aria-hidden")).toBe(false);
+    expect(deco.hasAttribute("role")).toBe(false);
+    expect(bar(container)).not.toBeNull();
+  });
+});
+
+describe("AvatarPhotoEdit — 사진 바꾸기 자리", () => {
+  const buttons = () =>
+    Array.from(container.querySelectorAll<HTMLButtonElement>("button"));
+  const edit = (props: Partial<Parameters<typeof AvatarPhotoEdit>[0]> = {}) => (
+    <AvatarPhotoEdit
+      name="한지우"
+      src="/p.png"
+      changeLabel="사진 바꾸기"
+      removeLabel="사진 지우기"
+      onChange={() => undefined}
+      onRemove={() => undefined}
+      {...props}
+    />
+  );
+
+  it("아바타 108 아래 16 에 버튼 둘이 늘 보인다 — 사이 8 · 가운데 · 좁으면 줄 바꿈", () => {
+    const wrap = render(edit());
+    expect(wrap.className).toEqual(
+      expect.stringContaining("flex flex-col items-center gap-x4"),
+    );
+    const avatar = wrap.querySelector<HTMLElement>("[data-slot=avatar]")!;
+    expect(avatar.className).toContain("size-[108px]");
+    expect(avatar.getAttribute("role")).toBe("img");
+    const actions = wrap.querySelector<HTMLElement>(
+      "[data-slot=avatar-edit-actions]",
+    )!;
+    expect(avatar.nextElementSibling).toBe(actions);
+    expect(actions.className).toEqual(
+      expect.stringContaining("flex flex-wrap justify-center gap-x2"),
+    );
+    // 마우스를 올려야 나타나는 덮개가 없다 — 올림에 기대는 클래스가 없다
+    expect(wrap.innerHTML).not.toMatch(/group-hover|opacity-0/);
+  });
+
+  it('"사진 바꾸기" neutralWeak small · "사진 지우기" ghost small — 누르면 각 콜백', () => {
+    const onChange = vi.fn();
+    const onRemove = vi.fn();
+    render(edit({ onChange, onRemove }));
+    const [change, remove] = buttons();
+    expect(change!.textContent).toBe("사진 바꾸기");
+    expect(remove!.textContent).toBe("사진 지우기");
+    expect(change!.className).toContain("h-9");
+    expect(remove!.className).toContain("h-9");
+    expect(change!.className).not.toBe(remove!.className);
+    act(() => change!.click());
+    expect(onChange).toHaveBeenCalledTimes(1);
+    act(() => remove!.click());
+    expect(onRemove).toHaveBeenCalledTimes(1);
+  });
+
+  it('사진이 없으면 "사진 바꾸기" 하나뿐이다(이니셜) — 이름 · 문구는 부르는 쪽이 넘긴 것', () => {
+    render(edit({ src: undefined, changeLabel: "Change photo" }));
+    expect(buttons().map((b) => b.textContent)).toEqual(["Change photo"]);
+    expect(initial(container)!.textContent).toBe("한");
+    act(() => root.render(edit({ src: "" })));
+    expect(buttons()).toHaveLength(1);
+  });
+
+  it("올리는 중에는 두 버튼이 막히고 아바타에 덮개가 선다 — 끝나면 풀린다", () => {
+    const onChange = vi.fn();
+    render(edit({ uploadProgress: 0.4, onChange }));
+    expect(buttons().every((b) => b.disabled)).toBe(true);
+    act(() => buttons()[0]!.click());
+    expect(onChange).not.toHaveBeenCalled();
+    expect(
+      container
+        .querySelector("[data-slot=progress-circle]")!
+        .getAttribute("aria-valuetext"),
+    ).toBe("40%");
+    act(() => root.render(edit({ uploadProgress: undefined })));
+    expect(buttons().every((b) => !b.disabled)).toBe(true);
+    expect(container.querySelector("[data-slot=avatar-upload]")).toBeNull();
+  });
+
+  it("className · ref 는 바깥 묶음으로", () => {
+    const ref = createRef<HTMLDivElement>();
+    const wrap = render(edit({ ref, className: "mx-auto" }));
+    expect(ref.current).toBe(wrap);
+    expect(wrap.className).toContain("mx-auto");
   });
 });
 

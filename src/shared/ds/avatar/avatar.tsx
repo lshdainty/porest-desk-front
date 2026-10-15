@@ -1,6 +1,8 @@
 import * as React from "react";
 
 import { cn } from "@/shared/lib/cn";
+import { Button } from "@/shared/ds/button";
+import { ProgressCircle } from "@/shared/ds/progress-circle";
 
 import {
   avatarDisplayName,
@@ -43,6 +45,14 @@ import {
  * 없으면 aria-hidden — 묶음 옆 글이 수를 말한다("6명 · 412,000원"). 안의 아바타 · "+N" 은 따로 읽지 않는다.
  * 누르지 않는다 — 누르는 자리(프로필 열기)는 감싼 버튼 · 링크가 누름 · 포커스를 가진다(20 · 24 를 누르게 하려면 누르는 영역 44).
  * 상태(안 낸 사람 · 나간 사람)는 아바타를 흐리게 하지 않고 이름 옆 글 · Badge 로 알린다(v106).
+ *
+ * 사진 바꾸기 자리(2026-10-15 마무리 6A — avatar.yaml edit=photo · 상태 uploading) — 마우스를 올려야 나타나는 덮개를 두지 않고
+ * 아바타 아래 16 에 버튼 둘을 늘 보인다("사진 바꾸기" Button neutralWeak small · "사진 지우기" ghost small — 사진이 있을 때만,
+ * 사이 8 · 가운데 · 좁으면 줄을 바꾼다). AvatarPhotoEdit 이 아바타 + 버튼 줄을 한 묶음으로 그린다. 이름 · 문구(changeLabel ·
+ * removeLabel · uploadLabel)는 부르는 쪽이 넘긴다. 올리는 중(uploadProgress 0 ~ 1)이면 원 위 딤(overlay-dim 라이트 50% ·
+ * 다크 65%) 가운데 값 있는 원 24(Progress Circle staticWhite · 이름 uploadLabel · 값 글 "40%")를 두고 두 버튼을 막는다.
+ * 올리는 동안은 아바타를 보조 기술에 숨기지 않는다 — role="img" 는 안의 진행 원을 읽지 않으므로 이름이 있으면 role="group" + 이름.
+ * 실패를 Field 오류 글로 알리는 것 · 파일을 고르는 창 · 올리는 일은 부르는 쪽이 한다.
  */
 
 export type AvatarSize = 20 | 24 | 36 | 42 | 48 | 56 | 64 | 80 | 96 | 108;
@@ -74,6 +84,10 @@ const HUE_BG: Record<AvatarHue, string> = {
 };
 
 const IMAGE = "absolute inset-0 size-full object-cover";
+
+// 올리는 중 덮개 — 원 위 딤(라이트 50% · 다크 65%) 가운데 값 있는 원. ::after 의 안쪽 테두리 아래에 깔린다
+const UPLOAD =
+  "absolute inset-0 flex items-center justify-center rounded-full bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]";
 
 // 크기 — 지름 · 이니셜 글자(지름의 40%, 가장 작아도 10). Tailwind 는 소스의 글자 그대로를 읽으므로 크기마다 다 적는다
 const SIZES: Record<AvatarSize, { box: string; initial: string }> = {
@@ -139,11 +153,24 @@ export interface AvatarProps extends Omit<
   size?: AvatarSize;
   /** 기본 true — 옆에 이름이 있을 때(보조 기술에 숨긴다). false 면 role="img" + 이름 */
   decorative?: boolean;
+  /** 사진 바꾸기 자리에서 올리는 중 — 0 ~ 1(범위 밖은 끝에서 멈춘다). 주면 원 위 딤 + 값 있는 원 24(staticWhite) */
+  uploadProgress?: number;
+  /** 올리는 중 진행 원의 이름 — 기본 "프로필 사진 올리는 중" */
+  uploadLabel?: string;
 }
 
 const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
   (
-    { className, name, src, size: sizeProp = 48, decorative = true, ...props },
+    {
+      className,
+      name,
+      src,
+      size: sizeProp = 48,
+      decorative = true,
+      uploadProgress,
+      uploadLabel = "프로필 사진 올리는 중",
+      ...props
+    },
     ref,
   ) => {
     const stack = React.useContext(AvatarStackContext);
@@ -153,14 +180,21 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
     const { status, set, attach } = useImageStatus(photo);
     // 묶음 안의 아바타는 따로 읽지 않는다 — 묶음이 이름을 가진다
     const hidden = decorative || stack != null;
+    // 올리는 중 — 진행 원을 읽히게 숨기지 않는다(role="img" 는 안을 읽지 않는다)
+    const uploading =
+      typeof uploadProgress === "number" && Number.isFinite(uploadProgress);
+    const percent = uploading
+      ? Math.round(Math.min(Math.max(uploadProgress, 0), 1) * 100)
+      : 0;
     return (
       <span
         ref={ref}
         data-slot="avatar"
         data-status={photo ? status : "none"}
-        role={hidden ? undefined : "img"}
+        data-uploading={uploading || undefined}
+        role={hidden ? undefined : uploading ? "group" : "img"}
         aria-label={hidden ? undefined : shown}
-        aria-hidden={hidden || undefined}
+        aria-hidden={(hidden && !uploading) || undefined}
         className={cn(ROOT, SIZES[size].box, stack && STACK_RING, className)}
         {...props}
       >
@@ -190,11 +224,112 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
             onError={() => set("error")}
           />
         )}
+        {uploading && (
+          <span data-slot="avatar-upload" className={UPLOAD}>
+            <ProgressCircle
+              size="24"
+              tone="staticWhite"
+              value={percent}
+              aria-label={uploadLabel}
+            />
+          </span>
+        )}
       </span>
     );
   },
 );
 Avatar.displayName = "Avatar";
+
+// ── 사진 바꾸기 ──────────────────────────────────────────────
+
+export interface AvatarPhotoEditProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "children" | "onChange"
+> {
+  /** 이름(필수) — 이니셜 · 이름 색 · 아바타를 읽는 이름(옆에 이름이 없으니 늘 role="img") */
+  name: string;
+  /** 사진 — 없으면 이니셜. 없으면 "사진 지우기" 도 없다 */
+  src?: string | null;
+  /** 지름 — 기본 108(HR 직원 정보 수정). 이 밖의 크기를 쓰려면 스펙이 먼저 정한다 */
+  size?: AvatarSize;
+  /** 올리는 중 0 ~ 1 — 주면 원 위 딤 + 값 있는 원 24 · 두 버튼 막힘. 끝나면 undefined */
+  uploadProgress?: number;
+  /** 버튼 글 — "사진 바꾸기" */
+  changeLabel: string;
+  /** 버튼 글 — "사진 지우기" */
+  removeLabel: string;
+  /** 올리는 중 진행 원의 이름 — "프로필 사진 올리는 중" */
+  uploadLabel?: string;
+  /** "사진 바꾸기" — 고르기 창을 연다(앱은 Menu Sheet) */
+  onChange: () => unknown;
+  /** "사진 지우기" — 이니셜로 돌아간다. 사진이 있을 때만 단추가 있다 */
+  onRemove: () => unknown;
+}
+
+// 아바타 + 늘 보이는 버튼 둘 — 아바타 ↔ 버튼 줄 16 · 버튼 사이 8 · 가운데 · 좁으면 줄을 바꾼다
+const AvatarPhotoEdit = React.forwardRef<HTMLDivElement, AvatarPhotoEditProps>(
+  (
+    {
+      className,
+      name,
+      src,
+      size = 108,
+      uploadProgress,
+      changeLabel,
+      removeLabel,
+      uploadLabel,
+      onChange,
+      onRemove,
+      ...props
+    },
+    ref,
+  ) => {
+    const uploading =
+      typeof uploadProgress === "number" && Number.isFinite(uploadProgress);
+    const hasPhoto = src != null && src !== "";
+    return (
+      <div
+        ref={ref}
+        data-slot="avatar-photo-edit"
+        className={cn("flex flex-col items-center gap-x4", className)}
+        {...props}
+      >
+        <Avatar
+          size={size}
+          name={name}
+          src={src}
+          decorative={false}
+          uploadProgress={uploadProgress}
+          uploadLabel={uploadLabel}
+        />
+        <div
+          data-slot="avatar-edit-actions"
+          className="flex flex-wrap justify-center gap-x2"
+        >
+          <Button
+            variant="neutralWeak"
+            size="small"
+            disabled={uploading}
+            onClick={onChange}
+          >
+            {changeLabel}
+          </Button>
+          {hasPhoto && (
+            <Button
+              variant="ghost"
+              size="small"
+              disabled={uploading}
+              onClick={onRemove}
+            >
+              {removeLabel}
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+AvatarPhotoEdit.displayName = "AvatarPhotoEdit";
 
 // ── 묶음 ─────────────────────────────────────────────────────
 // 겹침 = 다음 아바타의 왼쪽 바깥 여백(음수, 지름의 약 1/4) · 링 두께. 크기마다 다 적는다
@@ -311,4 +446,4 @@ const AvatarStack = React.forwardRef<HTMLSpanElement, AvatarStackProps>(
 );
 AvatarStack.displayName = "AvatarStack";
 
-export { Avatar, AvatarStack };
+export { Avatar, AvatarPhotoEdit, AvatarStack };

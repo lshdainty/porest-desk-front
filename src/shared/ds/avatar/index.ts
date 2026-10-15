@@ -1,6 +1,8 @@
 export {
   Avatar,
+  AvatarPhotoEdit,
   AvatarStack,
+  type AvatarPhotoEditProps,
   type AvatarProps,
   type AvatarSize,
   type AvatarStackProps,

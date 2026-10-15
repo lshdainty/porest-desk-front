@@ -2,7 +2,12 @@ import type { ReactNode } from "react";
 
 import { DemoBlock, DemoRow, Specimen } from "@/shared/ds/catalog/DemoKit";
 
-import { Avatar, AvatarStack, type AvatarSize } from "./avatar";
+import {
+  Avatar,
+  AvatarPhotoEdit,
+  AvatarStack,
+  type AvatarSize,
+} from "./avatar";
 import { avatarHue } from "./avatar-variants";
 
 const SIZES: AvatarSize[] = [20, 24, 36, 42, 48, 56, 64, 80, 96, 108];
@@ -47,6 +52,13 @@ const Labeled = ({
     {children}
     <span className="text-t2 text-fg-neutral-subtle">{caption}</span>
   </div>
+);
+
+const noop = () => undefined;
+
+// 오류 글 — 부르는 쪽이 Field 로 그린다(여기서는 그 자리 모양만)
+const ErrorText = ({ children }: { children: ReactNode }) => (
+  <p className="text-t3 text-fg-critical">{children}</p>
 );
 
 /** 카탈로그(/dev/ds) — 크기 10단계(이니셜 · 사진), 사진 상태, 이름 색 열 가지, 이름, 묶음. 상태는 enabled 하나다 */
@@ -129,6 +141,112 @@ export const AvatarDemo = () => (
       <DemoRow label="혼자 · 36 · 96">
         <Avatar size={36} name="김민수" decorative={false} />
         <Avatar size={96} name="서다은" src={PHOTOS[1]} decorative={false} />
+      </DemoRow>
+    </DemoBlock>
+
+    <DemoBlock title="사진 바꾸기 자리(edit=photo) — 108 원 · 올리는 중은 원 위 딤(라이트 50% · 다크 65%) + 값 있는 원 24 staticWhite. 원은 Specimen 으로 재고, 버튼 줄은 아래 묶음 · avatar.test.tsx 가 본다">
+      <DemoRow label="원 · 108">
+        <Labeled caption="사진">
+          <Specimen spec="avatar" combo={{ size: "108", edit: "photo" }}>
+            <Avatar
+              size={108}
+              name="한지우"
+              src={PHOTOS[0]}
+              decorative={false}
+            />
+          </Specimen>
+        </Labeled>
+        <Labeled caption="사진 없음">
+          <Specimen spec="avatar" combo={{ size: "108", edit: "photo" }}>
+            <Avatar size={108} name="한지우" decorative={false} />
+          </Specimen>
+        </Labeled>
+        <Labeled caption="올리는 중 40%">
+          <Specimen
+            spec="avatar"
+            combo={{ size: "108", edit: "photo" }}
+            state="uploading"
+          >
+            <Avatar
+              size={108}
+              name="한지우"
+              src={PHOTOS[0]}
+              decorative={false}
+              uploadProgress={0.4}
+            />
+          </Specimen>
+        </Labeled>
+        <Labeled caption="올리는 중 · 이니셜">
+          <Specimen
+            spec="avatar"
+            combo={{ size: "108", edit: "photo" }}
+            state="uploading"
+          >
+            <Avatar
+              size={108}
+              name="한지우"
+              decorative={false}
+              uploadProgress={0.75}
+            />
+          </Specimen>
+        </Labeled>
+      </DemoRow>
+      <DemoRow label="버튼 줄 · 늘 보인다">
+        <Labeled caption="사진 있음 — 바꾸기 + 지우기">
+          <AvatarPhotoEdit
+            name="한지우"
+            src={PHOTOS[0]}
+            changeLabel="사진 바꾸기"
+            removeLabel="사진 지우기"
+            onChange={noop}
+            onRemove={noop}
+          />
+        </Labeled>
+        <Labeled caption="사진 없음 — 바꾸기 하나">
+          <AvatarPhotoEdit
+            name="한지우"
+            changeLabel="사진 바꾸기"
+            removeLabel="사진 지우기"
+            onChange={noop}
+            onRemove={noop}
+          />
+        </Labeled>
+        <Labeled caption="올리는 중 — 두 버튼 막힘">
+          <AvatarPhotoEdit
+            name="한지우"
+            src={PHOTOS[0]}
+            uploadProgress={0.4}
+            changeLabel="사진 바꾸기"
+            removeLabel="사진 지우기"
+            onChange={noop}
+            onRemove={noop}
+          />
+        </Labeled>
+        <Labeled caption="실패 — 그 자리 오류 글">
+          <div className="flex flex-col items-center gap-x2">
+            <AvatarPhotoEdit
+              name="한지우"
+              src={PHOTOS[0]}
+              changeLabel="사진 바꾸기"
+              removeLabel="사진 지우기"
+              onChange={noop}
+              onRemove={noop}
+            />
+            <ErrorText>5MB 넘는 사진은 올릴 수 없어요.</ErrorText>
+          </div>
+        </Labeled>
+        <Labeled caption="좁은 폭 160 — 버튼이 줄을 바꾼다">
+          <div className="w-[160px]">
+            <AvatarPhotoEdit
+              name="한지우"
+              src={PHOTOS[0]}
+              changeLabel="사진 바꾸기"
+              removeLabel="사진 지우기"
+              onChange={noop}
+              onRemove={noop}
+            />
+          </div>
+        </Labeled>
       </DemoRow>
     </DemoBlock>
 
