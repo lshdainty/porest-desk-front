@@ -8,6 +8,7 @@ import {
 } from "@/shared/ds/bottom-navigation";
 import { SnackbarAvoidOverlap } from "@/shared/ds/snackbar";
 import { useLinkClick } from "../lib/use-link-click";
+import { expectRestore, forget, recall, type TabId } from "../lib/tab-memory";
 import {
   isAllTab,
   isCalendarTab,
@@ -19,7 +20,7 @@ import {
  * 모바일 하단 탭 바 — 홈 · 가계부 · + · 캘린더 · 전체. 다섯 칸이 어느 화면에서나 같다(옛 money 모드는 없다 —
  * 가계부 · 자산 · 통계 · 예산은 모두 "가계부" 가 현재이고 화면 위 Line Tabs 가 넷을 나눈다).
  *
- * 칸은 `<a href>` 라 라우터로 옮기도록 onClick 을 넘기고, 지금 탭을 다시 누르면(onReselect) 그 탭의 첫 화면으로
+ * 칸은 `<a href>` 라 라우터로 옮기도록 onClick 을 넘기고(다른 탭에서 오면 그 탭의 마지막 화면 · 스크롤 — lib/tab-memory), 지금 탭을 다시 누르면(onReselect) 그 탭의 첫 화면으로
  * replace 하며 맨 위로 스크롤한다(같은 주소를 쌓지 않는다).
  */
 export function AppTabBar({
@@ -41,6 +42,7 @@ export function AppTabBar({
   const link = useLinkClick();
 
   const tab = (
+    id: TabId,
     href: string,
     label: string,
     icon: React.ReactNode,
@@ -51,8 +53,13 @@ export function AppTabBar({
       label={label}
       icon={icon}
       current={current}
-      onClick={link(href)}
+      // 다른 탭에서 오면 그 탭의 마지막 화면 · 스크롤로(tab-memory)
+      onClick={link(href, {
+        to: recall(id)?.path ?? href,
+        before: () => expectRestore(id, recall(id)?.scroll ?? 0),
+      })}
       onReselect={({ scrollToTop }) => {
+        forget(id, href);
         navigate(href, { replace: true });
         scrollToTop();
       }}
@@ -62,8 +69,9 @@ export function AppTabBar({
   return (
     <SnackbarAvoidOverlap>
       <BottomNavigation>
-        {tab("/desk", t("home"), <Home />, isHomeTab(pathname))}
+        {tab("home", "/desk", t("home"), <Home />, isHomeTab(pathname))}
         {tab(
+          "expense",
           "/desk/expense",
           t("expense"),
           <ReceiptText />,
@@ -71,12 +79,13 @@ export function AppTabBar({
         )}
         <BottomNavigationAddButton aria-label={addLabel} onClick={onAdd} />
         {tab(
+          "calendar",
           "/desk/calendar",
           t("calendar"),
           <Calendar1 />,
           isCalendarTab(pathname),
         )}
-        {tab("/desk/more", t("all"), <Menu />, isAllTab(pathname))}
+        {tab("all", "/desk/more", t("all"), <Menu />, isAllTab(pathname))}
       </BottomNavigation>
     </SnackbarAvoidOverlap>
   );

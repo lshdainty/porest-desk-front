@@ -23,6 +23,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 const { AppTabBar } = await import("./AppTabBar");
+const { TabMemory } = await import("./TabMemory");
 
 let container: HTMLDivElement;
 let root: Root;
@@ -57,6 +58,7 @@ const render = (path: string, addLabel = "일정 추가", onAdd = () => {}) =>
     root.render(
       <MemoryRouter initialEntries={[path]}>
         <PathProbe />
+        <TabMemory scrollRef={{ current: null }} />
         <AppTabBar onAdd={onAdd} addLabel={addLabel} />
       </MemoryRouter>,
     ),
@@ -140,8 +142,20 @@ describe("탭", () => {
     expect(currentPath()).toBe("/desk/calendar");
   });
 
+  it("다른 탭에 갔다 돌아오면 그 탭의 마지막 화면으로 간다", () => {
+    render("/desk/stats");
+    click(tabs()[0]); // 홈
+    expect(currentPath()).toBe("/desk");
+    click(tabs()[1]); // 가계부 — 마지막으로 있던 통계
+    expect(currentPath()).toBe("/desk/stats");
+  });
+
   it("지금 탭을 다시 누르면 그 탭의 첫 화면으로 돌아간다 — 가계부 묶음 안에서도", () => {
     render("/desk/stats");
+    click(tabs()[1]);
+    expect(currentPath()).toBe("/desk/expense");
+    // 다시 눌렀으니 기억도 첫 화면으로 — 홈에 갔다 와도 통계가 아니다
+    click(tabs()[0]);
     click(tabs()[1]);
     expect(currentPath()).toBe("/desk/expense");
   });

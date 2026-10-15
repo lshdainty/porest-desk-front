@@ -1,5 +1,10 @@
 import { ChevronRight } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetContent,
+} from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
@@ -11,12 +16,18 @@ import { useNow } from "@/shared/hooks";
 import { NotificationRow } from "@/entities/notification";
 import type { Notification } from "@/entities/notification";
 
-export function NotificationsPopover({
+/**
+ * 알림 목록 한 벌(머리 · 목록 · 바닥) — Popover(1280 이상)와 Bottom Sheet(1280 미만 데스크톱)가 함께 쓴다.
+ * hideTitle 은 시트처럼 제목을 바깥이 그릴 때.
+ */
+function NotificationsPanel({
   onClose,
   onGoSettings,
+  hideTitle = false,
 }: {
   onClose: () => void;
   onGoSettings?: () => void;
+  hideTitle?: boolean;
 }) {
   const { t } = useTranslation("notification");
   // 상대시각 기준점 — 벨·알림 페이지와 같은 훅. 팝오버는 오래 열어 두면 그 사이에도
@@ -29,6 +40,148 @@ export function NotificationsPopover({
   const items: Notification[] = data ?? [];
   const unreadCount = items.filter((n) => !n.isRead).length;
 
+  return (
+    <>
+      <div
+        style={{
+          padding: "16px 18px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          borderBottom: "1px solid var(--border-subtle)",
+        }}
+      >
+        <div>
+          {!hideTitle && (
+            <div
+              style={{
+                font: "700 15px/1.3 var(--font-sans)",
+                letterSpacing: "-0.012em",
+                color: "var(--fg-primary)",
+              }}
+            >
+              {t("title")}
+            </div>
+          )}
+          {unreadCount > 0 ? (
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 1,
+              }}
+            >
+              <Trans
+                t={t}
+                i18nKey="popover.unread"
+                values={{ count: unreadCount }}
+                components={{
+                  b: <b style={{ color: "var(--fg-brand-strong)" }} />,
+                }}
+              />
+            </div>
+          ) : (
+            !isLoading &&
+            items.length === 0 && (
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 1,
+                }}
+              >
+                {t("popover.noNew")}
+              </div>
+            )
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={markAllRead.isPending}
+            onClick={() => markAllRead.mutate()}
+            className="ml-auto text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-brand-strong)]"
+          >
+            {t("markAllRead")}
+          </Button>
+        )}
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "4px 0" }}>
+        {isLoading && (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="notif-row"
+                style={{ pointerEvents: "none" }}
+              >
+                <SkeletonBase className="h-8 w-8 rounded-md notif-row__icon" />
+                <div className="notif-row__text">
+                  <SkeletonBase className="h-4 w-2/3 mb-1.5" />
+                  <SkeletonBase className="h-3 w-full" />
+                </div>
+                <SkeletonBase className="h-3 w-10 shrink-0" />
+              </div>
+            ))}
+          </div>
+        )}
+        {!isLoading && items.length === 0 && (
+          <div
+            style={{
+              padding: "40px 20px",
+              textAlign: "center",
+              color: "var(--fg-tertiary)",
+              fontSize: "var(--text-label-sm)",
+            }}
+          >
+            {t("popover.empty")}
+          </div>
+        )}
+        {items.map((n) => (
+          <NotificationRow
+            key={n.rowId}
+            notification={n}
+            pending={markRead.pendingIds.has(n.rowId)}
+            now={now}
+            onClick={() => {
+              if (!n.isRead) markRead.mutate(n.rowId);
+            }}
+          />
+        ))}
+      </div>
+      <div
+        style={{
+          padding: "10px 14px",
+          borderTop: "1px solid var(--border-subtle)",
+          background: "var(--bg-sunken)",
+        }}
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            onClose();
+            onGoSettings?.();
+          }}
+          className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
+        >
+          {t("prefs.title")} <ChevronRight size={12} />
+        </Button>
+      </div>
+    </>
+  );
+}
+
+export function NotificationsPopover({
+  onClose,
+  onGoSettings,
+}: {
+  onClose: () => void;
+  onGoSettings?: () => void;
+}) {
+  const { t } = useTranslation("notification");
   return (
     <>
       <div className="notif-backdrop" onClick={onClose} />
@@ -52,133 +205,32 @@ export function NotificationsPopover({
           overflow: "hidden",
         }}
       >
-        <div
-          style={{
-            padding: "16px 18px 12px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            borderBottom: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                font: "700 15px/1.3 var(--font-sans)",
-                letterSpacing: "-0.012em",
-                color: "var(--fg-primary)",
-              }}
-            >
-              {t("title")}
-            </div>
-            {unreadCount > 0 ? (
-              <div
-                style={{
-                  fontSize: "var(--text-caption)",
-                  color: "var(--fg-tertiary)",
-                  marginTop: 1,
-                }}
-              >
-                <Trans
-                  t={t}
-                  i18nKey="popover.unread"
-                  values={{ count: unreadCount }}
-                  components={{
-                    b: <b style={{ color: "var(--fg-brand-strong)" }} />,
-                  }}
-                />
-              </div>
-            ) : (
-              !isLoading &&
-              items.length === 0 && (
-                <div
-                  style={{
-                    fontSize: "var(--text-caption)",
-                    color: "var(--fg-tertiary)",
-                    marginTop: 1,
-                  }}
-                >
-                  {t("popover.noNew")}
-                </div>
-              )
-            )}
-          </div>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              loading={markAllRead.isPending}
-              onClick={() => markAllRead.mutate()}
-              className="ml-auto text-[var(--fg-brand-strong)] hover:bg-[var(--bg-brand-subtle)] hover:text-[var(--fg-brand-strong)]"
-            >
-              {t("markAllRead")}
-            </Button>
-          )}
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "4px 0" }}>
-          {isLoading && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="notif-row"
-                  style={{ pointerEvents: "none" }}
-                >
-                  <SkeletonBase className="h-8 w-8 rounded-md notif-row__icon" />
-                  <div className="notif-row__text">
-                    <SkeletonBase className="h-4 w-2/3 mb-1.5" />
-                    <SkeletonBase className="h-3 w-full" />
-                  </div>
-                  <SkeletonBase className="h-3 w-10 shrink-0" />
-                </div>
-              ))}
-            </div>
-          )}
-          {!isLoading && items.length === 0 && (
-            <div
-              style={{
-                padding: "40px 20px",
-                textAlign: "center",
-                color: "var(--fg-tertiary)",
-                fontSize: "var(--text-label-sm)",
-              }}
-            >
-              {t("popover.empty")}
-            </div>
-          )}
-          {items.map((n) => (
-            <NotificationRow
-              key={n.rowId}
-              notification={n}
-              pending={markRead.pendingIds.has(n.rowId)}
-              now={now}
-              onClick={() => {
-                if (!n.isRead) markRead.mutate(n.rowId);
-              }}
-            />
-          ))}
-        </div>
-        <div
-          style={{
-            padding: "10px 14px",
-            borderTop: "1px solid var(--border-subtle)",
-            background: "var(--bg-sunken)",
-          }}
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onClose();
-              onGoSettings?.();
-            }}
-            className="w-full justify-center gap-1 text-[var(--fg-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--fg-primary)]"
-          >
-            {t("prefs.title")} <ChevronRight size={12} />
-          </Button>
-        </div>
+        <NotificationsPanel onClose={onClose} onGoSettings={onGoSettings} />
       </div>
     </>
+  );
+}
+
+/** 1280 미만 데스크톱(768~1279)의 알림 — Bottom Sheet 안에 같은 목록을 둔다. 닫으면 연 벨로 초점이 돌아간다 */
+export function NotificationsSheet({
+  onClose,
+  onGoSettings,
+}: {
+  onClose: () => void;
+  onGoSettings?: () => void;
+}) {
+  const { t } = useTranslation("notification");
+  return (
+    <BottomSheet open onOpenChange={(open) => !open && onClose()}>
+      <BottomSheetContent title={t("title")}>
+        <BottomSheetBody className="flex flex-col px-0" scrollFog>
+          <NotificationsPanel
+            hideTitle
+            onClose={onClose}
+            onGoSettings={onGoSettings}
+          />
+        </BottomSheetBody>
+      </BottomSheetContent>
+    </BottomSheet>
   );
 }

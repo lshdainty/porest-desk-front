@@ -12,6 +12,7 @@ import { DesktopHeader } from "./DesktopHeader";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { MobileHeader } from "./MobileHeader";
 import { MoneyTabs } from "./MoneyTabs";
+import { TabMemory } from "./TabMemory";
 import { AppTabBar } from "./AppTabBar";
 import { useDeviceSize } from "@/shared/lib/groo/responsive";
 import { SwipeActionsProvider } from "@/shared/ui/swipe-actions";
@@ -73,6 +74,7 @@ const Shell = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [calendarAddOpen, setCalendarAddOpen] = useState(false);
   const location = useLocation();
+  const scrollRef = useRef<HTMLElement>(null);
   // 금액 가리기를 계정 설정과 맞춘다 — 아래 mobile 조기 반환보다 위여야 한다(훅 규칙).
   useHideCardsSync();
 
@@ -110,6 +112,7 @@ const Shell = () => {
             fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작 (변경 없음).
             아래 여백은 떠 있는 탭 바가 마지막 줄을 덮지 않게 한다(바가 줄어도 그대로). */}
         <main
+          ref={scrollRef}
           className="m-scroll flex flex-col"
           style={{ paddingBottom: BOTTOM_NAVIGATION_INSET }}
         >
@@ -121,6 +124,7 @@ const Shell = () => {
             />
           </SwipeActionsProvider>
         </main>
+        <TabMemory scrollRef={scrollRef} />
         <AppTabBar onAdd={handleAdd} addLabel={t(fab.labelKey)} />
         {addOpen && <AddTxSheet mobile onClose={() => setAddOpen(false)} />}
         {calendarAddOpen && (

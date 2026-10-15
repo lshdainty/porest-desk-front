@@ -22,7 +22,7 @@ export function MoneyTabs() {
       onValueChange={(path) => navigate(path, { replace: true })}
       className="shrink-0"
     >
-      <TabsList aria-label={t("expense")}>
+      <TabsList size="medium" aria-label={t("expense")}>
         {MONEY_TABS.map((m) => (
           <TabsTrigger key={m.path} value={m.path}>
             {t(m.labelKey)}

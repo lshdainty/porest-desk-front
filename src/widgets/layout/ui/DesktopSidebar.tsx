@@ -3,13 +3,11 @@ import { useTranslation } from "react-i18next";
 import {
   SideNavigation,
   SideNavigationContent,
-  SideNavigationFooter,
   SideNavigationGroup,
   SideNavigationHeader,
   SideNavigationItem,
   SideNavigationSubItem,
 } from "@/shared/ds/side-navigation";
-import { useCurrentUser } from "@/features/user";
 import {
   useHasSecurities,
   useMyFeatures,
@@ -33,7 +31,6 @@ export function DesktopSidebar() {
   const hasSecurities = useHasSecurities();
   const { data: features } = useMyFeatures();
   const brokerLabelOf = useBrokerLabel(hasSecurities);
-  const { data: currentUser } = useCurrentUser();
 
   // **연결한 증권사만 하위에 둔다.** 미연결 증권사를 넣으면 누를 때마다 "연결해 주세요" 로 되돌아오는 막다른 길이 된다.
   // 연결이 하나뿐이면 하위를 접는다 — 고를 게 없는 트리는 정보를 주지 않는다.
@@ -78,9 +75,6 @@ export function DesktopSidebar() {
     );
   };
 
-  const userName = currentUser?.userName ?? "";
-  const userInitial = userName.charAt(0) || "·";
-
   return (
     <SideNavigation>
       <SideNavigationHeader
@@ -99,22 +93,6 @@ export function DesktopSidebar() {
           {gate(NAV.slice(6)).map(renderItem)}
         </SideNavigationGroup>
       </SideNavigationContent>
-      <SideNavigationFooter>
-        {/* 계정 — 옛 사용자 버튼은 눌러도 아무 일이 없었다(⇕). 임시로 설정으로 가는 항목으로 둔다(질문 후보) */}
-        <SideNavigationGroup>
-          <SideNavigationItem
-            href="/desk/settings"
-            icon={
-              <span className="flex size-5 items-center justify-center rounded-full bg-bg-brand-weak text-fg-brand text-t1-static font-bold">
-                {userInitial}
-              </span>
-            }
-            label={userName || t("userFallback")}
-            current={pathname.startsWith("/desk/settings")}
-            onClick={link("/desk/settings")}
-          />
-        </SideNavigationGroup>
-      </SideNavigationFooter>
     </SideNavigation>
   );
 }

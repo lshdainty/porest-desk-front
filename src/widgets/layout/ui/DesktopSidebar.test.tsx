@@ -1,5 +1,6 @@
 // 증권사 구분이 페이지 안 탭에서 사이드바 하위 메뉴로 옮겨왔다.
 // 하위 메뉴는 **연결한 증권사** 목록이라 사용자마다 달라진다 — 어느 경우에 몇 개가 뜨는지를 고정한다.
+// 바닥 계정 항목은 두지 않는다(Q-017 18-1 C).
 // 모양 · 접힘 · 키보드는 DS(shared/ds/side-navigation)가 맡고, 여기서는 이 틀이 DS 에 무엇을 넘기는지만 본다:
 // 증권 부모의 규칙(model/shell.ts 임시 선택 4) · 지금 항목 · 라우터 이동.
 import { act } from "react";
@@ -34,9 +35,6 @@ vi.mock("@/features/subscription/model/useSubscription", () => ({
     state.brokerConnectionsEnabled = enabled;
     return { data: enabled ? state.connections : undefined };
   },
-}));
-vi.mock("@/features/user", () => ({
-  useCurrentUser: () => ({ data: { userName: "김포레", userEmail: "" } }),
 }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -191,13 +189,5 @@ describe("DesktopSidebar 이동", () => {
     render("/desk/calendar");
     expect(topItem("calendar")?.getAttribute("aria-current")).toBe("page");
     expect(topItem("home")?.getAttribute("aria-current")).toBeNull();
-  });
-
-  it("바닥의 계정 항목은 설정으로 간다", () => {
-    render("/desk");
-    const account = topItem("김포레");
-    expect(account?.getAttribute("href")).toBe("/desk/settings");
-    click(account);
-    expect(currentPath()).toBe("/desk/settings");
   });
 });

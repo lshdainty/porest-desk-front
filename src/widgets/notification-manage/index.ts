@@ -1,2 +1,5 @@
 export { NotificationsManager } from "./ui/NotificationsManager";
-export { NotificationsPopover } from "./ui/NotificationsPopover";
+export {
+  NotificationsPopover,
+  NotificationsSheet,
+} from "./ui/NotificationsPopover";
