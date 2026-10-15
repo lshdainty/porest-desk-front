@@ -177,6 +177,16 @@ const FAMILIES: DsFamily[] = [
       { name: "Floating Action Button", spec: "floating-action-button" },
     ],
   },
+  {
+    id: "input",
+    title: "16 입력",
+    entries: [
+      { name: "Slider", spec: "slider" },
+      { name: "Input OTP", spec: "input-otp" },
+      { name: "Color Swatch", spec: "color-swatch" },
+      { name: "Icon Picker", spec: "icon-picker" },
+    ],
+  },
 ];
 
 export const DS_FAMILIES: DsFamily[] = FAMILIES.map((family) => ({
