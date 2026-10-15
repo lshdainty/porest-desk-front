@@ -1,0 +1,1523 @@
+// List · List Header 의 동작 — 모양 · 색은 scripts/check-ds-spec.mjs 가 크로미움에서 스펙 값과 맞춘다.
+// 검사기가 못 재는 값(누르는 영역 · 누름 축소 · 전환 시간 · 하위 줄 접힘 — list.measure.mjs 머리)은 여기서 클래스 · 속성으로 본다.
+import { act, useState, type ReactNode } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import {
+  List,
+  ListButtonItem,
+  ListCheckGroup,
+  ListCheckItem,
+  ListDivider,
+  ListHeader,
+  ListItem,
+  ListLinkItem,
+  ListParentItem,
+  ListRadioGroup,
+  ListRadioItem,
+  ListSwitchItem,
+  ListTile,
+} from "./list";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
+}
+
+let container: HTMLDivElement;
+let root: Root;
+
+beforeEach(() => {
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  container = document.createElement("div");
+  document.body.appendChild(container);
+  root = createRoot(container);
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
+
+function render(node: ReactNode) {
+  act(() => root.render(node));
+  return container.firstElementChild as HTMLElement;
+}
+
+const classes = (el: Element) => (el.getAttribute("class") ?? "").split(" ");
+const slot = (name: string, from: ParentNode = container) =>
+  from.querySelector<HTMLElement>(`[data-slot=${name}]`)!;
+const slots = (name: string, from: ParentNode = container) =>
+  Array.from(from.querySelectorAll<HTMLElement>(`[data-slot=${name}]`));
+const byText = (text: string) =>
+  Array.from(container.querySelectorAll<HTMLElement>("button, a, [role]")).find(
+    (el) => el.textContent?.includes(text),
+  )!;
+const click = (el: Element) => act(() => (el as HTMLElement).click());
+// 문서 순서로 Tab 이 닿는 것 — 막힌 것 · 숨긴 것 · tabindex -1 은 빠진다
+const tabStops = () =>
+  Array.from(
+    container.querySelectorAll<HTMLElement>(
+      "button, a[href], input, [tabindex]",
+    ),
+  ).filter(
+    (el) =>
+      !(el as HTMLButtonElement).disabled &&
+      el.tabIndex >= 0 &&
+      !el.closest("[hidden]") &&
+      !el.closest("[aria-hidden=true]"),
+  );
+
+// 폼 안에서는 Radix 가 숨은 input 의 크기를 재려고 ResizeObserver 를 쓴다 — jsdom 에 없다
+const stubResizeObserver = () =>
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+
+const pressEnter = (el: Element) =>
+  act(() => {
+    el.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  });
+
+// ── 목록 · 보기만 하는 줄 ────────────────────────────────────
+
+describe("List · ListItem", () => {
+  it("목록은 ul · 줄 사이 간격 0 · 줄은 li — 바탕 층 + 콘텐츠 층(앞 · 본문 · 뒤)", () => {
+    const list = render(
+      <List aria-label="계정 정보">
+        <ListItem
+          prefix={<svg />}
+          title="가입일"
+          detail="처음 가입한 날"
+          suffix="2026년 3월 2일"
+        />
+      </List>,
+    );
+    expect(list.tagName).toBe("UL");
+    expect(list.getAttribute("aria-label")).toBe("계정 정보");
+    expect(classes(list)).toEqual(["flex", "w-full", "flex-col", "gap-0"]);
+    const item = slot("list-item");
+    expect(item.tagName).toBe("LI");
+    expect(classes(item)).toEqual(
+      expect.arrayContaining(["group/list-item", "relative", "flex", "w-full"]),
+    );
+    // 바탕 층은 장식이다 — 보조 기술에 숨기고 누르지 않는다
+    const background = slot("list-background", item);
+    expect(background.getAttribute("aria-hidden")).toBe("true");
+    expect(classes(background)).toEqual(
+      expect.arrayContaining(["pointer-events-none", "absolute", "inset-x-0"]),
+    );
+    const content = slot("list-content", item);
+    expect(classes(content)).toEqual(
+      expect.arrayContaining([
+        "relative",
+        "flex",
+        "w-full",
+        "py-x3",
+        "items-center",
+        "px-global-gutter",
+      ]),
+    );
+    expect(content.children).toHaveLength(3);
+    expect(slot("list-prefix").nextElementSibling).toBe(slot("list-body"));
+    expect(slot("list-body").nextElementSibling).toBe(slot("list-suffix"));
+    expect(slot("list-title").textContent).toBe("가입일");
+    expect(slot("list-detail").textContent).toBe("처음 가입한 날");
+    expect(slot("list-suffix").textContent).toBe("2026년 3월 2일");
+  });
+
+  it("글자 — 제목 t5 · 400 · fg-neutral, 설명 t3 · fg-neutral-subtle, 설명이 없으면 그리지 않는다", () => {
+    render(
+      <List>
+        <ListItem title="가입일" detail="처음 가입한 날" />
+        <ListItem title="이메일" />
+      </List>,
+    );
+    const [first, second] = slots("list-item");
+    expect(classes(slot("list-title", first))).toEqual(
+      expect.arrayContaining(["text-t5", "font-normal", "text-fg-neutral"]),
+    );
+    expect(classes(slot("list-detail", first))).toEqual(
+      expect.arrayContaining(["text-t3", "text-fg-neutral-subtle"]),
+    );
+    expect(slot("list-detail", second)).toBeNull();
+    // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 min-w-0
+    expect(classes(slot("list-body", second))).toEqual(
+      expect.arrayContaining([
+        "min-w-0",
+        "flex-1",
+        "flex-col",
+        "gap-x0_5",
+        "pr-x2_5",
+      ]),
+    );
+  });
+
+  it("앞 붙이개 아이콘 22 · 뒤 붙이개 값 글자 t5 · 화살표 18 · 안의 버튼 · 링크는 줄의 덮개 위(z 1)", () => {
+    render(
+      <List>
+        <ListItem prefix={<svg />} title="언어" suffix="한국어" />
+      </List>,
+    );
+    expect(classes(slot("list-prefix"))).toEqual(
+      expect.arrayContaining([
+        "pr-x3",
+        "shrink-0",
+        "[&>svg]:size-[22px]",
+        "text-fg-neutral",
+      ]),
+    );
+    expect(classes(slot("list-suffix"))).toEqual(
+      expect.arrayContaining([
+        "gap-x1",
+        "shrink-0",
+        "text-t5",
+        "text-fg-neutral-subtle",
+        "[&>svg]:size-x4_5",
+        "[&_a]:z-1",
+        "[&_button]:z-1",
+      ]),
+    );
+  });
+
+  it("보기만 하는 줄은 누르지 않는다 — 표식 · 버튼 · 링크 · Tab 이 없다(호버 · 누름 바탕은 표식을 보고 생긴다)", () => {
+    render(
+      <List>
+        <ListItem title="가입일" suffix="2026년 3월 2일" />
+        <ListItem title="이메일" suffix="porest@example.com" />
+      </List>,
+    );
+    expect(container.querySelector("[data-list-action]")).toBeNull();
+    expect(container.querySelector("button, a")).toBeNull();
+    expect(tabStops()).toHaveLength(0);
+    for (const item of slots("list-item")) {
+      expect(item.className).not.toMatch(/cursor-pointer/);
+    }
+  });
+
+  it("맞춤 — 기본 가운데, top 이면 위", () => {
+    render(
+      <List>
+        <ListItem title="가운데" />
+        <ListItem align="top" title="위" />
+      </List>,
+    );
+    const [center, top] = slots("list-content");
+    expect(classes(center!)).toContain("items-center");
+    expect(classes(top!)).toContain("items-start");
+    expect(classes(top!)).not.toContain("items-center");
+  });
+
+  it("강조 — 바탕 층만 옅은 브랜드 색(점 · 막대 없음), 올리거나 눌러도 줄은 보기만 하는 줄이면 변하지 않는다", () => {
+    render(
+      <List>
+        <ListItem highlighted title="안 읽음" detail="새 알림" suffix="방금" />
+        <ListItem title="읽음" />
+      </List>,
+    );
+    const [on, off] = slots("list-background");
+    expect(classes(on!)).toEqual(
+      expect.arrayContaining([
+        "bg-bg-brand-weak",
+        "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:bg-bg-brand-weak-pressed",
+      ]),
+    );
+    expect(classes(off!)).toContain("bg-transparent");
+    expect(classes(off!)).not.toContain("bg-bg-brand-weak");
+    // 설명 · 값 글자는 올리거나 누르는 동안 한 단계 짙다 — 제목 · 화살표는 그대로
+    expect(classes(slot("list-detail"))).toContain(
+      "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:text-fg-neutral-muted",
+    );
+    expect(classes(slot("list-suffix"))).toContain(
+      "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:text-fg-neutral-muted",
+    );
+    expect(classes(slot("list-suffix"))).toContain(
+      "[&>svg]:text-fg-neutral-subtle",
+    );
+    expect(classes(slot("list-title"))).not.toContain(
+      "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:text-fg-neutral-muted",
+    );
+    // 강조가 아니면 짙어지지 않는다
+    render(
+      <List>
+        <ListItem title="읽음" detail="새 알림" suffix="방금" />
+      </List>,
+    );
+    expect(classes(slot("list-detail")).join(" ")).not.toMatch(
+      /fg-neutral-muted/,
+    );
+  });
+
+  it("itemRadius 는 누름 · 호버 바탕의 모서리 변수로 간다 — 카드 안의 동심 모서리(기본 radius-r2_5)", () => {
+    const list = render(
+      <List itemRadius="10px" style={{ margin: "0px" }}>
+        <ListButtonItem title="계정" />
+      </List>,
+    );
+    expect(list.style.getPropertyValue("--list-item-radius")).toBe("10px");
+    expect(list.style.margin).toBe("0px");
+    expect(classes(slot("list-background")).join(" ")).toContain(
+      "rounded-[var(--list-item-radius,var(--radius-r2_5))]",
+    );
+    render(
+      <List>
+        <ListButtonItem title="계정" />
+      </List>,
+    );
+    expect(
+      (container.firstElementChild as HTMLElement).style.getPropertyValue(
+        "--list-item-radius",
+      ),
+    ).toBe("");
+  });
+
+  it("className · 나머지 속성은 li 에 · ref 는 li 로 간다", () => {
+    const ref = { current: null as HTMLLIElement | null };
+    render(
+      <List>
+        <ListItem
+          ref={ref}
+          className="extra"
+          id="row-1"
+          title="가입일"
+          data-testid="x"
+        />
+      </List>,
+    );
+    expect(ref.current).toBe(slot("list-item"));
+    expect(ref.current!.id).toBe("row-1");
+    expect(classes(ref.current!)).toContain("extra");
+    expect(ref.current!.getAttribute("data-testid")).toBe("x");
+  });
+});
+
+// ── 누르는 줄 · 링크 줄 ──────────────────────────────────────
+
+describe("ListButtonItem · ListLinkItem", () => {
+  it("누르는 줄은 줄 전체가 버튼(type=button) — 이름은 제목 + 설명, 누르면 onClick", () => {
+    const onClick = vi.fn();
+    render(
+      <List>
+        <ListButtonItem
+          title="결제 알림"
+          detail="결제 예정일 D-1"
+          suffix="켜짐"
+          onClick={onClick}
+        />
+      </List>,
+    );
+    const button = container.querySelector("button")!;
+    expect(button.type).toBe("button");
+    expect(button.textContent).toBe("결제 알림결제 예정일 D-1");
+    expect(button.getAttribute("data-list-action")).toBe("");
+    expect(button.getAttribute("data-slot")).toBe("list-body");
+    // 뒤 붙이개는 버튼 밖(형제)이다 — 값 글자가 버튼의 이름에 들지 않는다
+    expect(button.textContent).not.toContain("켜짐");
+    expect(classes(button)).toEqual(
+      expect.arrayContaining([
+        "cursor-pointer",
+        "after:absolute",
+        "after:inset-0",
+        "data-[disabled]:cursor-not-allowed",
+        "min-w-0",
+      ]),
+    );
+    click(button);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("키보드 포커스에만 줄 안쪽 링 2px — 링은 콘텐츠 층이 그린다(본문의 :focus-visible)", () => {
+    render(
+      <List>
+        <ListButtonItem title="계정" />
+      </List>,
+    );
+    const content = classes(slot("list-content"));
+    expect(content).toEqual(
+      expect.arrayContaining([
+        "has-[[data-slot=list-body]:focus-visible]:outline-2",
+        "has-[[data-slot=list-body]:focus-visible]:-outline-offset-2",
+        "has-[[data-slot=list-body]:focus-visible]:outline-stroke-focus-ring",
+      ]),
+    );
+    // 버튼 자신은 기본 링을 끈다 — 링이 둘로 겹치지 않는다
+    expect(classes(container.querySelector("button")!)).toContain(
+      "outline-none",
+    );
+  });
+
+  it("호버 · 누름은 줄의 표식을 보고 바탕 층이 좌우 6 들어와 모서리 10 · 콘텐츠 층만 2px 거리 축소 — 모션 줄이기면 축소 없음", () => {
+    render(
+      <List>
+        <ListButtonItem title="계정" />
+      </List>,
+    );
+    const hover =
+      "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item";
+    const active =
+      "group-has-[[data-list-action]:not([data-disabled]):active]/list-item";
+    const background = classes(slot("list-background"));
+    expect(background).toEqual(
+      expect.arrayContaining([
+        `${hover}:inset-x-x1_5`,
+        `${hover}:bg-bg-layer-default-pressed`,
+        `${active}:inset-x-x1_5`,
+        `${active}:bg-bg-layer-default-pressed`,
+        "rounded-none",
+      ]),
+    );
+    // 바탕은 150ms 색 · 들임 · 모서리 전환
+    expect(background).toContain(
+      "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),inset_var(--motion-duration-color-transition)_var(--motion-ease-easing),border-radius_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
+    );
+    const content = classes(slot("list-content"));
+    expect(content).toEqual(
+      expect.arrayContaining([
+        `${active}:[scale:calc(1-2/var(--press-basis))]`,
+        `motion-reduce:${active}:[scale:1]`,
+        "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
+      ]),
+    );
+    // 줄은 24 를 기본으로 두고 누르는 순간 잰다
+    expect(classes(slot("list-item"))).toContain("[--press-basis:24]");
+  });
+
+  it("누르는 순간(포인터 · 키) 줄을 재서 축소 기준을 --press-basis 로 넘긴다 — 부르는 쪽 핸들러도 부른다", () => {
+    const onPointerDown = vi.fn();
+    const onKeyDown = vi.fn();
+    render(
+      <List>
+        <ListButtonItem
+          title="계정"
+          rootProps={{ onPointerDown, onKeyDown, className: "root-extra" }}
+        />
+      </List>,
+    );
+    const item = slot("list-item");
+    expect(classes(item)).toContain("root-extra");
+    const button = container.querySelector("button")!;
+    act(() => {
+      button.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          pointerType: "mouse",
+        }),
+      );
+    });
+    // jsdom 은 크기가 0 이라 바닥값 24 — max(높이, 폭 ÷ 4, 24)
+    expect(item.style.getPropertyValue("--press-basis")).toBe("24");
+    expect(onPointerDown).toHaveBeenCalledTimes(1);
+    item.style.removeProperty("--press-basis");
+    act(() => {
+      button.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    expect(item.style.getPropertyValue("--press-basis")).toBe("24");
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+  });
+
+  it("누르는 동안 줄어든 영역 밖에서 떼도 그 줄이 눌리게 포인터를 잡아 둔다 — 마우스 · 펜만(터치는 브라우저가 이미 잡는다)", () => {
+    const capture = vi.fn();
+    Object.defineProperty(Element.prototype, "setPointerCapture", {
+      configurable: true,
+      writable: true,
+      value: capture,
+    });
+    try {
+      render(
+        <List>
+          <ListButtonItem title="계정" />
+        </List>,
+      );
+      const button = container.querySelector("button")!;
+      const down = (pointerType: string) =>
+        act(() => {
+          button.dispatchEvent(
+            new PointerEvent("pointerdown", {
+              bubbles: true,
+              pointerType,
+              pointerId: 7,
+            }),
+          );
+        });
+      down("touch");
+      expect(capture).not.toHaveBeenCalled();
+      down("mouse");
+      expect(capture).toHaveBeenCalledTimes(1);
+      expect(capture).toHaveBeenCalledWith(7);
+      down("pen");
+      expect(capture).toHaveBeenCalledTimes(2);
+    } finally {
+      Reflect.deleteProperty(Element.prototype, "setPointerCapture");
+    }
+  });
+
+  it("막힌 줄 — disabled · data-disabled · 제목 · 설명 · 앞뒤 아이콘 · 값 글자가 모두 fg-disabled, 불투명도로 흐리지 않는다 · 누르기 · Tab 불가", () => {
+    const onClick = vi.fn();
+    render(
+      <List>
+        <ListButtonItem
+          disabled
+          highlighted
+          prefix={
+            <ListTile className="bg-chart-orange-weak text-chart-orange" />
+          }
+          title="주간 리포트"
+          detail="푸시 알림이 꺼져 있어요"
+          suffix="꺼짐"
+          onClick={onClick}
+        />
+      </List>,
+    );
+    const button = container.querySelector("button")!;
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("data-disabled")).toBe("");
+    click(button);
+    expect(onClick).not.toHaveBeenCalled();
+    expect(tabStops()).toHaveLength(0);
+    expect(classes(slot("list-title"))).toContain("text-fg-disabled");
+    expect(classes(slot("list-detail"))).toContain("text-fg-disabled");
+    expect(classes(slot("list-detail")).join(" ")).not.toMatch(/muted/);
+    expect(classes(slot("list-suffix"))).toContain("text-fg-disabled");
+    // 타일은 부르는 쪽의 카테고리 색을 덮고 비활성 색으로 — 앞 붙이개가 정한다
+    expect(classes(slot("list-prefix"))).toEqual(
+      expect.arrayContaining([
+        "text-fg-disabled",
+        "[&_[data-slot=list-tile]]:bg-bg-disabled",
+        "[&_[data-slot=list-tile]]:text-fg-disabled",
+      ]),
+    );
+    for (const el of container.querySelectorAll("*")) {
+      expect(el.className?.toString()).not.toMatch(/(^|\s)opacity-/);
+    }
+  });
+
+  it("줄 · 작은 버튼 · 메뉴 — 누르는 것 셋은 따로 눌린다(작은 버튼은 줄의 덮개 위, 이벤트도 줄로 가지 않는다)", () => {
+    const onRow = vi.fn();
+    const onSmall = vi.fn();
+    const onMenu = vi.fn();
+    render(
+      <List>
+        <ListButtonItem
+          title="카페 · 아메리카노"
+          onClick={onRow}
+          suffix={
+            <>
+              <button type="button" onClick={onSmall}>
+                분류
+              </button>
+              <button type="button" aria-label="더 보기" onClick={onMenu}>
+                ⋮
+              </button>
+            </>
+          }
+        />
+      </List>,
+    );
+    // 문서 순서 — 줄 → 작은 버튼 → 메뉴
+    expect(tabStops().map((el) => el.textContent)).toEqual([
+      "카페 · 아메리카노",
+      "분류",
+      "⋮",
+    ]);
+    click(byText("분류"));
+    expect(onSmall).toHaveBeenCalledTimes(1);
+    expect(onRow).not.toHaveBeenCalled();
+    click(byText("⋮"));
+    expect(onMenu).toHaveBeenCalledTimes(1);
+    expect(onRow).not.toHaveBeenCalled();
+    click(byText("카페 · 아메리카노"));
+    expect(onRow).toHaveBeenCalledTimes(1);
+    expect(onSmall).toHaveBeenCalledTimes(1);
+    // 안의 버튼은 덮개 위로 올린다 — 줄을 어디 눌러도 눌리지만 버튼은 따로 눌린다
+    expect(classes(slot("list-suffix"))).toContain("[&_button]:z-1");
+  });
+
+  it("className 은 버튼에 · rootProps 는 li 에 · ref 는 버튼으로 · type 을 바꿀 수 있다", () => {
+    const ref = { current: null as HTMLButtonElement | null };
+    render(
+      <List>
+        <ListButtonItem
+          ref={ref}
+          type="submit"
+          className="btn-extra"
+          rootProps={{ id: "row" }}
+          title="저장"
+        />
+      </List>,
+    );
+    expect(ref.current).toBe(container.querySelector("button"));
+    expect(ref.current!.type).toBe("submit");
+    expect(classes(ref.current!)).toContain("btn-extra");
+    expect(slot("list-item").id).toBe("row");
+  });
+
+  it("링크 줄은 줄 전체가 링크 — 이름은 제목 + 설명, 막지 않는다(disabled 가 없다)", () => {
+    render(
+      <List>
+        <ListLinkItem
+          href="https://example.com/help"
+          title="도움말"
+          detail="설명서에서 알아보세요"
+          suffix="›"
+        />
+      </List>,
+    );
+    const link = container.querySelector("a")!;
+    expect(link.getAttribute("href")).toBe("https://example.com/help");
+    expect(link.textContent).toBe("도움말설명서에서 알아보세요");
+    expect(link.getAttribute("data-list-action")).toBe("");
+    expect(classes(link)).toEqual(
+      expect.arrayContaining([
+        "cursor-pointer",
+        "after:absolute",
+        "no-underline",
+      ]),
+    );
+    expect(tabStops()).toEqual([link]);
+  });
+
+  it("라우터의 링크는 asChild 의 자식으로 — 제목 · 설명은 그 링크 안에 그려진다", () => {
+    const onClick = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(
+      <List>
+        <ListLinkItem asChild title="도움말" detail="설명서">
+          <a href="/help" onClick={onClick} />
+        </ListLinkItem>
+      </List>,
+    );
+    const links = container.querySelectorAll("a");
+    expect(links).toHaveLength(1);
+    const link = links[0]!;
+    expect(link.getAttribute("href")).toBe("/help");
+    expect(link.textContent).toBe("도움말설명서");
+    expect(link.getAttribute("data-list-action")).toBe("");
+    expect(link.getAttribute("data-slot")).toBe("list-body");
+    expect(classes(link)).toContain("after:absolute");
+    click(link);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── 컨트롤 줄 ───────────────────────────────────────────────
+
+describe("ListSwitchItem", () => {
+  it("줄 전체가 라벨 — 줄 어디를 눌러도 스위치가 바뀌고, 이름은 제목 + 설명이다", () => {
+    const onCheckedChange = vi.fn();
+    render(
+      <List>
+        <ListSwitchItem
+          title="결제 알림"
+          detail="결제 예정일 D-1"
+          onCheckedChange={onCheckedChange}
+        />
+      </List>,
+    );
+    const label = container.querySelector("label")!;
+    const toggle = container.querySelector<HTMLButtonElement>("[role=switch]")!;
+    expect(label.htmlFor).toBe(toggle.id);
+    expect(label.textContent).toBe("결제 알림결제 예정일 D-1");
+    expect(toggle.labels?.[0]).toBe(label);
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    // 제목 · 빈 자리 · 설명 어디를 눌러도 같다
+    click(slot("list-title"));
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    click(slot("list-detail"));
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    click(label);
+    expect(onCheckedChange).toHaveBeenCalledTimes(3);
+    expect(onCheckedChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it("스위치는 뒤에 32(제목 16 줄) · 따로 줄지 않는다 · 라벨과 컨트롤이 줄의 표식을 가진다 · 줄이 라벨이라 호버 · 누름 바탕이 생긴다", () => {
+    render(
+      <List>
+        <ListSwitchItem prefix={<svg />} title="결제 알림" defaultChecked />
+      </List>,
+    );
+    const toggle = container.querySelector<HTMLElement>("[role=switch]")!;
+    expect(classes(toggle)).toEqual(
+      expect.arrayContaining(["h-8", "w-[52px]", "active:[scale:1]"]),
+    );
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    expect(toggle.getAttribute("data-list-action")).toBe("");
+    // 스위치는 뒤 붙이개 자리에 선다
+    expect(slot("list-suffix").contains(toggle)).toBe(true);
+    const label = container.querySelector("label")!;
+    expect(label.getAttribute("data-list-action")).toBe("");
+    expect(label.getAttribute("data-slot")).toBe("list-content");
+    expect(classes(label)).toEqual(
+      expect.arrayContaining([
+        "cursor-pointer",
+        "select-none",
+        "px-global-gutter",
+      ]),
+    );
+  });
+
+  it("막힌 줄 — 스위치 · 라벨 · 글자가 모두 막힘, 눌러도 바뀌지 않는다", () => {
+    const onCheckedChange = vi.fn();
+    render(
+      <List>
+        <ListSwitchItem
+          disabled
+          title="결제 알림"
+          onCheckedChange={onCheckedChange}
+        />
+      </List>,
+    );
+    const toggle = container.querySelector<HTMLButtonElement>("[role=switch]")!;
+    expect(toggle.disabled).toBe(true);
+    expect(
+      container.querySelector("label")!.getAttribute("data-disabled"),
+    ).toBe("");
+    expect(classes(slot("list-title"))).toContain("text-fg-disabled");
+    click(slot("list-title"));
+    expect(onCheckedChange).not.toHaveBeenCalled();
+    expect(tabStops()).toHaveLength(0);
+  });
+
+  it("className · ref 는 스위치로, rootProps 는 줄로", () => {
+    const ref = { current: null as HTMLButtonElement | null };
+    render(
+      <List>
+        <ListSwitchItem
+          ref={ref}
+          className="mark-extra"
+          rootProps={{ className: "row-extra" }}
+          title="결제 알림"
+        />
+      </List>,
+    );
+    expect(ref.current).toBe(container.querySelector("[role=switch]"));
+    expect(classes(ref.current!)).toContain("mark-extra");
+    expect(classes(slot("list-item"))).toContain("row-extra");
+  });
+});
+
+describe("ListCheckItem · ListCheckGroup", () => {
+  const Export = (props: {
+    onCheckedChange?: (v: boolean | "indeterminate") => void;
+    markPosition?: "prefix" | "suffix";
+  }) => (
+    <ListCheckGroup aria-label="내보낼 항목">
+      <ListCheckItem
+        title="거래 내역"
+        detail="날짜별"
+        defaultChecked
+        markPosition={props.markPosition}
+        onCheckedChange={props.onCheckedChange}
+      />
+      <ListCheckItem title="예산" />
+    </ListCheckGroup>
+  );
+
+  it("묶음은 fieldset(role=group) · 이름이 있고 줄은 li 대신 div — 체크는 앞(기본) 24, 이름은 제목 + 설명", () => {
+    const group = render(<Export />);
+    expect(group.tagName).toBe("FIELDSET");
+    expect(group.getAttribute("aria-label")).toBe("내보낼 항목");
+    expect(classes(group)).toEqual(
+      expect.arrayContaining(["flex", "flex-col", "gap-0", "border-0", "p-0"]),
+    );
+    const items = slots("list-item");
+    expect(items.map((el) => el.tagName)).toEqual(["DIV", "DIV"]);
+    expect(group.querySelector("li")).toBeNull();
+    const check =
+      container.querySelector<HTMLButtonElement>("[role=checkbox]")!;
+    expect(classes(check)).toEqual(
+      expect.arrayContaining(["size-6", "active:[scale:1]"]),
+    );
+    expect(slot("list-prefix", items[0]).contains(check)).toBe(true);
+    expect(check.labels?.[0]?.textContent).toBe("거래 내역날짜별");
+  });
+
+  it("체크는 뒤에도 둔다 — 뒤 붙이개 자리에 서고 앞에는 부르는 쪽의 앞 붙이개가 선다", () => {
+    render(
+      <ListCheckGroup aria-label="자산">
+        <ListCheckItem
+          markPosition="suffix"
+          prefix={<svg data-testid="icon" />}
+          title="카드"
+        />
+      </ListCheckGroup>,
+    );
+    const check = container.querySelector<HTMLElement>("[role=checkbox]")!;
+    expect(slot("list-suffix").contains(check)).toBe(true);
+    expect(
+      slot("list-prefix").querySelector("[data-testid=icon]"),
+    ).not.toBeNull();
+  });
+
+  it("줄 어디를 눌러도 체크가 바뀌고 고른 것 · 안 고른 것이 모두 보인다 — 여럿 고르기", () => {
+    const onCheckedChange = vi.fn();
+    render(<Export onCheckedChange={onCheckedChange} />);
+    const [first, second] = Array.from(
+      container.querySelectorAll<HTMLElement>("[role=checkbox]"),
+    );
+    expect(first!.getAttribute("aria-checked")).toBe("true");
+    expect(second!.getAttribute("aria-checked")).toBe("false");
+    click(slot("list-title", slots("list-item")[0]!));
+    expect(onCheckedChange).toHaveBeenLastCalledWith(false);
+    click(slot("list-title", slots("list-item")[1]!));
+    expect(first!.getAttribute("aria-checked")).toBe("false");
+    expect(second!.getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("목록(ul) 안에서도 쓴다 — 줄은 li", () => {
+    render(
+      <List>
+        <ListCheckItem title="거래 내역" />
+      </List>,
+    );
+    expect(slot("list-item").tagName).toBe("LI");
+  });
+
+  it("Enter 는 폼을 제출한다 — 폼의 기본 버튼을 누르고, 체크는 바뀌지 않는다(Space 만 켜고 끈다)", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(
+      <form onSubmit={onSubmit}>
+        <Export />
+        <button type="submit">저장</button>
+      </form>,
+    );
+    const second =
+      container.querySelectorAll<HTMLElement>("[role=checkbox]")[1]!;
+    pressEnter(second);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(second.getAttribute("aria-checked")).toBe("false");
+  });
+
+  it("Enter — 폼이 없거나 기본 버튼이 막혀 있으면 아무 일도 없다", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(<Export />);
+    pressEnter(container.querySelector("[role=checkbox]")!);
+    render(
+      <form onSubmit={onSubmit}>
+        <Export />
+        <button type="submit" disabled>
+          저장
+        </button>
+      </form>,
+    );
+    pressEnter(container.querySelector("[role=checkbox]")!);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("막힌 줄 — 체크 · 글자가 막히고 눌러도 바뀌지 않는다", () => {
+    const onCheckedChange = vi.fn();
+    render(
+      <ListCheckGroup aria-label="항목">
+        <ListCheckItem
+          disabled
+          title="거래 내역"
+          onCheckedChange={onCheckedChange}
+        />
+      </ListCheckGroup>,
+    );
+    const check =
+      container.querySelector<HTMLButtonElement>("[role=checkbox]")!;
+    expect(check.disabled).toBe(true);
+    click(slot("list-title"));
+    expect(onCheckedChange).not.toHaveBeenCalled();
+    expect(classes(slot("list-title"))).toContain("text-fg-disabled");
+  });
+});
+
+describe("ListRadioItem · ListRadioGroup", () => {
+  const Currency = (props: {
+    value?: string;
+    onValueChange?: (v: string) => void;
+  }) => (
+    <ListRadioGroup
+      aria-label="기본 통화"
+      value={props.value}
+      defaultValue={props.value === undefined ? "KRW" : undefined}
+      onValueChange={props.onValueChange}
+    >
+      <ListRadioItem value="KRW" title="대한민국 원" detail="KRW" />
+      <ListRadioItem value="USD" title="미국 달러" detail="USD" />
+    </ListRadioGroup>
+  );
+  const radios = () =>
+    Array.from(container.querySelectorAll<HTMLButtonElement>("[role=radio]"));
+
+  it("묶음은 role=radiogroup · 이름이 있고 줄은 li 대신 div — 라디오는 뒤(기본) 24, 이름은 제목 + 설명", () => {
+    const group = render(<Currency />);
+    expect(group.getAttribute("role")).toBe("radiogroup");
+    expect(group.getAttribute("aria-label")).toBe("기본 통화");
+    expect(classes(group)).toEqual(
+      expect.arrayContaining(["flex", "flex-col", "gap-0"]),
+    );
+    const items = slots("list-item");
+    expect(items.map((el) => el.tagName)).toEqual(["DIV", "DIV"]);
+    expect(group.querySelector("li")).toBeNull();
+    expect(radios()).toHaveLength(2);
+    expect(classes(radios()[0]!)).toEqual(
+      expect.arrayContaining(["size-6", "active:[scale:1]"]),
+    );
+    expect(slot("list-suffix", items[0]).contains(radios()[0]!)).toBe(true);
+    expect(radios()[0]!.labels?.[0]?.textContent).toBe("대한민국 원KRW");
+    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual([
+      "true",
+      "false",
+    ]);
+  });
+
+  it("앞에도 둔다 — 앞 붙이개 자리에 서고 뒤 붙이개는 없다", () => {
+    render(
+      <ListRadioGroup aria-labelledby="h" defaultValue="me">
+        <ListRadioItem markPosition="prefix" value="me" title="나만 보기" />
+        <ListRadioItem markPosition="prefix" value="all" title="모두" />
+      </ListRadioGroup>,
+    );
+    const first = slots("list-item")[0]!;
+    expect(slot("list-prefix", first).contains(radios()[0]!)).toBe(true);
+    expect(slot("list-suffix", first)).toBeNull();
+  });
+
+  it("줄 어디를 눌러도 고르고 앞에 고른 것은 풀린다 — 고른 줄을 다시 눌러도 그대로다", () => {
+    const onValueChange = vi.fn();
+    render(<Currency onValueChange={onValueChange} />);
+    click(slot("list-title", slots("list-item")[1]!));
+    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual([
+      "false",
+      "true",
+    ]);
+    expect(onValueChange).toHaveBeenLastCalledWith("USD");
+    click(slot("list-detail", slots("list-item")[1]!));
+    expect(radios()[1]!.getAttribute("aria-checked")).toBe("true");
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("쥐고 다루는 값도 받는다", () => {
+    function Controlled() {
+      const [value, setValue] = useState("USD");
+      return <Currency value={value} onValueChange={setValue} />;
+    }
+    render(<Controlled />);
+    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual([
+      "false",
+      "true",
+    ]);
+    click(slot("list-title", slots("list-item")[0]!));
+    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual([
+      "true",
+      "false",
+    ]);
+  });
+
+  it("Enter 는 폼을 제출한다 — 묶음이 받고 폼의 기본 버튼을 누른다, 고르지 않는다(고르기는 Space · 화살표). 부르는 쪽 onKeyDown 도 불린다", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    const onKeyDown = vi.fn();
+    render(
+      <form onSubmit={onSubmit}>
+        <ListRadioGroup
+          aria-label="기본 통화"
+          defaultValue="KRW"
+          onKeyDown={onKeyDown}
+        >
+          <ListRadioItem value="KRW" title="대한민국 원" />
+          <ListRadioItem value="USD" title="미국 달러" />
+        </ListRadioGroup>
+        <button type="submit">저장</button>
+      </form>,
+    );
+    pressEnter(radios()[1]!);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual([
+      "true",
+      "false",
+    ]);
+  });
+
+  it("Enter — 기본 버튼이 막혀 있으면 아무 일도 없다", () => {
+    stubResizeObserver();
+    const onSubmit = vi.fn((e: { preventDefault: () => void }) =>
+      e.preventDefault(),
+    );
+    render(
+      <form onSubmit={onSubmit}>
+        <Currency />
+        <button type="submit" disabled>
+          저장
+        </button>
+      </form>,
+    );
+    pressEnter(radios()[0]!);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("막힌 줄 — 라디오 · 글자가 막히고 눌러도 고르지 않는다", () => {
+    const onValueChange = vi.fn();
+    render(
+      <ListRadioGroup
+        aria-label="기본 통화"
+        defaultValue="KRW"
+        onValueChange={onValueChange}
+      >
+        <ListRadioItem value="KRW" title="대한민국 원" />
+        <ListRadioItem disabled value="USD" title="미국 달러" />
+      </ListRadioGroup>,
+    );
+    expect(radios()[1]!.disabled).toBe(true);
+    click(slot("list-title", slots("list-item")[1]!));
+    expect(onValueChange).not.toHaveBeenCalled();
+    expect(classes(slot("list-title", slots("list-item")[1]!))).toContain(
+      "text-fg-disabled",
+    );
+  });
+
+  it("묶음의 이름은 필수다 — 둘 다 없으면 타입이 막는다(aria-label · aria-labelledby)", () => {
+    // 아래는 타입 검사로만 확인한다(실행하지 않는다) — @ts-expect-error 가 없으면 tsc 가 실패한다
+    const _typeLocks = () => (
+      <>
+        {/* @ts-expect-error 이름 없는 하나 고르기 묶음 */}
+        <ListRadioGroup defaultValue="a" />
+        {/* @ts-expect-error 이름 없는 여럿 고르기 묶음 */}
+        <ListCheckGroup />
+        {/* @ts-expect-error 앞에 둔 체크는 앞 붙이개를 같이 줄 수 없다 */}
+        <ListCheckItem title="카드" prefix={<svg />} />
+        {/* @ts-expect-error 앞에 둔 라디오는 앞 붙이개를 같이 줄 수 없다 */}
+        <ListRadioItem
+          value="a"
+          title="카드"
+          markPosition="prefix"
+          prefix={<svg />}
+        />
+        {/* @ts-expect-error 컨트롤 줄에는 따로 누르는 버튼(뒤 붙이개)을 같이 넣지 않는다 */}
+        <ListSwitchItem title="알림" suffix={<button />} />
+      </>
+    );
+    expect(typeof _typeLocks).toBe("function");
+  });
+});
+
+// ── 구분선 · 제목 · 타일 ─────────────────────────────────────
+
+describe("ListDivider · ListHeader · ListTile", () => {
+  it("줄 사이 선 — 1px · stroke-neutral-subtle · 보조 기술에 숨긴다, 목록 안에서는 li · 묶음 안에서는 div", () => {
+    render(
+      <>
+        <List>
+          <ListItem title="가입일" />
+          <ListDivider />
+          <ListDivider inset />
+        </List>
+        <ListCheckGroup aria-label="항목">
+          <ListDivider />
+        </ListCheckGroup>
+      </>,
+    );
+    const [full, inset, inGroup] = slots("list-divider");
+    expect(full!.tagName).toBe("LI");
+    expect(inGroup!.tagName).toBe("DIV");
+    for (const divider of [full!, inset!, inGroup!]) {
+      expect(divider.getAttribute("aria-hidden")).toBe("true");
+      expect(classes(divider)).toEqual(
+        expect.arrayContaining(["h-px", "bg-stroke-neutral-subtle"]),
+      );
+    }
+    expect(classes(full!)).toContain("w-full");
+    expect(classes(inset!)).toContain("mx-global-gutter");
+    expect(classes(inset!)).not.toContain("w-full");
+  });
+
+  it("목록 제목 — 14 · 500 · 옅은 색(기본) · boldSolid 는 700 · 짙은 색, 좌우 24 · 위아래 8 · 버튼과 사이 10", () => {
+    render(
+      <>
+        <ListHeader id="h1">일반</ListHeader>
+        <ListHeader variant="boldSolid" id="h2">
+          이번 달 지출
+        </ListHeader>
+      </>,
+    );
+    const [weak, bold] = slots("list-header");
+    for (const header of [weak!, bold!]) {
+      expect(classes(header)).toEqual(
+        expect.arrayContaining([
+          "flex",
+          "w-full",
+          "items-center",
+          "justify-between",
+          "gap-x2_5",
+          "px-global-gutter",
+          "py-x2",
+          "text-t4",
+        ]),
+      );
+    }
+    expect(classes(weak!)).toEqual(
+      expect.arrayContaining(["font-medium", "text-fg-neutral-subtle"]),
+    );
+    expect(classes(bold!)).toEqual(
+      expect.arrayContaining(["font-bold", "text-fg-neutral"]),
+    );
+  });
+
+  it("목록 제목이 있으면 목록에 aria-labelledby 로 잇는다 — 오른쪽 버튼은 제목 글 밖이라 목록 이름에 섞이지 않는다", () => {
+    render(
+      <>
+        <ListHeader>
+          <span id="budget">카테고리별 예산</span>
+          <button type="button">전체 보기</button>
+        </ListHeader>
+        <List aria-labelledby="budget">
+          <ListItem title="식비" />
+        </List>
+      </>,
+    );
+    const list = container.querySelector("ul")!;
+    expect(
+      document.getElementById(list.getAttribute("aria-labelledby")!)
+        ?.textContent,
+    ).toBe("카테고리별 예산");
+  });
+
+  it("목록 제목은 asChild 로 부르는 쪽의 요소(제목 태그)가 된다", () => {
+    render(
+      <ListHeader asChild>
+        <h2>일반</h2>
+      </ListHeader>,
+    );
+    expect(container.querySelector("div")).toBeNull();
+    const heading = container.querySelector("h2")!;
+    expect(classes(heading)).toContain("px-global-gutter");
+  });
+
+  it("타일 — 40 · 모서리 12 · 아이콘 20, 색은 부르는 쪽의 카테고리 색", () => {
+    render(
+      <ListTile className="bg-chart-orange-weak text-chart-orange">
+        <svg />
+      </ListTile>,
+    );
+    const tile = slot("list-tile");
+    expect(classes(tile)).toEqual(
+      expect.arrayContaining([
+        "size-x10",
+        "rounded-r3",
+        "[&>svg]:size-x5",
+        "bg-chart-orange-weak",
+        "text-chart-orange",
+      ]),
+    );
+  });
+});
+
+// ── 하위 줄 ─────────────────────────────────────────────────
+
+describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
+  const Food = (props: {
+    open?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    onEdit?: () => void;
+    expandLabel?: string | null;
+  }) => (
+    <List aria-label="지출 카테고리">
+      <ListParentItem
+        prefix={<ListTile />}
+        title="식비"
+        detail="지출 · 하위 2개"
+        expandLabel={
+          props.expandLabel === null
+            ? undefined
+            : (props.expandLabel ?? "식비 하위 카테고리")
+        }
+        open={props.open}
+        defaultOpen={props.defaultOpen}
+        onOpenChange={props.onOpenChange}
+        onClick={props.onEdit}
+      >
+        <ListButtonItem title="외식" />
+        <ListButtonItem title="배달음식" />
+      </ListParentItem>
+      <ListParentItem
+        prefix={<ListTile />}
+        title="기타"
+        detail="지출 · 하위 없음"
+      />
+    </List>
+  );
+  const expandButton = () => slot("list-expand-button");
+  const subList = () => slot("list-sub-list");
+
+  it('꺾쇠 단추 — 이름은 고정("{카테고리} 하위 카테고리") + aria-expanded · aria-controls(하위 줄 ul), 상태마다 이름을 바꾸지 않는다', () => {
+    render(<Food />);
+    const button = expandButton();
+    expect(button.tagName).toBe("BUTTON");
+    expect(button.getAttribute("type")).toBe("button");
+    expect(button.getAttribute("aria-label")).toBe("식비 하위 카테고리");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    const target = document.getElementById(
+      button.getAttribute("aria-controls")!,
+    );
+    expect(target).toBe(subList());
+    expect(target!.tagName).toBe("UL");
+    click(button);
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(button.getAttribute("aria-label")).toBe("식비 하위 카테고리");
+    expect(button.textContent).toBe("");
+    click(button);
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    expect(button.getAttribute("aria-label")).toBe("식비 하위 카테고리");
+  });
+
+  it("누르는 영역 44(보이는 상자 = 누르는 영역) · 모서리 10 · 20 꺾쇠 · 단추 뒤 4 · 올리거나 누르면 단추만 바탕 · 누르면 2px 거리 축소(기준 44)", () => {
+    render(<Food />);
+    expect(classes(expandButton())).toEqual(
+      expect.arrayContaining([
+        "size-11",
+        "rounded-r2_5",
+        "mr-x1",
+        "text-fg-neutral-subtle",
+        "cursor-pointer",
+        "[--press-basis:44]",
+        "[@media(hover:hover)]:hover:bg-bg-layer-default-pressed",
+        "active:bg-bg-layer-default-pressed",
+        "active:[scale:calc(1-2/var(--press-basis))]",
+        "motion-reduce:active:[scale:1]",
+        // 키보드 포커스에만 단추 안쪽 링 2px
+        "focus-visible:outline-2",
+        "focus-visible:-outline-offset-2",
+        "focus-visible:outline-stroke-focus-ring",
+        "z-1",
+      ]),
+    );
+    const icon = expandButton().querySelector("svg")!;
+    expect(icon.getAttribute("aria-hidden")).toBe("true");
+    expect(classes(icon)).toEqual(
+      expect.arrayContaining(["size-x5", "motion-reduce:transition-none"]),
+    );
+    // 꺾쇠는 chevron-right — 접히면 오른쪽(0°), 펼치면 아래(90°)
+    expect(icon.getAttribute("class")).toContain("lucide-chevron-right");
+    expect(classes(icon)).toContain("rotate-0");
+    click(expandButton());
+    expect(classes(expandButton().querySelector("svg")!)).toContain(
+      "rotate-90",
+    );
+    // 회전은 300ms · motion-ease-easing
+    expect(classes(icon).join(" ")).toContain(
+      "[transition:rotate_var(--motion-duration-d6)_var(--motion-ease-easing)]",
+    );
+  });
+
+  it("꺾쇠 단추는 줄과 따로 눌린다 — 단추를 눌러도 줄의 편집은 열리지 않고, 줄을 눌러도 접히지 않는다", () => {
+    const onEdit = vi.fn();
+    render(<Food onEdit={onEdit} />);
+    click(expandButton());
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(expandButton().getAttribute("aria-expanded")).toBe("true");
+    click(byText("지출 · 하위 2개"));
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(expandButton().getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("접힘이 기본 — 하위 줄 묶음은 hidden(그리지 않는다), 펼치면 보이고 안의 줄은 늘 DOM 에 있다", () => {
+    render(<Food />);
+    expect(subList().hidden).toBe(true);
+    expect(subList().getAttribute("data-state")).toBe("closed");
+    expect(slots("list-item", subList())).toHaveLength(2);
+    click(expandButton());
+    expect(subList().hidden).toBe(false);
+    expect(subList().getAttribute("data-state")).toBe("open");
+    click(expandButton());
+    expect(subList().hidden).toBe(true);
+  });
+
+  it("처음 펼침은 화면이 정한다 — defaultOpen", () => {
+    render(<Food defaultOpen />);
+    expect(expandButton().getAttribute("aria-expanded")).toBe("true");
+    expect(subList().hidden).toBe(false);
+  });
+
+  it("쥐고 다루는 펼침 — open 을 따르고 onOpenChange 로 바꾸려는 값을 알린다(안 바꿔 주면 그대로)", () => {
+    const onOpenChange = vi.fn();
+    render(<Food open={false} onOpenChange={onOpenChange} />);
+    click(expandButton());
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(expandButton().getAttribute("aria-expanded")).toBe("false");
+    render(<Food open onOpenChange={onOpenChange} />);
+    expect(expandButton().getAttribute("aria-expanded")).toBe("true");
+    click(expandButton());
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("스스로 다룰 때도 onOpenChange 를 부른다", () => {
+    const onOpenChange = vi.fn();
+    render(<Food onOpenChange={onOpenChange} />);
+    click(expandButton());
+    click(expandButton());
+    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("부모 줄은 줄 앞 4 · 앞 붙이개가 52 에서 시작한다 — 하위 줄은 부모의 제목 자리 104 에서 시작하고 누름 바탕은 줄 폭 그대로", () => {
+    render(<Food defaultOpen />);
+    const parentContent = slot("list-content");
+    expect(classes(parentContent)).toEqual(
+      expect.arrayContaining(["pl-x1", "pr-global-gutter"]),
+    );
+    expect(classes(parentContent)).not.toContain("px-global-gutter");
+    // 꺾쇠 단추(44) 가 앞 붙이개 앞에 선다
+    expect(parentContent.firstElementChild).toBe(expandButton());
+    expect(expandButton().nextElementSibling).toBe(slot("list-prefix"));
+    const children = slots("list-content", subList());
+    expect(children).toHaveLength(2);
+    for (const content of children) {
+      expect(classes(content)).toEqual(
+        expect.arrayContaining(["pl-[104px]", "pr-global-gutter"]),
+      );
+    }
+    // 하위 줄의 바탕 층은 줄 폭 그대로 — 들임은 콘텐츠 층만
+    for (const bg of slots("list-background", subList())) {
+      expect(classes(bg)).toContain("inset-x-0");
+    }
+  });
+
+  it("하위가 없는 부모 줄은 같은 폭(44 + 4)의 빈 자리를 둔다 — 부모 타일이 모두 52 에 선다, 꺾쇠 단추 · 하위 줄 묶음은 없다", () => {
+    render(<Food />);
+    const second = slots("list-parent-item")[1]!;
+    expect(slot("list-expand-button", second)).toBeNull();
+    expect(slot("list-sub-list", second)).toBeNull();
+    const spot = slot("list-expand-slot", second);
+    expect(spot.getAttribute("aria-hidden")).toBe("true");
+    expect(classes(spot)).toEqual(
+      expect.arrayContaining(["size-11", "mr-x1", "shrink-0"]),
+    );
+    expect(spot.nextElementSibling).toBe(slot("list-prefix", second));
+    // 접힌 부모와 같은 자리에서 시작한다
+    expect(classes(slot("list-content", second))).toEqual(
+      classes(slots("list-content")[0]!),
+    );
+  });
+
+  it("expandLabel 이 없으면(늘 펼쳐 두는 편집 모드) 꺾쇠 자리를 비우고 하위 줄은 늘 보인다", () => {
+    render(<Food expandLabel={null} />);
+    expect(expandButton()).toBeNull();
+    expect(slots("list-expand-slot")).toHaveLength(2);
+    expect(subList().hidden).toBe(false);
+    expect(subList().getAttribute("data-state")).toBe("open");
+  });
+
+  it("Tab 은 꺾쇠 단추 → 그 줄 → 펼친 하위 줄 → 다음 부모의 줄 — 접힌 하위 줄은 건너뛴다, 단추는 줄에 가려지지 않는다", () => {
+    render(<Food defaultOpen />);
+    expect(tabStops().map((el) => el.textContent)).toEqual([
+      "",
+      "식비지출 · 하위 2개",
+      "외식",
+      "배달음식",
+      "기타지출 · 하위 없음",
+    ]);
+    expect(tabStops()[0]).toBe(expandButton());
+    click(expandButton());
+    expect(tabStops().map((el) => el.textContent)).toEqual([
+      "",
+      "식비지출 · 하위 2개",
+      "기타지출 · 하위 없음",
+    ]);
+  });
+
+  it("펼침 · 접힘은 높이 300ms — 펼칠 때 0 에서 전체 높이까지, 접을 때 지금 높이에서 0 까지, 끝나면 숨긴다", () => {
+    const animations: {
+      keyframes: Keyframe[];
+      options: KeyframeAnimationOptions;
+      anim: { onfinish: (() => void) | null; cancel: () => void };
+    }[] = [];
+    Object.defineProperty(HTMLElement.prototype, "animate", {
+      configurable: true,
+      writable: true,
+      value: vi.fn(
+        (keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
+          const anim = {
+            onfinish: null as (() => void) | null,
+            cancel: vi.fn(),
+          };
+          animations.push({ keyframes, options, anim });
+          return anim;
+        },
+      ),
+    });
+    try {
+      render(<Food />);
+      // 처음 그릴 때는 움직이지 않는다
+      expect(animations).toHaveLength(0);
+      click(expandButton());
+      expect(animations).toHaveLength(1);
+      expect(animations[0]!.options.duration).toBe(300);
+      expect(Object.keys(animations[0]!.keyframes[0]!)).toEqual(["height"]);
+      expect(animations[0]!.keyframes[0]).toEqual({ height: "0px" });
+      expect(subList().hidden).toBe(false);
+      act(() => animations[0]!.anim.onfinish?.());
+      click(expandButton());
+      expect(animations).toHaveLength(2);
+      expect(animations[1]!.options.duration).toBe(300);
+      expect(animations[1]!.keyframes[1]).toEqual({ height: "0px" });
+      // 접히는 동안은 아직 그려져 있고, 끝나면 숨긴다
+      expect(subList().hidden).toBe(false);
+      act(() => animations[1]!.anim.onfinish?.());
+      expect(subList().hidden).toBe(true);
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, "animate");
+    }
+  });
+
+  it("모션 줄이기면 높이를 움직이지 않고 150ms 서서히 나타나고 사라진다", () => {
+    const animations: {
+      keyframes: Keyframe[];
+      options: KeyframeAnimationOptions;
+    }[] = [];
+    Object.defineProperty(HTMLElement.prototype, "animate", {
+      configurable: true,
+      writable: true,
+      value: vi.fn(
+        (keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
+          animations.push({ keyframes, options });
+          return { onfinish: null, cancel: vi.fn() };
+        },
+      ),
+    });
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: true })),
+    );
+    try {
+      render(<Food />);
+      click(expandButton());
+      expect(animations).toHaveLength(1);
+      expect(animations[0]!.options.duration).toBe(150);
+      expect(animations[0]!.keyframes).toEqual([
+        { opacity: 0 },
+        { opacity: 1 },
+      ]);
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, "animate");
+    }
+  });
+
+  it("막힌 부모 줄 — 줄은 막히고 비활성 색, 꺾쇠 단추는 따로 눌린다", () => {
+    const onEdit = vi.fn();
+    render(
+      <List aria-label="지출 카테고리">
+        <ListParentItem
+          disabled
+          prefix={<ListTile />}
+          title="식비"
+          expandLabel="식비 하위 카테고리"
+          onClick={onEdit}
+        >
+          <ListButtonItem title="외식" />
+        </ListParentItem>
+      </List>,
+    );
+    const row = container.querySelector<HTMLButtonElement>(
+      "[data-slot=list-body]",
+    )!;
+    expect(row.disabled).toBe(true);
+    click(row);
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(classes(slot("list-title"))).toContain("text-fg-disabled");
+    click(expandButton());
+    expect(expandButton().getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("ref · className 은 줄의 버튼으로, rootProps 는 부모 li 로", () => {
+    const ref = { current: null as HTMLButtonElement | null };
+    render(
+      <List>
+        <ListParentItem
+          ref={ref}
+          className="btn-extra"
+          rootProps={{ id: "food" }}
+          title="식비"
+        />
+      </List>,
+    );
+    expect(ref.current).toBe(slot("list-body"));
+    expect(classes(ref.current!)).toContain("btn-extra");
+    expect(slot("list-parent-item").id).toBe("food");
+  });
+});
+
+// ── 가장 나쁜 값 ─────────────────────────────────────────────
+
+describe("가장 나쁜 값", () => {
+  it("아주 긴 제목 · 설명은 줄을 바꿔 끝까지 그린다 — 말줄임 · 줄 수 제한이 없고 긴 낱말도 칸 안에서 끊기게 min-w-0", () => {
+    const longTitle =
+      "롯데백화점 본점 지하 1층 식품관 프리미엄 한우 선물세트 · 추석 명절 대량 구매 ".repeat(
+        3,
+      );
+    const longWord = "porest-desk-front-design-system-list-component".repeat(4);
+    render(
+      <List>
+        <ListButtonItem align="top" title={longTitle} detail={longWord} />
+      </List>,
+    );
+    expect(slot("list-title").textContent).toBe(longTitle);
+    expect(slot("list-detail").textContent).toBe(longWord);
+    for (const el of container.querySelectorAll("*")) {
+      expect(el.className?.toString()).not.toMatch(
+        /(^|\s)(truncate|line-clamp-\d|text-ellipsis|overflow-hidden|whitespace-nowrap)(\s|$)/,
+      );
+    }
+    expect(classes(slot("list-body"))).toContain("min-w-0");
+    expect(classes(slot("list-content"))).toContain("items-start");
+  });
+
+  it("1억이 넘는 금액은 줄지 않는다(shrink-0) · 접힌 하위 줄이 많은 부모는 줄 하나 + 숨긴 묶음", () => {
+    render(
+      <List>
+        <ListButtonItem title="입출금 통장" suffix={<b>-123,456,789원</b>} />
+        <ListParentItem title="식비" expandLabel="식비 하위 카테고리">
+          {Array.from({ length: 48 }, (_, i) => (
+            <ListButtonItem key={i} title={`하위 ${i + 1}`} />
+          ))}
+        </ListParentItem>
+      </List>,
+    );
+    expect(classes(slots("list-suffix")[0]!)).toContain("shrink-0");
+    expect(slot("list-sub-list").hidden).toBe(true);
+    expect(slots("list-item", slot("list-sub-list"))).toHaveLength(48);
+    // 접힌 동안 Tab 은 하위 48 줄을 건너뛴다
+    expect(tabStops().map((el) => el.textContent)).toEqual([
+      "입출금 통장",
+      "",
+      "식비",
+    ]);
+  });
+
+  it("빈 목록 · 줄이 하나인 목록도 그린다", () => {
+    render(<List aria-label="빈 목록" />);
+    expect(container.querySelector("ul")!.children).toHaveLength(0);
+    render(
+      <List>
+        <ListItem title="하나" />
+      </List>,
+    );
+    expect(slots("list-item")).toHaveLength(1);
+  });
+});
