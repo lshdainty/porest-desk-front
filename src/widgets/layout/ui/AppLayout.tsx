@@ -104,7 +104,7 @@ const Shell = () => {
     }
 
     return (
-      <div className="m-app" data-screen-label="Mobile">
+      <div className="m-app m-app--page" data-screen-label="Mobile">
         {/* 머리 · 가계부 탭은 main 밖이다(banner) — 본문만 스크롤한다 */}
         <MobileHeader />
         {isMoneyPath(location.pathname) && <MoneyTabs />}
@@ -113,7 +113,7 @@ const Shell = () => {
             아래 여백은 떠 있는 탭 바가 마지막 줄을 덮지 않게 한다(바가 줄어도 그대로). */}
         <main
           ref={scrollRef}
-          className="m-scroll flex flex-col"
+          className="m-scroll flex flex-col bg-bg-page"
           style={{ paddingBottom: BOTTOM_NAVIGATION_INSET }}
         >
           {/* 스와이프 그룹은 셸마다 하나 — "한 번에 한 행" 과 "스크롤하면 닫힘" 을 여기가 맡는다.
@@ -138,11 +138,11 @@ const Shell = () => {
     <TooltipProvider>
       <div className="flex h-svh">
         <DesktopSidebar />
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg-layer-default">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg-page">
           <DesktopHeader onOpenAdd={() => setAddOpen(true)} />
           {/* flex flex-col — 페이지가 flex-1 로 scroll wrapper 전체 height 를 차지하도록
               (viewport fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작. */}
-          <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col">
+          <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col bg-bg-page">
             <Outlet
               context={{ onAddTx: () => setAddOpen(true), mobile: false }}
             />
