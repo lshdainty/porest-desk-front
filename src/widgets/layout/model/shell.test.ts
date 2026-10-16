@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { screenFloor } from "./shell";
+import { screenFloor, screenTitleKey } from "./shell";
 
 // 폰 화면 바탕(02-005 C) — 카드 화면 · 띠 화면 · 흰 화면
 describe("screenFloor", () => {
@@ -19,5 +19,14 @@ describe("screenFloor", () => {
   });
   it("card-benefit 는 /desk/card 아래가 아니다", () => {
     expect(screenFloor("/desk/card-benefit")).toBe("strip");
+  });
+});
+
+describe("screenTitleKey", () => {
+  it("카드 상세의 머리 제목은 자산이다", () => {
+    expect(screenTitleKey("/desk/card/12")).toBe("asset");
+  });
+  it("가계부 묶음은 모두 가계부다", () => {
+    expect(screenTitleKey("/desk/stats")).toBe("expense");
   });
 });

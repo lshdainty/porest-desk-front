@@ -93,6 +93,8 @@ const TITLE_KEYS: Record<string, string> = {
 export function screenTitleKey(pathname: string): string {
   // 가계부 묶음 넷은 머리 제목이 모두 "가계부" — 칸 이름은 위 Line Tabs 가 말한다(17-1)
   if (isMoneyPath(pathname)) return "expense";
+  // 카드 상세는 자산에서 들어가는 화면이다 — 머리 제목이 "홈" 으로 떨어지지 않게
+  if (under(pathname, "/desk/card")) return "asset";
   if (TITLE_KEYS[pathname]) return TITLE_KEYS[pathname];
   const nav = NAV.find((n) => n.path !== "/desk" && under(pathname, n.path));
   return nav?.labelKey ?? "home";

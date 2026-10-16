@@ -2034,18 +2034,13 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
   }
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
+      {/* 제목은 정해진 글이라 로딩 중에도 그린다 — 모든 화면에 h1 하나 */}
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={<SkeletonBase className="h-8 w-28 rounded-md" />}
         style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <SkeletonBase className="h-8 w-24 mb-2" />
-          <SkeletonBase className="h-4 w-40" />
-        </div>
-        <div className="right">
-          <SkeletonBase className="h-8 w-28 rounded-md" />
-        </div>
-      </div>
+      />
       <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
