@@ -41,7 +41,7 @@ export function DayEventsDialog({
   // 앱 색 우선순위 정합: label > calendar > event 색 (공휴일은 일요일색 error 고정)
   const barColor = (e: IEvent) =>
     e.sourceType === "holiday"
-      ? "var(--color-error)"
+      ? "var(--color-bg-critical-solid)"
       : getPaletteByColor(e.labelColor ?? e.calendarColor ?? e.color).color;
 
   return (

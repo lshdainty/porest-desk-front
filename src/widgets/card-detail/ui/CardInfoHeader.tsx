@@ -26,7 +26,7 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
           <img
             src={s.imgUrl}
             alt={cardName}
-            className="h-32 w-52 rounded-lg object-cover shadow-md ring-1 ring-black/5"
+            className="h-32 w-52 rounded-lg object-cover shadow-md ring-1 ring-stroke-neutral-overlay"
           />
         </div>
       )}
@@ -103,7 +103,7 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
               href={s.detailUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              className="mt-3 inline-flex items-center gap-1 text-xs text-fg-brand hover:underline"
             >
               {t("detail.sourceLink")}
               <ExternalLink className="h-3 w-3" />

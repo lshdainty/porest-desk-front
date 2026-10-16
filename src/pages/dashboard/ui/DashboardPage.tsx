@@ -543,24 +543,28 @@ function DashboardHeroSkeleton({
       </div>
       <div className="balance-hero__amount num">
         <SkeletonBase
-          className={mobile ? "h-8 w-40 bg-white/15" : "h-10 w-56 bg-white/15"}
+          className={
+            mobile
+              ? "h-8 w-40 bg-static-white/15"
+              : "h-10 w-56 bg-static-white/15"
+          }
         />
       </div>
       <div className="balance-hero__sub">
-        <SkeletonBase className="h-3 w-32 bg-white/15" />
+        <SkeletonBase className="h-3 w-32 bg-static-white/15" />
       </div>
       <div className="balance-hero__split">
         <div>
           <div className="l">
             {mobile ? t("asset.assetTab") : t("asset.totalAsset")}
           </div>
-          <SkeletonBase className="h-5 w-24 bg-white/15" />
+          <SkeletonBase className="h-5 w-24 bg-static-white/15" />
         </div>
         <div>
           <div className="l">
             {mobile ? t("asset.debtTab") : t("asset.totalDebt")}
           </div>
-          <SkeletonBase className="h-5 w-24 bg-white/15" />
+          <SkeletonBase className="h-5 w-24 bg-static-white/15" />
         </div>
       </div>
     </div>
@@ -1794,7 +1798,7 @@ function HomeDesktop() {
                             : "var(--bg-sunken)",
                         color:
                           p.d <= 7
-                            ? "var(--color-warning)"
+                            ? "var(--color-fg-warning)"
                             : "var(--fg-secondary)",
                         display: "inline-flex",
                         alignItems: "center",
@@ -1903,7 +1907,7 @@ function HomeDesktop() {
                         td.priority === "HIGH"
                           ? "var(--fg-expense)"
                           : td.priority === "MEDIUM"
-                            ? "var(--color-warning-light)"
+                            ? "var(--color-bg-warning-solid)"
                             : "var(--bg-brand)",
                     }}
                   />
@@ -1970,7 +1974,7 @@ function HomeDesktop() {
                           : "var(--bg-sunken)",
                       color:
                         ev.daysUntil <= 3
-                          ? "var(--color-warning)"
+                          ? "var(--color-fg-warning)"
                           : "var(--fg-secondary)",
                       display: "inline-flex",
                       alignItems: "center",

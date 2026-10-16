@@ -1175,9 +1175,9 @@ function cardUsageOf(asset: Asset) {
   const usage = (used / asset.creditLimit) * 100;
   const barColor =
     usage >= 90
-      ? "var(--color-error)"
+      ? "var(--color-bg-critical-solid)"
       : usage >= 70
-        ? "var(--color-warning)"
+        ? "var(--color-bg-warning-solid)"
         : "var(--fg-brand)";
   return { used, limit: asset.creditLimit, usage, barColor };
 }

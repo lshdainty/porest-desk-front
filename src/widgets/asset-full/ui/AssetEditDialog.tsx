@@ -1047,7 +1047,7 @@ export function AssetEditDialog({
                 />
               ) : (
                 <span
-                  className="rounded flex items-center justify-center text-white text-xs font-bold"
+                  className="rounded flex items-center justify-center text-static-white text-xs font-bold"
                   style={{
                     width: 44,
                     height: 28,
@@ -1330,7 +1330,7 @@ export function AssetEditDialog({
                 <button
                   key={`${s.marketCode}:${s.symbol}`}
                   type="button"
-                  className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--bg-hover)] transition-colors"
+                  className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--color-bg-layer-default-pressed)] transition-colors"
                   style={{
                     background: "transparent",
                     border: 0,

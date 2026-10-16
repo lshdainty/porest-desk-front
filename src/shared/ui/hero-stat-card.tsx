@@ -28,25 +28,22 @@ const toneStyles: Record<HeroStatTone, string> = {
   default: "bg-surface-default",
   brand:
     "bg-[var(--color-surface-hero)] bg-gradient-to-br from-[var(--color-surface-hero)] to-surface-default",
-  positive: "bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)]",
-  negative: "bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)]",
+  positive: "bg-bg-positive-weak",
+  negative: "bg-bg-critical-weak",
 };
 
 const toneValueStyles: Record<HeroStatTone, string> = {
   default: "text-text-primary",
   brand: "text-text-primary",
-  positive: "text-success",
-  negative: "text-error",
+  positive: "text-fg-positive",
+  negative: "text-fg-critical",
 };
 
 const toneIconStyles: Record<HeroStatTone, string> = {
   default: "bg-surface-input text-text-secondary",
-  brand:
-    "bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary",
-  positive:
-    "bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-success",
-  negative:
-    "bg-[color-mix(in_srgb,var(--color-error)_16%,transparent)] text-error",
+  brand: "bg-bg-brand-weak text-fg-brand",
+  positive: "bg-bg-positive-weak text-fg-positive",
+  negative: "bg-bg-critical-weak text-fg-critical",
 };
 
 export const HeroStatCard = ({
@@ -115,8 +112,8 @@ export const HeroStatCard = ({
               className={cn(
                 "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] min-[640px]:text-xs font-medium",
                 deltaIsGood
-                  ? "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success"
-                  : "bg-[color-mix(in_srgb,var(--color-error)_14%,transparent)] text-error",
+                  ? "bg-bg-positive-weak text-fg-positive"
+                  : "bg-bg-critical-weak text-fg-critical",
               )}
             >
               <DeltaIcon size={12} />

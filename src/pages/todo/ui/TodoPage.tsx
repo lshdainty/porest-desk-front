@@ -402,7 +402,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             border: done
               ? "0"
               : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
-            background: done ? "var(--color-primary)" : "transparent",
+            background: done ? "var(--color-bg-brand-solid)" : "transparent",
             cursor: "pointer",
             flexShrink: 0,
             display: "inline-flex",
@@ -599,7 +599,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                   style={{
                     width: `${(done / total) * 100}%`,
                     height: "100%",
-                    background: "var(--color-primary)",
+                    background: "var(--color-bg-brand-solid)",
                     borderRadius: 999,
                   }}
                 />

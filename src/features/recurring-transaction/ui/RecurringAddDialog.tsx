@@ -454,7 +454,7 @@ export function RecurringAddDialog({
             style={{
               margin: "6px 0 0",
               fontSize: "var(--text-caption)",
-              color: "var(--fg-danger, var(--fg-secondary))",
+              color: "var(--color-fg-critical)",
             }}
           >
             {tCommon("amountTooLarge")}

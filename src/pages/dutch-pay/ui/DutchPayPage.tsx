@@ -1589,9 +1589,7 @@ function ParticipantPick({
         gap: 12,
         padding: "8px 10px",
         borderRadius: "var(--radius-md)",
-        background: checked
-          ? "color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))"
-          : "transparent",
+        background: checked ? "var(--color-bg-brand-weak)" : "transparent",
         cursor: locked ? "default" : "pointer",
         transition:
           "background var(--motion-duration-fast) var(--motion-ease-out)",
@@ -1603,7 +1601,7 @@ function ParticipantPick({
           height: 18,
           borderRadius: "var(--radius-sm)",
           border: checked ? "0" : "2px solid var(--border-strong)",
-          background: checked ? "var(--color-primary)" : "transparent",
+          background: checked ? "var(--color-bg-brand-solid)" : "transparent",
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
@@ -1722,8 +1720,7 @@ function DutchDetailDialog({
       {/* hero */}
       <div
         style={{
-          background:
-            "color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))",
+          background: "var(--color-bg-brand-weak)",
           borderRadius: "var(--radius-md)",
           padding: "18px 20px",
           marginBottom: 16,
@@ -1753,7 +1750,7 @@ function DutchDetailDialog({
                 fontSize: 28,
                 fontWeight: "800",
                 letterSpacing: "-0.03em",
-                color: "var(--color-primary)",
+                color: "var(--color-fg-brand)",
               }}
             >
               {wonPre()}
@@ -1766,7 +1763,7 @@ function DutchDetailDialog({
                 style={{
                   fontSize: 15,
                   fontWeight: "700",
-                  color: "var(--color-primary)",
+                  color: "var(--color-fg-brand)",
                 }}
               >
                 원

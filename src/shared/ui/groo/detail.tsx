@@ -194,7 +194,7 @@ export function DetailQuickAction({
     <button
       type="button"
       className={cn(
-        "relative flex flex-col items-center gap-2 border-0 bg-transparent px-1 py-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
+        "relative flex flex-col items-center gap-2 border-0 bg-transparent px-1 py-2 cursor-pointer disabled:cursor-not-allowed disabled:text-fg-disabled",
         className,
       )}
       {...props}

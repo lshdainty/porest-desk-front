@@ -569,7 +569,7 @@ export function TodoMobileLedger({
                                 ? "0"
                                 : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
                               background: done
-                                ? "var(--color-primary)"
+                                ? "var(--color-bg-brand-solid)"
                                 : "transparent",
                             }}
                           >

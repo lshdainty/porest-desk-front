@@ -446,7 +446,7 @@ export function eventBadgeColor(
   event?: Pick<IEvent, "sourceType" | "labelColor" | "color"> | null,
 ): string {
   if (!event) return getPaletteByColor(undefined).color;
-  if (event.sourceType === "holiday") return "var(--color-error)";
+  if (event.sourceType === "holiday") return "var(--color-fg-critical)";
   return getPaletteByColor(event.labelColor ?? event.color).color;
 }
 

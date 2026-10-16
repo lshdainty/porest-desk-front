@@ -202,11 +202,11 @@ const MonthDayCell = ({
         <button
           onClick={handleClick}
           className={cn(
-            "flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0",
+            "flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring flex-shrink-0",
             !currentMonth && "opacity-20",
             // 오늘 — 가계부 월그리드 선택 원 정합(--bg-brand, 다크 primary 고정. 사용자 결정)
             isToday(date) &&
-              "bg-[var(--bg-brand)] font-bold text-primary-foreground hover:bg-[var(--bg-brand)]",
+              "bg-[var(--bg-brand)] font-bold text-static-white hover:bg-[var(--bg-brand)]",
           )}
           style={{
             // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).
@@ -229,7 +229,7 @@ const MonthDayCell = ({
             <button
               onClick={handleClick}
               className={cn(
-                "text-xs font-semibold text-muted-foreground flex-shrink-0 px-0.5 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded",
+                "text-xs font-semibold text-muted-foreground flex-shrink-0 px-0.5 hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring rounded",
                 !currentMonth && "opacity-50",
               )}
             >
@@ -432,7 +432,7 @@ const MonthEventBadge = ({
       role="button"
       tabIndex={0}
       className={cn(
-        "mx-0.5 min-[834px]:mx-1 flex size-auto select-none items-center justify-between gap-1 whitespace-nowrap rounded-sm min-[834px]:rounded-md border text-[length:var(--text-badge)] min-[834px]:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "mx-0.5 min-[834px]:mx-1 flex size-auto select-none items-center justify-between gap-1 whitespace-nowrap rounded-sm min-[834px]:rounded-md border text-[length:var(--text-badge)] min-[834px]:text-[length:var(--text-caption)] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
         // 모바일(<768px): 앱 _EventBar 정합 타이트 칩(16px·좌우 4px·leading-none).
         // 데스크톱/태블릿(≥768px): 원래 높이/패딩(22px → lg 26px, 좌우 4 → lg 8px).
         isMobile

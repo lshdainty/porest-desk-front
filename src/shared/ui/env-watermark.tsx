@@ -13,7 +13,7 @@ export const EnvWatermark = () => {
   if (config.isProd) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[9999] overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-(--z-dev) overflow-hidden">
       <span className="text-7xl font-bold text-text-tertiary/10 select-none tracking-widest whitespace-nowrap">
         DEVELOPMENT
       </span>

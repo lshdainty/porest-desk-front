@@ -47,7 +47,7 @@ const AgendaEventCard = ({
     <div
       role="button"
       tabIndex={0}
-      className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
       style={{
         backgroundColor: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
         borderColor: "transparent",

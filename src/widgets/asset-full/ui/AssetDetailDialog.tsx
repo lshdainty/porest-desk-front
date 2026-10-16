@@ -983,7 +983,7 @@ function CardDetailBody({
                     >
                       <span
                         style={{
-                          color: "var(--fg-success)",
+                          color: "var(--color-fg-positive)",
                           fontWeight: "600",
                         }}
                       >
@@ -1672,7 +1672,7 @@ function CardDetailBody({
               <p
                 style={{
                   fontSize: "var(--text-body-sm)",
-                  color: "var(--fg-warning, var(--fg-secondary))",
+                  color: "var(--color-fg-warning)",
                   lineHeight: 1.6,
                   margin: 0,
                 }}

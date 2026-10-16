@@ -30,7 +30,7 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        shadow: "bg-surface-default",
+        shadow: "bg-surface-default border border-stroke-neutral-weak",
         bordered: "bg-surface-default border border-border-subtle",
         muted: "bg-[var(--bg-muted)]",
         brand:
@@ -39,7 +39,8 @@ const cardVariants = cva(
         // surface 로 올라와 일반 카드는 플랫으로 벗겨지고, 유지가 필요한 요약만
         // surface-raised(다크 #2d3346 패널 / 라이트 흰 카드) + shadow-lg 로 확실히 띄운다.
         // (design app.css `.m-scroll .p-card--keep` SoT — groo-design card.md 미러 필요)
-        raised: "bg-[var(--bg-surface-raised)]",
+        raised:
+          "bg-[var(--bg-surface-raised)] border border-stroke-neutral-weak",
       },
     },
     defaultVariants: {
@@ -55,18 +56,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(cardVariants({ variant }), className)}
-    style={{
-      // shadow variant(또는 미지정=default)만 inline boxShadow 적용 (Tailwind v4 다크 모드
-      // override 우회). bordered(border-only)·muted(fill-only)·brand 는 shadow 없음.
-      // raised 는 keep 카드 — shadow-lg 로 surface 배경 위에서 띄운다.
-      boxShadow:
-        variant === "raised"
-          ? "var(--shadow-lg)"
-          : variant && variant !== "shadow"
-            ? undefined
-            : "var(--shadow-sm)",
-      ...style,
-    }}
+    style={style}
     {...props}
   />
 ));

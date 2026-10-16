@@ -90,7 +90,7 @@ const DayViewMultiDayEventsRow = ({
               key={event.id}
               role="button"
               tabIndex={0}
-              className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
               style={{
                 background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
                 borderColor: "transparent",
@@ -155,11 +155,11 @@ const CalendarTimeline = ({
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-50 border-t border-primary"
+      className="pointer-events-none absolute inset-x-0 z-50 border-t border-stroke-brand-solid"
       style={{ top: `${position}%` }}
     >
-      <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
-      <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-primary">
+      <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bg-brand-solid" />
+      <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-fg-brand">
         {format(now, timeFormat, { locale })}
       </div>
     </div>
@@ -190,7 +190,7 @@ const EventBlock = ({
       role="button"
       tabIndex={0}
       className={cn(
-        "flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
         durationInMinutes < 35 && "py-0 justify-center",
       )}
       style={{

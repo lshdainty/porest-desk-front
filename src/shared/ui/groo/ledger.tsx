@@ -133,7 +133,7 @@ export function LedgerNavBtn({
       className={cn(
         "w-9 h-9 inline-flex items-center justify-center border-0 bg-transparent",
         "text-[var(--fg-secondary)] cursor-pointer rounded-[10px]",
-        "disabled:opacity-30 disabled:cursor-default",
+        "disabled:text-fg-disabled disabled:cursor-default",
         active && "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
         className,
       )}

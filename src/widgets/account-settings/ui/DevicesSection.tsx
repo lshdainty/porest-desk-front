@@ -101,7 +101,7 @@ export function DevicesSection({ mobile }: { mobile: boolean }) {
 
   if (isError) {
     return (
-      <p style={{ margin: 0, fontSize: 14, color: "var(--fg-danger)" }}>
+      <p style={{ margin: 0, fontSize: 14, color: "var(--color-fg-critical)" }}>
         {t("devices.loadError")}
       </p>
     );
@@ -250,8 +250,8 @@ function DeviceRow({
                 lineHeight: 1.4,
                 padding: "2px 6px",
                 borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--border-success)",
-                color: "var(--fg-success)",
+                border: "1px solid var(--color-stroke-positive-solid)",
+                color: "var(--color-fg-positive)",
               }}
             >
               {t("devices.current")}

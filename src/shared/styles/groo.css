@@ -89,7 +89,7 @@
 .dark .balance-hero {
   background: linear-gradient(
     135deg,
-    var(--color-primary-light) 0%,
+    var(--color-fg-brand) 0%,
     var(--color-bg-brand-solid) 100%
   );
 }
@@ -150,17 +150,17 @@
 }
 /* hero gradient(코발트) 위 등락 — success/error 80% + white 20% (60%는 옅고 100%는 진해 안 보임) */
 .balance-hero__sub .chg.up {
-  color: color-mix(in srgb, var(--color-success) 80%, white);
+  color: var(--color-static-white);
 }
 .balance-hero__sub .chg.down {
-  color: color-mix(in srgb, var(--color-error) 80%, white);
+  color: var(--color-static-white);
 }
 /* 다크모드 — 그라데이션 상단이 밝은 cobalt400 이라 50% 혼합으로 더 옅게 */
 .dark .balance-hero__sub .chg.up {
-  color: color-mix(in srgb, var(--color-success) 50%, white);
+  color: var(--color-static-white);
 }
 .dark .balance-hero__sub .chg.down {
-  color: color-mix(in srgb, var(--color-error) 50%, white);
+  color: var(--color-static-white);
 }
 .balance-hero__split {
   display: grid;
@@ -517,11 +517,11 @@
 }
 .dark .notif-row.unread,
 [data-theme="dark"] .notif-row.unread {
-  background: color-mix(in srgb, var(--color-primary-light) 15%, transparent);
+  background: var(--color-bg-brand-weak);
 }
 .dark .notif-row.unread:hover,
 [data-theme="dark"] .notif-row.unread:hover {
-  background: color-mix(in srgb, var(--color-primary-light) 22%, transparent);
+  background: var(--color-bg-brand-weak-pressed);
 }
 .notif-row__icon {
   width: 34px;
@@ -739,7 +739,7 @@
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 8px 24px -6px oklch(0.15 0.015 200 / 0.3);
+  box-shadow: var(--shadow-s3);
   z-index: 300;
   animation: starToastIn 220ms var(--motion-ease-out);
 }
@@ -911,7 +911,7 @@
 }
 .frp-strip__day:disabled {
   cursor: default;
-  opacity: 0.4;
+  color: var(--color-fg-disabled);
 }
 .frp-strip__dow {
   font-size: 11.5px;

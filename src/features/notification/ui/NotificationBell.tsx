@@ -83,7 +83,7 @@ export const NotificationBell = () => {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-[200] mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background shadow-lg">
+        <div className="absolute right-0 top-full z-(--z-floating) mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background shadow-lg">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h3 className="text-sm font-semibold">{t("title")}</h3>
             {unreadCount > 0 && (
@@ -92,7 +92,7 @@ export const NotificationBell = () => {
                 size="sm"
                 loading={markAllRead.isPending}
                 onClick={() => markAllRead.mutate()}
-                className="text-primary hover:bg-transparent hover:text-primary hover:underline"
+                className="text-fg-brand hover:bg-transparent hover:text-fg-brand hover:underline"
               >
                 {!markAllRead.isPending && <CheckCheck size={12} />}
                 {t("markAllRead")}
@@ -112,7 +112,7 @@ export const NotificationBell = () => {
                   onClick={() => handleItemClick(notification)}
                   className={cn(
                     "flex cursor-pointer gap-3 border-b px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0",
-                    !notification.isRead && "bg-primary/5",
+                    !notification.isRead && "bg-bg-brand-weak",
                   )}
                 >
                   <div className="mt-0.5 shrink-0">
@@ -129,7 +129,7 @@ export const NotificationBell = () => {
                         {notification.title}
                       </p>
                       {!notification.isRead && (
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-bg-brand-solid" />
                       )}
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">

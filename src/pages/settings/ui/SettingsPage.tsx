@@ -488,7 +488,7 @@ export const SettingsPage = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: 100,
+          zIndex: "var(--z-modal)",
           // 카드 다이어트 — 서브페이지도 surface 배경 위 플랫 콘텐츠 (design .m-subpage).
           background: "var(--bg-surface)",
           display: "flex",
@@ -606,7 +606,7 @@ export const SettingsPage = () => {
             const dark = resolvedTheme === "dark";
             const navColor = active
               ? dark
-                ? "var(--color-primary-light)"
+                ? "var(--color-fg-brand)"
                 : "var(--fg-brand-strong)"
               : "var(--fg-secondary)";
             return (
@@ -623,7 +623,7 @@ export const SettingsPage = () => {
                   // (라이트는 글로벌 bg-brand-subtle = primary 8% 유지.)
                   background: active
                     ? dark
-                      ? "color-mix(in srgb, var(--color-primary-light) 15%, transparent)"
+                      ? "var(--color-bg-brand-weak)"
                       : "var(--bg-brand-subtle)"
                     : "transparent",
                   color: navColor,

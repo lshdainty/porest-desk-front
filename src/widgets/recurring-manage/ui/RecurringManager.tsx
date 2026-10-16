@@ -944,7 +944,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       {openMenuId !== null && (
         <div
           onClick={() => setOpenMenuId(null)}
-          style={{ position: "fixed", inset: 0, zIndex: 50 }}
+          style={{ position: "fixed", inset: 0, zIndex: "var(--z-sticky)" }}
         />
       )}
 

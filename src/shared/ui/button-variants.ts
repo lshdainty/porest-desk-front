@@ -12,8 +12,8 @@ export const buttonVariants = cva(
     // (DESIGN.desk.md 표에는 md 가 8 로 적혀 있으나 그쪽이 오래된 사본이다.)
     "rounded-sm font-sans font-medium tracking-[-0.005em] leading-none",
     "transition-[box-shadow,background-color,color,border-color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-    "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
+    "disabled:bg-bg-disabled disabled:text-fg-disabled disabled:cursor-not-allowed disabled:pointer-events-none",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
   ].join(" "),
   {
@@ -34,7 +34,7 @@ export const buttonVariants = cva(
         // 모달 footer 의 삭제 — 옅은 빨강 채움. 전체 폭 두 버튼이 나란히 설 때 ghost 는
         // 배경이 없어 버튼으로 안 보인다. 삭제 *확정* 은 AlertDialog 의 destructive.
         dangerSoft:
-          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] hover:bg-[color-mix(in_srgb,var(--color-error)_18%,transparent)] active:scale-[0.98] active:brightness-95",
+          "bg-[var(--status-danger-subtle)] text-[var(--status-danger-fg)] hover:bg-bg-critical-weak-pressed active:scale-[0.98] active:brightness-95",
         ghost:
           "bg-transparent text-text-primary hover:bg-surface-input active:bg-border-default active:scale-[0.98]",
         accent:

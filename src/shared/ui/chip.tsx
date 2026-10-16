@@ -22,8 +22,8 @@ const chipVariants = cva(
   [
     "inline-flex items-center gap-[var(--spacing-xs)] font-sans leading-tight",
     "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-bg-page",
-    "disabled:pointer-events-none disabled:opacity-50",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
+    "disabled:pointer-events-none disabled:bg-bg-disabled disabled:text-fg-disabled",
   ].join(" "),
   {
     variants: {

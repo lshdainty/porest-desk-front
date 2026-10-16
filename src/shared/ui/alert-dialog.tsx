@@ -46,7 +46,7 @@ const AlertDialogOverlay = React.forwardRef<
     <AlertDialogPrimitive.Overlay
       ref={ref}
       className={cn(
-        "fixed inset-0 z-[300] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+        "fixed inset-0 z-(--z-alert) bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className,
@@ -59,7 +59,7 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 const alertDialogContentVariants = cva(
   [
-    "fixed left-[50%] top-[50%] z-[301] flex w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
+    "fixed left-[50%] top-[50%] z-(--z-alert-content) flex w-[min(90%,var(--dialog-max-w))] translate-x-[-50%] translate-y-[-50%]",
     // Dialog 와 같은 껍데기 — 여백은 컨테이너가 아니라 헤더·본문·footer 가 갖고,
     // 본문만 스크롤한다(dialog.md Layout). 상한도 같은 86vh.
     "max-h-[86vh] overflow-hidden",

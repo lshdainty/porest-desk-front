@@ -646,7 +646,7 @@ export const EventForm = ({
               style={{
                 margin: 0,
                 fontSize: "var(--text-caption)",
-                color: "var(--fg-danger, var(--fg-secondary))",
+                color: "var(--color-fg-critical)",
               }}
             >
               {t("form.endBeforeStart")}

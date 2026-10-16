@@ -4,7 +4,7 @@ import { cn } from "@/shared/lib/index";
 
 /*
  * Groo Skeleton — groo-design specs/components/skeleton.md SoT 기반.
- * 2 variants: pulse(animate-pulse, default) / shimmer(sweep gradient).
+ * 2 variants: pulse(animate-pulse motion-reduce:animate-none, default) / shimmer(sweep gradient).
  * shape는 className으로 조정 (h-4 w-32, h-10 w-10 rounded-full 등).
  */
 
@@ -14,7 +14,10 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse rounded-sm bg-surface-input", className)}
+      className={cn(
+        "animate-pulse motion-reduce:animate-none rounded-sm bg-surface-input",
+        className,
+      )}
       {...props}
     />
   );
@@ -36,7 +39,7 @@ function SkeletonShimmer({
       )}
       {...props}
     >
-      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] to-transparent animate-[shimmer_var(--motion-duration-loop)_linear_infinite]" />
+      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--color-bg-brand-weak-pressed)] to-transparent animate-[shimmer_var(--motion-duration-loop)_linear_infinite]" />
     </div>
   );
 }

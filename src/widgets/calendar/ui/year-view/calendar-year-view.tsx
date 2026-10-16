@@ -53,13 +53,12 @@ const YearViewDayCell = ({
     <button
       onClick={handleClick}
       type="button"
-      className="flex h-11 flex-1 flex-col items-center justify-start gap-0.5 rounded-md pt-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="flex h-11 flex-1 flex-col items-center justify-start gap-0.5 rounded-md pt-1 hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
     >
       <div
         className={cn(
           "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-          isToday(date) &&
-            "bg-bg-brand-solid font-semibold text-primary-foreground",
+          isToday(date) && "bg-bg-brand-solid font-semibold text-static-white",
         )}
         style={{
           color: isToday(date)
@@ -137,7 +136,7 @@ const YearViewMonth = ({
       <button
         type="button"
         onClick={handleClick}
-        className="w-full rounded-t-lg border px-3 py-2 text-sm font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="w-full rounded-t-lg border px-3 py-2 text-sm font-semibold hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
       >
         {monthName}
       </button>

@@ -9,7 +9,7 @@ const CalendarDayViewSkeleton = () => {
           <div className="flex">
             <div className="w-18" />
             <div className="flex-1 border-l p-2">
-              <div className="h-6 w-full rounded bg-muted animate-pulse" />
+              <div className="h-6 w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
             </div>
           </div>
         </div>
@@ -18,8 +18,8 @@ const CalendarDayViewSkeleton = () => {
         <div className="relative z-20 flex border-b">
           <div className="w-18" />
           <div className="flex-1 border-l py-2 flex flex-col items-center gap-1">
-            <div className="h-4 w-16 bg-muted animate-pulse rounded" />
-            <div className="h-3 w-12 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-16 bg-muted animate-pulse motion-reduce:animate-none rounded" />
+            <div className="h-3 w-12 bg-muted animate-pulse motion-reduce:animate-none rounded" />
           </div>
         </div>
 
@@ -31,7 +31,7 @@ const CalendarDayViewSkeleton = () => {
                 <div key={hour} className="relative" style={{ height: "96px" }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
                     {index !== 0 && (
-                      <div className="h-3 w-10 bg-muted animate-pulse rounded" />
+                      <div className="h-3 w-10 bg-muted animate-pulse motion-reduce:animate-none rounded" />
                     )}
                   </div>
                 </div>
@@ -49,10 +49,10 @@ const CalendarDayViewSkeleton = () => {
               ))}
 
               <div className="absolute top-[96px] left-1 right-1 h-[144px] p-1">
-                <div className="h-full w-full rounded bg-muted animate-pulse" />
+                <div className="h-full w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
               </div>
               <div className="absolute top-[384px] left-1 right-1 h-[96px] p-1">
-                <div className="h-full w-3/4 rounded bg-muted animate-pulse" />
+                <div className="h-full w-3/4 rounded bg-muted animate-pulse motion-reduce:animate-none" />
               </div>
             </div>
           </div>
@@ -62,14 +62,14 @@ const CalendarDayViewSkeleton = () => {
       {/* Side panel skeleton */}
       <div className="hidden w-64 divide-y border-l min-[736px]:block">
         <div className="p-4">
-          <div className="h-[280px] w-full rounded bg-muted animate-pulse" />
+          <div className="h-[280px] w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
         </div>
 
         <div className="p-4 space-y-4">
-          <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-24 bg-muted animate-pulse motion-reduce:animate-none rounded" />
           <div className="space-y-3">
-            <div className="h-16 w-full rounded bg-muted animate-pulse" />
-            <div className="h-16 w-full rounded bg-muted animate-pulse" />
+            <div className="h-16 w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
+            <div className="h-16 w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
       </div>

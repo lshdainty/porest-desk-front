@@ -101,7 +101,7 @@ const MonthYearPickerContent = ({
               className={cn(
                 "rounded py-2 text-sm font-medium transition-colors",
                 isSelected
-                  ? "bg-bg-brand-solid text-primary-foreground hover:bg-bg-brand-solid-pressed"
+                  ? "bg-bg-brand-solid text-static-white hover:bg-bg-brand-solid-pressed"
                   : "hover:bg-accent text-foreground",
               )}
             >
@@ -237,10 +237,10 @@ const CalendarHeader = ({ events }: IProps) => {
       <div className="flex items-center gap-3">
         {/* Today 날짜 버튼 */}
         <button
-          className="flex size-14 flex-col items-start overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex size-14 flex-col items-start overflow-hidden rounded-lg border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
           onClick={handleTodayClick}
         >
-          <p className="flex h-6 w-full items-center justify-center bg-bg-brand-solid text-center text-xs font-semibold text-primary-foreground">
+          <p className="flex h-6 w-full items-center justify-center bg-bg-brand-solid text-center text-xs font-semibold text-static-white">
             {format(
               new Date(),
               i18n.language.startsWith("ko") ? "M월" : "MMM",

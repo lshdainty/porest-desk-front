@@ -146,8 +146,8 @@ const swipeActionVariants = cva(
     "text-caption font-semibold leading-[1.3]",
     "transition-[filter] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
     "hover:brightness-92 active:brightness-88",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-focus)]",
-    "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100",
+    "focus-visible:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
+    "disabled:bg-bg-disabled disabled:text-fg-disabled disabled:cursor-not-allowed disabled:hover:brightness-100",
   ].join(" "),
   {
     variants: {

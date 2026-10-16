@@ -70,12 +70,12 @@ function Calendar({
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-(--cell-size) aria-disabled:opacity-50 p-0 select-none",
+          "size-(--cell-size) aria-disabled:text-fg-disabled p-0 select-none",
           defaultClassNames.button_previous,
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-(--cell-size) aria-disabled:opacity-50 p-0 select-none",
+          "size-(--cell-size) aria-disabled:text-fg-disabled p-0 select-none",
           defaultClassNames.button_next,
         ),
         month_caption: cn(
@@ -87,7 +87,7 @@ function Calendar({
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
-          "relative has-focus:border-ring border border-border-default shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md",
+          "relative has-focus:border-ring border border-border-default has-focus:outline-2 has-focus:outline-offset-2 has-focus:outline-stroke-focus-ring rounded-md",
           defaultClassNames.dropdown_root,
         ),
         dropdown: cn(
@@ -123,19 +123,19 @@ function Calendar({
         // range 시각: groo-design spec 정합. 시작/끝은 셀의 좌/우 절반만 middle 톤 그라데이션 →
         // 그 위에 button 의 원형 primary fill. middle 은 셀 전체 옅은 톤 사각형 fill.
         range_start: cn(
-          "rounded-none bg-[linear-gradient(to_right,transparent_50%,color-mix(in_srgb,var(--color-primary)_12%,transparent)_50%)]",
+          "rounded-none bg-[linear-gradient(to_right,transparent_50%,var(--color-bg-brand-weak)_50%)]",
           defaultClassNames.range_start,
         ),
         range_middle: cn(
-          "rounded-none bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]",
+          "rounded-none bg-bg-brand-weak",
           defaultClassNames.range_middle,
         ),
         range_end: cn(
-          "rounded-none bg-[linear-gradient(to_left,transparent_50%,color-mix(in_srgb,var(--color-primary)_12%,transparent)_50%)]",
+          "rounded-none bg-[linear-gradient(to_left,transparent_50%,var(--color-bg-brand-weak)_50%)]",
           defaultClassNames.range_end,
         ),
         today: cn(
-          "outline outline-2 outline-primary outline-offset-[-2px] font-semibold rounded-full data-[selected=true]:outline-0 data-[selected=true]:rounded-none",
+          "outline outline-2 outline-stroke-brand-solid outline-offset-[-2px] font-semibold rounded-full data-[selected=true]:outline-0 data-[selected=true]:rounded-none",
           defaultClassNames.today,
         ),
         outside: cn(
@@ -228,8 +228,8 @@ function CalendarDayButton({
       className={cn(
         // base shape: rounded-full(원형 cell) — Groo preview .cal-cell SoT — 일반 day cell 의 hover/default 모양
         "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal rounded-full",
-        "group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50",
-        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px]",
+        "group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:outline-2 group-data-[focused=true]/day:outline-stroke-focus-ring",
+        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10",
         "dark:hover:text-text-primary",
         "[&>span]:text-xs [&>span]:opacity-70",
         // data variants 는 base 보다 후순 — cascade 에서 후순이 우선되어 base rounded-full 을 정확히 override.
