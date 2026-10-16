@@ -32,6 +32,7 @@ import {
   SHRINK_AFTER,
   TOP_ZONE,
 } from "./bottom-navigation-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Bottom Navigation — groo 의 떠 있는 알약(2026-10-04 사용자 결정 4B · 5A · 6B · 7A). 규칙은 SEED Bottom Navigation
@@ -96,6 +97,7 @@ const BottomNavigation = React.forwardRef<HTMLElement, BottomNavigationProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const [inner, setInner] = React.useState(defaultCompact);
     const controlled = compactProp !== undefined;
     const compact = controlled ? compactProp : inner;
@@ -209,7 +211,7 @@ const BottomNavigation = React.forwardRef<HTMLElement, BottomNavigationProps>(
       >
         <nav
           ref={ref}
-          aria-label="주 메뉴"
+          aria-label={dsT("bottomNavigation.label")}
           data-slot="bottom-navigation"
           data-compact={compact || undefined}
           className={cn(
@@ -271,6 +273,7 @@ const BottomNavigationItem = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const ctx = useBottomNavigation("BottomNavigationItem");
     return (
       <a
@@ -322,7 +325,7 @@ const BottomNavigationItem = React.forwardRef<
         >
           {label}
         </span>
-        {notification && <span className="sr-only">새 소식</span>}
+        {notification && <span className="sr-only">{dsT("common.news")}</span>}
       </a>
     );
   },

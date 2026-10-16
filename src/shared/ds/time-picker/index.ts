@@ -1,7 +1,7 @@
 export { TimePicker, type TimePickerProps } from "./time-picker";
 export {
   MINUTE_STEPS,
-  TIME_PICKER_LABELS,
+  timePickerLabels,
   formatTimeValue,
   roundToStep,
   type MinuteStep,

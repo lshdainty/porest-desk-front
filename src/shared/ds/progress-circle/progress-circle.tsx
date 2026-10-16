@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { cn } from "@/shared/lib/cn";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Progress Circle — 구조는 SEED Progress Circle(2026-10-03). 수치 원본은 groo-design
@@ -137,6 +138,7 @@ const ProgressCircle = React.forwardRef<SVGSVGElement, ProgressCircleProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const own = React.useRef<SVGSVGElement>(null);
     const determinate = typeof value === "number" && Number.isFinite(value);
     const percent =
@@ -169,7 +171,9 @@ const ProgressCircle = React.forwardRef<SVGSVGElement, ProgressCircleProps>(
         <svg
           ref={mergeRefs(ref, own)}
           role="progressbar"
-          aria-label={ariaLabelledBy ? ariaLabel : (ariaLabel ?? "불러오는 중")}
+          aria-label={
+            ariaLabelledBy ? ariaLabel : (ariaLabel ?? dsT("common.loading"))
+          }
           aria-labelledby={ariaLabelledBy}
           aria-valuemin={determinate ? min : undefined}
           aria-valuemax={determinate ? max : undefined}

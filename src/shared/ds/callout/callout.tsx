@@ -11,6 +11,7 @@ import {
 import { cn } from "@/shared/lib/cn";
 
 import { calloutVariants } from "./callout-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Callout — 구조는 SEED Callout(2026-10-02). 수치 원본은 groo-design
@@ -291,6 +292,7 @@ type CalloutInternalProps = CalloutCommon & {
 } & Record<string, unknown>;
 
 const Callout = React.forwardRef<HTMLElement, CalloutProps>((props, ref) => {
+  const dsT = useDsText();
   const {
     tone = "neutral",
     interaction = "display",
@@ -364,7 +366,7 @@ const Callout = React.forwardRef<HTMLElement, CalloutProps>((props, ref) => {
         <button
           type="button"
           data-slot="callout-close"
-          aria-label="닫기"
+          aria-label={dsT("common.close")}
           className={cn(CLOSE, CLOSE_TONE[tone])}
           onClick={dismiss}
         >

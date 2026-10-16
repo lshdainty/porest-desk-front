@@ -1,3 +1,4 @@
+import { dsLanguage, dsLocale, dsText } from "@/shared/ds/i18n";
 /*
  * Groo Date Picker 의 날짜 도구 · 글 · 값 — 수치 원본은 groo-design specs/components/date-picker.yaml
  * (값은 src/shared/ds/spec/date-picker.json). 컴포넌트는 date-picker.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
@@ -155,61 +156,86 @@ export interface DatePickerLabels {
   presetNames: Record<DatePresetName, string>;
 }
 
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
-const WEEKDAYS_LONG = [
-  "일요일",
-  "월요일",
-  "화요일",
-  "수요일",
-  "목요일",
-  "금요일",
-  "토요일",
-] as const;
+const isEn = () => dsLanguage().startsWith("en");
 
-/** 한국어 글 한 벌 — 다른 언어는 같은 꼴로 labels 에 넘긴다 */
-export const DATE_PICKER_LABELS: DatePickerLabels = {
-  root: "날짜 선택",
-  previousMonth: "이전 달",
-  nextMonth: "다음 달",
-  yearWheel: "연도",
-  monthWheel: "월",
-  readOnlyRangeStart: "읽기 전용 시작일",
-  presets: "빠른 기간",
-  weekdays: WEEKDAYS,
-  weekdaysLong: WEEKDAYS_LONG,
-  month: (year, month) => `${year}년 ${month}월`,
-  day: (d) =>
-    `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${WEEKDAYS_LONG[d.getDay()]}`,
-  yearOption: (year) => `${year}년`,
-  monthOption: (month) => `${month}월`,
-  presetNames: {
-    thisWeek: "이번 주",
-    thisMonth: "이번 달",
-    lastMonth: "지난 달",
-    last7Days: "최근 7일",
-    last30Days: "최근 30일",
-    last3Months: "최근 3개월",
-    last6Months: "최근 6개월",
-    last1Year: "최근 1년",
-    thisYear: "올해",
-  },
+// 2023-01-01 은 일요일 — 일요일부터 일곱
+const weekdayNames = (weekday: "narrow" | "short" | "long") => {
+  const f = new Intl.DateTimeFormat(dsLocale(), { weekday, timeZone: "UTC" });
+  return Array.from({ length: 7 }, (_, i) =>
+    f.format(new Date(Date.UTC(2023, 0, 1 + i))),
+  );
 };
 
-/** 칸에 넣는 하루 — 올해 "10월 15일 (목)", 다른 해 "2027년 1월 3일 (일)". 비었으면 "" */
+/** 글 한 벌 — 지금 언어(한국어 · 영어)대로. 호출부가 labels 로 준 것이 이긴다 */
+export function datePickerLabels(): DatePickerLabels {
+  const en = isEn();
+  const loc = dsLocale();
+  const long = weekdayNames("long");
+  const monthTitle = new Intl.DateTimeFormat(loc, {
+    year: "numeric",
+    month: "long",
+  });
+  const fullDay = new Intl.DateTimeFormat(loc, { dateStyle: "full" });
+  const monthShort = new Intl.DateTimeFormat(loc, { month: "short" });
+  return {
+    root: dsText("datePicker.root"),
+    previousMonth: dsText("datePicker.previousMonth"),
+    nextMonth: dsText("datePicker.nextMonth"),
+    yearWheel: dsText("datePicker.yearWheel"),
+    monthWheel: dsText("datePicker.monthWheel"),
+    readOnlyRangeStart: dsText("datePicker.readOnlyRangeStart"),
+    presets: dsText("datePicker.presets"),
+    weekdays: weekdayNames("narrow"),
+    weekdaysLong: long,
+    month: (year, month) =>
+      en
+        ? monthTitle.format(new Date(year, month - 1, 1))
+        : `${year}년 ${month}월`,
+    day: (d) =>
+      en
+        ? fullDay.format(d)
+        : `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${long[d.getDay()]}`,
+    yearOption: (year) => (en ? String(year) : `${year}년`),
+    monthOption: (month) =>
+      en ? monthShort.format(new Date(2023, month - 1, 1)) : `${month}월`,
+    presetNames: {
+      thisWeek: dsText("datePicker.thisWeek"),
+      thisMonth: dsText("datePicker.thisMonth"),
+      lastMonth: dsText("datePicker.lastMonth"),
+      last7Days: dsText("datePicker.last7Days"),
+      last30Days: dsText("datePicker.last30Days"),
+      last3Months: dsText("datePicker.last3Months"),
+      last6Months: dsText("datePicker.last6Months"),
+      last1Year: dsText("datePicker.last1Year"),
+      thisYear: dsText("datePicker.thisYear"),
+    },
+  };
+}
+
+/**
+ * 칸에 넣는 하루 — 한국어 올해 "10월 15일 (목)", 다른 해 "2027년 1월 3일 (일)". 영어 "Thu, Oct 15" · "Sun, Jan 3, 2027"
+ * (International Design v106 요일 형식). 비었으면 ""
+ */
 export function formatDateValue(
   date: Date | undefined | null,
   today: Date = new Date(),
 ): string {
   if (!date) return "";
-  const text = `${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAYS[date.getDay()]})`;
-  return date.getFullYear() === today.getFullYear()
-    ? text
-    : `${date.getFullYear()}년 ${text}`;
+  const sameYear = date.getFullYear() === today.getFullYear();
+  if (isEn())
+    return new Intl.DateTimeFormat(dsLocale(), {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      ...(sameYear ? {} : { year: "numeric" }),
+    }).format(date);
+  const text = `${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdayNames("short")[date.getDay()]})`;
+  return sameYear ? text : `${date.getFullYear()}년 ${text}`;
 }
 
 /**
- * 칸에 넣는 기간 — "10월 1일~10월 31일"(물결표를 앞뒤에 붙여 쓴다 — International Design). 올해가 아닌 날이 끼면(두 해에 걸치거나
- * 다른 해) 양쪽에 연도("2026년 12월 28일~2027년 1월 3일"). 끝이 없으면 ""
+ * 칸에 넣는 기간 — 한국어 "10월 1일~10월 31일"(물결표를 앞뒤에 붙여 쓴다), 영어 "Oct 1–Oct 31"(en dash). 올해가 아닌 날이 끼면
+ * (두 해에 걸치거나 다른 해) 양쪽에 연도("2026년 12월 28일~2027년 1월 3일"). 끝이 없으면 ""
  */
 export function formatRangeValue(
   range: DateRange | undefined | null,
@@ -219,9 +245,17 @@ export function formatRangeValue(
   const year = today.getFullYear();
   const withYear =
     range.start.getFullYear() !== year || range.end.getFullYear() !== year;
+  const en = isEn();
+  const enFmt = new Intl.DateTimeFormat(dsLocale(), {
+    month: "short",
+    day: "numeric",
+    ...(withYear ? { year: "numeric" } : {}),
+  });
   const text = (d: Date) =>
-    `${withYear ? `${d.getFullYear()}년 ` : ""}${d.getMonth() + 1}월 ${d.getDate()}일`;
-  return `${text(range.start)}~${text(range.end)}`;
+    en
+      ? enFmt.format(d)
+      : `${withYear ? `${d.getFullYear()}년 ` : ""}${d.getMonth() + 1}월 ${d.getDate()}일`;
+  return `${text(range.start)}${en ? "–" : "~"}${text(range.end)}`;
 }
 
 /** 이어지는 달 스크롤에서 위치가 든 달 — 정렬된 위치 목록에서 이진 탐색 */

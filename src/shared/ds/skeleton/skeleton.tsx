@@ -6,6 +6,7 @@ import { ProgressCircle } from "@/shared/ds/progress-circle";
 
 import { LOADING_TIMING } from "./skeleton-variants";
 import { useWaitPhase, type WaitPhase } from "./use-wait-phase";
+import { dsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Skeleton — 구조는 SEED Skeleton(2026-10-03). 수치 원본은 groo-design specs/components/skeleton.yaml
@@ -61,8 +62,8 @@ import { useWaitPhase, type WaitPhase } from "./use-wait-phase";
  */
 
 // 상태 글 · 오래 걸림 글(Writing v106 — 영어 "Loading" · 세 점 "..." 을 쓰지 않는다)
-const WAITING_TEXT = "불러오는 중…";
-const SLOW_TEXT = "평소보다 오래 걸리고 있어요.";
+const waitingText = () => dsText("skeleton.waiting");
+const slowText = () => dsText("skeleton.slow");
 
 // 개발 중 — 요청 제한(10초)이 지나고도 이만큼 더 pending 이면 알린다
 const TIMEOUT_GRACE = 1000;
@@ -193,9 +194,9 @@ function createAnnouncer(
       }
       const all = [...phases.values()];
       const next = all.includes("slow")
-        ? SLOW_TEXT
+        ? slowText()
         : all.includes("waiting")
-          ? WAITING_TEXT
+          ? waitingText()
           : null;
       // 같은 글은 한 번만 — 오래 걸리던 영역이 끝나고 남은 영역이 1 ~ 5초여도 "불러오는 중…" 을 다시 넣지 않는다
       if (next && !said.has(next)) {
@@ -331,13 +332,15 @@ const LoadingRegion = React.forwardRef<HTMLDivElement, LoadingRegionProps>(
       body = (
         <>
           <ProgressCircle size="40" />
-          {slow && <p className={cn(SLOW, "mt-x4 text-center")}>{SLOW_TEXT}</p>}
+          {slow && (
+            <p className={cn(SLOW, "mt-x4 text-center")}>{slowText()}</p>
+          )}
         </>
       );
     else
       body = (
         <>
-          {slow && <p className={cn(SLOW, "mb-x4")}>{SLOW_TEXT}</p>}
+          {slow && <p className={cn(SLOW, "mb-x4")}>{slowText()}</p>}
           {fallback}
         </>
       );

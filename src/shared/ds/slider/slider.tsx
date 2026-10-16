@@ -17,6 +17,7 @@ import {
   trackInput,
   type Dir,
 } from "./slider-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 // 구조 · 값 · 키보드 · 저장 시점은 slider-variants.ts 머리 주석과 groo-design specs/components/slider.md 가 정한다.
 
@@ -73,6 +74,7 @@ const SliderCore = React.forwardRef<HTMLDivElement, CoreProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const field = useFieldGroupState();
     const labelling = useFieldGroup({
       "aria-label": ariaLabel,
@@ -423,7 +425,8 @@ const SliderCore = React.forwardRef<HTMLDivElement, CoreProps>(
             const shown =
               !disabled && (dragging === i || hovered === i || keyboard === i);
             const thumbName = range
-              ? (thumbLabels?.[i] ?? (i === 0 ? "최소" : "최대"))
+              ? (thumbLabels?.[i] ??
+                (i === 0 ? dsT("slider.min") : dsT("slider.max")))
               : null;
             const nameProps: React.AriaAttributes =
               thumbName == null
@@ -678,7 +681,7 @@ const RangeSlider = React.forwardRef<HTMLDivElement, RangeSliderProps>(
       max = 100,
       step = 1,
       formatValue = defaultFormat,
-      thumbLabels = ["최소", "최대"],
+      thumbLabels,
       ...props
     },
     ref,

@@ -10,6 +10,7 @@ import {
   segmentedControlItemVariants,
   segmentedControlVariants,
 } from "./segmented-control-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Segmented Control — 구조는 SEED Segmented Control(2026-10-02). 수치 원본은 groo-design
@@ -209,6 +210,7 @@ const SegmentedControlItem = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const checked = React.useContext(SegmentedValueContext) === value;
     return (
       <RadioGroupPrimitive.Item
@@ -239,7 +241,9 @@ const SegmentedControlItem = React.forwardRef<
             />
           )}
         </span>
-        {notification && !checked && <span className="sr-only">새 소식</span>}
+        {notification && !checked && (
+          <span className="sr-only">{dsT("common.news")}</span>
+        )}
       </RadioGroupPrimitive.Item>
     );
   },

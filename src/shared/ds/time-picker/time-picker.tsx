@@ -8,13 +8,14 @@ import {
 
 import {
   MINUTE_STEPS,
-  TIME_PICKER_LABELS,
+  timePickerLabels,
   pad2,
   roundToStep,
   type MinuteStep,
   type TimePickerLabels,
   type TimeValue,
 } from "./time-picker-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Time Picker — 구조는 SEED Time Picker(2026-10-03). 수치 원본은 groo-design specs/components/time-picker.yaml
@@ -91,7 +92,8 @@ const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
     },
     ref,
   ) => {
-    const labels = { ...TIME_PICKER_LABELS, ...labelsProp };
+    useDsText();
+    const labels = { ...timePickerLabels(), ...labelsProp };
     const step: MinuteStep = MINUTE_STEPS.includes(minuteStep) ? minuteStep : 5;
     // 빈 칸 — 지금을 반올림한 자리(처음 한 번만 잰다)
     const [fallback] = React.useState(() => {

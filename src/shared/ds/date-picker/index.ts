@@ -6,7 +6,7 @@ export {
   type DatePickerSingleProps,
 } from "./date-picker";
 export {
-  DATE_PICKER_LABELS,
+  datePickerLabels,
   DATE_PRESETS,
   addDays,
   addMonths,

@@ -24,6 +24,7 @@ import {
   TITLE_TYPE,
   type TopNavigationType,
 } from "./top-navigation-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Top Navigation — 구조는 SEED Top Navigation(Root · Standard, 2026-10-04). 수치 원본은 groo-design
@@ -211,11 +212,10 @@ export interface TopNavigationBackButtonProps extends Omit<
 const TopNavigationBackButton = React.forwardRef<
   HTMLButtonElement,
   TopNavigationBackButtonProps
->(
-  (
-    { fallbackHref, onClick, "aria-label": ariaLabel = "뒤로", ...props },
-    ref,
-  ) => (
+>(({ fallbackHref, onClick, "aria-label": ariaLabelProp, ...props }, ref) => {
+  const dsT = useDsText();
+  const ariaLabel = ariaLabelProp ?? dsT("topNavigation.back");
+  return (
     <TopNavigationIconButton
       ref={ref}
       aria-label={ariaLabel}
@@ -233,8 +233,8 @@ const TopNavigationBackButton = React.forwardRef<
     >
       <ChevronLeft />
     </TopNavigationIconButton>
-  ),
-);
+  );
+});
 TopNavigationBackButton.displayName = "TopNavigationBackButton";
 
 export interface TopNavigationCloseButtonProps extends Omit<
@@ -252,33 +252,30 @@ export interface TopNavigationCloseButtonProps extends Omit<
 const TopNavigationCloseButton = React.forwardRef<
   HTMLButtonElement,
   TopNavigationCloseButtonProps
->(
-  (
-    { onClick, dirty = false, "aria-label": ariaLabel = "닫기", ...props },
-    ref,
-  ) => {
-    const own = React.useRef<HTMLButtonElement | null>(null);
-    const leave = useLeaveConfirm({ dirty, leave: onClick, contentRef: own });
-    return (
-      <>
-        <TopNavigationIconButton
-          ref={(node) => {
-            own.current = node;
-            if (typeof ref === "function") ref(node);
-            else if (ref) ref.current = node;
-          }}
-          aria-label={ariaLabel}
-          data-slot="top-navigation-close-button"
-          onClick={() => leave.request()}
-          {...props}
-        >
-          <X />
-        </TopNavigationIconButton>
-        {leave.node}
-      </>
-    );
-  },
-);
+>(({ onClick, dirty = false, "aria-label": ariaLabelProp, ...props }, ref) => {
+  const dsT = useDsText();
+  const ariaLabel = ariaLabelProp ?? dsT("common.close");
+  const own = React.useRef<HTMLButtonElement | null>(null);
+  const leave = useLeaveConfirm({ dirty, leave: onClick, contentRef: own });
+  return (
+    <>
+      <TopNavigationIconButton
+        ref={(node) => {
+          own.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
+        aria-label={ariaLabel}
+        data-slot="top-navigation-close-button"
+        onClick={() => leave.request()}
+        {...props}
+      >
+        <X />
+      </TopNavigationIconButton>
+      {leave.node}
+    </>
+  );
+});
 TopNavigationCloseButton.displayName = "TopNavigationCloseButton";
 
 export interface TopNavigationMenuButtonProps extends Omit<
@@ -293,17 +290,20 @@ export interface TopNavigationMenuButtonProps extends Omit<
 const TopNavigationMenuButton = React.forwardRef<
   HTMLButtonElement,
   TopNavigationMenuButtonProps
->(({ "aria-label": ariaLabel = "주 메뉴", ...props }, ref) => (
-  <TopNavigationIconButton
-    ref={ref}
-    aria-label={ariaLabel}
-    aria-haspopup="dialog"
-    data-slot="top-navigation-menu-button"
-    {...props}
-  >
-    <Menu />
-  </TopNavigationIconButton>
-));
+>(({ "aria-label": ariaLabelProp, ...props }, ref) => {
+  const dsT = useDsText();
+  return (
+    <TopNavigationIconButton
+      ref={ref}
+      aria-label={ariaLabelProp ?? dsT("sideNavigation.label")}
+      aria-haspopup="dialog"
+      data-slot="top-navigation-menu-button"
+      {...props}
+    >
+      <Menu />
+    </TopNavigationIconButton>
+  );
+});
 TopNavigationMenuButton.displayName = "TopNavigationMenuButton";
 
 // ── 데스크톱 본문 제목 ───────────────────────────────────────

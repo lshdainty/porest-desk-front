@@ -1,3 +1,4 @@
+import { dsLanguage, dsMoney } from "@/shared/ds/i18n";
 /*
  * Groo Chart 의 값 · 모양 · 숫자 — 수치 원본은 groo-design specs/components/chart.yaml(값은 src/shared/ds/spec/chart.json),
  * 색은 DESIGN.md v110(차트 10색 — 라이트 팔레트 700 · 다크 800-dark) · v111(옅은 바탕).
@@ -133,6 +134,16 @@ export function formatAxisWon(value: number): string {
   if (!Number.isFinite(value)) return "";
   const sign = value < 0 ? MINUS : "";
   const n = Math.abs(value);
+  if (dsLanguage().startsWith("en")) {
+    // 영어는 compact 표기 — 12K · 123K · 1.2M
+    return (
+      sign +
+      new Intl.NumberFormat("en-US", {
+        notation: "compact",
+        maximumFractionDigits: 1,
+      }).format(n)
+    );
+  }
   if (n < 10000) return sign + Math.round(n).toLocaleString("ko-KR");
   let scaled = n / 10000;
   let unit = "만";
@@ -163,9 +174,7 @@ export const chartDonutRadii = (diameter: number) => {
 
 /** 돈은 줄이지 않고 원까지(툴팁 · 지표 타일 · 도넛 가운데 · 열지도 칸 · 대체 표) — 빼기는 U+2212 */
 export const formatWon = (value: number) =>
-  (value < 0 ? MINUS : "") +
-  Math.round(Math.abs(value)).toLocaleString("ko-KR") +
-  "원";
+  (value < 0 ? MINUS : "") + dsMoney(Math.abs(value));
 
 // ── 축 · 격자 ─────────────────────────────────────────────────
 export interface ChartAxisOptions {

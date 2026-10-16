@@ -29,6 +29,7 @@ import koRecurring from "@/locales/ko/recurring.json";
 import koSubscription from "@/locales/ko/subscription.json";
 import koDate from "@/locales/ko/date.json";
 import koConstellation from "@/locales/ko/constellation.json";
+import koDs from "@/locales/ko/ds.json";
 
 import enCommon from "@/locales/en/common.json";
 import enLayout from "@/locales/en/layout.json";
@@ -56,6 +57,7 @@ import enRecurring from "@/locales/en/recurring.json";
 import enSubscription from "@/locales/en/subscription.json";
 import enDate from "@/locales/en/date.json";
 import enConstellation from "@/locales/en/constellation.json";
+import enDs from "@/locales/en/ds.json";
 
 // 지원하는 언어 목록
 export const SUPPORTED_LANGUAGES = ["ko", "en"] as const;
@@ -89,6 +91,7 @@ export const NAMESPACES = [
   "date",
   "constellation",
   "download",
+  "ds",
 ] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
@@ -121,6 +124,7 @@ const resources = {
     subscription: koSubscription,
     date: koDate,
     constellation: koConstellation,
+    ds: koDs,
   },
   en: {
     common: enCommon,
@@ -149,6 +153,7 @@ const resources = {
     subscription: enSubscription,
     date: enDate,
     constellation: enConstellation,
+    ds: enDs,
   },
 };
 

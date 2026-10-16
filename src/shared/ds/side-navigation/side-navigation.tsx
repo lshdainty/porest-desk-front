@@ -31,6 +31,7 @@ import {
   TRIGGER,
   WIDE_QUERY,
 } from "./side-navigation-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Side Navigation — 구조는 SEED Side Navigation(2026-10-04). 수치 원본은 groo-design specs/components/side-navigation.yaml
@@ -108,6 +109,7 @@ const SideNavigation = React.forwardRef<HTMLElement, SideNavigationProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const desktop = useMedia(DESKTOP_QUERY, true);
     const wide = useMedia(WIDE_QUERY, true);
     const controlled = collapsedProp !== undefined;
@@ -175,7 +177,7 @@ const SideNavigation = React.forwardRef<HTMLElement, SideNavigationProps>(
         <nav
           ref={mergeRefs(ref, setPortal)}
           id={navId}
-          aria-label="주 메뉴"
+          aria-label={dsT("sideNavigation.label")}
           data-slot="side-navigation"
           data-collapsed={collapsed || undefined}
           className={cn(
@@ -203,6 +205,7 @@ const SideNavigationHeader = React.forwardRef<
   HTMLDivElement,
   SideNavigationHeaderProps
 >(({ logo, className, children, ...props }, ref) => {
+  const dsT = useDsText();
   const root = useRoot("SideNavigationHeader");
   return (
     <div
@@ -222,7 +225,7 @@ const SideNavigationHeader = React.forwardRef<
       {children}
       <button
         type="button"
-        aria-label="사이드바"
+        aria-label={dsT("sideNavigation.toggle")}
         aria-expanded={!root.collapsed}
         aria-controls={root.navId}
         data-slot="side-navigation-trigger"
@@ -247,6 +250,7 @@ const SideNavigationContent = React.forwardRef<
   HTMLElement,
   SideNavigationContentProps
 >(({ onNavigate, className, onScroll, children, ...props }, ref) => {
+  const dsT = useDsText();
   const root = React.useContext(RootContext);
   const own = React.useRef<HTMLElement | null>(null);
   useBottomFog(own, root !== null);
@@ -261,7 +265,7 @@ const SideNavigationContent = React.forwardRef<
       <ContentContext.Provider value={{ onNavigate }}>
         <nav
           ref={ref}
-          aria-label="주 메뉴"
+          aria-label={dsT("sideNavigation.label")}
           data-slot="side-navigation-content"
           data-standalone=""
           className={cn("flex flex-col gap-x2 font-sans", className)}

@@ -23,6 +23,7 @@ import {
   cardHeaderVariants,
   cardVariants,
 } from "./card-variants";
+import { dsText, useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Card — 면은 SEED Elevation · stroke.neutral-weak · Feedback(2026-10-08). 수치 원본은 groo-design
@@ -419,15 +420,20 @@ function deltaSentence(
 ) {
   const base = plain(text);
   if (direction === "flat")
-    return [base, "변화가 없어요"].filter(Boolean).join(" ");
+    return [base, dsText("card.noChangeSentence")].filter(Boolean).join(" ");
   const amount = plain(unsigned(value));
-  return [base, amount, direction === "up" ? "늘었어요" : "줄었어요"]
+  return [
+    base,
+    amount,
+    direction === "up" ? dsText("card.increased") : dsText("card.decreased"),
+  ]
     .filter(Boolean)
     .join(" ");
 }
 
 const Delta = React.forwardRef<HTMLSpanElement, DeltaProps>(
   ({ direction, value, text, srText, className, ...props }, ref) => {
+    const dsT = useDsText();
     const hero = React.useContext(CardContext)?.variant === "hero";
     const arrow = ARROW[direction];
     return (
@@ -451,7 +457,7 @@ const Delta = React.forwardRef<HTMLSpanElement, DeltaProps>(
               {arrow} {unsigned(value)}
             </>
           ) : (
-            "변화 없음"
+            dsT("card.noChange")
           )}
         </span>
         {/* flat 은 "변화 없음" 만 — "변화 없음 지난달보다" 가 되지 않게 기준 글은 숨긴 문장에만 */}

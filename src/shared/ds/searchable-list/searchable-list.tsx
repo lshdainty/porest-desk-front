@@ -27,6 +27,7 @@ import {
   OPTION_CONTENT,
   measurePress,
 } from "./searchable-list-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Searchable List — 위 검색칸에 치는 대로 아래 목록이 걸러지고 하나를 고르는 묶음(2026-10-08). 수치 원본은 groo-design
@@ -224,106 +225,103 @@ export interface SearchableListInputProps extends Omit<
 const SearchableListInput = React.forwardRef<
   HTMLInputElement,
   SearchableListInputProps
->(
-  (
-    { "aria-label": ariaLabel = "검색", onKeyDown, className, ...props },
-    ref,
-  ) => {
-    const ctx = useSearchableList("SearchableListInput");
-    const fieldRef = React.useRef<HTMLDivElement>(null);
-    // Esc 의 창 수준 처리가 부를 때의 최신 문맥 — 그릴 때마다 맞춘다
-    const latest = React.useRef(ctx);
-    React.useEffect(() => {
-      latest.current = ctx;
-    });
+>(({ "aria-label": ariaLabelProp, onKeyDown, className, ...props }, ref) => {
+  const dsT = useDsText();
+  const ariaLabel = ariaLabelProp ?? dsT("searchableList.label");
+  const ctx = useSearchableList("SearchableListInput");
+  const fieldRef = React.useRef<HTMLDivElement>(null);
+  // Esc 의 창 수준 처리가 부를 때의 최신 문맥 — 그릴 때마다 맞춘다
+  const latest = React.useRef(ctx);
+  React.useEffect(() => {
+    latest.current = ctx;
+  });
 
-    // Esc — 검색어가 있으면 지운다. 시트 · 팝오버(Radix)는 문서에서 먼저 Esc 를 받아 닫으므로 창(window)에서 더 먼저 받아
-    // 막아 둔다(막힌 Esc 는 닫지 않는다). 비었으면 그대로 두어 시트 · 팝오버가 닫힌다
-    React.useEffect(() => {
-      const onEscape = (e: KeyboardEvent) => {
-        const now = latest.current;
-        if (
-          e.key !== "Escape" ||
-          e.isComposing ||
-          e.target !== now.inputRef.current ||
-          now.query === ""
-        )
-          return;
-        e.preventDefault();
-        now.changeQuery("");
-      };
-      window.addEventListener("keydown", onEscape, true);
-      return () => window.removeEventListener("keydown", onEscape, true);
-    }, []);
-
-    const move = (step: 1 | -1) => {
-      const options = optionsOf(ctx.listboxRef.current);
-      if (options.length === 0) return;
-      const at = options.findIndex((o) => o.id === ctx.highlighted);
-      const next =
-        at < 0
-          ? step === 1
-            ? 0
-            : options.length - 1
-          : Math.min(options.length - 1, Math.max(0, at + step));
-      const option = options[next];
-      if (!option) return;
-      ctx.highlight(option.id, "keyboard");
-      revealOption(option, fieldRef.current, "nearest");
+  // Esc — 검색어가 있으면 지운다. 시트 · 팝오버(Radix)는 문서에서 먼저 Esc 를 받아 닫으므로 창(window)에서 더 먼저 받아
+  // 막아 둔다(막힌 Esc 는 닫지 않는다). 비었으면 그대로 두어 시트 · 팝오버가 닫힌다
+  React.useEffect(() => {
+    const onEscape = (e: KeyboardEvent) => {
+      const now = latest.current;
+      if (
+        e.key !== "Escape" ||
+        e.isComposing ||
+        e.target !== now.inputRef.current ||
+        now.query === ""
+      )
+        return;
+      e.preventDefault();
+      now.changeQuery("");
     };
+    window.addEventListener("keydown", onEscape, true);
+    return () => window.removeEventListener("keydown", onEscape, true);
+  }, []);
 
-    return (
-      <div
-        ref={fieldRef}
-        data-slot="searchable-list-field"
-        className={cn(FIELD_STICKY, FIELD_SURFACE[ctx.placement])}
-      >
-        <Input
-          ref={mergeRefs(ref, ctx.inputRef)}
-          variant="underline"
-          size={ctx.size}
-          prefixIcon={<Search />}
-          clearable
-          type="text"
-          role="combobox"
-          aria-expanded="true"
-          aria-controls={ctx.listboxId}
-          aria-autocomplete="list"
-          aria-activedescendant={ctx.highlighted ?? undefined}
-          aria-label={ariaLabel}
-          autoComplete="off"
-          spellCheck={false}
-          className={className}
-          {...props}
-          value={ctx.query}
-          onChange={(e) => ctx.changeQuery(e.target.value)}
-          onKeyDown={(e) => {
-            onKeyDown?.(e);
-            // 글자를 조합하는 동안(한글)의 키는 조합의 것이다
-            if (
-              e.defaultPrevented ||
-              e.nativeEvent.isComposing ||
-              e.keyCode === 229
-            )
-              return;
-            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-              e.preventDefault();
-              move(e.key === "ArrowDown" ? 1 : -1);
-            } else if (e.key === "Enter") {
-              // 강조가 없으면 아무것도 하지 않는다 — 폼을 제출하지 않는다
-              e.preventDefault();
-              const option = ctx.highlighted
-                ? document.getElementById(ctx.highlighted)
-                : null;
-              const value = option?.getAttribute("data-value");
-              if (value != null) ctx.select(value);
-            }
-          }}
-        />
-      </div>
-    );
-  },
-);
+  const move = (step: 1 | -1) => {
+    const options = optionsOf(ctx.listboxRef.current);
+    if (options.length === 0) return;
+    const at = options.findIndex((o) => o.id === ctx.highlighted);
+    const next =
+      at < 0
+        ? step === 1
+          ? 0
+          : options.length - 1
+        : Math.min(options.length - 1, Math.max(0, at + step));
+    const option = options[next];
+    if (!option) return;
+    ctx.highlight(option.id, "keyboard");
+    revealOption(option, fieldRef.current, "nearest");
+  };
+
+  return (
+    <div
+      ref={fieldRef}
+      data-slot="searchable-list-field"
+      className={cn(FIELD_STICKY, FIELD_SURFACE[ctx.placement])}
+    >
+      <Input
+        ref={mergeRefs(ref, ctx.inputRef)}
+        variant="underline"
+        size={ctx.size}
+        prefixIcon={<Search />}
+        clearable
+        type="text"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls={ctx.listboxId}
+        aria-autocomplete="list"
+        aria-activedescendant={ctx.highlighted ?? undefined}
+        aria-label={ariaLabel}
+        autoComplete="off"
+        spellCheck={false}
+        className={className}
+        {...props}
+        value={ctx.query}
+        onChange={(e) => ctx.changeQuery(e.target.value)}
+        onKeyDown={(e) => {
+          onKeyDown?.(e);
+          // 글자를 조합하는 동안(한글)의 키는 조합의 것이다
+          if (
+            e.defaultPrevented ||
+            e.nativeEvent.isComposing ||
+            e.keyCode === 229
+          )
+            return;
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            move(e.key === "ArrowDown" ? 1 : -1);
+          } else if (e.key === "Enter") {
+            // 강조가 없으면 아무것도 하지 않는다 — 폼을 제출하지 않는다
+            e.preventDefault();
+            const option = ctx.highlighted
+              ? document.getElementById(ctx.highlighted)
+              : null;
+            const value = option?.getAttribute("data-value");
+            if (value != null) ctx.select(value);
+          }
+        }}
+      />
+    </div>
+  );
+});
 SearchableListInput.displayName = "SearchableListInput";
 
 // ── 결과 ─────────────────────────────────────────────────────
@@ -527,6 +525,7 @@ const SearchableListEmpty = React.forwardRef<
   HTMLDivElement,
   SearchableListEmptyProps
 >(({ title, description, ...props }, ref) => {
+  const dsT = useDsText();
   const ctx = useSearchableList("SearchableListEmpty");
   const query = ctx.query.trim();
   return (
@@ -538,7 +537,9 @@ const SearchableListEmpty = React.forwardRef<
       data-slot="searchable-list-empty"
       title={
         title ??
-        (query ? `'${query}'에 대한 검색 결과가 없어요` : "검색 결과가 없어요")
+        (query
+          ? dsT("searchableList.emptyFor", { query })
+          : dsT("searchableList.empty"))
       }
       description={description}
       {...props}
@@ -563,22 +564,25 @@ export interface SearchableListErrorProps extends Omit<
 const SearchableListError = React.forwardRef<
   HTMLDivElement,
   SearchableListErrorProps
->(({ onRetry, retrying, title, description, ...props }, ref) => (
-  <ResultSection
-    ref={ref}
-    kind="failure"
-    size="medium"
-    data-slot="searchable-list-error"
-    title={title ?? "검색 결과를 불러오지 못했어요"}
-    description={description}
-    primaryAction={{
-      label: "다시 시도",
-      onClick: () => onRetry(),
-      loading: retrying,
-    }}
-    {...props}
-  />
-));
+>(({ onRetry, retrying, title, description, ...props }, ref) => {
+  const dsT = useDsText();
+  return (
+    <ResultSection
+      ref={ref}
+      kind="failure"
+      size="medium"
+      data-slot="searchable-list-error"
+      title={title ?? dsT("searchableList.error")}
+      description={description}
+      primaryAction={{
+        label: dsT("common.retry"),
+        onClick: () => onRetry(),
+        loading: retrying,
+      }}
+      {...props}
+    />
+  );
+});
 SearchableListError.displayName = "SearchableListError";
 
 export type SearchableListSkeletonPrefix =

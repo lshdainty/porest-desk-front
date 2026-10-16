@@ -5,6 +5,7 @@ import { Button, type ButtonProps } from "@/shared/ds/button";
 import { Input, type InputProps } from "@/shared/ds/input";
 
 import { digitsOf, remainingOf } from "./input-otp-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 // 숫자 뽑기 · 붙여넣기 · 다시 받기의 규칙은 input-otp-variants.ts 머리 주석과 groo-design specs/components/input-otp.md 가 정한다.
 
@@ -43,6 +44,7 @@ const InputOTP = React.forwardRef<HTMLInputElement, InputOTPProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const cut = (text: string) => digitsOf(text).slice(0, length);
     const [inner, setInner] = React.useState(() => cut(defaultValue ?? ""));
     const controlled = value !== undefined;
@@ -60,7 +62,9 @@ const InputOTP = React.forwardRef<HTMLInputElement, InputOTPProps>(
         inputMode="numeric"
         autoComplete="one-time-code"
         spellCheck={false}
-        placeholder={placeholder ?? `${length}자리 숫자`}
+        placeholder={
+          placeholder ?? dsT("inputOtp.placeholder", { count: length })
+        }
         // 입력의 data-slot(text-input-value)은 Input 그대로 둔다 — 코드 칸 표시는 따로
         data-input-otp=""
         className={className}
@@ -125,6 +129,7 @@ const InputOTPResend = React.forwardRef<HTMLButtonElement, InputOTPResendProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const [now, setNow] = React.useState(() => Date.now());
     // 1초마다 — 남은 초가 바뀌는 때에 맞춰 다시 잰다. 다 지나면 멈춘다
     React.useEffect(() => {
@@ -143,10 +148,10 @@ const InputOTPResend = React.forwardRef<HTMLButtonElement, InputOTPResendProps>(
     const remaining = remainingOf(sentAt, cooldownSeconds, now);
     const label =
       sentAt == null
-        ? "코드 받기"
+        ? dsT("inputOtp.send")
         : remaining > 0
-          ? `다시 받기(${remaining}초)`
-          : "다시 받기";
+          ? dsT("inputOtp.resendIn", { seconds: remaining })
+          : dsT("inputOtp.resend");
 
     return (
       <Button

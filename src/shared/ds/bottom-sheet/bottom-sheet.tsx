@@ -30,6 +30,7 @@ import {
   SHEET_TITLE,
   SHEET_TITLE_WITH_CLOSE,
 } from "./bottom-sheet-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Bottom Sheet — 구조는 SEED Bottom Sheet(2026-10-02). 수치 원본은 groo-design specs/components/bottom-sheet.yaml
@@ -422,6 +423,7 @@ const BottomSheetContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   BottomSheetContentProps
 >(({ title, description, showCloseButton = true, children, ...props }, ref) => {
+  const dsT = useDsText();
   const ctx = useSheetContext("BottomSheetContent");
   return (
     <BottomSheetSurface
@@ -450,7 +452,7 @@ const BottomSheetContent = React.forwardRef<
       {showCloseButton && (
         <button
           type="button"
-          aria-label="닫기"
+          aria-label={dsT("common.close")}
           data-slot="bottom-sheet-close"
           className={SHEET_CLOSE}
           onClick={() => ctx.requestClose()}

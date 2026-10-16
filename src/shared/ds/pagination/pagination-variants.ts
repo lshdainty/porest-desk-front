@@ -1,3 +1,4 @@
+import { dsLocale } from "@/shared/ds/i18n";
 /*
  * Groo Pagination 의 모양과 칸 배열 규칙 — 수치 원본은 groo-design specs/components/pagination.yaml(값은
  * src/shared/ds/spec/pagination.json). 컴포넌트와 규칙은 pagination.tsx 머리 주석이다
@@ -80,7 +81,7 @@ export function paginationItems(
   ];
 }
 
-export const formatNumber = (n: number) => n.toLocaleString("ko-KR");
+export const formatNumber = (n: number) => n.toLocaleString(dsLocale());
 
 // ── 모양 ─────────────────────────────────────────────────────
 // 넘김 줄 — 목록 아래 가운데, 목록 끝 → 줄 24

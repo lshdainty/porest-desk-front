@@ -1,3 +1,4 @@
+import { dsLocale } from "@/shared/ds/i18n";
 /*
  * Groo Table Pagination 의 모양과 쪽 계산 — 수치 원본은 groo-design specs/components/table-pagination.yaml(값은
  * src/shared/ds/spec/table-pagination.json). 컴포넌트와 규칙은 table-pagination.tsx 머리 주석이다
@@ -37,7 +38,7 @@ export const MAX_RANGE_OPTIONS = 200;
 // 범위 목록의 최대 높이 — Select 기본 480 대신(SEED)
 export const RANGE_LIST_MAX_HEIGHT = 240;
 
-export const formatNumber = (n: number) => n.toLocaleString("ko-KR");
+export const formatNumber = (n: number) => n.toLocaleString(dsLocale());
 export const formatRange = (start: number, end: number) =>
   `${formatNumber(start)}-${formatNumber(end)}`;
 

@@ -37,6 +37,7 @@ import {
   DIALOG_TITLE,
 } from "./dialog-variants";
 import { useBodyScroll } from "./use-body-scroll";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Dialog — 구조는 SEED Dialog · Responsive Dialog(2026-10-02). 수치 원본은 groo-design specs/components/dialog.yaml
@@ -208,6 +209,7 @@ const DialogContent = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const ctx = React.useContext(DialogContext);
     const own = React.useRef<HTMLDivElement>(null);
     const openerRef = React.useRef<Element | null>(null);
@@ -291,7 +293,7 @@ const DialogContent = React.forwardRef<
               )}
               {showClose && (
                 <DialogPrimitive.Close
-                  aria-label="닫기"
+                  aria-label={dsT("common.close")}
                   data-slot="dialog-close"
                   className={DIALOG_CLOSE}
                 >

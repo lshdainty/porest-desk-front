@@ -22,6 +22,7 @@ import {
   measurePress,
   type ChipSize,
 } from "./chip-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Chip — 구조는 SEED Chip(2026-10-02). 수치 원본은 groo-design specs/components/chip.yaml(값은
@@ -491,12 +492,14 @@ const InputChip = React.forwardRef<HTMLSpanElement, InputChipProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const auto = React.useId();
     const labelId = `${auto}label`;
     const removeTextId = `${auto}remove`;
     const s = size ?? "medium";
     const plain = typeof children === "string" || typeof children === "number";
-    const name = removeLabel ?? (plain ? `${children} 지우기` : undefined);
+    const name =
+      removeLabel ?? (plain ? `${children} ${dsT("common.clear")}` : undefined);
 
     const remove = (e: React.MouseEvent<HTMLButtonElement>) => {
       const button = e.currentTarget;
@@ -547,7 +550,7 @@ const InputChip = React.forwardRef<HTMLSpanElement, InputChipProps>(
         </button>
         {name === undefined && (
           <span id={removeTextId} hidden>
-            지우기
+            {dsT("common.clear")}
           </span>
         )}
       </span>

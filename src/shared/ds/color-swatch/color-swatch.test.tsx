@@ -7,7 +7,7 @@ import { Field } from "@/shared/ds/field";
 
 import { ColorSwatchGroup, type ColorSwatchValue } from "./color-swatch";
 import {
-  COLOR_NAMES,
+  colorName,
   COLOR_SWATCH_ORDER,
   firstUnusedColor,
   parseRgb,
@@ -125,7 +125,7 @@ describe("색 이름 · 차례", () => {
       "갈색",
       "회색",
     ]);
-    expect(COLOR_SWATCH_ORDER.map((c) => COLOR_NAMES[c])).toEqual(names());
+    expect(COLOR_SWATCH_ORDER.map((c) => colorName(c))).toEqual(names());
   });
 
   it("묶음은 radiogroup — 이름은 aria-label, 칸은 role=radio · 5 × 2 격자", () => {

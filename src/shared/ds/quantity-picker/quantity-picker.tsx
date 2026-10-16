@@ -17,6 +17,7 @@ import {
   QUANTITY_VALUE_SIZE,
   QUANTITY_VALUE_TEXT,
 } from "./quantity-picker-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Quantity Picker — 구조는 SEED Quantity Picker(2026-10-15, rootage quantity-picker · quantity-picker-button,
@@ -112,6 +113,7 @@ export type QuantityPickerProps = Omit<
 
 const QuantityPicker = React.forwardRef<HTMLDivElement, QuantityPickerProps>(
   (props, ref) => {
+    const dsT = useDsText();
     const {
       value: valueProp,
       defaultValue,
@@ -127,8 +129,8 @@ const QuantityPicker = React.forwardRef<HTMLDivElement, QuantityPickerProps>(
       readOnly: readOnlyProp,
       invalid: invalidProp,
       name,
-      decrementAriaLabel = "줄이기",
-      incrementAriaLabel = "늘리기",
+      decrementAriaLabel: decrementAriaLabelProp,
+      incrementAriaLabel: incrementAriaLabelProp,
       removable = false,
       onRemove,
       removeAriaLabel,
@@ -138,6 +140,10 @@ const QuantityPicker = React.forwardRef<HTMLDivElement, QuantityPickerProps>(
       "aria-describedby": ariaDescribedBy,
       ...rest
     } = props;
+    const decrementAriaLabel =
+      decrementAriaLabelProp ?? dsT("quantityPicker.decrease");
+    const incrementAriaLabel =
+      incrementAriaLabelProp ?? dsT("quantityPicker.increase");
 
     const field = useField();
     const fieldState = useFieldGroupState();

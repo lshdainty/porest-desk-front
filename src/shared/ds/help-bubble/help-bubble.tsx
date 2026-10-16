@@ -11,6 +11,7 @@ import {
   BUBBLE_TITLE,
 } from "./help-bubble-variants";
 import { useBubbleEdgePadding } from "./bubble-edge-padding";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Help Bubble — 구조는 SEED Help Bubble(2026-10-02). 수치 원본은 groo-design
@@ -318,6 +319,7 @@ const HelpBubbleContent = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const ctx = useHelpBubble("HelpBubbleContent");
     const collisionPadding = useBubbleEdgePadding(
       ctx.originRef,
@@ -408,7 +410,7 @@ const HelpBubbleContent = React.forwardRef<
           {showCloseButton && (
             <button
               type="button"
-              aria-label="닫기"
+              aria-label={dsT("common.close")}
               data-slot="help-bubble-close"
               className={CLOSE}
               onClick={() => ctx.setOpen(false)}

@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { cn } from "@/shared/lib/cn";
+import { dsMoney, dsText, useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Progress — groo 만의 막대(SEED 에는 선형 막대가 없다 — 2026-10-03). 수치 원본은 groo-design
@@ -43,8 +44,7 @@ function mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
   };
 }
 
-const won = new Intl.NumberFormat("ko-KR");
-const formatWon = (n: number) => `${won.format(n)}원`;
+const formatWon = (n: number) => dsMoney(n);
 
 // 값 → 상태 · 채움 비율(0 ~ 1) · 오른쪽 글
 function measure(
@@ -65,9 +65,9 @@ function measure(
         : "enabled";
   const status =
     state === "over"
-      ? `${formatValue(current - max)} 초과`
+      ? dsText("progress.over", { value: formatValue(current - max) })
       : state === "reached"
-        ? "달성"
+        ? dsText("progress.reached")
         : `${Math.round(Math.min(ratio, 1) * 100)}%`;
   return { current, state, status, fill: Math.min(ratio, 1) };
 }
@@ -104,6 +104,7 @@ const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
     },
     ref,
   ) => {
+    useDsText();
     const own = React.useRef<HTMLDivElement>(null);
     const { current, state, fill } = measure(value, max, meaning, formatWon);
 
@@ -187,6 +188,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const { current, state, status } = measure(
       value,
       max,
@@ -226,7 +228,11 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
           value={value}
           max={max}
           meaning={meaning}
-          aria-label={`${label} ${formatValue(max)} 중 ${formatValue(current)}`}
+          aria-label={dsT("progress.label", {
+            label,
+            max: formatValue(max),
+            current: formatValue(current),
+          })}
           aria-valuetext={status}
         />
         <span

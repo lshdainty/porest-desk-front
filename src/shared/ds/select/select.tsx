@@ -25,6 +25,7 @@ import {
   selectTriggerSizeVariants,
   selectTriggerSurfaceVariants,
 } from "./select-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Select — 구조는 SEED Select(2026-10-01). 수치 원본은 groo-design specs/components/select.yaml(값은
@@ -242,6 +243,7 @@ type Highlight = { value: string; keyboard: boolean } | null;
 
 const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
   (props, ref) => {
+    const dsT = useDsText();
     const {
       placeholder,
       prefixIcon,
@@ -534,7 +536,10 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       else if (selectedItems.length === 1) text = first.label;
       else
         text = overflow
-          ? `${first.label} 외 ${selectedItems.length - 1}개`
+          ? dsT("select.more", {
+              label: first.label,
+              count: selectedItems.length - 1,
+            })
           : joined;
     }
     const hasValue = text !== undefined;

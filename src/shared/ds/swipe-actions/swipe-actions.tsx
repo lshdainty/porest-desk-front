@@ -26,6 +26,7 @@ import {
   swipeTrayWidth,
   type SwipeAxis,
 } from "./swipe-actions-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Swipe Actions — groo 에만 있는 패턴(SEED 에는 줄 밀기가 없다). 수치 원본은 groo-design specs/components/swipe-actions.yaml
@@ -342,6 +343,7 @@ function SwipeActionsMenu({
   rowLabel,
   className,
 }: SwipeActionsMenuProps) {
+  const dsT = useDsText();
   return (
     <ResponsiveMenu>
       <ResponsiveMenuTrigger asChild>
@@ -349,7 +351,7 @@ function SwipeActionsMenu({
           variant="ghost"
           layout="iconOnly"
           size="medium"
-          aria-label={`${rowLabel} 더보기`}
+          aria-label={dsT("common.moreFor", { label: rowLabel })}
           data-slot="swipe-actions-more"
           className={className}
         >
