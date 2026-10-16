@@ -775,7 +775,12 @@ const HeaderDividerDemo = () => (
           <Specimen spec="list-header" combo={{ variant: "mediumWeak" }}>
             <ListHeader>
               <span id="demo-header-budget">카테고리별 예산</span>
-              <Button variant="ghost" ghostColor="neutralSubtle" size="xsmall">
+              <Button
+                variant="ghost"
+                ghostColor="neutralMuted"
+                size="small"
+                className="-my-x2"
+              >
                 전체 보기
               </Button>
             </ListHeader>

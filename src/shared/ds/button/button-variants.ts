@@ -13,7 +13,7 @@ import { cva } from "class-variance-authority";
  *   criticalSolid  빨강 채움 — 되돌릴 수 없는 작업의 확정(Alert Dialog)
  *   brandOutline   테두리 + 브랜드 글자 — neutralOutline 과 짝
  *   neutralOutline 테두리 + 본문 글자 — 가장 낮은 위계
- *   ghost          배경 없음 — ghostColor 로 글자색(neutral · neutralSubtle · brand · critical)
+ *   ghost          배경 없음 — ghostColor 로 글자색(neutral · neutralSubtle · neutralMuted · brand · critical). 글 버튼(D2)은 ghost small neutralMuted
  *
  * Sizes(4) × layout(withText · iconOnly)
  *   xsmall 32(알약) · small 36 · medium 40(기본) · large 48 — 크기는 이름이 아니라 높이로 고른다.
@@ -83,6 +83,7 @@ export const buttonVariants = cva(
       ghostColor: {
         neutral: "",
         neutralSubtle: "",
+        neutralMuted: "",
         brand: "",
         critical: "",
       },
@@ -142,6 +143,12 @@ export const buttonVariants = cva(
         variant: "ghost",
         ghostColor: "neutralSubtle",
         className: "text-fg-neutral-subtle",
+      },
+      // SEED Text Button(D2) = ghost small + neutralMuted — 14 · 700 · fg-neutral-muted · 36 · 좌우 14 · 누르는 44
+      {
+        variant: "ghost",
+        ghostColor: "neutralMuted",
+        className: "text-fg-neutral-muted",
       },
       { variant: "ghost", ghostColor: "brand", className: "text-fg-brand" },
       {
