@@ -1,5 +1,4 @@
 import * as React from "react";
-import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/shared/lib/cn";
 
@@ -39,8 +38,8 @@ import { dsText, useDsText } from "@/shared/ds/i18n";
  *                   열리고 안에 대등한 동작이 더 있다 — 카드 위에 깐 CardLink 가 누르는 자리, 색만 바뀐다). href · onClick 을 주면 "whole"
  *   CardHeader      머리 — 제목과 오른쪽 동작 한 줄, 아래 8(목록 · 아코디언 카드 4)
  *   CardTitle       제목 16 / 22 · 700 · fg-neutral — as(기본 h2)
- *   CardAction      머리 동작("전체 보기") — href · onClick. 14 · 500 · fg-neutral-subtle + chevron-right 16(사이 2), 보이는 상자 32 ·
- *                   왼쪽 8 · 오른쪽 4 · 모서리 8, 누르는 영역 44. 이름은 "{제목} {글}"(카드 제목 id 로 이은 aria-labelledby)
+ *   CardAction      머리 동작("전체 보기") — href · onClick. SEED Text Button(D2): 14 · 700 · fg-neutral-muted, 꺾쇠 · 아이콘 없음, 보이는 상자 36 ·
+ *                   좌우 14 · 모서리 8, 누르는 영역 44. 이름은 "{제목} {글}"(카드 제목 id 로 이은 aria-labelledby)
  *   CardContent     본문 — 여백 안, 요소 사이 12. 목록 카드는 CardContent 없이 List 를 바로 넣는다
  *   CardLink        peers 카드의 누르는 자리 — 카드 전체를 덮는 링크(href) · 버튼(onClick), 글은 제목 모양(이름은 카드 제목)
  *   CardStat        지표 — label(13 · 500) · value(700 · 고정폭 숫자 — large 24 / 32 · small 20 / 27) · delta
@@ -291,7 +290,6 @@ const CardAction = React.forwardRef<HTMLElement, CardActionProps>(
     const inner = (
       <>
         <span id={textId}>{children}</span>
-        <ChevronRight aria-hidden strokeWidth={2} />
       </>
     );
     const shared = {

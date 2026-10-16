@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/cn";
@@ -550,12 +550,7 @@ const AccordionExpandAll = React.forwardRef<
         }}
         {...props}
       >
-        <span>{allOpen ? collapseLabel : expandLabel}</span>
-        {allOpen ? (
-          <ChevronsDownUp aria-hidden strokeWidth={2} />
-        ) : (
-          <ChevronsUpDown aria-hidden strokeWidth={2} />
-        )}
+        {allOpen ? collapseLabel : expandLabel}
       </button>
     );
   },

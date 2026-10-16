@@ -34,7 +34,7 @@ export const segmentedControlItemVariants = cva(
     "data-[state=checked]:enabled:hover:bg-bg-layer-default-pressed data-[state=checked]:enabled:hover:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-contrast)]",
     "data-[state=checked]:enabled:active:bg-bg-layer-default-pressed data-[state=checked]:enabled:active:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-contrast)]",
     // 막힘 — 흐리게 하지 않는다. 고른 채 막히면 칸에 회색 바탕 + 짙은 1px 를 칠해 알약을 덮는다
-    "disabled:cursor-not-allowed disabled:text-fg-disabled",
+    "disabled:cursor-not-allowed disabled:text-fg-disabled dark:disabled:text-fg-disabled",
     "data-[state=checked]:disabled:bg-bg-disabled data-[state=checked]:disabled:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-solid)]",
   ].join(" "),
 );

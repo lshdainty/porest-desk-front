@@ -618,13 +618,13 @@ describe("AccordionHeader · AccordionExpandAll", () => {
   };
   const expandAll = () => slot("accordion-expand-all");
 
-  it("목록 머리 — 제목(건수 포함)과 오른쪽 자식, 높이 32 · 아래 8", () => {
+  it("목록 머리 — 제목(건수 포함)과 오른쪽 자식, 높이 36 · 아래 8", () => {
     render(<Sheet />);
     const header = slot("accordion-header");
     expect(slot("accordion-header-title").textContent).toBe("혜택 상세 · 4건");
     expect(header.lastElementChild).toBe(expandAll());
     expect(classes(header)).toEqual(
-      expect.arrayContaining(["min-h-8", "mb-x2", "justify-between"]),
+      expect.arrayContaining(["min-h-9", "mb-x2", "justify-between"]),
     );
   });
 
@@ -698,17 +698,18 @@ describe("AccordionHeader · AccordionExpandAll", () => {
     expect(expandAll().textContent).toBe("Collapse all");
   });
 
-  it("보이는 상자 32 · 누르는 영역 44(::before) · 누르면 바탕 + 2px 거리 축소 · 키보드 링은 단추 바깥 2px", () => {
+  it("글 버튼 — 보이는 상자 36 · 누르는 영역 44(::before) · 누르면 바탕 + 2px 거리 축소 · 키보드 링은 단추 바깥 2px", () => {
     render(<Sheet />);
     const c = classes(expandAll());
     expect(c).toEqual(
       expect.arrayContaining([
-        "h-8",
+        "h-9",
         "before:h-11",
         "before:min-w-11",
         "rounded-r2",
-        "pl-x2",
-        "pr-x1",
+        "px-x3_5",
+        "font-bold",
+        "text-fg-neutral-muted",
         "focus-visible:outline-offset-2",
       ]),
     );
