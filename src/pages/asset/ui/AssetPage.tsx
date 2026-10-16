@@ -1954,12 +1954,12 @@ function AssetDesktop() {
         description={t("subtitle")}
         actions={
           <>
-            <Button variant="secondary" size="sm" onClick={handleHideToggle}>
+            <Button variant="outline" size="sm" onClick={handleHideToggle}>
               {hidden ? <EyeOff size={13} /> : <Eye size={13} />}{" "}
               {hidden ? t("show") : t("hide")}
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={g.refetch}
               disabled={g.isFetching}

@@ -1556,14 +1556,14 @@ function ExpenseDesktop() {
         actions={
           <>
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => setFilterOpen(true)}
             >
               <Filter size={13} /> {t("filter.title")}
               {activeCount > 0 && ` · ${activeCount}`}
             </Button>
-            <Button variant="secondary" size="sm" onClick={notifyComing}>
+            <Button variant="outline" size="sm" onClick={notifyComing}>
               <Download size={13} /> {t("export")}
             </Button>
           </>
