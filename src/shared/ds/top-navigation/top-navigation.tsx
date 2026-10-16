@@ -18,6 +18,8 @@ import {
   ROOT,
   ROOT_LEFT,
   ROW,
+  SEARCH,
+  SEARCH_TYPE,
   SCREEN_TITLE,
   TEXT_BUTTON,
   TITLE,
@@ -115,6 +117,41 @@ const TopNavigationTitle = React.forwardRef<
   );
 });
 TopNavigationTitle.displayName = "TopNavigationTitle";
+
+// ── 검색칸 ───────────────────────────────────────────────────
+export interface TopNavigationSearchProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** 보이지 않는 h1 — 화면 이름 대신 칸이 서므로 머리말은 보조 기술에만. 기본 "검색". desktop 에서는 두지 않는다(본문 h1) */
+  title?: string;
+}
+
+/**
+ * 검색칸 자리 — 자식은 Input 하나(size="medium" · prefixIcon 돋보기 · clearable).
+ * standard 에서는 제목 자리(← 다음 6 ~ 오른쪽 자리 앞 8), desktop 에서는 머리 왼쪽 폭 360.
+ */
+const TopNavigationSearch = React.forwardRef<
+  HTMLDivElement,
+  TopNavigationSearchProps
+>(({ title, className, children, ...props }, ref) => {
+  const type = React.useContext(TypeContext);
+  const dsT = useDsText();
+  return (
+    <div
+      ref={ref}
+      role="search"
+      data-slot="top-navigation-search"
+      className={cn(SEARCH, SEARCH_TYPE[type], className)}
+      {...props}
+    >
+      {type !== "desktop" && (
+        <h1 tabIndex={-1} data-screen-title="" className="sr-only">
+          {title ?? dsT("topNavigation.searchTitle")}
+        </h1>
+      )}
+      {children}
+    </div>
+  );
+});
+TopNavigationSearch.displayName = "TopNavigationSearch";
 
 // ── 오른쪽 자리 ──────────────────────────────────────────────
 const TopNavigationActions = React.forwardRef<
@@ -345,6 +382,7 @@ export {
   TopNavigationCloseButton,
   TopNavigationMenuButton,
   TopNavigationTitle,
+  TopNavigationSearch,
   TopNavigationActions,
   TopNavigationIconButton,
   TopNavigationTextButton,

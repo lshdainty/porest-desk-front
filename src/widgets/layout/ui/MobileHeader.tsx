@@ -4,9 +4,16 @@ import { Bell, Search } from "lucide-react";
 import {
   TopNavigation,
   TopNavigationActions,
+  TopNavigationBackButton,
   TopNavigationIconButton,
+  TopNavigationSearch,
   TopNavigationTitle,
 } from "@/shared/ds/top-navigation";
+import {
+  AdvancedFilter,
+  SearchField,
+  useSearchCondition,
+} from "@/widgets/transaction-search";
 import { useUnreadCount } from "@/features/notification";
 import { useNotificationLabel } from "../lib/use-notification-label";
 import { rootActionsFor, screenTitleKey } from "../model/shell";
@@ -18,6 +25,36 @@ import { rootActionsFor, screenTitleKey } from "../model/shell";
  * 테마 전환은 설정 > 표시 설정, 금액 가리기는 홈 · 자산 순자산 카드의 눈 버튼.
  */
 export function MobileHeader() {
+  const { pathname } = useLocation();
+  // 거래 검색 화면 — standard: ← · 제목 자리 검색칸 · 고급 필터(17-3a C). 하나만 hook 규칙 때문에 컴포넌트를 가른다
+  if (pathname === "/desk/search") return <SearchHeader />;
+  return <RootHeader />;
+}
+
+function SearchHeader() {
+  const { condition, update } = useSearchCondition();
+  return (
+    <TopNavigation type="standard">
+      <TopNavigationBackButton fallbackHref="/desk" />
+      <TopNavigationSearch>
+        <SearchField
+          autoFocus
+          value={condition.q}
+          onValueChange={(q) => update({ q })}
+        />
+      </TopNavigationSearch>
+      <TopNavigationActions>
+        <AdvancedFilter
+          placement="bar"
+          condition={condition}
+          onApply={update}
+        />
+      </TopNavigationActions>
+    </TopNavigation>
+  );
+}
+
+function RootHeader() {
   const { t } = useTranslation("layout");
   const { pathname } = useLocation();
   const navigate = useNavigate();

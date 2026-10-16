@@ -15,6 +15,7 @@ import {
   TopNavigationMenuButton,
   TopNavigationPrimaryButton,
   TopNavigationProvider,
+  TopNavigationSearch,
   TopNavigationTextButton,
   TopNavigationTitle,
   useScreenTitle,
@@ -413,5 +414,32 @@ describe("화면을 옮길 때", () => {
     expect(title.className).toContain("text-screen-title");
     expect(title.className).toContain("font-bold");
     expect(title.className).toContain("mt-nav-to-title");
+  });
+
+  it('TopNavigationSearch — standard 는 제목 자리(보이지 않는 h1 "검색"), desktop 은 폭 360 에 h1 없음', () => {
+    render(
+      <TopNavigation>
+        <TopNavigationSearch>
+          <input aria-label="거래 검색" />
+        </TopNavigationSearch>
+      </TopNavigation>,
+    );
+    const h1 = container.querySelector("h1")!;
+    expect(h1.textContent).toBe("검색");
+    expect(h1.className).toContain("sr-only");
+    expect(h1.hasAttribute("data-screen-title")).toBe(true);
+    const box = slot("top-navigation-search") as HTMLElement;
+    expect(box.getAttribute("role")).toBe("search");
+    expect(box.className).toContain("flex-1");
+
+    render(
+      <TopNavigation type="desktop">
+        <TopNavigationSearch>
+          <input aria-label="거래 검색" />
+        </TopNavigationSearch>
+      </TopNavigation>,
+    );
+    expect(container.querySelector("h1")).toBeNull();
+    expect(slot("top-navigation-search")!.className).toContain("w-[360px]");
   });
 });
