@@ -69,6 +69,7 @@ import type {
 import { renderIcon, tileRadius } from "@/shared/lib";
 import { FixedBulkDialog } from "@/features/expense/ui/FixedBulkDialog";
 import { FixedVariableTab } from "./FixedVariableTab";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -4049,12 +4050,7 @@ export const StatsPage = () => {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("page.title")}</h1>
-          <div className="sub">{t("page.subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("page.title")} description={t("page.subtitle")} />
       {StatsTabs}
       {content}
     </div>

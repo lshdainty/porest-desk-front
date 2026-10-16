@@ -59,6 +59,7 @@ import { MANAGER_LAYOUT } from "@/shared/ui/groo/manager-layout";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { CAT_PALETTE } from "@/shared/lib/groo/chart-palette";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 /** 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
  *  제한이 없어 500자 제목이 서버 500 으로 터지던 자리다(QA #30 · #33). */
@@ -797,19 +798,15 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">{AddBtn}</div>
-      </div>
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={<>{AddBtn}</>}
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
       <div
         style={{
-          padding: "0 28px 24px",
+          padding: "0 32px 24px",
           maxWidth: 1320,
           display: "flex",
           flexDirection: "column",
@@ -1285,7 +1282,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
     <div style={{ padding: 0 }}>
       <div
         className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
       >
         <div>
           <SkeletonBase className="h-8 w-20 mb-2" />
@@ -1297,7 +1294,7 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
       </div>
       <div
         style={{
-          padding: "0 28px 24px",
+          padding: "0 32px 24px",
           maxWidth: 1320,
           display: "flex",
           flexDirection: "column",

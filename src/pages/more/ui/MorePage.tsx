@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageHead } from "@/shared/ui/groo/page-head";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/shared/ui/input";
@@ -130,7 +131,8 @@ const GROUPS: NavGroup[] = [
 export const MorePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation("more");
-  useOutletContext<OutletCtx>();
+  const { mobile } = useOutletContext<OutletCtx>();
+  const { t: tLayout } = useTranslation("layout");
   const [query, setQuery] = useState("");
   const hasSecurities = useHasSecurities();
 
@@ -163,6 +165,8 @@ export const MorePage = () => {
         padding: "var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)",
       }}
     >
+      {/* 폰은 상단 바의 제목이 화면 제목이다 — 데스크톱만 본문 맨 위 h1 */}
+      {!mobile && <PageHead title={tLayout("all")} />}
       {/* 검색바 */}
       <div
         style={{

@@ -41,6 +41,7 @@ import {
 import { useUserPreferences } from "@/features/user";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { mobile: boolean };
 
@@ -443,12 +444,7 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("pageTitle")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("pageTitle")} description={t("subtitle")} />
       <div
         style={{
           display: "grid",
@@ -1502,13 +1498,11 @@ export const BudgetPage = () => {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("pageTitle")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">{PageControls}</div>
-      </div>
+      <PageHead
+        title={t("pageTitle")}
+        description={t("subtitle")}
+        actions={<>{PageControls}</>}
+      />
       <div
         style={{
           display: "grid",

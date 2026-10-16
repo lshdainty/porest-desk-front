@@ -1,4 +1,6 @@
 import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { PageHead } from "@/shared/ui/groo/page-head";
 import { CalendarContent } from "@/widgets/calendar/ui/CalendarContent";
 import { CalendarProvider } from "@/widgets/calendar/model/calendar-provider";
 
@@ -12,6 +14,7 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean };
  */
 export const CalendarPage = () => {
   const { mobile } = useOutletContext<OutletCtx>();
+  const { t } = useTranslation("layout");
 
   return (
     <div
@@ -25,6 +28,11 @@ export const CalendarPage = () => {
         boxSizing: "border-box",
       }}
     >
+      {!mobile && (
+        <div className="shrink-0 px-layout-margin pt-nav-to-title">
+          <PageHead title={t("calendar")} />
+        </div>
+      )}
       <CalendarProvider events={[]} initialView="month">
         <CalendarContent />
       </CalendarProvider>

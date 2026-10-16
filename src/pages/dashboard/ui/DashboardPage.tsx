@@ -44,6 +44,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from "@/shared/ui/chart";
+import { PageHead } from "@/shared/ui/groo/page-head";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
@@ -397,8 +398,9 @@ function useDashboardPageData(
  * 실제 렌더하고 서버 데이터 영역만 스켈레톤. desktop 2-col(좌 hero+수입지출+오늘 / 우 카테고리+예산+예정+할일+일정).
  */
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
-  const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
+  const { t: tLayout } = useTranslation("layout");
+  const navigate = useNavigate();
   const { key: initialKey, year, month } = useCurrentMonthKey();
   const [period, setPeriod] = useState(initialKey);
   if (mobile) {
@@ -459,6 +461,9 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   }
   return (
     <div className="dash-grid">
+      <div style={{ gridColumn: "1 / -1" }}>
+        <PageHead title={tLayout("home")} />
+      </div>
       <div className="dash-grid__left">
         <DashboardHeroSkeleton mobile={false} year={year} month={month} />
         <DashboardSummaryCardSkeleton
@@ -987,6 +992,7 @@ function useCurrentMonthKey() {
 
 function HomeDesktop() {
   const { t } = useTranslation("dashboard");
+  const { t: tLayout } = useTranslation("layout");
   const { t: tc } = useTranslation("common");
   const navigate = useNavigate();
   const hidden = useHideAmounts();
@@ -1155,6 +1161,9 @@ function HomeDesktop() {
 
   return (
     <div className="dash-grid">
+      <div style={{ gridColumn: "1 / -1" }}>
+        <PageHead title={tLayout("home")} />
+      </div>
       <div className="dash-grid__left">
         <div className="balance-hero" style={{ padding: "28px 32px 24px" }}>
           <div

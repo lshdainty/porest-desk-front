@@ -68,6 +68,23 @@ export const AppLayout = () => (
   </TopNavigationProvider>
 );
 
+/** 화면 맨 앞 "본문 바로가기" — 키보드 초점이 오면 보이고, 누르면 main 으로 간다(DESIGN.desk.md 랜드마크). */
+const SkipLink = () => {
+  const { t } = useTranslation("layout");
+  return (
+    <a
+      href="#main"
+      onClick={(e) => {
+        e.preventDefault();
+        document.getElementById("main")?.focus();
+      }}
+      className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-x4 focus-visible:top-x4 focus-visible:z-(--z-modal-content) focus-visible:rounded-r3 focus-visible:bg-bg-layer-floating focus-visible:px-x4 focus-visible:py-x3 focus-visible:text-t4 focus-visible:font-bold focus-visible:text-fg-neutral focus-visible:shadow-(--shadow-s3) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
+    >
+      {t("skipToMain")}
+    </a>
+  );
+};
+
 const Shell = () => {
   const size = useDeviceSize();
   const { t } = useTranslation(["layout", "calendar"]);
@@ -91,7 +108,12 @@ const Shell = () => {
     if (isFullscreenPath(location.pathname)) {
       return (
         <div className="m-app" data-screen-label="Mobile">
-          <main className="m-scroll flex flex-col">
+          <SkipLink />
+          <main
+            id="main"
+            tabIndex={-1}
+            className="m-scroll flex flex-col outline-none"
+          >
             <SwipeActionsProvider>
               <Outlet
                 context={{ onAddTx: () => setAddOpen(true), mobile: true }}
@@ -105,6 +127,7 @@ const Shell = () => {
 
     return (
       <div className="m-app m-app--page" data-screen-label="Mobile">
+        <SkipLink />
         {/* 머리 · 가계부 탭은 main 밖이다(banner) — 본문만 스크롤한다 */}
         <MobileHeader />
         {isMoneyPath(location.pathname) && <MoneyTabs />}
@@ -112,8 +135,10 @@ const Shell = () => {
             fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작 (변경 없음).
             아래 여백은 떠 있는 탭 바가 마지막 줄을 덮지 않게 한다(바가 줄어도 그대로). */}
         <main
+          id="main"
+          tabIndex={-1}
           ref={scrollRef}
-          className="m-scroll flex flex-col bg-bg-page"
+          className="m-scroll flex flex-col bg-bg-page outline-none"
           style={{ paddingBottom: BOTTOM_NAVIGATION_INSET }}
         >
           {/* 스와이프 그룹은 셸마다 하나 — "한 번에 한 행" 과 "스크롤하면 닫힘" 을 여기가 맡는다.
@@ -137,12 +162,17 @@ const Shell = () => {
   return (
     <TooltipProvider>
       <div className="flex h-svh">
+        <SkipLink />
         <DesktopSidebar />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg-page">
           <DesktopHeader onOpenAdd={() => setAddOpen(true)} />
           {/* flex flex-col — 페이지가 flex-1 로 scroll wrapper 전체 height 를 차지하도록
               (viewport fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작. */}
-          <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col bg-bg-page">
+          <main
+            id="main"
+            tabIndex={-1}
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col bg-bg-page outline-none"
+          >
             <Outlet
               context={{ onAddTx: () => setAddOpen(true), mobile: false }}
             />

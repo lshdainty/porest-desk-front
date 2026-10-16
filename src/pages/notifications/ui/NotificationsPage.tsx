@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { ChevronRight, X } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
+import { List } from "@/shared/ds/list";
+import { PageHead } from "@/shared/ui/groo/page-head";
 import { Button } from "@/shared/ui/button";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
@@ -21,18 +23,22 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean };
 /** 알림 목록 skeleton — icon(34x34) + 제목+메시지 + 시간 + 삭제버튼 행 × 6. */
 function NotificationsPageSkeleton() {
   return (
-    <div style={{ padding: "4px 0" }}>
+    <div className="py-x1">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="notif-row" style={{ pointerEvents: "none" }}>
-          <SkeletonBase className="h-[34px] w-[34px] rounded-md shrink-0 notif-row__icon" />
-          <div className="notif-row__text">
+        <div
+          key={i}
+          aria-hidden
+          className="flex items-start gap-x3 px-global-gutter py-x3"
+        >
+          <SkeletonBase className="size-10 shrink-0 rounded-md" />
+          <div className="min-w-0 flex-1">
             <SkeletonBase
-              className={`h-3.5 mb-[3px] ${i % 3 === 0 ? "w-36" : i % 3 === 1 ? "w-28" : "w-40"}`}
+              className={`mb-1 h-4 ${i % 3 === 0 ? "w-36" : i % 3 === 1 ? "w-28" : "w-40"}`}
             />
             <SkeletonBase className="h-3 w-48" />
           </div>
-          <SkeletonBase className="h-3 w-8 shrink-0 mt-[2px]" />
-          <SkeletonBase className="h-7 w-7 rounded-md shrink-0" />
+          <SkeletonBase className="mt-0.5 h-3 w-8 shrink-0" />
+          <SkeletonBase className="size-7 shrink-0 rounded-md" />
         </div>
       ))}
     </div>
@@ -90,7 +96,7 @@ export function NotificationsPage() {
     );
   } else {
     body = (
-      <div style={{ padding: "4px 0" }}>
+      <List aria-label={t("title")}>
         {notifications.map((n) => (
           <NotificationRow
             key={n.rowId}
@@ -115,7 +121,7 @@ export function NotificationsPage() {
             }
           />
         ))}
-      </div>
+      </List>
     );
   }
 
@@ -146,7 +152,6 @@ export function NotificationsPage() {
             }}
           />
         </span>
-        {!mobile && <div className="ml-auto">{markAllButton}</div>}
       </div>
     ) : null;
 
@@ -199,6 +204,9 @@ export function NotificationsPage() {
   // ── 데스크탑 ────────────────────────────────────────────────────────────────
   return (
     <div className="m-scroll" style={{ padding: 0 }}>
+      <div className="px-layout-margin pt-nav-to-title">
+        <PageHead title={t("title")} actions={markAllButton} />
+      </div>
       {unreadSub}
       {body}
       {footer}

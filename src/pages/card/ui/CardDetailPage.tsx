@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { PageHead } from "@/shared/ui/groo/page-head";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { useAsset } from "@/features/asset";
@@ -29,6 +30,7 @@ export const CardDetailPage = () => {
   return (
     // max-w-3xl 금지 — groo --spacing-3xl 이 Tailwind 스케일을 가려 48px 로 컴파일됨.
     <div className="mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 md:p-6">
+      {!mobile && <PageHead title={asset?.assetName ?? t("cardDetail.back")} />}
       <Button
         variant="ghost"
         size="sm"

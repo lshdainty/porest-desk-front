@@ -67,6 +67,7 @@ import {
   type AssetType,
 } from "@/entities/asset";
 import type { SavingGoal } from "@/entities/savingGoal";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } };
 function NetWorthTooltip({
@@ -964,12 +965,7 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   }
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("assets")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("assets")} description={t("subtitle")} />
       <div
         style={{
           display: "grid",
@@ -1953,26 +1949,26 @@ function AssetDesktop() {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("assets")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button variant="secondary" size="sm" onClick={handleHideToggle}>
-            {hidden ? <EyeOff size={13} /> : <Eye size={13} />}{" "}
-            {hidden ? t("show") : t("hide")}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={g.refetch}
-            disabled={g.isFetching}
-          >
-            <RefreshCw size={13} /> {t("refresh")}
-          </Button>
-        </div>
-      </div>
+      <PageHead
+        title={t("assets")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button variant="secondary" size="sm" onClick={handleHideToggle}>
+              {hidden ? <EyeOff size={13} /> : <Eye size={13} />}{" "}
+              {hidden ? t("show") : t("hide")}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={g.refetch}
+              disabled={g.isFetching}
+            >
+              <RefreshCw size={13} /> {t("refresh")}
+            </Button>
+          </>
+        }
+      />
 
       {isEmpty ? (
         <Card>

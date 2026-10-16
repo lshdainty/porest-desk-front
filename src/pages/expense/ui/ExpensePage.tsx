@@ -115,6 +115,7 @@ import { countableTx, expenseSum, incomeSum } from "@/entities/expense";
 import { AddTxSheet } from "@/widgets/add-tx";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { TxDetailDialog } from "@/widgets/expense-detail/ui/TxDetailDialog";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 type Filter = "all" | "income" | "expense";
@@ -427,12 +428,7 @@ function ExpensePageSkeleton({
       className="page flex flex-col flex-1 min-h-0"
       style={{ paddingBottom: 24 }}
     >
-      <div className="page__head">
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("title")} description={t("subtitle")} />
       <ExpenseSummarySkeleton mobile={false} />
       <div className="flex-1 min-h-0 flex flex-col">
         <ExpenseCalendarSkeleton />
@@ -1554,25 +1550,25 @@ function ExpenseDesktop() {
       className={isCalendarMode ? "page flex flex-col flex-1 min-h-0" : "page"}
       style={isCalendarMode ? { paddingBottom: 24 } : undefined}
     >
-      <div className="page__head">
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setFilterOpen(true)}
-          >
-            <Filter size={13} /> {t("filter.title")}
-            {activeCount > 0 && ` · ${activeCount}`}
-          </Button>
-          <Button variant="secondary" size="sm" onClick={notifyComing}>
-            <Download size={13} /> {t("export")}
-          </Button>
-        </div>
-      </div>
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setFilterOpen(true)}
+            >
+              <Filter size={13} /> {t("filter.title")}
+              {activeCount > 0 && ` · ${activeCount}`}
+            </Button>
+            <Button variant="secondary" size="sm" onClick={notifyComing}>
+              <Download size={13} /> {t("export")}
+            </Button>
+          </>
+        }
+      />
       {asset && (
         <AssetFilterBadge
           name={t("assetFilterBadge", { name: asset.assetName })}

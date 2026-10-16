@@ -336,7 +336,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
-  padding: 24px 28px;
+  padding: 24px var(--layout-margin);
 }
 .dash-grid__left {
   display: flex;
@@ -357,7 +357,7 @@
 
 /* Page container — 홈(.dash-grid)과 동일 사이드 여백, max-width 제한 없음 */
 .page {
-  padding: 24px 28px 48px;
+  padding: var(--spacing-nav-to-title) var(--layout-margin) 48px;
   width: 100%;
 }
 .page__head {
@@ -366,15 +366,13 @@
   gap: 16px;
   margin-bottom: 20px;
 }
-.page__head h1 {
-  font-size: var(--text-display-sm);
-  font-weight: 700;
-  letter-spacing: -0.022em;
-}
+/* 화면 머리 한 줄(PageHead) — 제목은 ScreenTitle(26/35 · 700), 설명 16/22 · 400 · muted(D6) */
 .page__head .sub {
-  font-size: var(--text-label-sm);
-  color: var(--fg-tertiary);
-  margin-top: 2px;
+  margin: var(--spacing-x1) 0 0;
+  font-size: var(--text-t5);
+  line-height: var(--text-t5--line-height);
+  font-weight: 400;
+  color: var(--color-fg-neutral-muted);
 }
 .page__head .right {
   margin-left: auto;
@@ -457,16 +455,8 @@
   opacity: 0.5;
 }
 
-/* ---------- Notifications popover ---------- */
-.notif-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-base);
-  background: transparent;
-}
-/* .notif-pop, .notif-pop__head/__title/__sub/__read-all/__body
- *   → NotificationsPopover (@/widgets/notification-manage/ui/NotificationsPopover.tsx) inline 으로 이동.
- *     .notif-backdrop, .notif-row* 는 모바일/공용에서 계속 사용되어 보존. */
+/* ---------- Notifications ---------- */
+/* 데스크톱 알림은 DS Popover · Bottom Sheet(NotificationsMenu), 줄은 DS List(NotificationRow). */
 
 /* 모바일 알림 페이지 — 가운데 목록만 스크롤하고 '알림 설정' 은 바닥에 고정한다.
    바깥을 m-scroll 로 두면 footer 가 같이 흘러간다(NotificationsPage 주석 참고). */
@@ -479,94 +469,7 @@
 .notif-mobile__body {
   min-height: 0;
 }
-/* 모바일 행은 좌우 24. 데스크탑 popover 의 .notif-row 는 좁아서 18 그대로 둔다. */
-.notif-mobile .notif-row {
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
-.notif-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  border-left: 3px solid transparent;
-}
-.notif-row:hover {
-  background: var(--bg-muted);
-}
-/* 클로드 디자인 원본(dialogs.css + tokens.css 다크 오버라이드) 정합:
-   라이트 = brand-subtle 플랫, 다크 = primary-light 15% 플랫(rgba(95,160,229,.15)).
-   그라데이션 아님 — 플랫 틴트. */
-.notif-row.unread {
-  border-left-color: var(--border-brand);
-  background: var(--bg-brand-subtle);
-}
-.notif-row.unread:hover {
-  background: var(--bg-brand-muted);
-}
-.dark .notif-row.unread,
-[data-theme="dark"] .notif-row.unread {
-  background: var(--color-bg-brand-weak);
-}
-.dark .notif-row.unread:hover,
-[data-theme="dark"] .notif-row.unread:hover {
-  background: var(--color-bg-brand-weak-pressed);
-}
-.notif-row__icon {
-  width: 34px;
-  height: 34px;
-  /* 앱 notification_screen 아이콘 박스(PRadius.brMd=8px) 정합 */
-  border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.notif-row__text {
-  flex: 1;
-  min-width: 0;
-}
-.notif-row__title {
-  font: 600 13px/1.35 var(--font-sans);
-  color: var(--fg-primary);
-  letter-spacing: -0.012em;
-  margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.notif-row__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-pill);
-  /* 라이트=primary, 다크=primary-light 자동 swap (bg-brand 는 다크도 primary 고정이라 fg-brand 사용) */
-  background: var(--fg-brand);
-  display: inline-block;
-  flex-shrink: 0;
-}
-.notif-row__desc {
-  font-size: var(--text-caption);
-  color: var(--fg-secondary);
-  line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.notif-row__time {
-  font-size: var(--text-badge);
-  color: var(--fg-tertiary);
-  font-weight: 500;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-/* .notif-pop__foot, .notif-pop__all
- *   → NotificationsPopover inline 으로 이동.
- *
- * ---------- Category / Asset / Budget Manager (settings) ----------
+/* ---------- Category / Asset / Budget Manager (settings) ----------
  *
  * .cat-mgr, .cat-mgr__head/__title/__sub/__toolbar/__tabs/__search
  *   → ManagerShell / ManagerHead / ManagerTabs / MANAGER_LAYOUT

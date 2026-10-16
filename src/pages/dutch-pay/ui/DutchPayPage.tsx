@@ -45,6 +45,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { KRW, isEn } from "@/shared/lib/groo/format";
 import { MaskAmount, HideUnit, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
@@ -582,21 +583,19 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 데스크톱 ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus size={14} /> {t("fromTx.createSettlement")}
-          </Button>
-        </div>
-      </div>
-      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus size={14} /> {t("fromTx.createSettlement")}
+            </Button>
+          </>
+        }
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
+      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",
@@ -2037,7 +2036,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
     <div style={{ padding: 0 }}>
       <div
         className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
       >
         <div>
           <SkeletonBase className="h-8 w-24 mb-2" />
@@ -2047,7 +2046,7 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
           <SkeletonBase className="h-8 w-28 rounded-md" />
         </div>
       </div>
-      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",

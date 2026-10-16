@@ -89,6 +89,7 @@ const PasswordChangeDialog = lazy(() =>
 );
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 type SectionId =
@@ -566,21 +567,17 @@ export const SettingsPage = () => {
 
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 0", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("page.title")}</h1>
-          <div className="sub">{t("page.subtitle")}</div>
-        </div>
-      </div>
+      <PageHead
+        title={t("page.title")}
+        description={t("page.subtitle")}
+        style={{ padding: "20px 32px 0", margin: 0, maxWidth: 1320 }}
+      />
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "220px 1fr",
           gap: 24,
-          padding: "20px 28px",
+          padding: "20px 32px",
           maxWidth: 1320,
           alignItems: "start",
         }}
