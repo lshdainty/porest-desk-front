@@ -440,7 +440,7 @@ const ChartLegendTiles = React.forwardRef<
               >
                 <span
                   data-slot="chart-legend-name"
-                  className="flex items-center gap-x1_5 text-t3 text-fg-neutral-muted"
+                  className="flex items-center gap-x1_5 text-t3 text-fg-neutral-subtle"
                 >
                   <span
                     aria-hidden

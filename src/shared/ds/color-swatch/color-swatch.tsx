@@ -298,7 +298,7 @@ const ColorSwatchGroup = React.forwardRef<
                 <span
                   aria-hidden
                   data-slot="color-swatch-current-label"
-                  className="mt-x1_5 whitespace-nowrap font-sans text-t2 text-fg-neutral-muted"
+                  className="mt-x1_5 whitespace-nowrap font-sans text-t2 text-fg-neutral-subtle"
                 >
                   {current === "custom"
                     ? dsT("colorSwatch.currentCustom")
