@@ -239,8 +239,7 @@ function OrderBook({
                 top: 0,
                 bottom: 0,
                 width: `${(q / maxQ) * 100}%`,
-                background:
-                  "color-mix(in oklab, var(--status-danger-fg) 13%, var(--bg-surface))",
+                background: "var(--color-bg-critical-weak)",
                 borderRadius: 4,
               }}
             />
@@ -290,8 +289,7 @@ function OrderBook({
                 top: 0,
                 bottom: 0,
                 width: `${(q / maxQ) * 100}%`,
-                background:
-                  "color-mix(in oklab, var(--fg-brand) 14%, var(--bg-surface))",
+                background: "var(--color-bg-brand-weak)",
                 borderRadius: 4,
               }}
             />
@@ -1150,8 +1148,7 @@ function StockDetailBody({
                 fontWeight: 700,
                 padding: "4px 9px",
                 borderRadius: "var(--radius-full)",
-                background:
-                  "color-mix(in oklab, var(--status-warning) 16%, var(--bg-surface))",
+                background: "var(--color-bg-warning-weak)",
                 color: "var(--status-warning-fg)",
               }}
             >

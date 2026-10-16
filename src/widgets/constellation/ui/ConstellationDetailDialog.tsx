@@ -56,8 +56,7 @@ export function ConstellationDetailDialog({
           position: "relative",
           overflow: "hidden",
           borderRadius: "var(--radius-lg)",
-          background:
-            "linear-gradient(165deg, #0d1430 0%, #17224a 60%, #1f2c5e 100%)",
+          background: "var(--color-bg-neutral-inverted)",
           height: 240,
           display: "flex",
           alignItems: "center",
@@ -74,16 +73,19 @@ export function ConstellationDetailDialog({
               width: i % 3 === 0 ? 2.5 : 1.5,
               height: i % 3 === 0 ? 2.5 : 1.5,
               borderRadius: 999,
-              background: "rgba(200, 212, 255, 0.3)",
+              background:
+                "color-mix(in srgb, var(--color-fg-neutral-inverted) 30%, transparent)",
               transform: "translate(-50%, -50%)",
             }}
           />
         ))}
         <div
           style={{
-            color: collected ? "#dfe7ff" : "rgba(190,205,255,0.4)",
+            color: collected
+              ? "var(--color-fg-neutral-inverted)"
+              : "color-mix(in srgb, var(--color-fg-neutral-inverted) 40%, transparent)",
             filter: collected
-              ? "drop-shadow(0 0 10px rgba(176,196,255,0.55))"
+              ? "drop-shadow(0 0 10px color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent))"
               : "none",
           }}
         >
@@ -103,7 +105,8 @@ export function ConstellationDetailDialog({
               textAlign: "center",
               fontSize: 12,
               fontWeight: 600,
-              color: "rgba(205,216,255,0.65)",
+              color:
+                "color-mix(in srgb, var(--color-fg-neutral-inverted) 65%, transparent)",
             }}
           >
             {t("detail.notMet")}

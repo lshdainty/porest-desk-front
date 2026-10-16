@@ -2,15 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  ChevronRight,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  Target,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronRight, Eye, EyeOff, RefreshCw, Target } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
@@ -268,7 +260,7 @@ type AssetGroupKey = "cash" | "invest" | "card" | "loan";
 const GROUP_META: Record<AssetGroupKey, { labelKey: string; color: string }> = {
   cash: { labelKey: "group.cashDeposit", color: "var(--color-chart-blue)" },
   invest: { labelKey: "group.invest", color: "var(--bg-brand)" },
-  card: { labelKey: "group.card", color: "var(--fg-expense)" },
+  card: { labelKey: "group.card", color: "var(--color-fg-critical)" },
   loan: { labelKey: "assetType.loan", color: "var(--color-chart-brown)" },
 };
 
@@ -685,7 +677,7 @@ function UpcomingBillsCard() {
                       fontSize: "var(--text-body-sm)",
                       fontWeight: urgent ? 600 : 500,
                       color: urgent
-                        ? "var(--fg-expense)"
+                        ? "var(--color-fg-critical)"
                         : "var(--fg-tertiary)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -1727,14 +1719,14 @@ function SummaryCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 2,
-                  color: isUp ? "var(--fg-income)" : "var(--fg-expense)",
+                  color: isUp
+                    ? "var(--color-fg-critical)"
+                    : "var(--color-fg-informative)",
                   fontWeight: "600",
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                {isUp ? "+" : ""}
-                {changePercent.toFixed(1)}%
+                {isUp ? "▲" : "▼"} {Math.abs(changePercent).toFixed(1)}%
                 {changeAmount !== 0 && (
                   <HideUnit>
                     <span
@@ -1744,8 +1736,7 @@ function SummaryCard({
                         fontWeight: "500",
                       }}
                     >
-                      ({isUp ? "+" : MINUS}
-                      {money(Math.abs(changeAmount))})
+                      ({money(Math.abs(changeAmount))})
                     </span>
                   </HideUnit>
                 )}

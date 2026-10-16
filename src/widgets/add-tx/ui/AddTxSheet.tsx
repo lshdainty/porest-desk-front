@@ -1371,10 +1371,8 @@ export function AddTxSheet({
             marginBottom: 18,
             padding: "13px 15px",
             borderRadius: "var(--radius-lg)",
-            background:
-              "color-mix(in oklch, var(--status-warning) 12%, var(--bg-surface))",
-            border:
-              "1px solid color-mix(in oklch, var(--status-warning) 35%, transparent)",
+            background: "var(--color-bg-warning-weak)",
+            border: "1px solid var(--color-stroke-warning-solid)",
             display: "flex",
             alignItems: "flex-start",
             gap: 11,
@@ -1390,8 +1388,7 @@ export function AddTxSheet({
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              background:
-                "color-mix(in oklch, var(--status-warning) 22%, var(--bg-surface))",
+              background: "var(--color-bg-warning-weak-pressed)",
               color: "var(--status-warning-fg)",
             }}
           >

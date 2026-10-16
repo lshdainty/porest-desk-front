@@ -66,7 +66,7 @@ export function CategoryTile({
           width: 32,
           height: 32,
           borderRadius: tileRadius(32),
-          // getPaletteByColor: 팔레트 base hex → --color-cat-* alias(다크 자동 light swap) + 18% bg.
+          // getPaletteByColor: 팔레트 base hex → --color-chart-* alias(다크 자동 light swap) + 18% bg.
           background: palette.bg,
           color: palette.color,
           opacity: excluded ? 0.45 : 1,
@@ -82,7 +82,7 @@ export function CategoryTile({
           fontSize: "var(--text-badge)",
           fontWeight: active || excluded ? 700 : 500,
           color: excluded
-            ? "var(--fg-expense)"
+            ? "var(--color-fg-critical)"
             : active
               ? "var(--fg-brand-strong)"
               : "var(--fg-secondary)",

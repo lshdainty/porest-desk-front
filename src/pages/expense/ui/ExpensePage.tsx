@@ -380,7 +380,7 @@ function ExpensePageSkeleton({
               labels={dowLabels}
               colorFor={(i) =>
                 i === 0
-                  ? "var(--fg-expense)"
+                  ? "var(--color-fg-critical)"
                   : i === 6
                     ? "var(--fg-brand)"
                     : undefined
@@ -1770,7 +1770,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 className={
                   diff > 0
                     ? "font-bold text-[var(--fg-brand)]"
-                    : "font-bold text-[var(--fg-expense)]"
+                    : "font-bold text-[var(--color-fg-critical)]"
                 }
               />
             ),
@@ -1853,7 +1853,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const numColor = (ds: string, dow: number): string => {
     if (ds > todayStr) return "var(--fg-tertiary)";
-    if (dow === 0) return "var(--fg-expense)"; // 캘린더 일요일 정합(사용자 결정)
+    if (dow === 0) return "var(--color-fg-critical)"; // 캘린더 일요일 정합(사용자 결정)
     if (dow === 6) return "var(--fg-brand)";
     return "var(--fg-primary)";
   };
@@ -2023,10 +2023,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             <LedgerDow
               labels={dowLabels}
               // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
-              // 카테고리 팔레트의 빨강(--color-cat-red)을 쓰고 있어 헤더만 톤이 달랐다.
+              // 카테고리 팔레트의 빨강(--color-chart-red)을 쓰고 있어 헤더만 톤이 달랐다.
               colorFor={(i) =>
                 i === 0
-                  ? "var(--fg-expense)"
+                  ? "var(--color-fg-critical)"
                   : i === 6
                     ? "var(--fg-brand)"
                     : undefined
@@ -2128,7 +2128,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 rows={[
                   {
                     label: t("expense"),
-                    color: "var(--fg-expense)",
+                    color: "var(--color-fg-critical)",
                     value: (
                       <>
                         <MaskAmount card="ledger.txList" kind="expense">

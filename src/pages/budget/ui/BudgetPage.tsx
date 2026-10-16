@@ -125,7 +125,7 @@ function ComplianceTooltip({
             width: 8,
             height: 8,
             borderRadius: "var(--radius-xs)",
-            background: over ? "var(--fg-expense)" : "var(--bg-brand)",
+            background: over ? "var(--color-fg-critical)" : "var(--bg-brand)",
           }}
         />
         <span
@@ -142,7 +142,7 @@ function ComplianceTooltip({
             marginLeft: "auto",
             fontSize: "var(--text-caption)",
             fontWeight: "700",
-            color: over ? "var(--fg-expense)" : "var(--fg-primary)",
+            color: over ? "var(--color-fg-critical)" : "var(--fg-primary)",
           }}
         >
           {p.toFixed(1)}%
@@ -664,7 +664,7 @@ export const BudgetPage = () => {
                 style={{
                   color:
                     totalLimit - totalSpent < 0
-                      ? "var(--fg-expense)"
+                      ? "var(--color-fg-critical)"
                       : undefined,
                 }}
               >
@@ -761,7 +761,7 @@ export const BudgetPage = () => {
                     fontSize: "var(--text-body-sm)",
                     fontWeight: "700",
                     color: overAllocated
-                      ? "var(--fg-expense)"
+                      ? "var(--color-fg-critical)"
                       : "var(--fg-income)",
                   }}
                 >
@@ -781,7 +781,7 @@ export const BudgetPage = () => {
                   padding: "8px 12px",
                   background: "var(--status-danger-subtle)",
                   border:
-                    "1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)",
+                    "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
                   borderRadius: "var(--radius-md)",
                   fontSize: "var(--text-caption)",
                   color: "var(--status-danger-fg)",
@@ -874,7 +874,8 @@ export const BudgetPage = () => {
             top: 0,
             height: "100%",
             width: `${Math.min(100, pct)}%`,
-            background: pct > 100 ? "var(--fg-expense)" : "var(--bg-brand)",
+            background:
+              pct > 100 ? "var(--color-fg-critical)" : "var(--bg-brand)",
             borderRadius: "var(--radius-pill)",
           }}
         />
@@ -1007,7 +1008,7 @@ export const BudgetPage = () => {
               overList.length > 0
                 ? "var(--status-danger-subtle)"
                 : "var(--bg-surface)",
-            border: `1px solid ${overList.length > 0 ? "color-mix(in oklch, var(--fg-expense) 30%, transparent)" : "var(--border-subtle)"}`,
+            border: `1px solid ${overList.length > 0 ? "color-mix(in oklch, var(--color-fg-critical) 30%, transparent)" : "var(--border-subtle)"}`,
             borderRadius: "var(--radius-lg)",
           }}
         >
@@ -1019,7 +1020,7 @@ export const BudgetPage = () => {
               fontSize: "var(--text-caption)",
               color:
                 overList.length > 0
-                  ? "var(--fg-expense)"
+                  ? "var(--color-fg-critical)"
                   : "var(--fg-tertiary)",
               fontWeight: "600",
               marginBottom: 4,
@@ -1034,7 +1035,9 @@ export const BudgetPage = () => {
               fontWeight: "700",
               letterSpacing: "-0.022em",
               color:
-                overList.length > 0 ? "var(--fg-expense)" : "var(--fg-primary)",
+                overList.length > 0
+                  ? "var(--color-fg-critical)"
+                  : "var(--fg-primary)",
             }}
           >
             {overList.length}
@@ -1190,7 +1193,7 @@ export const BudgetPage = () => {
                     key={`${d.year}-${d.month}`}
                     fill={
                       d.percent > 100
-                        ? "var(--fg-expense)"
+                        ? "var(--color-fg-critical)"
                         : d.active
                           ? "var(--bg-brand)"
                           : "var(--border-strong)"
@@ -1339,7 +1342,7 @@ export const BudgetPage = () => {
                         fontSize: "var(--text-caption)",
                         color:
                           state === "over"
-                            ? "var(--fg-expense)"
+                            ? "var(--color-fg-critical)"
                             : "var(--fg-tertiary)",
                         marginTop: 1,
                       }}
@@ -1375,7 +1378,7 @@ export const BudgetPage = () => {
                         fontWeight: "700",
                         color:
                           state === "over"
-                            ? "var(--fg-expense)"
+                            ? "var(--color-fg-critical)"
                             : "var(--fg-primary)",
                       }}
                     >

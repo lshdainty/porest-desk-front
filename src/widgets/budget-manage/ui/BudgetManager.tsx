@@ -513,7 +513,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                         fontWeight: "700",
                         color:
                           remaining < 0
-                            ? "var(--fg-expense)"
+                            ? "var(--color-fg-critical)"
                             : "var(--fg-income)",
                       }}
                     >
@@ -531,7 +531,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                       padding: "8px 12px",
                       background: "var(--status-danger-subtle)",
                       border:
-                        "1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)",
+                        "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
                       borderRadius: "var(--radius-md)",
                       fontSize: "var(--text-caption)",
                       color: "var(--status-danger-fg)",
@@ -699,7 +699,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                                   fontWeight: "500",
                                   color:
                                     state === "over"
-                                      ? "var(--fg-expense)"
+                                      ? "var(--color-fg-critical)"
                                       : "var(--fg-tertiary)",
                                   marginTop: 2,
                                 }}
@@ -745,7 +745,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                                   fontWeight: "700",
                                   color:
                                     state === "over"
-                                      ? "var(--fg-expense)"
+                                      ? "var(--color-fg-critical)"
                                       : "var(--fg-primary)",
                                 }}
                               >
@@ -773,6 +773,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                                 style={{ marginLeft: 8 }}
                               >
                                 <Button
+                                  aria-label={tCommon("edit")}
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => setEditing(b)}
@@ -780,6 +781,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                                   <Pencil size={13} />
                                 </Button>
                                 <Button
+                                  aria-label={tCommon("delete")}
                                   variant="ghost"
                                   size="icon"
                                   className={MANAGE_ROW.delClassName}

@@ -17,7 +17,7 @@ import { cn } from "@/shared/lib/index";
  */
 
 const checkboxVariants = cva(
-  "peer shrink-0 rounded-sm border border-border-strong bg-surface-default hover:bg-surface-input data-[state=checked]:bg-bg-brand-solid data-[state=checked]:border-bg-brand-solid data-[state=checked]:text-text-on-accent data-[state=checked]:hover:bg-bg-brand-solid data-[state=indeterminate]:bg-bg-brand-solid data-[state=indeterminate]:border-bg-brand-solid data-[state=indeterminate]:text-text-on-accent data-[state=indeterminate]:hover:bg-bg-brand-solid aria-invalid:border-stroke-critical-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:cursor-not-allowed disabled:border-stroke-neutral-weak disabled:bg-bg-disabled disabled:hover:bg-bg-disabled transition-colors motion-safe:duration-[var(--motion-duration-fast)] motion-safe:ease-[var(--motion-ease-out)]",
+  "peer shrink-0 rounded-sm border border-border-strong bg-surface-default hover:bg-surface-input data-[state=checked]:bg-bg-brand-solid data-[state=checked]:border-bg-brand-solid data-[state=checked]:text-text-on-accent data-[state=checked]:hover:bg-bg-brand-solid data-[state=indeterminate]:bg-bg-brand-solid data-[state=indeterminate]:border-bg-brand-solid data-[state=indeterminate]:text-text-on-accent data-[state=indeterminate]:hover:bg-bg-brand-solid aria-invalid:border-stroke-critical-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:cursor-not-allowed disabled:border-stroke-neutral-weak disabled:bg-bg-disabled disabled:hover:bg-bg-disabled transition-colors motion-safe:duration-[var(--motion-duration-fast)] motion-safe:ease-[var(--motion-ease-easing)]",
   {
     variants: {
       size: {

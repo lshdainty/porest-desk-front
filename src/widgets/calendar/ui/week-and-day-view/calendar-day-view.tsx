@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
   eventBadgeColor,
+  eventBadgeTone,
   getCurrentEvents,
   getEventBlockStyle,
   getVisibleHours,
@@ -85,6 +86,8 @@ const DayViewMultiDayEventsRow = ({
           const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1;
 
           const badgeColor = eventBadgeColor(event);
+
+          const tone = eventBadgeTone(event);
           return (
             <div
               key={event.id}
@@ -92,9 +95,9 @@ const DayViewMultiDayEventsRow = ({
               tabIndex={0}
               className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
               style={{
-                background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                background: tone.bg,
                 borderColor: "transparent",
-                color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+                color: tone.fg,
               }}
               onClick={(e) => onEventClick?.(event, e.currentTarget)}
               onKeyDown={(e) => {
@@ -184,6 +187,7 @@ const EventBlock = ({
   const durationInMinutes = differenceInMinutes(end, start);
   const heightInPixels = (durationInMinutes / 60) * 96 - 8;
   const badgeColor = eventBadgeColor(event);
+  const tone = eventBadgeTone(event);
 
   return (
     <div
@@ -195,9 +199,9 @@ const EventBlock = ({
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        background: tone.bg,
         borderColor: "transparent",
-        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+        color: tone.fg,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => {
@@ -274,7 +278,7 @@ const CalendarDayView = ({
               <div
                 style={{
                   color: isSunday
-                    ? "var(--fg-expense)"
+                    ? "var(--color-fg-critical)"
                     : isSaturday
                       ? "var(--fg-brand)"
                       : undefined,

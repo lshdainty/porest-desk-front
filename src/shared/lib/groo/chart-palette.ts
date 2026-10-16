@@ -2,7 +2,7 @@
  * groo-design chart palette base hex ↔ light variant 매핑.
  *
  * DB (expense_category.color) 는 base hex 만 저장하는 single-source.
- * 다크모드 swap 은 CSS variable alias (`--color-cat-*`, index.css 정의) 가
+ * 다크모드 swap 은 CSS variable alias (`--color-chart-*`, index.css 정의) 가
  * 처리하며, 본 헬퍼는 base hex → alias var 문자열 변환을 수행한다.
  *
  * groo-tokens.css `--color-chart-*` base hex 값:
@@ -34,60 +34,65 @@ export type ChartPair = {
 };
 
 export const CHART_PAIRS: ChartPair[] = [
-  { key: "red", base: "#c73838", light: "#eca0a0", cssVar: "--color-cat-red" },
+  {
+    key: "red",
+    base: "#c73838",
+    light: "#eca0a0",
+    cssVar: "--color-chart-red",
+  },
   {
     key: "orange",
     base: "#b36418",
     light: "#e8b266",
-    cssVar: "--color-cat-orange",
+    cssVar: "--color-chart-orange",
   },
   {
     key: "yellow",
     base: "#8c7400",
     light: "#d4b83a",
-    cssVar: "--color-cat-yellow",
+    cssVar: "--color-chart-yellow",
   },
   {
     key: "green",
     base: "#2d8060",
     light: "#6bcb86",
-    cssVar: "--color-cat-green",
+    cssVar: "--color-chart-green",
   },
   {
     key: "blue",
     base: "#2c70bf",
     light: "#7bbbed",
-    cssVar: "--color-cat-blue",
+    cssVar: "--color-chart-blue",
   },
   {
     key: "indigo",
     base: "#5e60c8",
     light: "#abb0f0",
-    cssVar: "--color-cat-indigo",
+    cssVar: "--color-chart-indigo",
   },
   {
     key: "violet",
     base: "#8b4dba",
     light: "#d2a8ec",
-    cssVar: "--color-cat-violet",
+    cssVar: "--color-chart-violet",
   },
   {
     key: "pink",
     base: "#b83b7a",
     light: "#eca0bc",
-    cssVar: "--color-cat-pink",
+    cssVar: "--color-chart-pink",
   },
   {
     key: "brown",
     base: "#9a6536",
     light: "#dcb088",
-    cssVar: "--color-cat-brown",
+    cssVar: "--color-chart-brown",
   },
   {
     key: "gray",
     base: "#6b7484",
     light: "#b5bbc5",
-    cssVar: "--color-cat-gray",
+    cssVar: "--color-chart-gray",
   },
 ];
 
@@ -103,6 +108,8 @@ const BASE_TO_PAIR = new Map(CHART_PAIRS.map((p) => [p.base.toLowerCase(), p]));
 export function getPaletteByColor(color: string | null | undefined): {
   color: string;
   bg: string;
+  /** 옅은 바탕 위 글자 — 팔레트 색은 chart-{hue}-contrast */
+  fg: string;
 } {
   if (!color) {
     // 색 없음(예: 예산 '전체' 행) — 컬러 타일과 동일하게 brand 색 @18% 틴트.
@@ -110,15 +117,17 @@ export function getPaletteByColor(color: string | null | undefined): {
     // 인 fg-brand-strong 기반 틴트로 통일(앱 softBg(fgBrand) 정합).
     return {
       color: "var(--fg-brand-strong)",
-      bg: "color-mix(in oklch, var(--fg-brand-strong) 18%, transparent)",
+      bg: "var(--color-bg-brand-weak)",
+      fg: "var(--fg-brand-strong)",
     };
   }
   const pair = BASE_TO_PAIR.get(color.toLowerCase());
   if (pair) {
-    const aliasVar = `var(${pair.cssVar})`;
+    // 칠하는 값은 v111 짝 — 글 chart-{hue}, 옅은 바탕 chart-{hue}-weak(라이트 200 · 다크 300, 불투명)
     return {
-      color: aliasVar,
-      bg: `color-mix(in oklch, ${aliasVar} 18%, transparent)`,
+      color: `var(${pair.cssVar})`,
+      bg: `var(${pair.cssVar}-weak)`,
+      fg: `var(${pair.cssVar}-contrast)`,
     };
   }
   if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color)) {
@@ -131,11 +140,13 @@ export function getPaletteByColor(color: string | null | undefined): {
     return {
       color: `color-mix(in oklab, white var(--swatch-lift), ${hex})`,
       bg: `color-mix(in oklch, ${hex} 18%, transparent)`,
+      fg: `color-mix(in oklab, ${hex} 70%, var(--fg-primary))`,
     };
   }
   return {
     color: "var(--fg-brand-strong)",
-    bg: "color-mix(in oklch, var(--fg-brand-strong) 18%, transparent)",
+    bg: "var(--color-bg-brand-weak)",
+    fg: "var(--fg-brand-strong)",
   };
 }
 
@@ -146,6 +157,6 @@ export function getPaletteByColor(color: string | null | undefined): {
  */
 export const CAT_PALETTE = CHART_PAIRS.map((p) => ({
   color: `var(${p.cssVar})`,
-  bg: `color-mix(in oklch, var(${p.cssVar}) 18%, transparent)`,
+  bg: `var(${p.cssVar}-weak)`,
   baseHex: p.base,
 }));

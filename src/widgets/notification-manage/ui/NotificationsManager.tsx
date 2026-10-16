@@ -48,7 +48,7 @@ const TONE_STYLE: Record<Tone, { bg: string; fg: string }> = {
   // brand-subtle 은 다크에서 surface 와 거의 같아 박스가 묻힘 —
   // fg-brand(다크=primary-light 자동 swap) 15% 틴트로 양 모드 가시성 확보.
   brand: {
-    bg: "color-mix(in srgb, var(--fg-brand) 15%, transparent)",
+    bg: "var(--color-bg-brand-weak)",
     fg: "var(--fg-brand)",
   },
   success: {
@@ -777,7 +777,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           style={{
             // 앱 에러 메시지 타이포 bodySm(13) 정합.
             fontSize: "var(--text-body-sm)",
-            color: "var(--fg-expense)",
+            color: "var(--color-fg-critical)",
           }}
         >
           {t("saveError")}

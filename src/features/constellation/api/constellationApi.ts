@@ -88,7 +88,7 @@ export function constellationDesc(
 
 /** color_key → 카테고리 팔레트 CSS 변수(라이트/다크 자동 swap — cat-* 별칭). */
 export function constellationColorVar(colorKey: string): string {
-  return `var(--color-cat-${colorKey})`;
+  return `var(--color-chart-${colorKey})`;
 }
 
 export const constellationApi = {

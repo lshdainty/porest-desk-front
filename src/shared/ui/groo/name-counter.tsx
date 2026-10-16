@@ -27,7 +27,7 @@ export function NameCounter({
       }}
     >
       {err ? (
-        <span style={{ color: "var(--fg-expense)" }}>{err}</span>
+        <span style={{ color: "var(--color-fg-critical)" }}>{err}</span>
       ) : (
         <span>
           {len}/{max}

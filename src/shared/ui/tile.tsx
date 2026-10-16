@@ -93,7 +93,7 @@ const TileItem = React.forwardRef<
           "rounded-[var(--radius-lg)] border border-transparent bg-transparent",
           "data-[state=checked]:border-[1.5px] data-[state=checked]:border-[var(--border-brand)]",
           "data-[state=checked]:bg-[var(--bg-brand-subtle)]",
-          "transition-[border-color,background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+          "transition-[border-color,background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
           "disabled:bg-bg-disabled disabled:text-fg-disabled disabled:cursor-not-allowed",
           className,

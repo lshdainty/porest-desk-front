@@ -810,6 +810,7 @@ function SortableRow({
             <Pencil size={13} />
           </Button>
           <Button
+            aria-label={t("deleteTitle")}
             variant="ghost"
             size="icon"
             className={MANAGE_ROW.delClassName}

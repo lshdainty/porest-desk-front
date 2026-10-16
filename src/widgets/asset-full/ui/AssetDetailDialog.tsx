@@ -233,7 +233,7 @@ function CardPerfBadge({ assetRowId }: { assetRowId: number }) {
         padding: "12px 13px",
         borderRadius: "var(--radius-lg)",
         background: done
-          ? "color-mix(in oklab, var(--color-cat-green) 10%, var(--bg-surface))"
+          ? "var(--color-chart-green-subtle)"
           : "var(--bg-sunken)",
       }}
     >
@@ -247,7 +247,7 @@ function CardPerfBadge({ assetRowId }: { assetRowId: number }) {
           alignItems: "center",
           justifyContent: "center",
           background: "var(--bg-surface)",
-          color: done ? "var(--color-cat-green)" : "var(--fg-secondary)",
+          color: done ? "var(--color-chart-green)" : "var(--fg-secondary)",
         }}
       >
         {done ? (
@@ -762,7 +762,7 @@ function CardDetailBody({
             <div
               style={{
                 fontSize: "var(--text-caption)",
-                color: "var(--color-cat-green)",
+                color: "var(--color-chart-green)",
                 fontWeight: "600",
                 marginTop: 6,
                 display: "flex",
@@ -1316,7 +1316,7 @@ function CardDetailBody({
                 marginLeft: "auto",
                 fontSize: "var(--text-label-sm)",
                 fontWeight: "700",
-                color: limitWarn ? "var(--color-cat-red)" : "var(--fg-brand)",
+                color: limitWarn ? "var(--color-chart-red)" : "var(--fg-brand)",
               }}
             >
               {t("assetDetail.limitPctUsed", { pct: limitPct })}
@@ -1337,7 +1337,7 @@ function CardDetailBody({
                 height: "100%",
                 borderRadius: "var(--radius-pill)",
                 background: limitWarn
-                  ? "var(--color-cat-red)"
+                  ? "var(--color-chart-red)"
                   : "var(--bg-brand)",
               }}
             />

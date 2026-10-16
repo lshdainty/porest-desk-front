@@ -57,7 +57,7 @@ export function AssetLogo({
     asset.color ??
     brand?.bg ??
     `oklch(0.55 0.12 ${hashHue(asset.assetName ?? "asset")})`;
-  const fg = brand?.fg ?? "#fff";
+  const fg = brand?.fg ?? "var(--color-static-white)";
   return (
     <span
       style={{

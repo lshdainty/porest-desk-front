@@ -293,7 +293,7 @@ export function CategoryEditDialog({
           }}
         >
           {err ? (
-            <span style={{ color: "var(--fg-expense)" }}>{err}</span>
+            <span style={{ color: "var(--color-fg-critical)" }}>{err}</span>
           ) : (
             <span>{labelTrim.length}/12</span>
           )}

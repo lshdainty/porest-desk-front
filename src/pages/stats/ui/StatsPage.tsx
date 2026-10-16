@@ -185,18 +185,18 @@ const labelsOf = ({ segMode }: RangeState) =>
           };
 
 // groo chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
-// `--color-cat-*` alias — 라이트/다크 자동 swap.
+// `--color-chart-*` alias — 라이트/다크 자동 swap.
 const DONUT_COLORS = [
-  "var(--color-cat-blue)",
-  "var(--color-cat-green)",
-  "var(--color-cat-orange)",
-  "var(--color-cat-violet)",
-  "var(--color-cat-pink)",
-  "var(--color-cat-indigo)",
-  "var(--color-cat-red)",
-  "var(--color-cat-yellow)",
-  "var(--color-cat-brown)",
-  "var(--color-cat-gray)",
+  "var(--color-chart-blue)",
+  "var(--color-chart-green)",
+  "var(--color-chart-orange)",
+  "var(--color-chart-violet)",
+  "var(--color-chart-pink)",
+  "var(--color-chart-indigo)",
+  "var(--color-chart-red)",
+  "var(--color-chart-yellow)",
+  "var(--color-chart-brown)",
+  "var(--color-chart-gray)",
 ];
 
 // 6-step heatmap palette (empty → deep mossy).
@@ -1974,7 +1974,10 @@ export const StatsPage = () => {
         {t(labels.mom)}{" "}
         <span
           style={{
-            color: dayPct >= 0 ? "var(--fg-expense)" : "var(--fg-income)",
+            color:
+              dayPct >= 0
+                ? "var(--color-fg-critical)"
+                : "var(--color-fg-informative)",
             fontWeight: 600,
           }}
         >
@@ -2200,7 +2203,7 @@ export const StatsPage = () => {
 
   const trendChartConfig: ChartConfig = {
     income: { label: te("income"), color: "var(--status-info-fg)" },
-    expense: { label: te("expense"), color: "var(--fg-expense)" },
+    expense: { label: te("expense"), color: "var(--color-fg-critical)" },
   };
   const savingsChartConfig: ChartConfig = {
     savings: { label: t("trend.savings"), color: "var(--bg-brand)" },
@@ -2356,7 +2359,7 @@ export const StatsPage = () => {
                       {
                         dataKey: "expense",
                         label: te("expense"),
-                        color: "var(--fg-expense)",
+                        color: "var(--color-fg-critical)",
                       },
                     ]}
                   />
@@ -2424,7 +2427,7 @@ export const StatsPage = () => {
                   width: 10,
                   height: 10,
                   borderRadius: "var(--radius-xs)",
-                  background: "var(--fg-expense)",
+                  background: "var(--color-fg-critical)",
                 }}
               />{" "}
               {te("expense")}
@@ -2473,7 +2476,7 @@ export const StatsPage = () => {
           <WonUnit />
         </>
       ),
-      dot: "var(--fg-expense)",
+      dot: "var(--color-fg-critical)",
       pct: spendRate,
     },
     {
@@ -2596,7 +2599,7 @@ export const StatsPage = () => {
             <div
               style={{
                 width: `${spendRate}%`,
-                background: "var(--fg-expense)",
+                background: "var(--color-fg-critical)",
                 borderRadius: 999,
               }}
             />
@@ -2744,7 +2747,9 @@ export const StatsPage = () => {
                       dataKey: "savings",
                       label: t("trend.savings"),
                       color: (v) =>
-                        v < 0 ? "var(--fg-expense)" : "var(--status-info-fg)",
+                        v < 0
+                          ? "var(--color-fg-critical)"
+                          : "var(--status-info-fg)",
                       format: (v) =>
                         `${v >= 0 ? "+" : "−"}${money(Math.abs(v))}`,
                     },
@@ -2763,7 +2768,7 @@ export const StatsPage = () => {
                   key={i}
                   fill={
                     d.savings < 0
-                      ? "var(--fg-expense)"
+                      ? "var(--color-fg-critical)"
                       : "var(--status-info-fg)"
                   }
                 />
@@ -3100,7 +3105,9 @@ export const StatsPage = () => {
   // 비교 탭 헤더/지표 (design StatsScreen). 감소=파랑(good)/증가=빨강(지출성).
   const cmpDiff = totalNow - totalPrev;
   const cmpLess = cmpDiff <= 0;
-  const cmpColor = cmpLess ? "var(--fg-income)" : "var(--fg-expense)";
+  const cmpColor = cmpLess
+    ? "var(--color-fg-informative)"
+    : "var(--color-fg-critical)";
   const cmpPct =
     totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null;
   const cmpBarMax = Math.max(1, totalNow, totalPrev);
@@ -3341,7 +3348,9 @@ export const StatsPage = () => {
       {cmpMetrics.map((m, i) => {
         const d = m.now - m.prev;
         const up = d > 0;
-        const c = up ? "var(--fg-expense)" : "var(--fg-income)";
+        const c = up
+          ? "var(--color-fg-critical)"
+          : "var(--color-fg-informative)";
         return (
           // 앱 _CompareMetricsCard 미러: 라벨+값(좌) / 증감(윗줄)+지난기간(아랫줄) 2줄(우, 우측·하단 정렬)
           <MTile
@@ -3496,7 +3505,9 @@ export const StatsPage = () => {
             const up = r.diff > 0;
             // 증가=지출성(빨강 --fg-expense) / 감소=good(파랑 --fg-income).
             // design chart-line-expense / bg-brand 의 web 시맨틱 매핑(CompareSummary·CompareMetrics 정합).
-            const color = up ? "var(--fg-expense)" : "var(--fg-income)";
+            const color = up
+              ? "var(--color-fg-critical)"
+              : "var(--color-fg-informative)";
             // getPaletteByColor 경유 — dark light-variant swap + null 은 brand-light 틴트
             const pal = getPaletteByColor(r.color);
             return (
@@ -3831,7 +3842,7 @@ export const StatsPage = () => {
                     fontSize: "var(--text-badge)",
                     fontWeight: 600,
                     color: isSun
-                      ? "var(--fg-expense)"
+                      ? "var(--color-fg-critical)"
                       : isSat
                         ? "var(--fg-brand)"
                         : "var(--fg-tertiary)",

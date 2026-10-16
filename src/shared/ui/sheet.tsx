@@ -79,7 +79,7 @@ const SheetContent = React.forwardRef<
         {...props}
       >
         {children}
-        <SheetPrimitive.Close className="absolute right-[var(--spacing-md)] top-[var(--spacing-md)] rounded-sm opacity-70 transition-opacity duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:pointer-events-none">
+        <SheetPrimitive.Close className="absolute right-[var(--spacing-md)] top-[var(--spacing-md)] rounded-sm opacity-70 transition-opacity duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:pointer-events-none">
           <X className="h-4 w-4" />
           <span className="sr-only">{t("close")}</span>
         </SheetPrimitive.Close>

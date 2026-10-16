@@ -83,80 +83,58 @@ type MemoTone = {
   key: string;
   baseHex: string;
   cssVar: string;
-  bgPct: number;
-  fgPct: number;
 };
 
 const MEMO_TONES: MemoTone[] = [
   {
     key: "blue",
     baseHex: "#2c70bf",
-    cssVar: "--color-cat-blue",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-blue",
   },
   {
     key: "green",
     baseHex: "#2d8060",
-    cssVar: "--color-cat-green",
-    bgPct: 14,
-    fgPct: 70,
+    cssVar: "--color-chart-green",
   },
   {
     key: "pink",
     baseHex: "#b83b7a",
-    cssVar: "--color-cat-pink",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-pink",
   },
   {
     key: "violet",
     baseHex: "#8b4dba",
-    cssVar: "--color-cat-violet",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-violet",
   },
   {
     key: "red",
     baseHex: "#c73838",
-    cssVar: "--color-cat-red",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-red",
   },
   {
     key: "orange",
     baseHex: "#b36418",
-    cssVar: "--color-cat-orange",
-    bgPct: 13,
-    fgPct: 70,
+    cssVar: "--color-chart-orange",
   },
   {
     key: "indigo",
     baseHex: "#5e60c8",
-    cssVar: "--color-cat-indigo",
-    bgPct: 13,
-    fgPct: 72,
+    cssVar: "--color-chart-indigo",
   },
   {
     key: "yellow",
     baseHex: "#8c7400",
-    cssVar: "--color-cat-yellow",
-    bgPct: 16,
-    fgPct: 64,
+    cssVar: "--color-chart-yellow",
   },
   {
     key: "brown",
     baseHex: "#9a6536",
-    cssVar: "--color-cat-brown",
-    bgPct: 14,
-    fgPct: 68,
+    cssVar: "--color-chart-brown",
   },
   {
     key: "gray",
     baseHex: "#6b7484",
-    cssVar: "--color-cat-gray",
-    bgPct: 16,
-    fgPct: 60,
+    cssVar: "--color-chart-gray",
   },
 ];
 
@@ -173,8 +151,9 @@ function resolveTone(color: string | null | undefined): ResolvedTone {
   const v = `var(${tone.cssVar})`;
   return {
     swatch: v,
-    bg: `color-mix(in oklab, ${v} ${tone.bgPct}%, var(--bg-surface))`,
-    fg: `color-mix(in oklab, ${v} ${tone.fgPct}%, var(--fg-primary))`,
+    // v111 짝 — 옅은 바탕 chart-{hue}-subtle · 글 chart-{hue}-contrast(라이트/다크 불투명 한 값)
+    bg: `var(${tone.cssVar}-subtle)`,
+    fg: `var(${tone.cssVar}-contrast)`,
   };
 }
 

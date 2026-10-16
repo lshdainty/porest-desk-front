@@ -349,8 +349,7 @@ export function ForestReport({
                 <span
                   className="frp-tile__ico"
                   style={{
-                    background:
-                      "color-mix(in oklab, var(--color-chart-green) 14%, var(--bg-surface))",
+                    background: "var(--color-chart-green-weak)",
                     color: "var(--color-chart-green)",
                   }}
                 >

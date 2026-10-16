@@ -51,16 +51,16 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean };
 // ── 아바타 팔레트 ────────────────────────────────────────────────────────────
 // 이름 기반 chart 10색 순환(앱 _participantPaletteOklch 정합). alias var = 다크 자동 swap.
 const AVATAR_VARS = [
-  "--color-cat-blue",
-  "--color-cat-green",
-  "--color-cat-orange",
-  "--color-cat-violet",
-  "--color-cat-pink",
-  "--color-cat-indigo",
-  "--color-cat-red",
-  "--color-cat-brown",
-  "--color-cat-yellow",
-  "--color-cat-gray",
+  "--color-chart-blue",
+  "--color-chart-green",
+  "--color-chart-orange",
+  "--color-chart-violet",
+  "--color-chart-pink",
+  "--color-chart-indigo",
+  "--color-chart-red",
+  "--color-chart-brown",
+  "--color-chart-yellow",
+  "--color-chart-gray",
 ] as const;
 
 /** 이름 → 안정적 팔레트 인덱스(문자 코드 합 mod 10). */
@@ -642,7 +642,7 @@ function Avatar({
         height: size,
         borderRadius: 999,
         background: avatarColor(name),
-        color: "#fff",
+        color: "var(--color-static-white)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -695,7 +695,7 @@ function SummaryCard({
             width: 28,
             height: 28,
             borderRadius: "var(--radius-sm)",
-            background: `color-mix(in oklab, var(${chipVar}) 18%, var(--bg-surface))`,
+            background: `var(${chipVar}-weak)`,
             color: fg,
             display: "inline-flex",
             alignItems: "center",
@@ -983,8 +983,7 @@ function PastRow({
           width: 36,
           height: 36,
           borderRadius: "var(--radius-md)",
-          background:
-            "color-mix(in oklab, var(--color-chart-green) 14%, var(--bg-surface))",
+          background: "var(--color-chart-green-weak)",
           color: "var(--status-success-fg)",
           display: "inline-flex",
           alignItems: "center",
@@ -1608,7 +1607,9 @@ function ParticipantPick({
           flexShrink: 0,
         }}
       >
-        {checked && <Check size={12} color="#fff" strokeWidth={3} />}
+        {checked && (
+          <Check size={12} color="var(--color-static-white)" strokeWidth={3} />
+        )}
       </span>
       <Avatar name={name} size={32} />
       <div style={{ flex: 1, minWidth: 0 }}>

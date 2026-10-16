@@ -17,7 +17,7 @@ import { useDragSelect } from "@/widgets/calendar/model/drag-select-context";
 import { DragSelectProvider } from "@/widgets/calendar/model/drag-select-provider";
 import {
   calculateMonthEventPositions,
-  eventBadgeColor,
+  eventBadgeTone,
   getCalendarCells,
   getMonthCellEvents,
 } from "@/widgets/calendar/lib/helpers";
@@ -213,7 +213,7 @@ const MonthDayCell = ({
             color: isToday(date)
               ? undefined
               : isHoliday || isSunday
-                ? "var(--fg-expense)"
+                ? "var(--color-fg-critical)"
                 : isSaturday
                   ? "var(--fg-brand)"
                   : undefined,
@@ -413,7 +413,7 @@ const MonthEventBadge = ({
         7 - getDay(cellDate),
       )
     : 0;
-  const badgeColor = eventBadgeColor(event);
+  const tone = eventBadgeTone(event);
 
   const positionClasses = {
     // 멀티데이 바: 시작/종료(외곽)만 round, 중간은 full-bleed 연속. 보이는 border 의존 제거 →
@@ -449,9 +449,9 @@ const MonthEventBadge = ({
       style={{
         // 클로드 디자인 정합: 알파(투명) 틴트 대신 surface 와 섞은 불투명 bg +
         // fg-primary 와 섞은 적응형 텍스트(다크에서 자동 light → 가독성). border 없음.
-        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        background: tone.bg,
         borderColor: "transparent",
-        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+        color: tone.fg,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -629,7 +629,7 @@ const MonthViewContent = ({
                 className="text-xs font-medium"
                 style={{
                   color: isSunday
-                    ? "var(--fg-expense)"
+                    ? "var(--color-fg-critical)"
                     : isSaturday
                       ? "var(--fg-brand)"
                       : undefined,

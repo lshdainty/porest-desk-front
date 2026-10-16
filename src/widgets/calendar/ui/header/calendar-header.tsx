@@ -67,6 +67,7 @@ const MonthYearPickerContent = ({
       {/* Year navigation */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <Button
+          aria-label={t("common:prev")}
           variant="ghost"
           size="icon"
           className="h-7 w-7"
@@ -76,6 +77,7 @@ const MonthYearPickerContent = ({
         </Button>
         <span className="text-sm font-semibold">{formatYear(pickerYear)}</span>
         <Button
+          aria-label={t("common:next")}
           variant="ghost"
           size="icon"
           className="h-7 w-7"
@@ -175,6 +177,7 @@ const CalendarHeader = ({ events }: IProps) => {
       <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-1">
           <Button
+            aria-label={t("common:prev")}
             variant="ghost"
             size="icon"
             className="h-8 w-8"
@@ -218,6 +221,7 @@ const CalendarHeader = ({ events }: IProps) => {
           </Drawer>
 
           <Button
+            aria-label={t("common:next")}
             variant="ghost"
             size="icon"
             className="h-8 w-8"
@@ -279,6 +283,7 @@ const CalendarHeader = ({ events }: IProps) => {
 
           <div className="flex items-center gap-2">
             <Button
+              aria-label={t("common:prev")}
               variant="outline"
               size="icon"
               className="size-6.5 px-0 [&_svg]:size-4.5"
@@ -290,6 +295,7 @@ const CalendarHeader = ({ events }: IProps) => {
               {rangeText(view, selectedDate, locale)}
             </p>
             <Button
+              aria-label={t("common:next")}
               variant="outline"
               size="icon"
               className="size-6.5 px-0 [&_svg]:size-4.5"

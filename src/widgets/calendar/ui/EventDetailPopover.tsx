@@ -9,7 +9,8 @@ import { Bell, MapPin, Pencil, Repeat, Tag, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/ui/button";
-import { eventBadgeColor } from "@/widgets/calendar/lib/helpers";
+import { eventBadgeTone } from "@/widgets/calendar/lib/helpers";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
@@ -37,22 +38,18 @@ function getReminderText(minutes: number, t: (key: string) => string): string {
 }
 
 /** 디자인 CAL_PALETTE 공식 — 이벤트 색을 surface/fg 와 섞어 다크 자동 적응. */
-const toneBg = (c: string) =>
-  `color-mix(in oklab, ${c} 16%, var(--bg-surface))`;
-const toneFg = (c: string) =>
-  `color-mix(in oklab, ${c} 70%, var(--fg-primary))`;
 
 /** 원형 tone 아이콘 + 캡션/값 — 디자인 DetailRow 미러(34 원형, caption 11/600, label 13/500). */
 function DetailRow({
   icon,
   caption,
   label,
-  color,
+  tone,
 }: {
   icon: React.ReactNode;
   caption: string;
   label: string;
-  color: string;
+  tone: { bg: string; fg: string };
 }) {
   return (
     <div
@@ -68,8 +65,8 @@ function DetailRow({
           width: 34,
           height: 34,
           borderRadius: "var(--radius-full)",
-          background: toneBg(color),
-          color: toneFg(color),
+          background: tone.bg,
+          color: tone.fg,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
@@ -120,7 +117,10 @@ const EventDetailPopover = ({
   const endDate = parseISO(event.endDate);
   const sameDay =
     format(startDate, "yyyy-MM-dd") === format(endDate, "yyyy-MM-dd");
-  const color = eventBadgeColor(event);
+  const tone = eventBadgeTone(event);
+  const calendarTone = event.calendarColor
+    ? getPaletteByColor(event.calendarColor)
+    : tone;
   const isCalendarSource = event.sourceType === "calendar";
 
   // D-day (오늘 기준, 시작일)
@@ -155,7 +155,7 @@ const EventDetailPopover = ({
           style={{
             width: 4,
             borderRadius: "var(--radius-full)",
-            background: color,
+            background: tone.color,
             flexShrink: 0,
             alignSelf: "stretch",
           }}
@@ -178,8 +178,8 @@ const EventDetailPopover = ({
                   gap: 5,
                   fontSize: "var(--text-badge)",
                   fontWeight: 600,
-                  color: toneFg(event.calendarColor ?? color),
-                  background: toneBg(event.calendarColor ?? color),
+                  color: calendarTone.fg,
+                  background: calendarTone.bg,
                   padding: "3px 10px",
                   borderRadius: "var(--radius-full)",
                   whiteSpace: "nowrap",
@@ -190,7 +190,7 @@ const EventDetailPopover = ({
                     width: 7,
                     height: 7,
                     borderRadius: "var(--radius-full)",
-                    background: event.calendarColor ?? color,
+                    background: calendarTone.color,
                   }}
                 />
                 {event.calendarName}
@@ -341,7 +341,7 @@ const EventDetailPopover = ({
             icon={<MapPin size={15} />}
             caption={t("form.location")}
             label={event.location}
-            color={color}
+            tone={tone}
           />
         )}
         {event.labelName && (
@@ -349,7 +349,7 @@ const EventDetailPopover = ({
             icon={<Tag size={15} />}
             caption={t("form.label")}
             label={event.labelName}
-            color={event.labelColor ?? color}
+            tone={event.labelColor ? getPaletteByColor(event.labelColor) : tone}
           />
         )}
         <DetailRow
@@ -358,7 +358,7 @@ const EventDetailPopover = ({
           label={
             event.rrule ? getRruleText(event.rrule, t) : t("recurrence.none")
           }
-          color={color}
+          tone={tone}
         />
         {event.reminders.length > 0 && (
           <DetailRow
@@ -367,7 +367,7 @@ const EventDetailPopover = ({
             label={event.reminders
               .map((r) => getReminderText(r.minutesBefore, t))
               .join(", ")}
-            color={color}
+            tone={tone}
           />
         )}
       </div>

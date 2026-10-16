@@ -359,7 +359,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
               <TriangleAlert
                 size={17}
                 style={{
-                  color: "var(--fg-expense)",
+                  color: "var(--color-fg-critical)",
                   flexShrink: 0,
                   marginTop: 1,
                 }}

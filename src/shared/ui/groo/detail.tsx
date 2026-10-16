@@ -202,7 +202,7 @@ export function DetailQuickAction({
       <span
         className={cn(
           "relative inline-flex h-11 w-11 items-center justify-center rounded-full",
-          "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+          "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
           active
             ? "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand)]"
             : "bg-[var(--bg-sunken)] text-[var(--fg-secondary)]",

@@ -99,19 +99,19 @@ const PRIO: Record<
   HIGH: {
     labelKey: "prio.HIGH",
     color: "var(--status-danger-fg)",
-    bg: "color-mix(in oklab, var(--status-danger-fg) 14%, var(--bg-surface))",
+    bg: "var(--color-bg-critical-weak)",
     order: 0,
   },
   MEDIUM: {
     labelKey: "prio.MEDIUM",
     color: "var(--status-warning-fg)",
-    bg: "color-mix(in oklab, var(--status-warning-fg) 14%, var(--bg-surface))",
+    bg: "var(--color-bg-warning-weak)",
     order: 1,
   },
   LOW: {
     labelKey: "prio.LOW",
     color: "var(--status-info-fg)",
-    bg: "color-mix(in oklab, var(--status-info-fg) 14%, var(--bg-surface))",
+    bg: "var(--color-bg-informative-weak)",
     order: 2,
   },
 };
@@ -416,7 +416,13 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           {toggleStatus.pendingIds.has(todo.rowId) ? (
             <Spinner size="sm" />
           ) : (
-            done && <Check size={13} color="#fff" strokeWidth={3} />
+            done && (
+              <Check
+                size={13}
+                color="var(--color-static-white)"
+                strokeWidth={3}
+              />
+            )
           )}
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>

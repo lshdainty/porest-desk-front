@@ -26,7 +26,7 @@ const Input = React.forwardRef<
       className={cn(
         "flex h-10 w-full min-w-0 rounded-sm border border-border-default bg-surface-input px-[var(--spacing-md)] py-[var(--spacing-sm)] font-sans text-body-lg text-text-primary placeholder:text-text-tertiary",
         "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-text-primary",
-        "transition-[color,box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "transition-[color,box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
         "aria-invalid:border-stroke-critical-solid",
         "disabled:cursor-not-allowed disabled:bg-bg-disabled disabled:text-fg-disabled disabled:border-stroke-neutral-weak",

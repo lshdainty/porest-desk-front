@@ -65,7 +65,7 @@ export const CATEGORIES: Record<CategoryKey, CategoryDef> = {
     label: "공과·통신",
     icon: "receipt-text",
     color: "oklch(0.48 0.012 195)",
-    bg: "color-mix(in srgb, var(--color-chart-gray) 18%, transparent)",
+    bg: "var(--color-chart-gray-weak)",
   },
   edu: {
     label: "교육",
@@ -77,13 +77,13 @@ export const CATEGORIES: Record<CategoryKey, CategoryDef> = {
     label: "저축·투자",
     icon: "piggy-bank",
     color: "var(--color-chart-brown)",
-    bg: "color-mix(in srgb, var(--color-chart-brown) 18%, transparent)",
+    bg: "var(--color-chart-brown-weak)",
   },
   income: {
     label: "수입",
     icon: "arrow-down-to-line",
     color: "var(--color-chart-green)",
-    bg: "color-mix(in srgb, var(--color-chart-green) 18%, transparent)",
+    bg: "var(--color-chart-green-weak)",
   },
 };
 

@@ -450,6 +450,21 @@ export function eventBadgeColor(
   return getPaletteByColor(event.labelColor ?? event.color).color;
 }
 
+/** 이벤트 칩 바탕 · 글 — 팔레트 색은 v111 짝(chart-{hue}-weak · -contrast), 공휴일은 critical 짝. */
+export function eventBadgeTone(
+  event?: Pick<IEvent, "sourceType" | "labelColor" | "color"> | null,
+): { color: string; bg: string; fg: string } {
+  if (event?.sourceType === "holiday")
+    return {
+      color: "var(--color-fg-critical)",
+      bg: "var(--color-bg-critical-weak)",
+      fg: "var(--color-fg-critical)",
+    };
+  return getPaletteByColor(
+    event ? (event.labelColor ?? event.color) : undefined,
+  );
+}
+
 export function convertHolidayToIEvent(holiday: Holiday): IEvent {
   return {
     id: holiday.rowId + 1000000,

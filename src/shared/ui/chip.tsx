@@ -21,7 +21,7 @@ import { cn } from "@/shared/lib/index";
 const chipVariants = cva(
   [
     "inline-flex items-center gap-[var(--spacing-xs)] font-sans leading-tight",
-    "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+    "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
     "disabled:pointer-events-none disabled:bg-bg-disabled disabled:text-fg-disabled",
   ].join(" "),

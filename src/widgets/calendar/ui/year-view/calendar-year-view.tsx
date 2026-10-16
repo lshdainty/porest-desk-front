@@ -64,7 +64,7 @@ const YearViewDayCell = ({
           color: isToday(date)
             ? undefined
             : isHoliday || isSunday
-              ? "var(--fg-expense)"
+              ? "var(--color-fg-critical)"
               : isSaturday
                 ? "var(--fg-brand)"
                 : undefined,
@@ -153,7 +153,7 @@ const YearViewMonth = ({
                 className="text-xs font-medium"
                 style={{
                   color: isSunday
-                    ? "var(--fg-expense)"
+                    ? "var(--color-fg-critical)"
                     : isSaturday
                       ? "var(--fg-brand)"
                       : undefined,

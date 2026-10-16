@@ -144,7 +144,7 @@ const swipeActionVariants = cva(
   [
     "flex flex-col items-center justify-center shrink-0 self-stretch bg-transparent border-0",
     "text-caption font-semibold leading-[1.3]",
-    "transition-[filter] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+    "transition-[filter] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
     "hover:brightness-92 active:brightness-88",
     "focus-visible:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
     "disabled:bg-bg-disabled disabled:text-fg-disabled disabled:cursor-not-allowed disabled:hover:brightness-100",
@@ -443,7 +443,7 @@ export const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
             className={cn(
               "relative bg-inherit",
               !dragging &&
-                "transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] motion-reduce:transition-none",
+                "transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] motion-reduce:transition-none",
             )}
             style={{
               transform:

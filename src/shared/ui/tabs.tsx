@@ -42,7 +42,7 @@ const tabsListVariants = cva("", {
 });
 
 const tabsTriggerVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap font-sans font-medium transition-all duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:pointer-events-none disabled:text-fg-disabled",
+  "inline-flex items-center justify-center whitespace-nowrap font-sans font-medium transition-all duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:pointer-events-none disabled:text-fg-disabled",
   {
     variants: {
       variant: {

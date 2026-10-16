@@ -30,7 +30,7 @@ const SelectTrigger = React.forwardRef<
       "flex h-10 w-full items-center justify-between rounded-sm border border-border-default bg-surface-input px-[var(--spacing-md)] py-[var(--spacing-sm)] font-sans text-body-md text-text-primary placeholder:text-text-tertiary data-[placeholder]:text-text-tertiary",
       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
       "disabled:cursor-not-allowed disabled:bg-bg-disabled disabled:text-fg-disabled disabled:border-stroke-neutral-weak",
-      "transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+      "transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
       "[&>span]:line-clamp-1",
       className,
     )}

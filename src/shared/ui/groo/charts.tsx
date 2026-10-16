@@ -84,7 +84,7 @@ export function LineChart({
   series,
   labels,
   height = 200,
-  colors = ["var(--border-brand)", "var(--fg-expense)"],
+  colors = ["var(--border-brand)", "var(--color-fg-critical)"],
   yFormat,
 }: {
   series: LineSeries[];
@@ -450,7 +450,7 @@ export function BarChart({
                 width={barW}
                 height={padT + innerH - yEx}
                 rx="3"
-                fill="var(--fg-expense)"
+                fill="var(--color-fg-critical)"
                 opacity={isHover ? 1 : 0.92}
               />
               <text
@@ -543,7 +543,7 @@ export function BarChart({
                     width: 8,
                     height: 8,
                     borderRadius: "var(--radius-xs)",
-                    background: "var(--fg-expense)",
+                    background: "var(--color-fg-critical)",
                   }}
                 />
                 <span

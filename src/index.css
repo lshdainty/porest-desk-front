@@ -142,17 +142,6 @@
   --chart-3: var(--color-chart-orange);
   --chart-4: var(--color-chart-green);
   --chart-5: var(--color-chart-violet);
-  /* 카테고리 색 alias — DB 가 chart palette base hex 만 저장. 다크모드에서 light variant 로 자동 swap. */
-  --color-cat-red: var(--color-chart-red);
-  --color-cat-orange: var(--color-chart-orange);
-  --color-cat-yellow: var(--color-chart-yellow);
-  --color-cat-green: var(--color-chart-green);
-  --color-cat-blue: var(--color-chart-blue);
-  --color-cat-indigo: var(--color-chart-indigo);
-  --color-cat-violet: var(--color-chart-violet);
-  --color-cat-pink: var(--color-chart-pink);
-  --color-cat-brown: var(--color-chart-brown);
-  --color-cat-gray: var(--color-chart-gray);
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--fg-primary);
   --sidebar-primary: var(--color-fg-brand);
@@ -236,16 +225,6 @@
   --chart-4: var(--color-chart-green-light);
   --chart-5: var(--color-chart-violet-light);
   /* 카테고리 색 alias — light variant 로 swap */
-  --color-cat-red: var(--color-chart-red-light);
-  --color-cat-orange: var(--color-chart-orange-light);
-  --color-cat-yellow: var(--color-chart-yellow-light);
-  --color-cat-green: var(--color-chart-green-light);
-  --color-cat-blue: var(--color-chart-blue-light);
-  --color-cat-indigo: var(--color-chart-indigo-light);
-  --color-cat-violet: var(--color-chart-violet-light);
-  --color-cat-pink: var(--color-chart-pink-light);
-  --color-cat-brown: var(--color-chart-brown-light);
-  --color-cat-gray: var(--color-chart-gray-light);
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--fg-primary);
   --sidebar-primary: var(--color-fg-brand);
@@ -277,11 +256,11 @@
   --fg-link: var(--color-fg-brand);
   --fg-brand-strong: var(--color-fg-brand-contrast);
   --status-danger-fg: var(--color-fg-critical);
-  --fg-expense: var(--color-fg-critical);
+  --fg-expense: var(--color-fg-neutral);
   --status-success-fg: var(--color-fg-positive);
   --status-warning-fg: var(--color-fg-warning);
   --status-info-fg: var(--color-fg-informative);
-  --fg-transfer: var(--color-fg-informative);
+  --fg-transfer: var(--color-fg-neutral);
   /* 배경 */
   --bg-canvas: var(--color-bg-layer-basement);
   --bg-table-head: var(--color-bg-layer-basement);

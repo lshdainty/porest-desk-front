@@ -19,7 +19,7 @@ const badgeVariants = cva(
     "inline-flex items-center gap-1 rounded-full border",
     // spec badge.md: text-badge(11/600/1.2) — text-xs(12/1.4)는 spec 일탈이었음 (앱 PBadge 정합)
     "px-[var(--spacing-sm)] py-0.5 text-[length:var(--text-badge)] font-semibold leading-[1.2] tracking-normal",
-    "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+    "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
   ].join(" "),
   {

@@ -80,7 +80,7 @@ export const MANAGE_ROW = {
    * 삭제 버튼에 적용 — 항상 빨강(--fg-expense). 반복/프리셋 관리의 삭제 버튼과 색 통일.
    * ghost variant 의 hover 는 bg 만 바꾸므로 text 는 항상 expense 로 고정.
    */
-  delClassName: "!text-[var(--fg-expense)]",
+  delClassName: "!text-[var(--color-fg-critical)]",
 } as const;
 
 /**

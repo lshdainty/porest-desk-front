@@ -8,8 +8,6 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  TrendingDown,
-  TrendingUp,
   Wallet,
 } from "lucide-react";
 import {
@@ -156,7 +154,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             width: 8,
             height: 8,
             borderRadius: "var(--radius-xs)",
-            background: "var(--fg-expense)",
+            background: "var(--color-fg-critical)",
           }}
         />
         <span
@@ -232,7 +230,7 @@ function IncomeExpenseBarChart({
   const hidden = useHideAmounts("home.monthExpense");
   const barChartConfig = {
     income: { label: t("chart.income"), color: "var(--status-info-fg)" },
-    expense: { label: t("chart.expense"), color: "var(--fg-expense)" },
+    expense: { label: t("chart.expense"), color: "var(--color-fg-critical)" },
   } satisfies ChartConfig;
   // Y축: 0기준 nice 눈금 (수입·지출 둘 다 포함, 앱 niceAxis 정합).
   const yAxis = useMemo(() => {
@@ -297,18 +295,18 @@ function IncomeExpenseBarChart({
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // groo chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
-// `--color-cat-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
+// `--color-chart-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
 const CATEGORY_PALETTE = [
-  "var(--color-cat-blue)",
-  "var(--color-cat-green)",
-  "var(--color-cat-orange)",
-  "var(--color-cat-violet)",
-  "var(--color-cat-pink)",
-  "var(--color-cat-indigo)",
-  "var(--color-cat-red)",
-  "var(--color-cat-yellow)",
-  "var(--color-cat-brown)",
-  "var(--color-cat-gray)",
+  "var(--color-chart-blue)",
+  "var(--color-chart-green)",
+  "var(--color-chart-orange)",
+  "var(--color-chart-violet)",
+  "var(--color-chart-pink)",
+  "var(--color-chart-indigo)",
+  "var(--color-chart-red)",
+  "var(--color-chart-yellow)",
+  "var(--color-chart-brown)",
+  "var(--color-chart-gray)",
 ];
 
 /**
@@ -1205,16 +1203,10 @@ function HomeDesktop() {
               <>
                 {t("vsLastMonth")}
                 <span className={`chg ${isUp ? "up" : "down"}`}>
-                  {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}{" "}
-                  {isUp ? "+" : ""}
-                  {changePercent.toFixed(1)}%
+                  {isUp ? "▲" : "▼"} {Math.abs(changePercent).toFixed(1)}%
                   {changeAmount !== 0 && (
                     <HideUnit>
-                      <>
-                        {" "}
-                        ({isUp ? "+" : MINUS}
-                        {money(Math.abs(changeAmount))})
-                      </>
+                      <> ({money(Math.abs(changeAmount))})</>
                     </HideUnit>
                   )}
                 </span>
@@ -1707,7 +1699,7 @@ function HomeDesktop() {
                             fontWeight: "600",
                             color:
                               b.state === "over"
-                                ? "var(--fg-expense)"
+                                ? "var(--color-fg-critical)"
                                 : "var(--fg-secondary)",
                           }}
                         >
@@ -1866,7 +1858,7 @@ function HomeDesktop() {
                     fontSize: "var(--text-badge)",
                     fontWeight: 600,
                     background: "var(--status-danger-subtle)",
-                    color: "var(--fg-expense)",
+                    color: "var(--color-fg-critical)",
                   }}
                 >
                   {t("todo.overdueBadge", {
@@ -1905,7 +1897,7 @@ function HomeDesktop() {
                       borderRadius: "var(--radius-pill)",
                       background:
                         td.priority === "HIGH"
-                          ? "var(--fg-expense)"
+                          ? "var(--color-fg-critical)"
                           : td.priority === "MEDIUM"
                             ? "var(--color-bg-warning-solid)"
                             : "var(--bg-brand)",
@@ -2206,9 +2198,7 @@ function HomeMobile() {
             <>
               {t("vsLastMonth")}
               <span className={`chg ${isUp ? "up" : "down"}`}>
-                {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}{" "}
-                {isUp ? "+" : ""}
-                {changePercent.toFixed(1)}%
+                {isUp ? "▲" : "▼"} {Math.abs(changePercent).toFixed(1)}%
               </span>
             </>
           ) : (
@@ -2550,7 +2540,7 @@ function HomeMobile() {
                         fontWeight: "700",
                         color:
                           b.state === "over"
-                            ? "var(--fg-expense)"
+                            ? "var(--color-fg-critical)"
                             : "var(--fg-primary)",
                       }}
                     >
@@ -2753,7 +2743,9 @@ function HomeUpcomingSection({
                 style={{
                   fontSize: 12.5,
                   fontWeight: 700,
-                  color: urgent ? "var(--fg-expense)" : "var(--fg-tertiary)",
+                  color: urgent
+                    ? "var(--color-fg-critical)"
+                    : "var(--fg-tertiary)",
                   flexShrink: 0,
                 }}
               >
@@ -2807,7 +2799,7 @@ function HomeTodosSection({
                 fontSize: "var(--text-badge)",
                 fontWeight: 700,
                 background: "var(--status-danger-subtle)",
-                color: "var(--fg-expense)",
+                color: "var(--color-fg-critical)",
                 padding: "2px 8px",
                 borderRadius: "var(--radius-pill)",
                 letterSpacing: "-0.01em",
@@ -2837,7 +2829,7 @@ function HomeTodosSection({
                     height: 18,
                     borderRadius: 999,
                     flexShrink: 0,
-                    border: `2px solid ${isOver ? "var(--fg-expense)" : "var(--border-strong)"}`,
+                    border: `2px solid ${isOver ? "var(--color-fg-critical)" : "var(--border-strong)"}`,
                   }}
                 />
               )}
@@ -2863,7 +2855,9 @@ function HomeTodosSection({
                   style={{
                     fontSize: 12.5,
                     fontWeight: 600,
-                    color: isOver ? "var(--fg-expense)" : "var(--fg-tertiary)",
+                    color: isOver
+                      ? "var(--color-fg-critical)"
+                      : "var(--fg-tertiary)",
                     flexShrink: 0,
                   }}
                 >

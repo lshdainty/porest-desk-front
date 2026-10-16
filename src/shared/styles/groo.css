@@ -148,18 +148,9 @@
   opacity: 1;
   font-weight: 600;
 }
-/* hero gradient(코발트) 위 등락 — success/error 80% + white 20% (60%는 옅고 100%는 진해 안 보임) */
-.balance-hero__sub .chg.up {
-  color: var(--color-static-white);
-}
+/* hero gradient(코발트) 위 등락 — 흰 글자 + ▲ · ▼ (D1: 방향은 화살표가 말한다, 색은 두 모드 같다) */
+.balance-hero__sub .chg.up,
 .balance-hero__sub .chg.down {
-  color: var(--color-static-white);
-}
-/* 다크모드 — 그라데이션 상단이 밝은 cobalt400 이라 50% 혼합으로 더 옅게 */
-.dark .balance-hero__sub .chg.up {
-  color: var(--color-static-white);
-}
-.dark .balance-hero__sub .chg.down {
   color: var(--color-static-white);
 }
 .balance-hero__split {
@@ -778,8 +769,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #0d1430, #1f2c5e);
-  color: #dfe7ff;
+  background: var(--color-bg-neutral-inverted);
+  color: var(--color-fg-neutral-inverted);
 }
 .fstrip__meter {
   display: inline-flex;
@@ -842,8 +833,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #0d1430, #1f2c5e);
-  color: #dfe7ff;
+  background: var(--color-bg-neutral-inverted);
+  color: var(--color-fg-neutral-inverted);
 }
 .frp-entry__dots {
   display: flex;
@@ -996,7 +987,7 @@
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  background: color-mix(in oklab, var(--color-chart-red) 4%, transparent);
+  background: var(--color-chart-red-subtle);
 }
 .frp-stamp span {
   font-size: 12px;
@@ -1161,9 +1152,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #0d1430, #1f2c5e);
-  filter: drop-shadow(0 0 6px rgba(176, 196, 255, 0.25));
-  color: #dfe7ff;
+  background: var(--color-bg-neutral-inverted);
+  filter: drop-shadow(
+    0 0 6px
+      color-mix(in srgb, var(--color-fg-neutral-inverted) 25%, transparent)
+  );
+  color: var(--color-fg-neutral-inverted);
 }
 .fcol-art--locked {
   background: var(--bg-sunken);

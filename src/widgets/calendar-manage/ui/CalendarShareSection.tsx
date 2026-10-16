@@ -839,7 +839,7 @@ function CalendarManageDialog({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="!text-[var(--fg-expense)]"
+                      className="!text-[var(--color-fg-critical)]"
                       aria-label={t("shareSection.removeMember")}
                       onClick={() => handleRemove(member)}
                       loading={removeMut.isPending}
@@ -941,7 +941,7 @@ function CalendarCreateDialog({
           <div
             style={{
               fontSize: "var(--text-badge)",
-              color: "var(--fg-expense)",
+              color: "var(--color-fg-critical)",
               marginTop: 4,
             }}
           >

@@ -160,9 +160,9 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
           description:
             "!text-body-sm !font-normal !text-[var(--color-text-secondary)]",
           actionButton:
-            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !bg-bg-brand-solid !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
+            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] !bg-bg-brand-solid !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
           cancelButton:
-            "!inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !border !border-[var(--color-border-default)] !bg-[var(--color-surface-default)] !text-[var(--color-text-primary)] !h-8 !px-[var(--spacing-sm)] !text-caption",
+            "!inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] !border !border-[var(--color-border-default)] !bg-[var(--color-surface-default)] !text-[var(--color-text-primary)] !h-8 !px-[var(--spacing-sm)] !text-caption",
         },
       }}
       {...rest}

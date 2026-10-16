@@ -55,7 +55,7 @@ const ColorSwatchItem = React.forwardRef<
     aria-label={option.label ?? option.value}
     className={cn(
       "relative aspect-square w-full rounded-[var(--radius-tile)]",
-      "border-2 border-transparent transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+      "border-2 border-transparent transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
       "hover:scale-[1.05]",
       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
       "data-[state=checked]:border-[currentColor]",

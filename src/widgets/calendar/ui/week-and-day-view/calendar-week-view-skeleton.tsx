@@ -50,7 +50,7 @@ const CalendarWeekViewSkeleton = () => {
                   <span
                     style={{
                       color: isSunday
-                        ? "var(--fg-expense)"
+                        ? "var(--color-fg-critical)"
                         : isSaturday
                           ? "var(--fg-brand)"
                           : undefined,

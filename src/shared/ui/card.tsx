@@ -26,7 +26,7 @@ import { cn } from "@/shared/lib/index";
  */
 
 const cardVariants = cva(
-  "rounded-[var(--radius-lg)] text-text-primary transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+  "rounded-[var(--radius-lg)] text-text-primary transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
   {
     variants: {
       variant: {
