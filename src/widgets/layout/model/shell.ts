@@ -48,6 +48,26 @@ export const isMoneyPath = (pathname: string) =>
 export const isFullscreenPath = (pathname: string) =>
   FULLSCREEN_PATHS.some((p) => under(pathname, p));
 
+/**
+ * 폰 화면 바탕 종류(02-005 C · layout "화면 바탕") — 바닥은 늘 basement 이고 그 위에 놓는 것이 갈린다.
+ *  card  = 회색 바닥 위 카드(홈 · 자산 · 통계 · 예산 · 카드 상세)
+ *  strip = 회색 바닥 위 화면 폭 흰 띠, 맨 위 8 틈(캘린더 · 전체 · 검색 …). 묶음마다 띠 하나(8 틈)는 화면 이관 때 — 지금은 화면 전체가 띠 하나다
+ *  white = 화면 전체가 흰 층(가계부 거래 목록만)
+ */
+export type ScreenFloor = "card" | "strip" | "white";
+export function screenFloor(pathname: string): ScreenFloor {
+  if (
+    pathname === "/desk" ||
+    under(pathname, "/desk/card") ||
+    under(pathname, "/desk/asset") ||
+    under(pathname, "/desk/stats") ||
+    under(pathname, "/desk/budget")
+  )
+    return "card";
+  if (under(pathname, "/desk/expense")) return "white";
+  return "strip";
+}
+
 /** 탭 바의 칸 — 가계부는 묶음 넷이 모두 "현재" */
 export const isHomeTab = (pathname: string) => pathname === "/desk";
 export const isExpenseTab = isMoneyPath;

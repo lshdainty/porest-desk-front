@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/shared/lib/utils";
 import { BOTTOM_NAVIGATION_INSET } from "@/shared/ds/bottom-navigation";
 import { TooltipProvider } from "@/shared/ds/tooltip";
 import {
@@ -24,6 +25,7 @@ import { useHideCardsSync } from "@/features/hide-amounts";
 import {
   fabFor,
   isFullscreenPath,
+  screenFloor,
   isMoneyPath,
   screenTitleKey,
 } from "../model/shell";
@@ -99,6 +101,7 @@ const Shell = () => {
     // + 가 여는 것과 그걸 부르는 이름은 한 자리에서 나온다 — 동작만 화면별로 갈리고
     // 이름이 굳어 있어 캘린더에서 낭독기가 "거래 추가" 를 읽었다(QA #159).
     const fab = fabFor(location.pathname);
+    const floor = screenFloor(location.pathname);
     const handleAdd =
       fab.target === "event"
         ? () => setCalendarAddOpen(true)
@@ -138,15 +141,27 @@ const Shell = () => {
           id="main"
           tabIndex={-1}
           ref={scrollRef}
-          className="m-scroll flex flex-col bg-bg-page outline-none"
+          className={cn(
+            "m-scroll flex flex-col outline-none",
+            floor === "white" ? "bg-surface-default" : "bg-bg-page",
+          )}
+          data-floor={floor}
           style={{ paddingBottom: BOTTOM_NAVIGATION_INSET }}
         >
           {/* 스와이프 그룹은 셸마다 하나 — "한 번에 한 행" 과 "스크롤하면 닫힘" 을 여기가 맡는다.
               화면마다 두면 리스트를 새로 붙일 때 빠뜨려 여러 행이 열린 채 남는다. */}
           <SwipeActionsProvider>
-            <Outlet
-              context={{ onAddTx: () => setAddOpen(true), mobile: true }}
-            />
+            {/* 띠 화면 — 맨 위 8 은 바닥이 보이는 틈, 그 아래는 화면 폭 흰 띠(모서리 · 테두리 · 그림자 없음) */}
+            <div
+              className={cn(
+                "flex flex-1 flex-col",
+                floor === "strip" && "mt-x2 bg-surface-default",
+              )}
+            >
+              <Outlet
+                context={{ onAddTx: () => setAddOpen(true), mobile: true }}
+              />
+            </div>
           </SwipeActionsProvider>
         </main>
         <TabMemory scrollRef={scrollRef} />
