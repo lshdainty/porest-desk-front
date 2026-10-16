@@ -156,11 +156,14 @@ export function SearchPage() {
       )}
       <ScrollAutoHide
         scrollContainerRef={scrollRef}
-        className="z-(--z-sticky) bg-inherit py-x1_5"
+        className={cn(
+          "z-(--z-sticky) py-x1_5",
+          mobile ? "bg-surface-default px-global-gutter" : "bg-bg-page",
+        )}
       >
         <ChipRadioGroup
           aria-label={t("searchTypeGroup")}
-          layout="scroll"
+          layout={mobile ? "scroll" : "wrap"}
           bleed={mobile}
           value={condition.type}
           onValueChange={(v) => update({ type: v as SearchType })}
