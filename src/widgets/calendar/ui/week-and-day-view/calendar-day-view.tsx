@@ -386,7 +386,7 @@ const CalendarDayView = ({
       </div>
 
       {/* Side panel */}
-      <div className="hidden w-64 divide-y border-l min-[736px]:block">
+      <div className="hidden w-64 divide-y border-l md:block">
         <div className="flex-1 space-y-3">
           {currentEvents.length > 0 ? (
             <div className="flex items-start gap-2 px-4 pt-4">

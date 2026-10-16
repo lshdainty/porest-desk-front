@@ -70,7 +70,7 @@ export const HeroStatCard = ({
   return (
     <div
       className={cn(
-        "rounded-xl border p-4 min-[640px]:p-5 transition-colors",
+        "rounded-xl border p-4 sm:p-5 transition-colors",
         toneStyles[tone],
         className,
       )}
@@ -85,7 +85,7 @@ export const HeroStatCard = ({
               <Icon size={14} />
             </div>
           )}
-          <span className="text-xs min-[640px]:text-sm font-medium text-text-secondary truncate">
+          <span className="text-xs sm:text-sm font-medium text-text-secondary truncate">
             {label}
           </span>
         </div>
@@ -95,7 +95,7 @@ export const HeroStatCard = ({
       {/* Hero value */}
       <p
         className={cn(
-          "mt-2 text-2xl min-[640px]:text-3xl font-bold tabular-nums tracking-tight leading-tight",
+          "mt-2 text-2xl sm:text-3xl font-bold tabular-nums tracking-tight leading-tight",
           toneValueStyles[tone],
         )}
       >
@@ -110,7 +110,7 @@ export const HeroStatCard = ({
           {hasDelta && (
             <span
               className={cn(
-                "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] min-[640px]:text-xs font-medium",
+                "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs font-medium",
                 deltaIsGood
                   ? "bg-bg-positive-weak text-fg-positive"
                   : "bg-bg-critical-weak text-fg-critical",
@@ -121,7 +121,7 @@ export const HeroStatCard = ({
             </span>
           )}
           {footer && (
-            <div className="text-[11px] min-[640px]:text-xs text-text-secondary">
+            <div className="text-[11px] sm:text-xs text-text-secondary">
               {footer}
             </div>
           )}

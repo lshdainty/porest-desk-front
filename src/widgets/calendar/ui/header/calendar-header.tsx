@@ -237,7 +237,7 @@ const CalendarHeader = ({ events }: IProps) => {
 
   // ── 데스크톱/태블릿: 기존 헤더 + 날짜 텍스트 → Popover picker ──
   return (
-    <div className="flex flex-col gap-4 border-b p-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="flex flex-col gap-4 border-b p-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
         {/* Today 날짜 버튼 */}
         <button
@@ -307,9 +307,9 @@ const CalendarHeader = ({ events }: IProps) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 min-[834px]:gap-3">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3">
         <CalendarSourceToggle />
-        <div className="hidden h-6 w-px bg-border min-[834px]:block" />
+        <div className="hidden h-6 w-px bg-border md:block" />
 
         <div className="inline-flex">
           <Button
