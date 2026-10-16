@@ -10,7 +10,7 @@ export const buttonVariants = cva(
     // specs/components/button.md: "container 는 radius-sm(4px) 고정".
     // sm·md 는 4, lg·icon 만 아래에서 rounded-md(8) 로 덮고 iconLg 는 full.
     // (DESIGN.desk.md 표에는 md 가 8 로 적혀 있으나 그쪽이 오래된 사본이다.)
-    "rounded-sm font-sans font-medium tracking-[-0.005em] leading-none",
+    "cursor-pointer rounded-sm font-sans font-medium tracking-[-0.005em] leading-none",
     "transition-[box-shadow,background-color,color,border-color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
     "disabled:bg-bg-disabled disabled:text-fg-disabled disabled:cursor-not-allowed disabled:pointer-events-none",

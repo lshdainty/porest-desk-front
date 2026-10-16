@@ -36,7 +36,7 @@ import { cva } from "class-variance-authority";
  */
 export const buttonVariants = cva(
   [
-    "relative inline-flex items-center justify-center whitespace-nowrap font-sans font-bold",
+    "relative inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-sans font-bold",
     // 누르는 영역 44 — 보이는 상자보다 작으면 ::before 가 넓힌다
     "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     // 색은 color-transition, 축소는 pressed-scale
