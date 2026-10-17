@@ -162,6 +162,15 @@ describe("역할 · 이름 · 설명", () => {
     expect(description?.textContent).toBe("삭제한 거래는 되돌릴 수 없어요.");
   });
 
+  it("화면보다 커지면 높이는 화면까지, 넘치면 확인창 전체가 스크롤한다(03-F 1A)", async () => {
+    render(<Ask />);
+    open();
+    await tick();
+    const cls = content()!.className;
+    expect(cls).toContain("max-h-full");
+    expect(cls).toContain("overflow-y-auto");
+  });
+
   it("제목이 없으면 aria-label 이 숨은 제목이 되어 이름을 단다", async () => {
     render(
       <AlertDialog defaultOpen>

@@ -101,7 +101,13 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(dialogContentVariants({ size }), className)}
         style={{ boxShadow: "var(--shadow-xl)", ...style }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        // 열면 초점이 표면(대화상자 자체)으로 — 첫 칸이 아니다. Tab 은 안을 돈다(Radix 가 가둔다), 닫으면 연 자리로(03F-006)
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          (e.target as HTMLElement | null)?.focus({
+            preventScroll: true,
+          });
+        }}
         {...props}
       >
         {children}

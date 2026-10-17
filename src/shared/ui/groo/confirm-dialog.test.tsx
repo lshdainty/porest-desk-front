@@ -3,8 +3,8 @@
 // (36 · 좌우 양쪽 16 · 14px)로 못 박는다 — 40 으로 올려 봤다가 대화상자에 비해 굵어 되돌렸다.
 //
 // 그리고 같은 "삭제 확인" 이 두 계열로 갈려 있었다 — 22곳은 Dialog 위에 얹은
-// ConfirmDialog(ESC·overlay 로 닫힘), 3곳은 손수 만든 AlertDialog. 확인창은
-// **버튼으로만 닫히고 기본 포커스가 취소** 여야 한다(spec alert-dialog.md Behavior).
+// ConfirmDialog(overlay 는 무시, ESC 는 취소), 3곳은 손수 만든 AlertDialog. 확인창은
+// **바깥 누르기로는 안 닫히고(Esc 는 취소) 기본 포커스가 취소** 여야 한다(spec alert-dialog.md Behavior).
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -102,7 +102,7 @@ describe("파괴적 확정은 버튼으로만 닫는다", () => {
     expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
-  it("ESC 로는 안 닫힌다 — 취소를 눌러야 한다", () => {
+  it("ESC 는 취소와 같다 — onCancel 을 부른다(03F-009)", () => {
     const onCancel = vi.fn();
     render(
       <ConfirmDialog
@@ -124,10 +124,6 @@ describe("파괴적 확정은 버튼으로만 닫는다", () => {
         }),
       );
     });
-    expect(onCancel).not.toHaveBeenCalled();
-    expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
-
-    act(() => byText("취소").click());
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 

@@ -196,10 +196,8 @@ export function ConfirmDialog({
     >
       <AlertDialogContent
         size="sm"
-        // 파괴적 확정은 **버튼으로만** 닫는다(spec alert-dialog.md Behavior) — overlay 클릭은
-        // Radix 가 이미 무시하고, ESC 는 여기서 막는다. 빠져나갈 길은 취소 버튼이고,
-        // 취소가 없는 통지형은 확인이 그 자리다(WCAG 2.1.2).
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        // 바깥(딤) 누르기는 Radix 가 이미 무시하고, Esc 는 취소와 같다 — 닫는다(spec alert-dialog.md Behavior · 03F-009).
+        // onOpenChange(false) → onCancel. 취소가 없는 통지형도 Esc 로 닫힌다(WCAG 2.1.2).
         onOpenAutoFocus={
           singleAction
             ? (e) => {

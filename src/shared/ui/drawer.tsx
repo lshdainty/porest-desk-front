@@ -132,6 +132,11 @@ const DrawerContent = React.forwardRef<
           className,
         )}
         style={{ boxShadow: "var(--shadow-xl)", ...style }}
+        // 열면 초점이 시트 표면으로(03F-008a) — vaul 기본은 열기 버튼에 남는다
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          (e.target as HTMLElement | null)?.focus({ preventScroll: true });
+        }}
         {...props}
       >
         {/* handle — preview `.drw-handle` SoT (40×4 + surface-input + rounded-full) */}
