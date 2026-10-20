@@ -5,7 +5,7 @@
  *   src/shared/styles/groo-tokens.css ← scripts/build-tailwind-v4.mjs (DESIGN.desk.md, 다크 블록 포함)
  *   src/shared/ds/spec/*.json            ← scripts/build-spec-json.mjs  (컴포넌트 스펙 값, 라이트 · 다크)
  *
- * groo-design 은 옆 폴더(../groo-design)라고 본다. 다르면 PORESTDESIGN_DIR 로 알려 준다.
+ * groo-design 은 옆 폴더(../groo-design)라고 본다. 다르면 GROODESIGN_DIR 로 알려 준다.
  * 가져온 뒤 prettier 로 서식만 맞춘다 — CI 의 format:check 가 이 파일들도 본다.
  */
 import { execFileSync } from "node:child_process";
@@ -14,7 +14,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const DESIGN = resolve(ROOT, process.env.PORESTDESIGN_DIR ?? "../groo-design");
+const DESIGN = resolve(ROOT, process.env.GROODESIGN_DIR ?? "../groo-design");
 const SOURCE = "DESIGN.desk.md";
 
 if (!existsSync(resolve(DESIGN, SOURCE))) {

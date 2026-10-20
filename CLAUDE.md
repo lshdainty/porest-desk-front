@@ -26,7 +26,7 @@
 - `src/shared/ui/<name>.tsx` — **옛 컴포넌트**. 화면을 하나씩 `shared/ds` 로 옮기는 동안만 남는다 — 새로 쓰지 않는다.
   옮기는 순서는 "먼저 라이브러리를 다 만들고, 화면은 나중에 화면 단위로" 다.
 - `src/shared/styles/groo-tokens.css` · `src/shared/ds/spec/*.json` — groo-design 이 내보낸 파일. **손으로 고치지
-  않는다** — `npm run design:sync`(옆 폴더 `../groo-design`, 다르면 `PORESTDESIGN_DIR`)로 다시 가져온다.
+  않는다** — `npm run design:sync`(옆 폴더 `../groo-design`, 다르면 `GROODESIGN_DIR`)로 다시 가져온다.
   토큰 CSS 는 다크 블록을 포함한다 — 역할 색(`--color-fg-neutral` …)이 라이트 · 다크를 스스로 따라간다.
 - `src/index.css` — 옛 로컬 이름(`--fg-primary` · `--bg-canvas` …)을 DESIGN.md v102 표대로 역할 색에 잇는다.
   새 코드는 역할 이름(`text-fg-neutral` · `bg-bg-brand-solid` …)을 쓴다.
