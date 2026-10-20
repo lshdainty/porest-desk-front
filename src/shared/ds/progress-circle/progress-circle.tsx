@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/shared/lib/cn";
 
 /*
- * 그루 담다 Progress Circle — 구조는 SEED Progress Circle(2026-10-03). 수치 원본은 groo-design
+ * Groo Progress Circle — 구조는 SEED Progress Circle(2026-10-03). 수치 원본은 groo-design
  * specs/components/progress-circle.yaml(값은 src/shared/ds/spec/progress-circle.json).
  * groo-design recipes/shadcn/components/ui/progress-circle.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * 옛 Spinner(spinner.tsx — 16 · 24 · 32 · 48, 브랜드 4분의 1 호 · 1.5초 일정 속도)를 대신한다.

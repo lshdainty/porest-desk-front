@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/shared/lib/cn";
 
 /*
- * 그루 담다 Progress — groo 만의 막대(SEED 에는 선형 막대가 없다 — 2026-10-03). 수치 원본은 groo-design
+ * Groo Progress — groo 만의 막대(SEED 에는 선형 막대가 없다 — 2026-10-03). 수치 원본은 groo-design
  * specs/components/progress.yaml(값은 src/shared/ds/spec/progress.json). groo-design recipes/shadcn/components/ui/progress.tsx 를
  * 첫 판으로 가져왔다(앱 적용 1A).
  * "얼마나 찼나" 를 보이는 미터다 — 예산 · 카드 한도(쓸수록 찬다), 저축 목표 · 카드 실적(모을수록 찬다). 불러오기 · 올리기 · 받기의

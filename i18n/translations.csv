@@ -2337,7 +2337,7 @@ recurring,summaryMonthly,매월 {{day}}일,Day {{day}} monthly
 subscription,title,구독 관리,Manage subscription
 subscription,startPro,Pro 시작하기,Start Pro
 subscription,cancelSub,구독 해지,Cancel subscription
-subscription,proInUse,그루 담다 Pro 이용 중,Using 그루 담다 Pro
+subscription,proInUse,담다 Pro 이용 중,Using 담다 Pro
 subscription,freeInUse,Free 플랜 이용 중,On the Free plan
 subscription,nextBill,다음 결제 {{date}},Next billing {{date}}
 subscription,activeUntil,{{date}}까지 이용,Access until {{date}}
@@ -2357,7 +2357,7 @@ subscription,colFeature,기능,Feature
 subscription,feature.core,가계부 · 자산 관리,Budget and asset management
 subscription,feature.budget,예산 · 저축 목표 · 캘린더,Budget · savings goals · calendar
 subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 실시간 금액,Securities link · real-time quotes · real-time asset value
-subscription,toast.subscribed,그루 담다 Pro 구독이 시작되었어요,그루 담다 Pro subscription started
+subscription,toast.subscribed,담다 Pro 구독이 시작되었어요,담다 Pro subscription started
 subscription,toast.subscribeFailed,구독에 실패했어요,Subscription failed
 subscription,toast.canceled,구독을 해지했어요,Subscription canceled
 subscription,toast.cancelFailed,해지에 실패했어요,Cancellation failed
@@ -2460,7 +2460,7 @@ stats,compare.unitCount,건,
 export,import.tab,가져오기,Import
 export,import.sourceTitle,어떤 앱에서 가져오나요?,Which app are you importing from?
 export,import.sourceDesc,기존에 쓰던 가계부를 고르면 열 구조를 자동으로 맞춰드려요,Pick your previous app and we'll auto-map the columns
-export,import.source.groo,그루 백업,그루 백업
+export,import.source.groo,담다 백업,담다 백업
 export,import.source.grooDesc,내보내기 파일 다시 가져오기,Re-import an export file
 export,import.source.easybudget,편한가계부·머니매니저,EasyBudget · Money Manager
 export,import.source.easybudgetDesc,Excel 백업,Excel backup
