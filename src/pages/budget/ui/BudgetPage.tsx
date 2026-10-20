@@ -19,11 +19,7 @@ import {
 } from "recharts";
 import { KRW, isEn } from "@/shared/lib/groo/format";
 import { formatMonthShort } from "@/shared/lib/date";
-import {
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/groo/hide-amounts";
+import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 import {
   ChartContainer,

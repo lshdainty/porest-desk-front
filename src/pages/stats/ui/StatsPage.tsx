@@ -26,11 +26,7 @@ import {
 } from "@/shared/lib/date";
 import { niceAxis, niceCeil } from "@/shared/lib/groo/chartAxis";
 import { countableTx } from "@/entities/expense";
-import {
-  HideCard,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/groo/hide-amounts";
+import { HideCard, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { Donut } from "@/shared/ui/groo/charts";
 import {

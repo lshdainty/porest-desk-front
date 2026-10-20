@@ -14,10 +14,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const DESIGN = resolve(
-  ROOT,
-  process.env.PORESTDESIGN_DIR ?? "../groo-design",
-);
+const DESIGN = resolve(ROOT, process.env.PORESTDESIGN_DIR ?? "../groo-design");
 const SOURCE = "DESIGN.desk.md";
 
 if (!existsSync(resolve(DESIGN, SOURCE))) {
@@ -55,6 +52,4 @@ execFileSync(
   { cwd: ROOT, stdio: "inherit" },
 );
 
-console.log(
-  `groo-design(${SOURCE}) → groo-tokens.css · src/shared/ds/spec`,
-);
+console.log(`groo-design(${SOURCE}) → groo-tokens.css · src/shared/ds/spec`);

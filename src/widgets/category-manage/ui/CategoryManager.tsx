@@ -30,10 +30,7 @@ import { Icon } from "@/shared/ui/groo/primitives";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
-import {
-  MANAGE_ROW,
-  manageRowClass,
-} from "@/shared/ui/groo/manage-row-tokens";
+import { MANAGE_ROW, manageRowClass } from "@/shared/ui/groo/manage-row-tokens";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {
   MANAGER_LAYOUT,

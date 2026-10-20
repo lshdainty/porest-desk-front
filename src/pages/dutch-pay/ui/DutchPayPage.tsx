@@ -43,11 +43,7 @@ import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { KRW, isEn } from "@/shared/lib/groo/format";
-import {
-  MaskAmount,
-  HideUnit,
-  WonUnit,
-} from "@/shared/lib/groo/hide-amounts";
+import { MaskAmount, HideUnit, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };

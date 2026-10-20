@@ -34,11 +34,7 @@ import {
   parseLocalDate,
 } from "@/shared/lib/date";
 import { niceAxis } from "@/shared/lib/groo/chartAxis";
-import {
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/groo/hide-amounts";
+import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { expenseSum } from "@/entities/expense";
 import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
