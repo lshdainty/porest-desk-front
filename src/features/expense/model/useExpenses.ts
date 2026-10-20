@@ -21,6 +21,20 @@ export const useCreateExpense = () => {
   });
 };
 
+/**
+ * 고정 표식 일괄 변경. 합계가 아니라 분류가 바뀌지만 통계(고정/변동)·목록이 모두 달라지므로
+ * 다른 거래 변경과 같은 범위(`"ledger"`)로 턴다.
+ */
+export const useBulkMarkFixed = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ ids, isFixed }: { ids: number[]; isFixed: boolean }) =>
+      expenseApi.bulkMarkFixed(ids, isFixed),
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
+  });
+};
+
 export const useUpdateExpense = () => {
   const queryClient = useQueryClient();
 

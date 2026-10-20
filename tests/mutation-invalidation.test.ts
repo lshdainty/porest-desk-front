@@ -156,6 +156,13 @@ const ROWS: Row[] = [
     change: "ledger",
     call: () => expenses.useDeleteExpense(),
   },
+  // 고정 표식 일괄 변경 — 합계가 아니라 분류가 바뀌지만 통계(고정/변동)와 목록이 모두 달라진다.
+  {
+    file: EXPENSES,
+    hook: "useBulkMarkFixed",
+    change: "ledger",
+    call: () => expenses.useBulkMarkFixed(),
+  },
   // 고쳐 쓰기 — 옛 거래가 사라지고 새 거래가 생긴다(D13). 삭제·생성과 같은 범위다.
   {
     file: EXPENSES,

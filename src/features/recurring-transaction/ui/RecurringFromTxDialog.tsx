@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bell, Zap, Calendar } from "lucide-react";
+import { Bell, Zap, Calendar, Pin } from "lucide-react";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { DetailSection, DetailSourceTx } from "@/shared/ui/groo/detail";
@@ -80,6 +80,8 @@ export function RecurringFromTxDialog({
 
   const [autoLog, setAutoLog] = useState(true);
   const [notifyDayBefore, setNotifyDayBefore] = useState(true);
+  // 원 거래가 고정이면 그대로 이어받는다 — 월세를 반복으로 걸면 매달 고정 월세가 된다.
+  const [isFixed, setIsFixed] = useState(expense.isFixed ?? false);
 
   const nextDates = useMemo(
     () => previewNextDates(expenseDay, frequency, dayOfWeek, dayOfMonth, 3),
@@ -117,6 +119,7 @@ export function RecurringFromTxDialog({
       maxOccurrences: endMode === "COUNT" ? Number(endCount) : undefined,
       autoLog,
       notifyDayBefore,
+      isFixed,
     };
     createMut.mutate(data, {
       onSuccess: (created) => {
@@ -321,6 +324,17 @@ export function RecurringFromTxDialog({
             sub={t("notifyDayBeforeSub")}
             value={notifyDayBefore}
             onChange={setNotifyDayBefore}
+          />
+          <ToggleRow
+            Icon={Pin}
+            title={t(
+              expense.expenseType === "INCOME"
+                ? "fixed.income"
+                : "fixed.expense",
+            )}
+            sub={t("fixed.sub")}
+            value={isFixed}
+            onChange={setIsFixed}
           />
         </div>
       </Section>

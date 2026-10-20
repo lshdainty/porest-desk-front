@@ -1,0 +1,246 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { KRW } from "@/shared/lib/groo/format";
+import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
+import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Skeleton } from "@/shared/ui/skeleton";
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "@/shared/ds/segmented-control";
+import type { ExpenseType } from "@/entities/expense";
+import { useBulkMarkFixed, useExpenses } from "../model/useExpenses";
+import {
+  groupCheck,
+  groupForFixed,
+  toggleGroup,
+  type GroupCheck,
+  type TxGroup,
+} from "../lib/fixed-groups";
+
+/*
+ * 거래를 고정으로 정리하는 대화상자.
+ *
+ * 처음 쓰는 사람은 거래가 이미 수십~수백 건이다. 한 건씩 열어 스위치를 켜게 하면 아무도 안 한다.
+ * 그래서 **같은 이름으로 나가는 거래를 묶어서**(월세 열두 달치가 한 줄) 한 번에 고르게 한다.
+ * 돈·잔액은 안 움직이고 통계의 분류만 바뀌므로, 되돌리기는 같은 화면에서 "변동으로" 를 고르면 된다.
+ */
+
+type Target = "fixed" | "variable";
+
+function GroupRow({
+  g,
+  state,
+  onChange,
+}: {
+  g: TxGroup;
+  state: GroupCheck;
+  onChange: (on: boolean) => void;
+}) {
+  const { t } = useTranslation("stats");
+  const allFixed = g.fixedCount === g.count;
+  const someFixed = g.fixedCount > 0 && !allFixed;
+  return (
+    <li>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          minHeight: 52,
+          padding: "8px 4px",
+          cursor: "pointer",
+        }}
+      >
+        <Checkbox
+          checked={state}
+          onCheckedChange={(c) => onChange(c === true)}
+          aria-label={g.name}
+        />
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span
+            style={{
+              display: "block",
+              fontSize: "var(--text-label-sm)",
+              fontWeight: 600,
+              color: "var(--fg-primary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {g.name}
+          </span>
+          <span
+            style={{
+              display: "block",
+              marginTop: 2,
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-tertiary)",
+            }}
+          >
+            {t("fixed.bulk.groupSub", { count: g.count })} ·{" "}
+            <MaskAmount>
+              {wonPre()}
+              {KRW(g.total)}
+            </MaskAmount>
+            <WonUnit />
+          </span>
+        </span>
+        {(allFixed || someFixed) && (
+          <span
+            style={{
+              flexShrink: 0,
+              fontSize: "var(--text-caption)",
+              fontWeight: 700,
+              color: "var(--fg-brand)",
+            }}
+          >
+            {allFixed
+              ? t("fixed.bulk.badgeAll")
+              : t("fixed.bulk.badgeSome", {
+                  fixed: g.fixedCount,
+                  count: g.count,
+                })}
+          </span>
+        )}
+      </label>
+    </li>
+  );
+}
+
+export function FixedBulkDialog({
+  mobile,
+  startDate,
+  endDate,
+  onClose,
+}: {
+  mobile: boolean;
+  /** "YYYY-MM-DD" — 통계 화면에서 고른 기간 */
+  startDate: string;
+  endDate: string;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation("stats");
+  const { t: tc } = useTranslation("common");
+  const [kind, setKind] = useState<ExpenseType>("EXPENSE");
+  const [target, setTarget] = useState<Target>("fixed");
+  const [picked, setPicked] = useState<ReadonlySet<number>>(new Set());
+
+  const q = useExpenses({ startDate, endDate });
+  const mut = useBulkMarkFixed();
+
+  const groups = groupForFixed(q.data ?? [], kind, t("fixed.bulk.untitled"));
+  const toFixed = target === "fixed";
+
+  const apply = () => {
+    if (picked.size === 0 || mut.isPending) return;
+    mut.mutate(
+      { ids: [...picked], isFixed: toFixed },
+      {
+        onSuccess: ({ updatedCount }) => {
+          toast.success(
+            t(toFixed ? "fixed.bulk.doneFixed" : "fixed.bulk.doneVariable", {
+              count: updatedCount,
+            }),
+          );
+          onClose();
+        },
+      },
+    );
+  };
+
+  return (
+    <ModalShell
+      title={t("fixed.bulk.title")}
+      onClose={onClose}
+      mobile={mobile}
+      mobileMinHeight="70dvh"
+      footer={
+        <ModalFooter
+          onSave={apply}
+          saveLabel={t("fixed.bulk.apply", { count: picked.size })}
+          saving={mut.isPending}
+          saveDisabled={picked.size === 0}
+          onCancel={onClose}
+          cancelLabel={tc("cancel")}
+        />
+      }
+    >
+      <p
+        style={{
+          margin: "0 0 14px",
+          fontSize: "var(--text-label-sm)",
+          color: "var(--fg-secondary)",
+        }}
+      >
+        {t("fixed.bulk.desc", { start: startDate, end: endDate })}
+      </p>
+
+      <SegmentedControl
+        aria-label={t("fixed.trend.kindAria")}
+        value={kind}
+        onValueChange={(v) => {
+          setKind(v as ExpenseType);
+          setPicked(new Set());
+        }}
+        style={{ marginBottom: 10 }}
+      >
+        <SegmentedControlItem value="EXPENSE">
+          {t("fixed.kind.expense")}
+        </SegmentedControlItem>
+        <SegmentedControlItem value="INCOME">
+          {t("fixed.kind.income")}
+        </SegmentedControlItem>
+      </SegmentedControl>
+
+      <SegmentedControl
+        aria-label={t("fixed.bulk.targetAria")}
+        value={target}
+        onValueChange={(v) => setTarget(v as Target)}
+        style={{ marginBottom: 14 }}
+      >
+        <SegmentedControlItem value="fixed">
+          {t("fixed.bulk.toFixed")}
+        </SegmentedControlItem>
+        <SegmentedControlItem value="variable">
+          {t("fixed.bulk.toVariable")}
+        </SegmentedControlItem>
+      </SegmentedControl>
+
+      {q.isLoading ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[52px] w-full rounded-md" />
+          ))}
+        </div>
+      ) : groups.length === 0 ? (
+        <div
+          style={{
+            padding: "32px 0",
+            textAlign: "center",
+            color: "var(--fg-tertiary)",
+            fontSize: "var(--text-label-sm)",
+          }}
+        >
+          {t("fixed.bulk.empty")}
+        </div>
+      ) : (
+        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+          {groups.map((g) => (
+            <GroupRow
+              key={g.key}
+              g={g}
+              state={groupCheck(g, picked)}
+              onChange={(on) => setPicked(toggleGroup(g, picked, on))}
+            />
+          ))}
+        </ul>
+      )}
+    </ModalShell>
+  );
+}

@@ -1,0 +1,51 @@
+import { describe, expect, it } from "vitest";
+import { amountFor, splitFixed } from "./fixed-split";
+
+describe("splitFixed — 전체 · 고정 · 변동", () => {
+  it("변동은 전체에서 고정을 뺀 값이다", () => {
+    const s = splitFixed(1_530_000, 1_400_000);
+    expect(s.total).toBe(1_530_000);
+    expect(s.fixed).toBe(1_400_000);
+    expect(s.variable).toBe(130_000);
+    expect(s.fixedPercent).toBe(92);
+  });
+
+  it("옛 서버가 고정을 안 보내면 전부 변동이다 — 기존 화면 그대로", () => {
+    const s = splitFixed(500_000, undefined);
+    expect(s.fixed).toBe(0);
+    expect(s.variable).toBe(500_000);
+    expect(s.fixedPercent).toBe(0);
+  });
+
+  it("전체가 0 이면 비율도 0 이다 — 0 으로 나누지 않는다", () => {
+    const s = splitFixed(0, 0);
+    expect(s).toEqual({ total: 0, fixed: 0, variable: 0, fixedPercent: 0 });
+  });
+
+  it("고정이 전체를 넘어도 변동이 음수가 되지 않는다", () => {
+    const s = splitFixed(100, 150);
+    expect(s.fixed).toBe(100);
+    expect(s.variable).toBe(0);
+    expect(s.fixedPercent).toBe(100);
+  });
+
+  it("음수·null 은 0 으로 본다", () => {
+    expect(splitFixed(-5, 3).total).toBe(0);
+    expect(splitFixed(100, -3).fixed).toBe(0);
+    expect(splitFixed(null, null).total).toBe(0);
+  });
+
+  it("비율은 반올림한 정수다 — 1/3 은 33", () => {
+    expect(splitFixed(3, 1).fixedPercent).toBe(33);
+    expect(splitFixed(3, 2).fixedPercent).toBe(67);
+  });
+});
+
+describe("amountFor — 보기에 맞는 금액", () => {
+  const s = splitFixed(1_000, 700);
+  it("전체 / 고정 제외 / 고정만", () => {
+    expect(amountFor(s, "all")).toBe(1_000);
+    expect(amountFor(s, "variable")).toBe(300);
+    expect(amountFor(s, "fixed")).toBe(700);
+  });
+});

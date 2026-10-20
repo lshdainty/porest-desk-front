@@ -40,6 +40,8 @@ export interface RecurringTransaction {
   notifyDayBefore: boolean;
   createAt: string;
   modifyAt: string;
+  /** 고정 수입·지출 — 이 반복이 만든 거래가 표식을 물려받는다. 이체는 늘 false. 옛 서버면 없다. */
+  isFixed?: boolean;
 }
 
 export interface RecurringTransactionFormValues {
@@ -67,4 +69,6 @@ export interface RecurringTransactionFormValues {
   maxOccurrences?: number;
   autoLog?: boolean;
   notifyDayBefore?: boolean;
+  /** 고정 수입·지출. 안 실으면 생성은 변동, 수정은 유지. 이체에는 쓰지 않는다(서버가 무시한다). */
+  isFixed?: boolean;
 }

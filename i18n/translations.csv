@@ -2775,3 +2775,61 @@ stocks,portfolio.colWeight,비중,Weight
 stocks,portfolio.colReturn,수익률,Return
 stocks,market.indexPoint,지수,Index
 stocks,market.fxBase,매매기준율,Base rate
+expense,fixed.switch.expense,고정 지출,Fixed expense
+expense,fixed.switch.income,고정 수입,Fixed income
+expense,fixed.hint.expense,월세·통신비처럼 매달 나가는 돈이에요. 통계에서 따로 나눠 볼 수 있어요,Money that goes out every month like rent or phone bills. You can view it separately in statistics
+expense,fixed.hint.income,월급처럼 매달 들어오는 돈이에요. 통계에서 따로 나눠 볼 수 있어요,Money that comes in every month like a salary. You can view it separately in statistics
+expense,fixed.badge,고정,Fixed
+recurring,fixed.expense,고정 지출,Fixed expense
+recurring,fixed.income,고정 수입,Fixed income
+recurring,fixed.sub,이 반복이 앞으로 만드는 거래가 고정으로 기록돼요,Transactions this schedule creates from now on are recorded as fixed
+expense,preset.fixedTitle.expense,고정 지출로 기록,Record as fixed expense
+expense,preset.fixedTitle.income,고정 수입으로 기록,Record as fixed income
+expense,preset.fixedDesc,이 프리셋으로 만든 거래가 통계의 고정 항목으로 잡혀요. 위의 고정 금액과는 별개예요.,Transactions made from this preset count as fixed in statistics. This is separate from the fixed amount above.
+stats,tab.fixed,고정·변동,Fixed vs. variable
+stats,fixedView.aria,보기 방식,View
+stats,fixedView.all,전체,All
+stats,fixedView.variable,고정 제외,Excl. fixed
+stats,fixedView.fixed,고정만,Fixed only
+stats,category.centerVariable,고정 제외 지출,Excl. fixed
+stats,category.centerFixed,고정 지출,Fixed
+stats,fixed.expense.title,지출 — 고정과 변동,Spending: fixed vs. variable
+stats,fixed.income.title,수입 — 고정과 변동,Income: fixed vs. variable
+stats,fixed.expense.none,이 기간에는 지출이 없어요,No spending in this period
+stats,fixed.income.none,이 기간에는 수입이 없어요,No income in this period
+stats,fixed.total.expense,전체 지출,Total spending
+stats,fixed.total.income,전체 수입,Total income
+stats,fixed.fixed.expense,고정 지출,Fixed spending
+stats,fixed.fixed.income,고정 수입,Fixed income
+stats,fixed.variable.expense,고정 제외 지출,Spending excl. fixed
+stats,fixed.variable.income,고정 제외 수입,Income excl. fixed
+stats,fixed.bar.aria,"{{kind}} 중 고정 {{fixed}}%, 변동 {{variable}}%","{{fixed}}% fixed, {{variable}}% variable of {{kind}}"
+stats,fixed.insight.expense,지출의 {{pct}}%가 고정이에요. 고정을 뺀 지출은,{{pct}}% of spending is fixed. Spending excluding fixed is
+stats,fixed.insight.income,수입의 {{pct}}%가 고정이에요. 고정을 뺀 수입은,{{pct}}% of income is fixed. Income excluding fixed is
+stats,fixed.empty.desc,월세·통신비·월급처럼 매달 정해진 거래를 고정으로 표시하면 여기서 따로 볼 수 있어요,Mark monthly items like rent or salary as fixed to see them separately here
+stats,fixed.manage,거래를 고정으로 정리하기,Organize fixed items
+stats,fixed.manageHint,매달 같은 이름으로 나가는 돈은 한 번에 정리할 수 있어요,Items with the same name every month can be set in one go
+stats,fixed.trend.title,월별 고정·변동 추이,Monthly fixed vs. variable
+stats,fixed.trend.kindAria,지출 또는 수입,Spending or income
+stats,fixed.trend.recent,최근 6개월,Last 6 months
+stats,fixed.kind.expense,지출,Spending
+stats,fixed.kind.income,수입,Income
+stats,fixed.legend.fixed,고정,Fixed
+stats,fixed.legend.variable,변동,Variable
+stats,fixed.category.title,카테고리별 고정·변동,Fixed vs. variable by category
+stats,fixed.category.fixedPart,그중 고정 {{pct}}%,Fixed {{pct}}%
+stats,fixed.bulk.title,거래를 고정으로 정리하기,Organize fixed items
+stats,fixed.bulk.desc,{{start}} ~ {{end}} 기간의 거래예요. 매달 같은 이름으로 나가는 돈은 한 줄로 묶여 있어요. 돈이나 잔액은 달라지지 않고 통계의 분류만 바뀌어요.,"Transactions from {{start}} to {{end}}. Items with the same name are grouped. Balances don't change, only how statistics classify them."
+stats,fixed.bulk.untitled,이름 없는 거래,Untitled
+stats,fixed.bulk.targetAria,바꿀 방향,Change to
+stats,fixed.bulk.toFixed,고정으로 표시,Mark as fixed
+stats,fixed.bulk.toVariable,변동으로 되돌리기,Back to variable
+stats,fixed.bulk.groupSub,{{count}}건,{{count}} items
+stats,fixed.bulk.badgeAll,고정,Fixed
+stats,fixed.bulk.badgeSome,고정 {{fixed}}/{{count}},Fixed {{fixed}}/{{count}}
+stats,fixed.bulk.empty,이 기간에는 정리할 거래가 없어요,No transactions to organize in this period
+stats,fixed.bulk.apply,{{count}}건 적용,Apply to {{count}}
+stats,fixed.bulk.doneFixed,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
+stats,fixed.bulk.doneVariable,{{count}}건을 변동으로 되돌렸어요,Changed {{count}} back to variable
+settings,hideAmounts.card.stats.fixed,고정·변동 탭,Fixed vs. variable tab
+stats,fixed.insight.tail,이에요.,.

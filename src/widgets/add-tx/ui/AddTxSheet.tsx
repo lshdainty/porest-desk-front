@@ -23,6 +23,7 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
+import { Switch } from "@/shared/ui/switch";
 import { renderIcon } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
@@ -258,6 +259,8 @@ export function AddTxSheet({
       nowTimeLocal(),
   );
   const [merchant, setMerchant] = useState(seed?.merchant ?? "");
+  // 고정 수입·지출 — 월급·월세처럼 매달 정해진 거래. 통계가 따로 나눠 본다(돈에는 영향 없음).
+  const [isFixed, setIsFixed] = useState(seed?.isFixed ?? false);
   const [paymentMethod, setPaymentMethod] = useState(seed?.paymentMethod ?? "");
   // 할부 개월 — 신용카드 결제에만 의미. '' = 일시불.
   const [installmentMonths, setInstallmentMonths] = useState<string>(
@@ -371,6 +374,8 @@ export function AddTxSheet({
     setCategoryRowId(p.categoryRowId ?? null);
     setAssetRowId(p.assetRowId ?? null);
     setMerchant(p.merchant ?? "");
+    // 프리셋의 고정 표식이 기본값이 된다 — 월세 프리셋을 불러오면 고정으로 켜져 있다. 이체는 해당 없음.
+    setIsFixed(p.expenseType === "TRANSFER" ? false : (p.isFixed ?? false));
     setPaymentMethod(p.paymentMethod ?? "");
     setInstallmentMonths("");
     setDescription(p.description ?? "");
@@ -784,6 +789,8 @@ export function AddTxSheet({
       description: description || null,
       expenseDate: `${expenseDate}T${expenseTime}`,
       merchant: merchant || null,
+      // 고정 표식은 돈이 아니라 분류라서 잠긴 거래(D12)·자동 생성 거래도 고칠 수 있다 — 늘 싣는다.
+      isFixed,
       // 돈 칸이 잠긴 편집(D12)은 잠긴 칸 가운데 **비울 수 있는 칸**을 안 싣는다 — 키를
       // 빼면 서버가 지금 값을 지킨다. 서버는 값이 "달라졌을 때만" 거절하지만, 환율(소수)
       // 처럼 표기가 갈릴 수 있는 칸까지 그 비교에 맡길 이유가 없다. 금액·날짜·종류는
@@ -1708,6 +1715,50 @@ export function AddTxSheet({
         </div>
       </Field>
 
+      {/* 고정 수입·지출 — 이체에는 없다(내 통장끼리 옮기는 돈이라 합계가 안 달라진다). */}
+      {!isTransfer && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 14,
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div
+              id="tx-fixed-label"
+              style={{
+                fontSize: "var(--text-body-sm)",
+                fontWeight: 500,
+                color: "var(--fg-primary)",
+              }}
+            >
+              {type === "INCOME"
+                ? t("fixed.switch.income")
+                : t("fixed.switch.expense")}
+            </div>
+            <div
+              style={{
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+                marginTop: 2,
+              }}
+            >
+              {type === "INCOME"
+                ? t("fixed.hint.income")
+                : t("fixed.hint.expense")}
+            </div>
+          </div>
+          <Switch
+            checked={isFixed}
+            onCheckedChange={setIsFixed}
+            aria-labelledby="tx-fixed-label"
+          />
+        </div>
+      )}
+
       {/* 메모 */}
       <Field style={{ marginBottom: 4 }}>
         <FieldLabel>{t("memo")}</FieldLabel>
@@ -1747,6 +1798,7 @@ export function AddTxSheet({
             merchant: isTransfer ? "" : merchant,
             paymentMethod: isTransfer ? "" : paymentMethod,
             description,
+            isFixed: isTransfer ? false : isFixed,
           }}
         />
       )}
@@ -1813,6 +1865,8 @@ type SavePresetSeed = {
   merchant: string;
   paymentMethod: string;
   description: string;
+  /** 고정 수입·지출 기본값 — 프리셋으로 거래를 만들 때 스위치의 초기값이 된다. */
+  isFixed: boolean;
 };
 
 function SavePresetDialog({
@@ -1858,6 +1912,7 @@ function SavePresetDialog({
         merchant: seed.merchant || undefined,
         paymentMethod: seed.paymentMethod || undefined,
         lockAmount: lockAmount ? "Y" : "N",
+        isFixed: seed.isFixed,
       },
       { onSuccess: onClose },
     );

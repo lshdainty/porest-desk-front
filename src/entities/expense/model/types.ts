@@ -106,6 +106,11 @@ export interface Expense {
   autoSource: string | null;
   /** 활성 분할 항목들의 카테고리 id (없으면 빈 배열). 목록 카테고리 필터를 split-aware 하게 매칭. */
   splitCategoryRowIds?: number[];
+  /**
+   * 고정 수입·지출 — 월급·월세처럼 매달 정해진 거래. 통계가 전체 · 고정 · 변동으로 나눠 보는
+   * **분류 표식**이다(돈·잔액·카드 청구에는 영향 없음). 이체는 대상이 아니다. 옛 서버면 없다.
+   */
+  isFixed?: boolean;
   createAt: string;
   modifyAt: string;
 }
@@ -142,6 +147,11 @@ export interface ExpenseFormValues {
   exchangeRate?: number | null;
   calendarEventRowId?: number;
   todoRowId?: number;
+  /**
+   * 고정 수입·지출. 생성은 안 실으면 변동, 수정은 **안 실으면 유지**(Patch)다 — 이 칸을 그리는
+   * 시트는 늘 실어 켜고 끄는 대로 저장된다. 이체에는 쓰지 않는다.
+   */
+  isFixed?: boolean;
   /**
    * 분할 내역 동시 수정(선택). 미전달/undefined = 분할 미변경(기존 유지).
    * 전달 시 새 분할로 교체되며, 합이 amount와 같아야 한다(백엔드 원자 검증).
@@ -181,6 +191,12 @@ export interface RangeSummary {
   endDate: string;
   totalIncome: number;
   totalExpense: number;
+  /**
+   * 합계 중 **고정**인 몫 — 변동 = 합계 − 고정. 고정은 전체의 부분집합이다(환불·미래분 규칙을
+   * 서버가 한 곳에서 같이 적용한다). 옛 서버면 없다 — 소비 측에서 0 으로 본다.
+   */
+  fixedIncome?: number;
+  fixedExpense?: number;
   categoryBreakdown: CategoryBreakdown[];
   monthlyBuckets: RangeMonthlyBucket[];
 }
@@ -190,6 +206,9 @@ export interface RangeMonthlyBucket {
   month: number;
   totalIncome: number;
   totalExpense: number;
+  /** 그 달 합계 중 고정인 몫. 옛 서버면 없다. */
+  fixedIncome?: number;
+  fixedExpense?: number;
   // 그 달의 카테고리별 지출(EXPENSE만, split-aware). 카테고리 월별 추이 차트용.
   // 백엔드 배포 전이거나 데이터 없으면 undefined/빈 배열일 수 있음 — 소비 측에서 안전 처리.
   categoryExpenses?: CategoryAmount[];
@@ -198,6 +217,8 @@ export interface RangeMonthlyBucket {
 export interface CategoryAmount {
   categoryRowId: number;
   amount: number;
+  /** 그 금액 중 고정인 몫. 옛 서버면 없다. */
+  fixedAmount?: number;
 }
 
 export interface MonthlyTrend {
@@ -205,6 +226,9 @@ export interface MonthlyTrend {
   month: number;
   totalIncome: number;
   totalExpense: number;
+  /** 그 달 합계 중 고정인 몫. 옛 서버면 없다. */
+  fixedIncome?: number;
+  fixedExpense?: number;
 }
 
 export interface BudgetComplianceMonth {
@@ -223,6 +247,8 @@ export interface CategoryBreakdown {
   parentCategoryRowId: number | null;
   parentCategoryName: string | null;
   expenseType: ExpenseType;
+  /** 그 금액 중 고정인 몫. 같은 카테고리에 고정과 변동이 섞일 수 있다. 옛 서버면 없다. */
+  fixedAmount?: number;
 }
 
 export interface ParentCategoryBreakdown {

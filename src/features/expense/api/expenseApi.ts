@@ -29,6 +29,8 @@ export interface ExpenseSearchParams {
   maxAmount?: number;
   startDate?: string;
   endDate?: string;
+  /** true = 고정만, false = 변동만, 생략 = 전부 */
+  fixed?: boolean;
 }
 
 export const expenseApi = {
@@ -161,6 +163,22 @@ export const expenseApi = {
       { params: { startDate, endDate } },
     );
     return resp.data.cells;
+  },
+
+  /**
+   * 고정 표식 일괄 변경 — 고른 거래를 한꺼번에 고정(true) 또는 변동(false)으로.
+   * 돈·잔액은 안 움직인다. 남의 거래가 섞이면 서버가 전체를 거절한다. 한 번에 500건까지.
+   * 응답은 실제로 바뀐 건수다(이미 그 값이던 거래는 세지 않는다).
+   */
+  bulkMarkFixed: async (
+    expenseIds: number[],
+    isFixed: boolean,
+  ): Promise<{ updatedCount: number }> => {
+    const resp: ApiResponse<{ updatedCount: number }> = await apiClient.put(
+      "/v1/expenses/fixed",
+      { expenseIds, isFixed },
+    );
+    return resp.data;
   },
 
   searchExpenses: async (params: ExpenseSearchParams): Promise<Expense[]> => {
