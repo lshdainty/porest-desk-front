@@ -59,7 +59,7 @@ vi.mock("@/entities/notification", () => ({
   ),
 }));
 
-vi.mock("@/shared/ui/porest/mobile-back-header", () => ({
+vi.mock("@/shared/ui/groo/mobile-back-header", () => ({
   MobileBackHeader: ({ trailing }: { trailing?: unknown }) => (
     <div data-testid="back-header">{trailing as never}</div>
   ),

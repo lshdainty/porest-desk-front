@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
+import { usePendingIds } from "@/shared/lib/groo/use-pending-ids";
 import { invalidateFor, userCalendarKeys } from "@/shared/config";
 import { userCalendarApi } from "../api/userCalendarApi";
 import type {

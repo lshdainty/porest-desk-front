@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DEFAULT_CURRENCY } from "@/shared/lib/porest/currency";
+import { DEFAULT_CURRENCY } from "@/shared/lib/groo/currency";
 import { userApi, type UserPreferences } from "../api/userApi";
 
 const PREF_KEY = ["user", "preferences"] as const;

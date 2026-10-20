@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 import type * as React from "react";
 
 /*
- * Porest Chip 의 클래스 · 상수 — 칩 · 입력값 칩 · 묶음 · 스크롤 칸 · 지우기. 수치 원본은 porest-design
+ * Groo Chip 의 클래스 · 상수 — 칩 · 입력값 칩 · 묶음 · 스크롤 칸 · 지우기. 수치 원본은 groo-design
  * specs/components/chip.yaml(값은 src/shared/ds/spec/chip.json). 무엇이 언제 바뀌는지는 chip.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). Tabs 의 Chip Tabs 도 chipVariants 를 그대로 쓴다.
  */

@@ -6,8 +6,8 @@ import { cn } from "@/shared/lib/cn";
 import { useScrollAutoHide } from "./use-scroll-auto-hide";
 
 /*
- * Porest Scroll Auto Hide — SEED Breeze ScrollAutoHide · Apache-2.0(2026-10-10). 수치 원본은 porest-design
- * specs/components/scroll-auto-hide.yaml(값은 src/shared/ds/spec/scroll-auto-hide.json). porest-design
+ * Groo Scroll Auto Hide — SEED Breeze ScrollAutoHide · Apache-2.0(2026-10-10). 수치 원본은 groo-design
+ * specs/components/scroll-auto-hide.yaml(값은 src/shared/ds/spec/scroll-auto-hide.json). groo-design
  * recipes/shadcn/components/ui/scroll-auto-hide.tsx 를 첫 판으로 가져왔다. 동작(1:1 · 50% 스냅 · 모션 줄이기 · 초점)은
  * use-scroll-auto-hide.ts 에 있다.
  *

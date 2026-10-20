@@ -14,7 +14,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import i18next from "i18next";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import { __resetPointerBlockForTest } from "@/shared/lib/porest/pointer-block";
+import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import koCommon from "@/locales/ko/common.json";
 import koTodo from "@/locales/ko/todo.json";
 import type { TodoTag } from "@/entities/todo-tag";

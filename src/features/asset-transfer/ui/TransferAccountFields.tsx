@@ -8,11 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { KRW } from "@/shared/lib/porest/format";
+import { KRW } from "@/shared/lib/groo/format";
 import {
   sanitizeAmountInput,
   blockNonDigitKey,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import type { Asset } from "@/entities/asset";
 import { transferEligible, isLoanTarget } from "../model/rules";
 

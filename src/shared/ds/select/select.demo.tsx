@@ -261,7 +261,7 @@ function TryStates() {
 
 // 가장 나쁜 값 — 긴 선택지 이름(트리거는 한 줄 말줄임 · 목록은 줄바꿈), 선택지 20개(목록 안 스크롤), 좁은 폭(240)
 const LONG =
-  "주식회사 포레스트 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드";
+  "주식회사 그루 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드";
 function TryWorst() {
   const [value, setValue] = useState("long");
   const [many, setMany] = useState("n12");

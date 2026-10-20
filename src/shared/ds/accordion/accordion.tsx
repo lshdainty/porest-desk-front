@@ -27,8 +27,8 @@ import { useControllable } from "./use-controllable";
 import { useExpandMotion } from "./use-expand-motion";
 
 /*
- * Porest Accordion — 구조는 SEED Accordion(rootage accordion.json · accordion-item.json, 2026-10-10). 수치 원본은 porest-design
- * specs/components/accordion.yaml(값은 src/shared/ds/spec/accordion.json). porest-design recipes/shadcn/components/ui/accordion.tsx 를
+ * Groo Accordion — 구조는 SEED Accordion(rootage accordion.json · accordion-item.json, 2026-10-10). 수치 원본은 groo-design
+ * specs/components/accordion.yaml(값은 src/shared/ds/spec/accordion.json). groo-design recipes/shadcn/components/ui/accordion.tsx 를
  * 첫 판으로 가져왔다 — 모양(cva · 클래스 상수)은 accordion-variants.ts 다.
  * 관련 상세를 세로로 묶고 항목마다 머리(트리거)를 눌러 펼친다 — 카드 혜택 · 유의사항. 하나만 접고 펴는 자리는 Collapsible, 하위 줄을
  * 접는 목록은 List 의 하위 줄이다(Tree View 는 HR 전용). 옛 Radix 베이스 · 아래 선만 · 꺾쇠 16 · 하나만 여는 모드는 걷었다.

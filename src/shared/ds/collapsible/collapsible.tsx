@@ -22,8 +22,8 @@ import {
 } from "./collapsible-variants";
 
 /*
- * Porest Collapsible — 트리거는 Accordion 항목 하나의 모양(2026-10-10). 수치 원본은 porest-design specs/components/collapsible.yaml
- * (값은 src/shared/ds/spec/collapsible.json). porest-design recipes/shadcn/components/ui/collapsible.tsx 를 첫 판으로 가져왔다.
+ * Groo Collapsible — 트리거는 Accordion 항목 하나의 모양(2026-10-10). 수치 원본은 groo-design specs/components/collapsible.yaml
+ * (값은 src/shared/ds/spec/collapsible.json). groo-design recipes/shadcn/components/ui/collapsible.tsx 를 첫 판으로 가져왔다.
  * 내용 하나를 접고 편다 — 거래 상세의 분할 내역, 분할의 "빠르게 맞추기", HR 업무 보고의 상세 검색 조건. 같은 모양의 상세가 여럿이면 Accordion 이다.
  * SEED 에는 Collapsible 이 없다 — Accordion 가이드의 한 줄대로 Accordion 트리거 · 상태 · 모션을 그대로 쓴다(shared/ds/accordion).
  * 옛 "스타일 0 · 동작만"(Radix 그대로) · Button 으로 감싼 트리거는 걷었다.

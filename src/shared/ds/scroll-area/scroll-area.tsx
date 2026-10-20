@@ -6,9 +6,9 @@ import { cn } from "@/shared/lib/cn";
 import { scrollAreaVariants } from "./scroll-area-variants";
 
 /*
- * Porest Scroll Area — 기본 스크롤 + 전역 스크롤바 한 벌(2026-10-10). 수치 원본은 porest-design specs/components/scroll-area.yaml
- * (값은 src/shared/ds/spec/scroll-area.json). porest-design recipes/shadcn/components/ui/scroll-area.tsx 를 첫 판으로 가져왔다.
- * SEED 에는 Scroll Area · 스크롤바 규칙이 없다(끝 흐림 Scroll Fog 만) — porest 가 정했다. 내용 위에 겹쳐 뜨는 Radix ScrollArea(올리기 전에는
+ * Groo Scroll Area — 기본 스크롤 + 전역 스크롤바 한 벌(2026-10-10). 수치 원본은 groo-design specs/components/scroll-area.yaml
+ * (값은 src/shared/ds/spec/scroll-area.json). groo-design recipes/shadcn/components/ui/scroll-area.tsx 를 첫 판으로 가져왔다.
+ * SEED 에는 Scroll Area · 스크롤바 규칙이 없다(끝 흐림 Scroll Fog 만) — groo 가 정했다. 내용 위에 겹쳐 뜨는 Radix ScrollArea(올리기 전에는
  * 보이지 않는 막대)와 ScrollBar 는 걷었다 — 스크롤은 브라우저 그대로이고 스크롤바 모양은 src/index.css 의 전역 한 벌이다.
  *
  *   ScrollArea   기본 스크롤 상자(div) — orientation "vertical"(기본) · "horizontal" · "both"(넘치는 방향만 overflow: auto) ·

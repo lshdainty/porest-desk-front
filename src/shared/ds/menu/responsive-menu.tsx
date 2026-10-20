@@ -27,7 +27,7 @@ import {
  * Responsive Menu — 줄의 동작은 이것으로 짠다. 1280 이상 Menu, 미만 Menu Sheet(같은 줄 · 같은 순서 · 같은 막힘).
  * 경계는 Dialog · Input Button 과 같은 useInputButtonSurface 다. 열림은 ResponsiveMenu 가 들고 있어 열린 채 폭이 바뀌어도
  * 새 표면으로 이어진다. title · description · layout 은 Menu Sheet 에만 쓰인다(메뉴에는 머리가 없다), suffixIcon 은 메뉴에만.
- * porest-design recipes/shadcn/components/ui/menu.tsx 의 ResponsiveMenu * 를 파일로 나눴다(menu.tsx 는 컴포넌트가 많다).
+ * groo-design recipes/shadcn/components/ui/menu.tsx 의 ResponsiveMenu * 를 파일로 나눴다(menu.tsx 는 컴포넌트가 많다).
  */
 
 const ResponsiveContext = React.createContext<{ wide: boolean } | null>(null);

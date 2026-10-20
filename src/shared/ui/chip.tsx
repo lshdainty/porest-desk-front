@@ -4,9 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Chip — 눌러서 켜고 끄는 선택 칩 (다중선택 목록·필터).
+ * Groo Chip — 눌러서 켜고 끄는 선택 칩 (다중선택 목록·필터).
  *
- * porest-design 에는 chip 전용 spec 이 없다 — toggle-group spec 은 2~5개 segmented
+ * groo-design 에는 chip 전용 spec 이 없다 — toggle-group spec 은 2~5개 segmented
  * 한정이라 37장짜리 그리드에 쓸 수 없다. 앱(`porest-desk-app`)도 같은 이유로
  * `lib/shared/widgets/p_chip.dart` 를 두고 있어, 그 시각을 그대로 미러한다:
  *

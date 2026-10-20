@@ -6,9 +6,9 @@ import { cn } from "@/shared/lib/cn";
 import { FieldContext, join, type FieldContextValue } from "./field-context";
 
 /*
- * Porest Field — 구조는 SEED Field(2026-10-01). 수치 원본은 porest-design
+ * Groo Field — 구조는 SEED Field(2026-10-01). 수치 원본은 groo-design
  * specs/components/field.yaml(값은 src/shared/ds/spec/field.json).
- * porest-design recipes/shadcn/components/ui/field.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 컴포넌트,
+ * groo-design recipes/shadcn/components/ui/field.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 컴포넌트,
  * 입력 · 묶음이 쓰는 문맥 · 훅 · 자소 셈은 field-context.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Field            머리(라벨 · 필수 점 또는 "선택" · 보조 액션) · 입력 · 꼬리(설명 또는 오류 · 글자 수). 사이 8

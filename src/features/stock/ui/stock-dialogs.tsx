@@ -11,7 +11,7 @@ import { Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
 import { useStockSearch } from "../model/useStockMaster";
 import {
   useCreateWatchGroup,

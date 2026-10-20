@@ -28,8 +28,8 @@ import {
 } from "./select-box-variants";
 
 /*
- * Porest Select Box — 구조는 SEED Select Box(2026-10-01). 수치 원본은 porest-design specs/components/select-box.yaml(값은
- * src/shared/ds/spec/select-box.json). porest-design recipes/shadcn/components/ui/select-box.tsx 를 첫 판으로 가져왔다.
+ * Groo Select Box — 구조는 SEED Select Box(2026-10-01). 수치 원본은 groo-design specs/components/select-box.yaml(값은
+ * src/shared/ds/spec/select-box.json). groo-design recipes/shadcn/components/ui/select-box.tsx 를 첫 판으로 가져왔다.
  *
  *   RadioSelectBoxGroup · RadioSelectBox   하나 고르기 — 묶음은 radiogroup, 오른쪽 라디오(Radiomark 20) 또는 없음
  *   CheckSelectBoxGroup · CheckSelectBox   여럿 고르기 — 묶음은 fieldset, 오른쪽 칸 없는 체크(Checkbox Ghost) 또는 없음

@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Checkbox — porest-design specs/components/checkbox.md SoT 기반.
+ * Groo Checkbox — groo-design specs/components/checkbox.md SoT 기반.
  *
  * - sizes: sm 16 / md 18 (default) / lg 20
  * - radius: rounded-sm (4px)

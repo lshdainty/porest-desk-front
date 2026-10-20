@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { renderIcon, tileRadius } from "@/shared/lib";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 
 /**
  * 카테고리 타일 — `FilterDialog`/`AddTxSheet`/`PresetEditDialog`/`BudgetEditDialog`

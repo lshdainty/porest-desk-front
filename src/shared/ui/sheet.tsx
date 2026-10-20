@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Sheet — porest-design specs/components/sheet.md SoT 기반.
+ * Groo Sheet — groo-design specs/components/sheet.md SoT 기반.
  *
  * - Radix Dialog 베이스 + side variant. 화면 가장자리 슬라이드 패널.
  * - composition: Sheet > SheetTrigger + SheetContent (side="top|bottom|left|right")

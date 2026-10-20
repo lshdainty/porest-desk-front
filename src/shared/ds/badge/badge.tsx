@@ -5,7 +5,7 @@ import { cn } from "@/shared/lib/cn";
 
 import { badgeGroupVariants, badgeVariants } from "./badge-variants";
 
-// 변형 · 톤 · 크기는 badge-variants.ts 머리 주석과 porest-design specs/components/badge.yaml 이 정한다.
+// 변형 · 톤 · 크기는 badge-variants.ts 머리 주석과 groo-design specs/components/badge.yaml 이 정한다.
 
 type BadgeSize = "medium" | "large";
 

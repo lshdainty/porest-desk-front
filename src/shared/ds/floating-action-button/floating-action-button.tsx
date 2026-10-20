@@ -5,8 +5,8 @@ import { cn } from "@/shared/lib/cn";
 import { ROOT } from "./floating-action-button-variants";
 
 /*
- * Porest Floating Action Button — 구조는 SEED Floating Action Button(아이콘만 · extended=false, 2026-10-04).
- * 수치 원본은 porest-design specs/components/floating-action-button.yaml(값은 src/shared/ds/spec/floating-action-button.json).
+ * Groo Floating Action Button — 구조는 SEED Floating Action Button(아이콘만 · extended=false, 2026-10-04).
+ * 수치 원본은 groo-design specs/components/floating-action-button.yaml(값은 src/shared/ds/spec/floating-action-button.json).
  * recipes/shadcn/components/ui/floating-action-button.tsx 를 첫 판으로 가져왔다.
  *
  *   FloatingActionButton   화면 위에 떠 있는 그 화면의 주 동작 하나 — 오른쪽 아래의 브랜드 원 56 + 흰 아이콘 24.

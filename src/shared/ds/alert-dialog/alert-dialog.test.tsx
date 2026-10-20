@@ -340,12 +340,12 @@ describe("바닥", () => {
 
 describe("뒤로 가기(1280 미만)", () => {
   it("열면 히스토리에 한 칸을 쌓고, 뒤로 가기가 오면 닫는다", async () => {
-    expect(window.history.state?.porestOverlayBack).toBeUndefined();
+    expect(window.history.state?.grooOverlayBack).toBeUndefined();
     const onOpenChange = vi.fn();
     render(<Ask onOpenChange={onOpenChange} />);
     open();
     await tick();
-    expect(window.history.state?.porestOverlayBack).toBe(true);
+    expect(window.history.state?.grooOverlayBack).toBe(true);
     act(() => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
@@ -359,7 +359,7 @@ describe("뒤로 가기(1280 미만)", () => {
     render(<Ask />);
     open();
     await tick();
-    expect(window.history.state?.porestOverlayBack).toBeUndefined();
+    expect(window.history.state?.grooOverlayBack).toBeUndefined();
     act(() => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });

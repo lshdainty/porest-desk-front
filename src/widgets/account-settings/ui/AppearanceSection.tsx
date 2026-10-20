@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { regionOptionsWith } from "@/shared/lib";
-import { DEFAULT_CURRENCY } from "@/shared/lib/porest/currency";
+import { DEFAULT_CURRENCY } from "@/shared/lib/groo/currency";
 import { useUserPreferences, useUpdateUserPreferences } from "@/features/user";
 
 /**

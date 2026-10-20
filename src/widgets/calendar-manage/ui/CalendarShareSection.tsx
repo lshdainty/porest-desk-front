@@ -17,12 +17,12 @@ import { toast } from "sonner";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
-import { settingsRowPadding } from "@/shared/ui/porest/manage-row-tokens";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { settingsRowPadding } from "@/shared/ui/groo/manage-row-tokens";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
+import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import {
   Select,
   SelectContent,
@@ -34,7 +34,7 @@ import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
   getPaletteByColor,
   CAT_PALETTE,
-} from "@/shared/lib/porest/chart-palette";
+} from "@/shared/lib/groo/chart-palette";
 import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
 import { useCurrentUser } from "@/features/user";
 import {
@@ -987,7 +987,7 @@ function CalendarJoinDialog({
    * 저장 버튼에만 걸면 Enter 는 그 문을 안 지난다 — 코드를 넣고 Enter 를 다섯 번
    * 누르면 참여 요청이 다섯 번 나갔다(QA #134). 입구는 버튼·Enter 둘이고 앞으로 더
    * 늘 수 있으니, "이미 나가 있으면 무시" 는 입구마다가 아니라 나가는 함수가 든다
-   * (`shared/lib/porest/enter-save.ts` 주석 · 할 일 빠른 추가 #122 와 같은 자리).
+   * (`shared/lib/groo/enter-save.ts` 주석 · 할 일 빠른 추가 #122 와 같은 자리).
    */
   const submit = () => {
     if (!valid || submitting) return;

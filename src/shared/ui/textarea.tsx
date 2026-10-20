@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Textarea — porest-design specs/components/textarea.md SoT 기반.
+ * Groo Textarea — groo-design specs/components/textarea.md SoT 기반.
  *
  * - min-height 80px — 3줄 이상 본문 입력
  * - body-md typography (15/400/1.6) 한국어 본문 가독성

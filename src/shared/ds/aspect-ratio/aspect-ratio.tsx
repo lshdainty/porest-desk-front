@@ -8,9 +8,9 @@ import {
 } from "./aspect-ratio-variants";
 
 /*
- * Porest Aspect Ratio — 구조는 SEED Aspect Ratio(2026-10-04). 수치 원본은 porest-design
+ * Groo Aspect Ratio — 구조는 SEED Aspect Ratio(2026-10-04). 수치 원본은 groo-design
  * specs/components/aspect-ratio.yaml(값은 src/shared/ds/spec/aspect-ratio.json).
- * porest-design recipes/shadcn/components/ui/aspect-ratio.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
+ * groo-design recipes/shadcn/components/ui/aspect-ratio.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * 옛 Aspect Ratio(Radix · 권장 16:9 · 4:3 · 1:1 · 3:4 · 21:9 · 2:1 · 자식이 모서리 · 바탕을 맡음)를 대신한다.
  *
  *   AspectRatio   폭이 정해지면 비율로 높이가 정해지는 상자 하나 — 자식 하나가 상자를 채운다. 그 밖은 div 속성

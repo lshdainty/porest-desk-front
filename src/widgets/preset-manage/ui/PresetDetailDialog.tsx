@@ -1,15 +1,15 @@
 import { useTranslation } from "react-i18next";
 
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import {
   DetailHero,
   DetailField,
   DetailFieldGroup,
-} from "@/shared/ui/porest/detail";
-import { KRW } from "@/shared/lib/porest/format";
+} from "@/shared/ui/groo/detail";
+import { KRW } from "@/shared/lib/groo/format";
 import { renderIcon, tileRadius } from "@/shared/lib";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import type { ExpenseCategory } from "@/entities/expense";
 import type { ExpenseTemplate } from "@/entities/expense-template";
 

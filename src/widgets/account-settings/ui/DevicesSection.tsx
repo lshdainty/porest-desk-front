@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { parseServerUtc } from "@/shared/lib/date";
 import { useNow } from "@/shared/hooks";

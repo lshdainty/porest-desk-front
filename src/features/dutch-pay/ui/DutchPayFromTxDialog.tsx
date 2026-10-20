@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react";
-import { sanitizeAmountInput } from "@/shared/lib/porest/amount";
+import { sanitizeAmountInput } from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
 import { Check, Divide, ListOrdered, Percent, UserPlus, X } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
-import { DetailSourceTx } from "@/shared/ui/porest/detail";
-import { CategoryChip } from "@/shared/ui/porest/category-chip";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
+import { DetailSourceTx } from "@/shared/ui/groo/detail";
+import { CategoryChip } from "@/shared/ui/groo/category-chip";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
-import { KRW, money } from "@/shared/lib/porest/format";
+import { KRW, money } from "@/shared/lib/groo/format";
 import { todayLocalKey } from "@/shared/lib/date";
 import { useCreateDutchPay } from "@/features/dutch-pay";
 import { useExpenseCategories } from "@/features/expense";
@@ -23,7 +23,7 @@ import type {
 import { PARTICIPANT_NAME_MAX } from "@/entities/dutch-pay";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
-// 더치페이 참가자별 시각 구분 — porest chart palette 10색
+// 더치페이 참가자별 시각 구분 — groo chart palette 10색
 const PARTICIPANT_PALETTE = [
   {
     color: "var(--color-chart-blue)",

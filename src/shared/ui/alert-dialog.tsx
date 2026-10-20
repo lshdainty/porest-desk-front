@@ -3,7 +3,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/index";
-import { registerOverlay } from "@/shared/lib/porest/pointer-block";
+import { registerOverlay } from "@/shared/lib/groo/pointer-block";
 import { buttonVariants } from "@/shared/ui/button-variants";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -17,14 +17,14 @@ import { Spinner } from "@/shared/ui/spinner";
 type FooterButtonSize = "default" | "lg";
 
 /*
- * Porest AlertDialog — porest-design specs/components/alert-dialog.md SoT 기반.
+ * Groo AlertDialog — groo-design specs/components/alert-dialog.md SoT 기반.
  * Phase 2 마이그레이션: 비가역 액션 확정용 modal. Dialog와 시각 동일.
  *
  * 호환 보존:
  *   - sizes 추가(sm/md/lg) — desk-front 기존 max-w-lg는 default md(480)와 유사
  *   - AlertDialogAction: buttonVariants() default(primary) 유지 + loading prop 보존
  *     (사용처에서 destructive 필요 시 className 또는 variant override)
- *   - Loader2 → porest Spinner 교체
+ *   - Loader2 → groo Spinner 교체
  *
  * 동작 차이(Dialog 대비):
  *   - overlay click 무시 / close button(X) 없음 / default focus = Cancel

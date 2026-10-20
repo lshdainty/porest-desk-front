@@ -43,9 +43,9 @@ import {
 
 const SOURCES: { v: ImportSource; nameKey: string; descKey: string }[] = [
   {
-    v: "POREST",
-    nameKey: "import.source.porest",
-    descKey: "import.source.porestDesc",
+    v: "그루",
+    nameKey: "import.source.groo",
+    descKey: "import.source.grooDesc",
   },
   {
     v: "EASYBUDGET",
@@ -118,7 +118,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("export");
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("upload");
-  const [source, setSource] = useState<ImportSource>("POREST");
+  const [source, setSource] = useState<ImportSource>("그루");
   const [file, setFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ImportAnalyzeResult | null>(null);

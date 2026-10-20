@@ -11,7 +11,7 @@ import {
   switchVariants,
 } from "./switch-variants";
 
-// 크기 · 톤 · 상태는 switch-variants.ts 머리 주석과 porest-design specs/components/switch.yaml 이 정한다.
+// 크기 · 톤 · 상태는 switch-variants.ts 머리 주석과 groo-design specs/components/switch.yaml 이 정한다.
 
 export interface SwitchmarkProps
   extends

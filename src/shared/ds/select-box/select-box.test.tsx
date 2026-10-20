@@ -815,7 +815,7 @@ describe("Select Box — 모양 · 배치 · 펼침", () => {
       <RadioSelectBoxGroup aria-label="a" columns={3}>
         <RadioSelectBox
           value="1"
-          label="주식회사 포레스트 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드"
+          label="주식회사 그루 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드"
           description="설명도 아주 길어서 두 줄을 넘기면 줄바꿈으로 상자가 늘어나요"
           control="none"
         />

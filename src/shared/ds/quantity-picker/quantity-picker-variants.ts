@@ -4,7 +4,7 @@ import type {
 } from "./quantity-picker";
 
 /*
- * Porest Quantity Picker 의 모양 — 크기 · 폭. 수치 원본은 porest-design specs/components/quantity-picker.yaml
+ * Groo Quantity Picker 의 모양 — 크기 · 폭. 수치 원본은 groo-design specs/components/quantity-picker.yaml
  * (값은 src/shared/ds/spec/quantity-picker.json). 컴포넌트와 규칙은 quantity-picker.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

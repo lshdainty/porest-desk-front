@@ -18,8 +18,8 @@ import {
 } from "./menu-variants";
 
 /*
- * Porest Menu — 구조는 SEED Menu(small, 2026-10-02). 수치 원본은 porest-design specs/components/menu.yaml(값은 src/shared/ds/spec/menu.json).
- * porest-design recipes/shadcn/components/ui/menu.tsx 를 첫 판으로 가져왔다. Radix DropdownMenu 위(비모달)에 짰다.
+ * Groo Menu — 구조는 SEED Menu(small, 2026-10-02). 수치 원본은 groo-design specs/components/menu.yaml(값은 src/shared/ds/spec/menu.json).
+ * groo-design recipes/shadcn/components/ui/menu.tsx 를 첫 판으로 가져왔다. Radix DropdownMenu 위(비모달)에 짰다.
  *
  *   Menu              트리거에 붙어 여는 동작 목록 — open · defaultOpen · onOpenChange
  *   MenuTrigger       여는 버튼(⋮ — Button ghost · iconOnly, 이름 "{줄 이름} 더보기") — aria-haspopup="menu" · aria-expanded,

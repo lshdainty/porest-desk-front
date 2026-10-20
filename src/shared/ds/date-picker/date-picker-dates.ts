@@ -1,5 +1,5 @@
 /*
- * Porest Date Picker 의 날짜 도구 · 글 · 값 — 수치 원본은 porest-design specs/components/date-picker.yaml
+ * Groo Date Picker 의 날짜 도구 · 글 · 값 — 수치 원본은 groo-design specs/components/date-picker.yaml
  * (값은 src/shared/ds/spec/date-picker.json). 컴포넌트는 date-picker.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 날짜는 모두 **로컬 시간대의 그 날 0시** Date 로 다룬다 — 시간은 보지 않는다. 문자열("YYYY-MM-DD")을 Date 로 만들 때

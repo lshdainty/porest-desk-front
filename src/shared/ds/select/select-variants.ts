@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Select 의 모양 — 수치 원본은 porest-design specs/components/select.yaml(값은 src/shared/ds/spec/select.json).
- * porest-design recipes/shadcn/components/ui/select.tsx 를 첫 판으로 가져왔다. 이 파일은 모양 정의(클래스 · 상수),
+ * Groo Select 의 모양 — 수치 원본은 groo-design specs/components/select.yaml(값은 src/shared/ds/spec/select.json).
+ * groo-design recipes/shadcn/components/ui/select.tsx 를 첫 판으로 가져왔다. 이 파일은 모양 정의(클래스 · 상수),
  * 컴포넌트는 select.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 트리거는 Input Button 과 같은 상자다 — 스펙이 "Input Button 과 같은 값" 이라 했다. 레시피는 input-button 의 cva 를 가져다 쓰지만

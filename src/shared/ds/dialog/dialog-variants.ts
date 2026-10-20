@@ -1,6 +1,6 @@
 /*
- * Porest Dialog 의 모양 — 수치 원본은 porest-design specs/components/dialog.yaml(값은 src/shared/ds/spec/dialog.json).
- * porest-design recipes/shadcn/components/ui/dialog.tsx 를 첫 판으로 가져왔다 — 이 파일은 모양 정의,
+ * Groo Dialog 의 모양 — 수치 원본은 groo-design specs/components/dialog.yaml(값은 src/shared/ds/spec/dialog.json).
+ * groo-design recipes/shadcn/components/ui/dialog.tsx 를 첫 판으로 가져왔다 — 이 파일은 모양 정의,
  * 컴포넌트는 dialog.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

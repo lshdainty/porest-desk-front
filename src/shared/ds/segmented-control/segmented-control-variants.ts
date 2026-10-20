@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Segmented Control 의 클래스 — 트랙 · 칸 · 글 · 고른 알약 · 알림 점. 수치 원본은 porest-design
+ * Groo Segmented Control 의 클래스 — 트랙 · 칸 · 글 · 고른 알약 · 알림 점. 수치 원본은 groo-design
  * specs/components/segmented-control.yaml(값은 src/shared/ds/spec/segmented-control.json).
  * 무엇이 언제 바뀌는지는 segmented-control.tsx 머리 주석이다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

@@ -2,12 +2,12 @@ import * as React from "react";
 
 /*
  * 1280 미만에서 열린 표면을 뒤로 가기로 닫는다 — Alert Dialog · Bottom Sheet 가 쓴다(Dialog 는 1280 이상이라 걸지 않는다 —
- * 거기서 뒤로 가기는 "이전 페이지" 다). porest-design recipes/shadcn/components/ui/alert-dialog.tsx 의 useBackClose 를 옮겼다.
+ * 거기서 뒤로 가기는 "이전 페이지" 다). groo-design recipes/shadcn/components/ui/alert-dialog.tsx 의 useBackClose 를 옮겼다.
  *
  * 열린 표면마다 히스토리에 같은 주소로 한 칸을 쌓는다. 칸은 서로 구별하지 않고 개수로 센다 — popstate 하나가 칸 하나를 쓴다.
  * history.state 는 물려준다(react-router 가 위치를 세는 idx 가 사라지지 않게).
  */
-const BACK_FLAG = "porestOverlayBack";
+const BACK_FLAG = "grooOverlayBack";
 
 type BackSlot = { onBack: () => void; inHistory: boolean };
 

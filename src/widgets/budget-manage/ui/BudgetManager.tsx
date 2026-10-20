@@ -18,28 +18,21 @@ import {
   useDeleteExpenseBudget,
 } from "@/features/expense";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
-import { KRW, isEn } from "@/shared/lib/porest/format";
-import {
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
-import { Icon, MonthPicker } from "@/shared/ui/porest/primitives";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { KRW, isEn } from "@/shared/lib/groo/format";
+import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
+import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { Icon, MonthPicker } from "@/shared/ui/groo/primitives";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { Button } from "@/shared/ui/button";
-import {
-  MANAGE_ROW,
-  manageRowClass,
-} from "@/shared/ui/porest/manage-row-tokens";
+import { MANAGE_ROW, manageRowClass } from "@/shared/ui/groo/manage-row-tokens";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
-import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
+import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import {
   BudgetEditDialog,
   MonthlyBudgetDialog,
   type BudgetDraft,
 } from "./BudgetEditDialog";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 

@@ -4,8 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Chip } from "@/shared/ui/chip";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { HideAmountsUnlockDialog } from "./HideAmountsUnlockDialog";
 import {
   cardsOfPage,
@@ -14,11 +14,11 @@ import {
   SCREEN_HIDE_CARDS,
   type HideCardKey,
   type HidePageKey,
-} from "@/shared/lib/porest/hide-amounts-cards";
+} from "@/shared/lib/groo/hide-amounts-cards";
 import {
   setHiddenCards,
   useHiddenCards,
-} from "@/shared/lib/porest/hide-amounts-core";
+} from "@/shared/lib/groo/hide-amounts-core";
 
 /**
  * 금액 가리기 — 계정 > 보안 > 금액 가리기 (앱 `hide_amounts_screen.dart` 미러).

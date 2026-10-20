@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Card 의 모양 — 수치 원본은 porest-design specs/components/card.yaml(값은 src/shared/ds/spec/card.json).
+ * Groo Card 의 모양 — 수치 원본은 groo-design specs/components/card.yaml(값은 src/shared/ds/spec/card.json).
  * 컴포넌트와 규칙은 card.tsx 머리 주석이다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

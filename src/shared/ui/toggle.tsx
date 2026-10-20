@@ -9,8 +9,8 @@ import { toggleVariants } from "@/shared/ui/toggle-variants";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Toggle — porest-design specs/components/toggle.md SoT 기반.
- * Phase 2 마이그레이션: porest 토큰 + desk-front variants(default/outline/segmented*) +
+ * Groo Toggle — groo-design specs/components/toggle.md SoT 기반.
+ * Phase 2 마이그레이션: groo 토큰 + desk-front variants(default/outline/segmented*) +
  * sizes(default/sm/lg) 보존.
  *
  * variants:

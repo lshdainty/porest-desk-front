@@ -1,7 +1,7 @@
 import { formatWon } from "./chart-variants";
 
 /*
- * 열지도의 값 — 세기 다섯 단계와 단계마다 글자색. 수치 원본은 porest-design specs/components/chart.yaml 의 heatmapCell · heatmapValue.
+ * 열지도의 값 — 세기 다섯 단계와 단계마다 글자색. 수치 원본은 groo-design specs/components/chart.yaml 의 heatmapCell · heatmapValue.
  */
 
 /** 칸 폭이 이 값 이상일 때만 칸에 금액을 적는다(px) — "99,999,999,999원" 이 107 이라 999억까지 들어간다 */

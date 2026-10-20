@@ -17,7 +17,7 @@ import {
 } from "./checkbox-variants";
 import { CheckboxGroupContext } from "./checkbox-group-context";
 
-// 크기 · 모양 · 톤 · 굵기 · 상태는 checkbox-variants.ts 머리 주석과 porest-design specs/components/checkbox.yaml 이 정한다.
+// 크기 · 모양 · 톤 · 굵기 · 상태는 checkbox-variants.ts 머리 주석과 groo-design specs/components/checkbox.yaml 이 정한다.
 // 키 — Space 는 켜고 끈다. Enter 는 폼을 제출한다(진짜 input · SEED 와 같다 — 폼의 기본 버튼을 누른다, 칸은 바뀌지 않는다).
 // Radix 는 Enter 를 막기만 해서 칸이 받아 제출한다(사용자 결정 2026-10-08). 라벨 안에 링크 · 버튼을 두지 않는다 — 누르는 영역(::before)이
 // 덮는다. 링크는 라벨 옆 · 아래에(checkbox.md Don't).

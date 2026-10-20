@@ -4,12 +4,12 @@ import { AlertTriangle, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { tileRadius } from "@/shared/lib";
-import { KRW, money } from "@/shared/lib/porest/format";
-import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { KRW, money } from "@/shared/lib/groo/format";
+import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { Sparkline } from "@/shared/ui/porest/charts";
+import { Sparkline } from "@/shared/ui/groo/charts";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {

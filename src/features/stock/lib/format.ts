@@ -5,7 +5,7 @@
  * 두 벌이 되어 각자 늙는다 — 같은 값을 한 화면에선 빨강, 다른 화면에선 파랑으로 보여주는
  * 종류의 어긋남이라 눈에 잘 띄지도 않는다.
  */
-import { formatChartAxis, isEn, money } from "@/shared/lib/porest/format";
+import { formatChartAxis, isEn, money } from "@/shared/lib/groo/format";
 
 /** 서버가 정밀도 보존을 위해 String 으로 내려주는 금액/비율을 숫자로 파싱. */
 export function num(s: string | null | undefined): number {

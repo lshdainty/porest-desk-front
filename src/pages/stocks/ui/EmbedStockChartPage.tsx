@@ -41,12 +41,12 @@ const RANGES: ReadonlyArray<Range> = ["1D", "1주", "1개월", "3개월", "1년"
  */
 const TOKEN_WAIT_MS = 8000;
 
-interface PorestChartChannel {
+interface GrooChartChannel {
   postMessage(message: string): void;
 }
 declare global {
   interface Window {
-    PorestChart?: PorestChartChannel;
+    PorestChart?: GrooChartChannel;
     __themeBridge?: (mode: Theme) => void;
     __rangeBridge?: (range: Range) => void;
     __tokenBridge?: (token: string) => void;

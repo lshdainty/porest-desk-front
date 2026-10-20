@@ -4,7 +4,7 @@ import type { ApiResponse } from "@/shared/types";
 // ─── 타입 (백엔드 dataimport 미러) ─────────────────────────────
 
 export type ImportSource =
-  "POREST" | "EASYBUDGET" | "BANKSALAD" | "TOSS" | "CUSTOM";
+  "그루" | "EASYBUDGET" | "BANKSALAD" | "TOSS" | "CUSTOM";
 
 export type ImportField =
   | "DATE"

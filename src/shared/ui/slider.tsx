@@ -4,7 +4,7 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 import { cn } from "@/shared/lib";
 
 /*
- * Slider — porest-design specs/components/slider.md SoT 정합.
+ * Slider — groo-design specs/components/slider.md SoT 정합.
  * Radix Slider 베이스. 키보드 / 마우스 / 터치 드래그.
  * track: 4px(h-1) + primary fill, thumb 16(h-4 w-4) + bg-text-on-accent(흰색 고정).
  * ticks: 트랙 위 균등 간격 눈금 점 — step 단위 선택 가능함을 시각화 (앱 divisions 정합).

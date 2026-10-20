@@ -23,8 +23,8 @@ import {
 import { usePaginationSlots } from "./use-pagination-slots";
 
 /*
- * Porest Pagination — 구조는 SEED Pagination(2026-10-04). 수치 원본은 porest-design specs/components/pagination.yaml(값은
- * src/shared/ds/spec/pagination.json). porest-design recipes/shadcn/components/ui/pagination.tsx 를 첫 판으로 가져왔다 — 모양 · 칸 배열
+ * Groo Pagination — 구조는 SEED Pagination(2026-10-04). 수치 원본은 groo-design specs/components/pagination.yaml(값은
+ * src/shared/ds/spec/pagination.json). groo-design recipes/shadcn/components/ui/pagination.tsx 를 첫 판으로 가져왔다 — 모양 · 칸 배열
  * 규칙은 pagination-variants.ts, 칸 수 훅은 use-pagination-slots.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  * 옛 Pagination(shadcn — 지금 쪽 테두리 · 칸 사이 4 · 이전 · 다음 글자)을 대신한다. 폰의 끝없이 불러오기(InfiniteListEnd —
  * infinite-list.yaml)는 이 컴포넌트가 아니라 그 스펙의 몫이라 여기에 두지 않았다.

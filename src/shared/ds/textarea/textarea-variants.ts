@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Textarea 의 변형 — 상자(크기)와 입력(크기 × 자동 높이). 수치 원본은 porest-design
+ * Groo Textarea 의 변형 — 상자(크기)와 입력(크기 × 자동 높이). 수치 원본은 groo-design
  * specs/components/textarea.yaml(값은 src/shared/ds/spec/textarea.json). 컴포넌트와 규칙은 textarea.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *

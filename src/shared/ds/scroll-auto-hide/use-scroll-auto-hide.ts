@@ -3,8 +3,8 @@ import * as React from "react";
 /*
  * 스크롤하면 숨는 영역의 동작 — SEED Breeze ScrollAutoHide(Apache-2.0)를 옮긴 것이다. 옮긴 곳: github.com/daangn/seed-design
  * docs/registry/react/breeze/scroll-auto-hide/scroll-auto-hide.tsx(dev 045051f87f, 2026-08-13 — "harden scroll auto hide settling" #1997).
- * 동작은 SEED 그대로이고 바뀐 것은 이름뿐이다 — 스냅 200ms · cubic-bezier(0, 0, 0.15, 1) 을 porest 토큰 motion-duration-d4 ·
- * motion-ease-enter 로(값이 같다, v104). porest-design recipes/shadcn/components/ui/scroll-auto-hide.tsx 를 첫 판으로 가져왔다.
+ * 동작은 SEED 그대로이고 바뀐 것은 이름뿐이다 — 스냅 200ms · cubic-bezier(0, 0, 0.15, 1) 을 groo 토큰 motion-duration-d4 ·
+ * motion-ease-enter 로(값이 같다, v104). groo-design recipes/shadcn/components/ui/scroll-auto-hide.tsx 를 첫 판으로 가져왔다.
  *
  * 스크롤 상자 맨 위에 붙은 영역이 아래로 스크롤하면 그 거리만큼 위로 숨고, 위로 스크롤하면 같은 거리만큼 드러난다(1:1). 맨 위 근처에서는
  * 스크롤한 거리보다 더 숨지 않는다. 스크롤이 끝나면(scrollend — 없는 브라우저는 마지막 스크롤 120ms 뒤) 영역 높이의 50% 를 기준으로

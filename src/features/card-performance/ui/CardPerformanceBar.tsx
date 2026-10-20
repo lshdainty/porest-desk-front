@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { CardPerformance } from "@/entities/card";
 import { cn } from "@/shared/lib";
-import { money } from "@/shared/lib/porest/format";
+import { money } from "@/shared/lib/groo/format";
 
 interface Props {
   performance: CardPerformance;

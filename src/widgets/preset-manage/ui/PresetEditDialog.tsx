@@ -4,12 +4,12 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
-import { nameIssue } from "@/shared/lib/porest/name-policy";
-import { NameCounter } from "@/shared/ui/porest/name-counter";
+} from "@/shared/lib/groo/amount";
+import { nameIssue } from "@/shared/lib/groo/name-policy";
+import { NameCounter } from "@/shared/ui/groo/name-counter";
 import { useTranslation } from "react-i18next";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {

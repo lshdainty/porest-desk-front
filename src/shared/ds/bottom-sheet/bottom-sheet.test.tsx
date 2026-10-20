@@ -249,7 +249,7 @@ describe("닫는 길", () => {
     render(<Sheet onOpenChange={onOpenChange} />);
     open();
     await tick();
-    expect(window.history.state?.porestOverlayBack).toBe(true);
+    expect(window.history.state?.grooOverlayBack).toBe(true);
     act(() => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });

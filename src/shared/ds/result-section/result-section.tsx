@@ -7,9 +7,9 @@ import { Button } from "@/shared/ds/button";
 import { resultSectionVariants } from "./result-section-variants";
 
 /*
- * Porest Result Section — 구조는 SEED Result Section(2026-10-02). 수치 원본은 porest-design
+ * Groo Result Section — 구조는 SEED Result Section(2026-10-02). 수치 원본은 groo-design
  * specs/components/result-section.yaml(값은 src/shared/ds/spec/result-section.json).
- * porest-design recipes/shadcn/components/ui/result-section.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 묶음 모양(cva)은
+ * groo-design recipes/shadcn/components/ui/result-section.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 묶음 모양(cva)은
  * result-section-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 화면이나 그 영역 가운데에 놓는 결과 — 비어 있음 · 불러오기 실패(다시 시도) · 완료 · 찾을 수 없는 페이지(404) · 화면 오류를

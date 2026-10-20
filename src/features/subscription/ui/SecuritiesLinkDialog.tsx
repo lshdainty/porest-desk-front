@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Unplug } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { ApiTokenCard } from "@/features/subscription/ui/ApiTokenCard";
 import { BrokerConnectCard } from "@/features/subscription/ui/BrokerConnectCard";

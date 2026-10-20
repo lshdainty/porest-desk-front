@@ -6,12 +6,12 @@ import { cn } from "@/shared/lib/index";
 import { toggleVariants } from "@/shared/ui/toggle-variants";
 
 /*
- * Porest ToggleGroup — porest-design specs/components/toggle-group.md SoT 기반.
- * Phase 2 마이그레이션: porest 토큰 + desk-front segmented wrapper 보존.
+ * Groo ToggleGroup — groo-design specs/components/toggle-group.md SoT 기반.
+ * Phase 2 마이그레이션: groo 토큰 + desk-front segmented wrapper 보존.
  *
  * variant:
  *   default — flex gap-1 (개별 toggle 시각이 자체 border/bg)
- *   segmented (= solid) — POREST .p-seg sunken bar wrapper + active=primary 채움 강조 톤
+ *   segmented (= solid) — 그루 .p-seg sunken bar wrapper + active=primary 채움 강조 톤
  *   segmented-subtle — 같은 sunken bar wrapper + active=surface-input 채움 토스 절제 톤
  */
 
@@ -27,7 +27,7 @@ const ToggleGroup = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
     VariantProps<typeof toggleVariants>
 >(({ className, variant, size, children, ...props }, ref) => {
-  // POREST .p-seg — sunken bar for segmented control. solid / subtle 둘 다 동일 wrapper.
+  // 그루 .p-seg — sunken bar for segmented control. solid / subtle 둘 다 동일 wrapper.
   // 트랙은 앱 PSegmented 정합으로 어두운 page 톤(--bg-canvas) + gap 0. 웹 --bg-sunken 은
   // 다크에서 surface 보다 밝아 앱(어두운 sunken)과 반대라, 트랙만 page 톤으로 맞춤.
   const wrapper =

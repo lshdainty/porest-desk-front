@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { useAsset } from "@/features/asset";
 import { CardDetailWidget } from "@/widgets/card-detail";
-import { useDeviceSize } from "@/shared/lib/porest/responsive";
+import { useDeviceSize } from "@/shared/lib/groo/responsive";
 
 export const CardDetailPage = () => {
   const { t } = useTranslation("card");
@@ -27,7 +27,7 @@ export const CardDetailPage = () => {
   }
 
   return (
-    // max-w-3xl 금지 — porest --spacing-3xl 이 Tailwind 스케일을 가려 48px 로 컴파일됨.
+    // max-w-3xl 금지 — groo --spacing-3xl 이 Tailwind 스케일을 가려 48px 로 컴파일됨.
     <div className="mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 min-[736px]:p-6">
       <Button
         variant="ghost"

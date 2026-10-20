@@ -2,7 +2,7 @@ import { Toaster as Sonner } from "sonner";
 import { useTheme } from "@/shared/ui/theme-context";
 
 /*
- * Porest Sonner (Toaster) — porest-design specs/components/sonner.md SoT 기반.
+ * Groo Sonner (Toaster) — groo-design specs/components/sonner.md SoT 기반.
  *
  * site preview SoT 정합:
  *   toast: surface-raised + radius-md + shadow-md (테두리 없음)
@@ -50,7 +50,7 @@ const TEXT = "var(--color-text-primary)";
 const BORDER = "none";
 
 /*
- * Kind icons — porest-design sonner-examples.mjs 와 1:1 동기.
+ * Kind icons — groo-design sonner-examples.mjs 와 1:1 동기.
  * 20×20 stroke svg, kind 별 semantic 토큰 색상. fill 채움 금지(spec 규칙).
  */
 const iconBaseProps = {

@@ -4,7 +4,7 @@ import * as SwitchPrimitive from "@radix-ui/react-switch";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Switch — porest-design specs/components/switch.md SoT 기반.
+ * Groo Switch — groo-design specs/components/switch.md SoT 기반.
  *
  * - 44×24 track (WCAG 2.5.5 AAA 44px 터치 권장) + 20×20 thumb
  * - off: border-strong / on: primary

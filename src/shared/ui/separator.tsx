@@ -4,7 +4,7 @@ import * as SeparatorPrimitive from "@radix-ui/react-separator";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Separator — porest-design specs/components/separator.md SoT 기반.
+ * Groo Separator — groo-design specs/components/separator.md SoT 기반.
  * 1px 라인 + bg-border-default. orientation horizontal/vertical.
  * decorative=true (시각용), decorative=false (의미 분리).
  */

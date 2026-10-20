@@ -28,8 +28,8 @@ import {
 } from "./swipe-actions-variants";
 
 /*
- * Porest Swipe Actions — porest 에만 있는 패턴(SEED 에는 줄 밀기가 없다). 수치 원본은 porest-design specs/components/swipe-actions.yaml
- * (값은 src/shared/ds/spec/swipe-actions.json). porest-design recipes/shadcn/components/ui/swipe-actions.tsx 를 첫 판으로 가져왔다.
+ * Groo Swipe Actions — groo 에만 있는 패턴(SEED 에는 줄 밀기가 없다). 수치 원본은 groo-design specs/components/swipe-actions.yaml
+ * (값은 src/shared/ds/spec/swipe-actions.json). groo-design recipes/shadcn/components/ui/swipe-actions.tsx 를 첫 판으로 가져왔다.
  *
  *   SwipeActions          폰(768 미만) 목록 줄을 감싼다 — 왼쪽으로 밀면 오른쪽에서 동작 칸이 드러난다. actions(1 ~ 3개 —
  *                         { kind, label, icon, disabled, onSelect }, 뜻의 차례로) · enabled(폰일 때만 true — 768 이상이면 false 로 넘겨

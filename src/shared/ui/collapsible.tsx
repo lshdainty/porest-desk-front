@@ -1,7 +1,7 @@
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 
 /*
- * Porest Collapsible — porest-design specs/components/collapsible.md SoT 기반.
+ * Groo Collapsible — groo-design specs/components/collapsible.md SoT 기반.
  *
  * - Radix Collapsible 베이스. 단순 open/closed 토글 primitive.
  * - composition: Collapsible > CollapsibleTrigger / CollapsibleContent

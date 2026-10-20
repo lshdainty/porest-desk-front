@@ -1,5 +1,5 @@
 export const config = {
-  appTitle: "POREST Desk",
+  appTitle: "그루 담다",
   apiBaseUrl: `${import.meta.env.VITE_BASE_URL}${import.meta.env.VITE_API_URL}`,
   ssoUrl: import.meta.env.VITE_SSO_URL || "",
   // 배포 환경 — Jenkins 가 <env>.env 를 .env.production 으로 복사해 빌드하므로 빌드 시점에 확정된다.

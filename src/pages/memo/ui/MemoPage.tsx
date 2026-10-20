@@ -39,7 +39,7 @@ import {
   LedgerRowSep,
   LedgerRowSub,
   LedgerRowTitle,
-} from "@/shared/ui/porest/ledger";
+} from "@/shared/ui/groo/ledger";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import {
@@ -53,12 +53,12 @@ import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter, ModalViewFooter } from "@/shared/ui/porest/modal-footer";
-import { MANAGER_LAYOUT } from "@/shared/ui/porest/manager-layout";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
+import { MANAGER_LAYOUT } from "@/shared/ui/groo/manager-layout";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { CAT_PALETTE } from "@/shared/lib/porest/chart-palette";
+import { CAT_PALETTE } from "@/shared/lib/groo/chart-palette";
 
 /** 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
  *  제한이 없어 500자 제목이 서버 500 으로 터지던 자리다(QA #30 · #33). */

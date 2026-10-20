@@ -1,7 +1,7 @@
 /*
- * Porest Chart 의 값 · 모양 · 숫자 — 수치 원본은 porest-design specs/components/chart.yaml(값은 src/shared/ds/spec/chart.json),
+ * Groo Chart 의 값 · 모양 · 숫자 — 수치 원본은 groo-design specs/components/chart.yaml(값은 src/shared/ds/spec/chart.json),
  * 색은 DESIGN.md v110(차트 10색 — 라이트 팔레트 700 · 다크 800-dark) · v111(옅은 바탕).
- * porest-design recipes/shadcn/components/ui/chart.tsx 를 첫 판으로 가져왔다 — 이 파일은 컴포넌트 아닌 것(색 배정 · 숫자 · 축 값 ·
+ * groo-design recipes/shadcn/components/ui/chart.tsx 를 첫 판으로 가져왔다 — 이 파일은 컴포넌트 아닌 것(색 배정 · 숫자 · 축 값 ·
  * 클래스), 컴포넌트는 chart.tsx · chart-heatmap.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

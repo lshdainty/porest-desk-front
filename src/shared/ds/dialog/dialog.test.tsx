@@ -268,7 +268,7 @@ describe("닫는 길", () => {
     render(<Form />);
     open();
     await tick();
-    expect(window.history.state?.porestOverlayBack).toBeUndefined();
+    expect(window.history.state?.grooOverlayBack).toBeUndefined();
     act(() => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });

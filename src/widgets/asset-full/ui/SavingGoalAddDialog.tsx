@@ -4,14 +4,14 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
-import { nameIssue } from "@/shared/lib/porest/name-policy";
-import { NameCounter } from "@/shared/ui/porest/name-counter";
+} from "@/shared/lib/groo/amount";
+import { nameIssue } from "@/shared/lib/groo/name-policy";
+import { NameCounter } from "@/shared/ui/groo/name-counter";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, Target } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { IconPicker } from "@/shared/ui/icon-picker";
@@ -29,7 +29,7 @@ import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
 import {
   CAT_PALETTE,
   getPaletteByColor,
-} from "@/shared/lib/porest/chart-palette";
+} from "@/shared/lib/groo/chart-palette";
 import { i18n } from "@/shared/i18n/config";
 
 // 날짜는 현재 로케일로 포맷 — ko `2026년 3월` / en `March 2026`. 기한 없음은 asset ns.

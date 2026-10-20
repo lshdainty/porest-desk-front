@@ -24,8 +24,8 @@ import {
 } from "./table-variants";
 
 /*
- * Porest Table — 구조는 SEED 문서 사이트의 표(TableRoot)와 디자인 그림의 데이터 표(2026-10-08). 수치 원본은 porest-design
- * specs/components/table.yaml(값은 src/shared/ds/spec/table.json). porest-design recipes/shadcn/components/ui/table.tsx 를 첫 판으로
+ * Groo Table — 구조는 SEED 문서 사이트의 표(TableRoot)와 디자인 그림의 데이터 표(2026-10-08). 수치 원본은 groo-design
+ * specs/components/table.yaml(값은 src/shared/ds/spec/table.json). groo-design recipes/shadcn/components/ui/table.tsx 를 첫 판으로
  * 가져왔다 — 모양(클래스 상수)은 table-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  * 옛 Table(작은 대문자 회색 머리 · 머리 바탕 · 칸 8 · 금액 고정폭 글꼴)과 DESIGN.md 의 Data Table(v71)을 대신한다.
  *

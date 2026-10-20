@@ -26,9 +26,9 @@ import {
 } from "./top-navigation-variants";
 
 /*
- * Porest Top Navigation — 구조는 SEED Top Navigation(Root · Standard, 2026-10-04). 수치 원본은 porest-design
+ * Groo Top Navigation — 구조는 SEED Top Navigation(Root · Standard, 2026-10-04). 수치 원본은 groo-design
  * specs/components/top-navigation.yaml(값은 src/shared/ds/spec/top-navigation.json). recipes/shadcn/components/ui/top-navigation.tsx 를 첫 판으로 가져왔다.
- * 데스크톱 머리(desktop)는 SEED 에 컴포넌트가 없어 porest 가 같은 규칙으로 더했다.
+ * 데스크톱 머리(desktop)는 SEED 에 컴포넌트가 없어 groo 가 같은 규칙으로 더했다.
  *
  *   TopNavigation               바(<header> — main 밖, banner). type "root"(탭 첫 화면) · "standard"(기본 — 그 아래 화면 · HR 폰) ·
  *                               "desktop"(768 이상 Desk 의 머리 — 제목은 본문 ScreenTitle). 자식은 아래 부품을 차례대로
@@ -45,7 +45,7 @@ import {
  *   TopNavigationTextButton     글 버튼("완료" · "모두 읽음") — 오른쪽 자리에 하나, 아이콘 버튼과 섞지 않는다
  *   TopNavigationPrimaryButton  데스크톱 머리의 주 버튼 — Button brandSolid · small 그대로 + 오른쪽 8
  *   ScreenTitle                 데스크톱 본문 맨 위 제목 <h1 tabIndex={-1} data-screen-title> — text-screen-title 26 / 35 · 700, 머리 아래 20
- *   TopNavigationProvider       product("Porest Desk" · "Porest HR") — useScreenTitle(title) 가 문서 제목을 "{title} - {product}" 로 쓴다
+ *   TopNavigationProvider       product("그루 담다" · "그루 이음") — useScreenTitle(title) 가 문서 제목을 "{title} - {product}" 로 쓴다
  *   (top-navigation-context.ts) useScreenTitle · focusScreenTitle() — 셸이 화면을 옮긴 뒤 부른다: 본문 스크롤을 맨 위로, 보이는
  *                               [data-screen-title] 에 초점(링은 키보드로 왔을 때만)
  *
@@ -323,7 +323,7 @@ const ScreenTitle = React.forwardRef<
 ScreenTitle.displayName = "ScreenTitle";
 
 // ── 문서 제목 ────────────────────────────────────────────────
-/** 서비스 이름 — 문서 제목의 뒤("{화면 제목} - Porest Desk"). 앱 맨 위에 한 번 둔다 */
+/** 서비스 이름 — 문서 제목의 뒤("{화면 제목} - 그루 담다"). 앱 맨 위에 한 번 둔다 */
 function TopNavigationProvider({
   product,
   children,

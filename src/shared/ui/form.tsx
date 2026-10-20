@@ -14,7 +14,7 @@ import { cn } from "@/shared/lib/index";
 import { Label } from "@/shared/ui/label";
 
 /*
- * Porest Form — porest-design specs/components/form.md SoT 기반.
+ * Groo Form — groo-design specs/components/form.md SoT 기반.
  *
  * - react-hook-form composition helper. RHF + Zod 조합 가정.
  * - 7 primitive: Form / FormField / FormItem / FormLabel / FormControl / FormDescription / FormMessage

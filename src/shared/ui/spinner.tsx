@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Spinner — porest-design specs/components/spinner.md SoT 기반.
+ * Groo Spinner — groo-design specs/components/spinner.md SoT 기반.
  *
  * - circular indeterminate. 360deg 회전, arc 270deg(3/4 conic).
  * - 색: border-border-default 트랙 + border-t-primary (라이트) / 다크는 cascade 자동 swap.

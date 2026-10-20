@@ -4,19 +4,19 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
-import { Icon } from "@/shared/ui/porest/primitives";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { Icon } from "@/shared/ui/groo/primitives";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { Input } from "@/shared/ui/input";
 import { Field, FieldLabel } from "@/shared/ui/field";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { money, isEn } from "@/shared/lib/porest/format";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { money, isEn } from "@/shared/lib/groo/format";
 import { tileRadius } from "@/shared/lib";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 
 export interface BudgetDraft {
   categoryRowId: number;

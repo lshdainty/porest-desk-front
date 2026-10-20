@@ -9,7 +9,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { __resetPointerBlockForTest } from "@/shared/lib/porest/pointer-block";
+import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { ExpenseCategory } from "@/entities/expense";
 import type { ExpenseTemplate } from "@/entities/expense-template";
 

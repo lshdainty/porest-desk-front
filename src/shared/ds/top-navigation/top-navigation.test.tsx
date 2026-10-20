@@ -373,11 +373,11 @@ describe("화면을 옮길 때", () => {
 
   it("문서 제목은 '{화면 제목} - {서비스}' — Provider 가 없으면 화면 제목만", () => {
     render(
-      <TopNavigationProvider product="Porest Desk">
+      <TopNavigationProvider product="그루 담다">
         <Screen title="알림" />
       </TopNavigationProvider>,
     );
-    expect(document.title).toBe("알림 - Porest Desk");
+    expect(document.title).toBe("알림 - 그루 담다");
     render(<Screen title="캘린더" />);
     expect(document.title).toBe("캘린더");
   });

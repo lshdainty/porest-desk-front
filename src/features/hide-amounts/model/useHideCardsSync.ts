@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useCurrentUser } from "@/features/user";
-import { syncHideCardsFromServer } from "@/shared/lib/porest/hide-amounts-core";
+import { syncHideCardsFromServer } from "@/shared/lib/groo/hide-amounts-core";
 
 /**
  * 로그인한 뒤 금액 가리기 설정을 서버와 한 번 맞춘다.

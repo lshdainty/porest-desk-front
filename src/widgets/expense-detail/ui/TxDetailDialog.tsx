@@ -10,18 +10,14 @@ import {
   Undo2,
   Lock,
 } from "lucide-react";
-import { KRW, money, isEn, formatDay } from "@/shared/lib/porest/format";
-import { formatOriginalAmount } from "@/shared/lib/porest/currency";
+import { KRW, money, isEn, formatDay } from "@/shared/lib/groo/format";
+import { formatOriginalAmount } from "@/shared/lib/groo/currency";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
-import {
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
-import { kindOfExpense } from "@/shared/lib/porest/hide-amounts-cards";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
+import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { kindOfExpense } from "@/shared/lib/groo/hide-amounts-cards";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import {
   DetailField,
   DetailFieldGroup,
@@ -29,8 +25,8 @@ import {
   DetailQuickAction,
   DetailSection,
   DetailStatSplit,
-} from "@/shared/ui/porest/detail";
-import { CategoryChip } from "@/shared/ui/porest/category-chip";
+} from "@/shared/ui/groo/detail";
+import { CategoryChip } from "@/shared/ui/groo/category-chip";
 import {
   ExpenseRow,
   closedCycleSpan,
@@ -57,7 +53,7 @@ import { Input } from "@/shared/ui/input";
 import { useAssets } from "@/features/asset";
 import type { Expense, ExpenseCategory } from "@/entities/expense";
 import type { Asset } from "@/entities/asset";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
 import { RecurringFromTxDialog } from "@/features/recurring-transaction/ui/RecurringFromTxDialog";
 import { DutchPayFromTxDialog } from "@/features/dutch-pay/ui/DutchPayFromTxDialog";

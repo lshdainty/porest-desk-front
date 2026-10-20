@@ -4,11 +4,11 @@
 // `5천`, 바로 위 도넛 중앙과 추이 축에선 `4,900` 으로 갈렸고, 반올림이 거칠어
 // 라벨이 실제 값에서 2% 벗어났다(QA #38 과 같은 결함, QA #73 이 정한 규칙 위반).
 //
-// 값의 표(11,881 → `1.2만` …)는 `shared/lib/porest/format.test.ts` 가 들고 있다.
+// 값의 표(11,881 → `1.2만` …)는 `shared/lib/groo/format.test.ts` 가 들고 있다.
 // 여기서 고정하는 건 **셀 라벨이 그 함수를 실제로 통과하느냐** 다.
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { formatChartAxis } from "@/shared/lib/porest/format";
+import { formatChartAxis } from "@/shared/lib/groo/format";
 import { heatCellLabel } from "./heat-label";
 
 // 테스트 기본 로케일은 en 이다 — ko 로 고정하지 않으면 영어 출력을 검사하게 된다.

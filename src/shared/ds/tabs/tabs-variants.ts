@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Tabs 의 클래스 · 상수 · 순수 헬퍼 — Line(목록 · 탭 · 막대 · 알림 점) · Chip Tabs(목록 · 알림 점) · 내용 칸. 수치 원본은
- * porest-design specs/components/tabs.yaml · chip-tabs.yaml(값은 src/shared/ds/spec/tabs.json · chip-tabs.json). 무엇이 언제
+ * Groo Tabs 의 클래스 · 상수 · 순수 헬퍼 — Line(목록 · 탭 · 막대 · 알림 점) · Chip Tabs(목록 · 알림 점) · 내용 칸. 수치 원본은
+ * groo-design specs/components/tabs.yaml · chip-tabs.yaml(값은 src/shared/ds/spec/tabs.json · chip-tabs.json). 무엇이 언제
  * 바뀌는지는 tabs.tsx 머리 주석이다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

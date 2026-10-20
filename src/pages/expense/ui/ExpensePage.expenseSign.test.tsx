@@ -24,7 +24,7 @@ import { cwd } from "node:process";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MINUS } from "@/shared/lib/porest/format";
+import { MINUS } from "@/shared/lib/groo/format";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;

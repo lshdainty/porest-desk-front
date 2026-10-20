@@ -7,7 +7,7 @@ import { ProgressCircle } from "@/shared/ds/progress-circle";
 
 import { buttonVariants } from "./button-variants";
 
-// 변형 · 크기 · 상태는 button-variants.ts 머리 주석과 porest-design specs/components/button.yaml 이 정한다.
+// 변형 · 크기 · 상태는 button-variants.ts 머리 주석과 groo-design specs/components/button.yaml 이 정한다.
 
 export interface ButtonProps
   extends

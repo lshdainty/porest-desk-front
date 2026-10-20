@@ -13,9 +13,9 @@ import {
 import { useBubbleEdgePadding } from "./bubble-edge-padding";
 
 /*
- * Porest Help Bubble — 구조는 SEED Help Bubble(2026-10-02). 수치 원본은 porest-design
+ * Groo Help Bubble — 구조는 SEED Help Bubble(2026-10-02). 수치 원본은 groo-design
  * specs/components/help-bubble.yaml(값은 src/shared/ds/spec/help-bubble.json — Tooltip 과 한 파일).
- * porest-design recipes/shadcn/components/ui/help-bubble.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
+ * groo-design recipes/shadcn/components/ui/help-bubble.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * Radix Popover(비모달) 위에 짰다.
  *
  *   HelpBubble          눌러서 여는 짙은 도움말 말풍선 — open · defaultOpen · onOpenChange

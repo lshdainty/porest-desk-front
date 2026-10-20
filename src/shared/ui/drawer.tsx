@@ -4,18 +4,18 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/shared/lib";
-import { registerOverlay } from "@/shared/lib/porest/pointer-block";
+import { registerOverlay } from "@/shared/lib/groo/pointer-block";
 
 /*
- * Porest Drawer — porest-design specs/components/drawer.md SoT 기반.
- * Phase 2 마이그레이션: porest overlay/shadow/handle 토큰 + desk-front 구조 보존.
+ * Groo Drawer — groo-design specs/components/drawer.md SoT 기반.
+ * Phase 2 마이그레이션: groo overlay/shadow/handle 토큰 + desk-front 구조 보존.
  *
  * 호환 보존:
  *   - vaul shouldScaleBackground=false (desk-front 기본값) — 배경 스케일링 안 함
  *   - DrawerHeader/Body/Footer 3-슬롯 구조
  *   - DrawerTitle 17px/700, DrawerDescription text-xs
  *
- * Porest 시각:
+ * Groo 시각:
  *   - overlay: var(--overlay-dim-light) light / var(--overlay-dim-dark) dark
  *   - content: bg-[var(--bg-surface)] + rounded-t-[radius-2xl] + shadow-xl inline
  *   - handle: 40×4 + bg-surface-input + rounded-full

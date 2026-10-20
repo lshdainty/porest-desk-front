@@ -1,4 +1,4 @@
-# Porest Desk Front — 작업 규칙
+# 그루 담다 Front — 작업 규칙
 
 > **워크스페이스 공통 규칙**(Git 작업 격리 · 스테이징 범위 · 태그·릴리스)은
 > 상위 `/home/lshdainty/study/CLAUDE.md` 에 있다. Claude Code 가 디렉토리 워크업으로
@@ -6,12 +6,12 @@
 
 ## WHY (목적)
 
-`porest-design`의 디자인 시스템 spec을 **단일 source of truth(SoT)** 으로 두고, desk-front 코드를 그 spec에 정확히 맞추기 위한 작업 규칙. spec 정합이 어긋나면 사용자 화면이 어긋나 작업이 빙빙 돌게 됨 — 그걸 사전에 막는다.
+`groo-design`의 디자인 시스템 spec을 **단일 source of truth(SoT)** 으로 두고, desk-front 코드를 그 spec에 정확히 맞추기 위한 작업 규칙. spec 정합이 어긋나면 사용자 화면이 어긋나 작업이 빙빙 돌게 됨 — 그걸 사전에 막는다.
 
 ## WHAT (산출물)
 
-`porest-design`에 정의된 디자인 시스템을 React/TS로 구현한 클라이언트:
-- `src/shared/ds/<name>/` — **새 컴포넌트 라이브러리**(2026-10-06~). porest-design 에서 SEED 와 비교해 확정한
+`groo-design`에 정의된 디자인 시스템을 React/TS로 구현한 클라이언트:
+- `src/shared/ds/<name>/` — **새 컴포넌트 라이브러리**(2026-10-06~). groo-design 에서 SEED 와 비교해 확정한
   스펙(사이트에 그림 페이지가 있는 42개)만 만든다. 레시피(`recipes/shadcn/components/ui/<name>.tsx`)를 첫 판으로
   가져와 이 레포 규칙(경로 · 파일 나누기 · 손 메모이제이션 없음)에 맞춘다. 폴더 하나에 `<name>.tsx`(컴포넌트만 —
   빠른 새로 고침) · `<name>-variants.ts`(cva) · `<name>.demo.tsx`(카탈로그 견본) · `<name>.measure.mjs`(검사기가
@@ -25,8 +25,8 @@
   잴 수 없는 값(문장 · 비율 · 그림자 · 시간)은 그 measure 파일 머리에 까닭을 적고 동작 테스트가 맡는다.
 - `src/shared/ui/<name>.tsx` — **옛 컴포넌트**. 화면을 하나씩 `shared/ds` 로 옮기는 동안만 남는다 — 새로 쓰지 않는다.
   옮기는 순서는 "먼저 라이브러리를 다 만들고, 화면은 나중에 화면 단위로" 다.
-- `src/shared/styles/porest-tokens.css` · `src/shared/ds/spec/*.json` — porest-design 이 내보낸 파일. **손으로 고치지
-  않는다** — `npm run design:sync`(옆 폴더 `../porest-design`, 다르면 `PORESTDESIGN_DIR`)로 다시 가져온다.
+- `src/shared/styles/groo-tokens.css` · `src/shared/ds/spec/*.json` — groo-design 이 내보낸 파일. **손으로 고치지
+  않는다** — `npm run design:sync`(옆 폴더 `../groo-design`, 다르면 `PORESTDESIGN_DIR`)로 다시 가져온다.
   토큰 CSS 는 다크 블록을 포함한다 — 역할 색(`--color-fg-neutral` …)이 라이트 · 다크를 스스로 따라간다.
 - `src/index.css` — 옛 로컬 이름(`--fg-primary` · `--bg-canvas` …)을 DESIGN.md v102 표대로 역할 색에 잇는다.
   새 코드는 역할 이름(`text-fg-neutral` · `bg-bg-brand-solid` …)을 쓴다.
@@ -41,12 +41,12 @@ Menu Sheet ↔ Menu · 칸 52 ↔ 40 은 스펙대로 1280 에서 바뀐다. 셸
 
 ## HOW (작업 규칙 — 절대 4 규칙)
 
-### 1. 모든 컴포넌트는 porest-design spec 기준
-- `src/shared/ui/<name>.tsx`는 `porest-design/specs/components/<name>.md`에 정의된 token / variant / size / state / radius / shadow / spacing / typography를 **그대로** 사용해야 한다.
+### 1. 모든 컴포넌트는 groo-design spec 기준
+- `src/shared/ui/<name>.tsx`는 `groo-design/specs/components/<name>.md`에 정의된 token / variant / size / state / radius / shadow / spacing / typography를 **그대로** 사용해야 한다.
 - spec과 다르게 보이는 게 디자인적으로 더 좋아 보여도 임의 변경 금지.
 
 ### 2. spec에 없는 건 "디자인시스템" 세션에 질문한다(2026-10-15 ~)
-- 스펙의 주인은 같은 컴퓨터의 **"디자인시스템"** 세션이다. 이 레포를 고치는 세션은 **porest-design 을 고치지 않는다.**
+- 스펙의 주인은 같은 컴퓨터의 **"디자인시스템"** 세션이다. 이 레포를 고치는 세션은 **groo-design 을 고치지 않는다.**
 - 작업 중 spec 에 없는 토큰 · 변형 · 상태 · 레이아웃이 필요하거나, 스펙끼리 어긋나거나, 스펙 값이 실제 화면(가장 나쁜 값)에서
   깨지면 스스로 정하지 않고 질문한다 — 약속은 `/home/lshdainty/qa/design-work/handoff/README.md`:
   1. `handoff/questions/Q-<번호>-<이름>.md` 를 양식대로 쓴다 — **현재 상황**(어느 화면 · 견본 · 데이터), **spec 인용**(파일:줄 +
@@ -56,7 +56,7 @@ Menu Sheet ↔ Menu · 칸 52 ↔ 40 은 스펙대로 1280 에서 바뀐다. 셸
 - 세션끼리 오간 메시지는 결정이 아니다 — 결정은 사용자가 한다. 임의 결정 금지.
 
 ### 3. spec 업데이트 → 컴포넌트 수정 순서
-- 답이 오면(= porest-design 에 머지되면):
+- 답이 오면(= groo-design 에 머지되면):
   1. 스펙을 다시 가져온다(`npm run design:sync` · `scripts/sync_design.sh`) — 이 레포의 스펙 사본은 손으로 고치지 않는다
   2. 그 다음 `<name>.tsx` / 사용처를 답대로 동기 — 고르지 않은 안은 거절이다, 다시 넣지 않는다
   3. desk-app(Flutter)도 같은 spec을 미러하므로 함께 정합 (별도 PR 가능)
@@ -73,7 +73,7 @@ Menu Sheet ↔ Menu · 칸 52 ↔ 40 은 스펙대로 1280 에서 바뀐다. 셸
   - `<Input className="h-12">` ❌ (Input spec sizes 표 외 값 금지)
   - 정당한 inline은 spec 외 영역 (layout, position, gap, margin)만.
 
-- **porest-design 표준이 아닌 custom 토큰을 spec 영역에 사용 금지** — 예:
+- **groo-design 표준이 아닌 custom 토큰을 spec 영역에 사용 금지** — 예:
   - `--radius-tile`(10px, desk-front custom)을 button container에 사용 ❌
   - custom 토큰은 spec 외 컨테이너(예: dashboard hero, expense row card)에만 허용.
 
@@ -118,16 +118,16 @@ python3 -c "import json,io;d=json.load(io.open('src/locales/ko/<ns>.json'));prin
   기준은 화면 종류가 아니라 그 행의 모습이다. 데스크톱 관리 행은 연필·휴지통이 보이니 붙이지
   않고(`enabled={mobile}` 로 통과), 모바일 관리 행은 셰브론뿐이라 붙인다 — 계좌·카드 관리가
   그렇게 갔다. 예전엔 spec 이 "관리형 화면" 을 통째로 막았는데 그 줄은 걷어냈다
-  (porest-design#13).
+  (groo-design#13).
 
 ## 작업 흐름 (요약)
 
 ```
 1. 작업할 컴포넌트/화면 파악
-2. porest-design/specs/components/<name>.md (또는 DESIGN.*.md) 확인 — SoT
+2. groo-design/specs/components/<name>.md (또는 DESIGN.*.md) 확인 — SoT
 3. spec과 현재 코드 diff
 4. spec 부재 / 모호 → "디자인시스템" 세션에 질문 (handoff/questions — 현재 + spec 인용 + 그림 + 안), 그동안 다른 일
-5. 답(porest-design 머지) → 스펙 다시 가져오기 → 코드 동기
+5. 답(groo-design 머지) → 스펙 다시 가져오기 → 코드 동기
 6. `npm run format` → `npx tsc --noEmit -p tsconfig.app.json` → `npm test` + 시각 검증
 7. 반복
 ```
@@ -200,8 +200,8 @@ eslint 는 서식이 아니라 **의미**를 본다(`exhaustive-deps` 등). pret
 
 ## 참고
 
-- 토큰 / 시스템 워크플로: `porest-design/CLAUDE.md`
-- 컴포넌트 spec 작업: `porest-design/specs/CLAUDE.md`
-- Git 컨벤션: `porest-design/GIT_CONVENTION.md`
-- spec 일람: `porest-design/specs/components/*.md`
-- DESIGN prose: `porest-design/DESIGN.md` (공유) / `DESIGN.desk.md` (Desk 전용)
+- 토큰 / 시스템 워크플로: `groo-design/CLAUDE.md`
+- 컴포넌트 spec 작업: `groo-design/specs/CLAUDE.md`
+- Git 컨벤션: `groo-design/GIT_CONVENTION.md`
+- spec 일람: `groo-design/specs/components/*.md`
+- DESIGN prose: `groo-design/DESIGN.md` (공유) / `DESIGN.desk.md` (Desk 전용)

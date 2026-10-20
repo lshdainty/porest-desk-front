@@ -1,6 +1,6 @@
 /*
- * Porest Bottom Sheet 의 모양 — 수치 원본은 porest-design specs/components/bottom-sheet.yaml(값은 src/shared/ds/spec/bottom-sheet.json).
- * porest-design recipes/shadcn/components/ui/bottom-sheet.tsx 를 첫 판으로 가져왔다 — 이 파일은 모양 정의,
+ * Groo Bottom Sheet 의 모양 — 수치 원본은 groo-design specs/components/bottom-sheet.yaml(값은 src/shared/ds/spec/bottom-sheet.json).
+ * groo-design recipes/shadcn/components/ui/bottom-sheet.tsx 를 첫 판으로 가져왔다 — 이 파일은 모양 정의,
  * 컴포넌트는 bottom-sheet.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

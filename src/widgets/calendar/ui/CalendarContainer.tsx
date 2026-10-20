@@ -38,7 +38,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/shared/ui/drawer";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { Popover, PopoverAnchor, PopoverContent } from "@/shared/ui/popover";
 
 import type {
@@ -46,7 +46,7 @@ import type {
   CalendarEventFormValues,
 } from "@/entities/calendar";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
-import { useBackClose } from "@/shared/lib/porest/use-back-close";
+import { useBackClose } from "@/shared/lib/groo/use-back-close";
 
 interface IProps {
   events: IEvent[];

@@ -7,10 +7,10 @@
  */
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { Donut } from "@/shared/ui/porest/charts";
+import { Donut } from "@/shared/ui/groo/charts";
 
 const DONUT_PALETTE = [
   "var(--color-cat-blue)",

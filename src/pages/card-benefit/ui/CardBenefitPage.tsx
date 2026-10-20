@@ -17,7 +17,7 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Spinner } from "@/shared/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { decodeHtml } from "@/shared/lib";
 import {
   useCardCatalogs,
@@ -34,7 +34,7 @@ import { CardBenefitDetailDialog } from "./CardBenefitDetailDialog";
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 /**
- * 카드 혜택 라이브러리 — porest-design `card-benefits.jsx` CardBenefitsScreen SoT 정합.
+ * 카드 혜택 라이브러리 — groo-design `card-benefits.jsx` CardBenefitsScreen SoT 정합.
  *
  * - 데스크탑: 카드 아트워크 grid (auto-fill minmax(280px,1fr))
  * - 모바일: 가로형 리스트 타일

@@ -13,9 +13,9 @@ import { cn } from "@/shared/lib/cn";
 import { calloutVariants } from "./callout-variants";
 
 /*
- * Porest Callout — 구조는 SEED Callout(2026-10-02). 수치 원본은 porest-design
+ * Groo Callout — 구조는 SEED Callout(2026-10-02). 수치 원본은 groo-design
  * specs/components/callout.yaml(값은 src/shared/ds/spec/callout.json).
- * porest-design recipes/shadcn/components/ui/callout.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 상자 변형(cva)은
+ * groo-design recipes/shadcn/components/ui/callout.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 상자 변형(cva)은
  * callout-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  * 옛 Alert(alert.tsx — 왼쪽 4px 막대)를 대신한다. "Alert" 라는 이름은 모달(Alert Dialog)에만 쓴다.
  *

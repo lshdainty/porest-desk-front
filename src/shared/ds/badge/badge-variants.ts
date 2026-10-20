@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Badge — 구조는 SEED Badge(2026-10-03). 수치 원본은 porest-design
+ * Groo Badge — 구조는 SEED Badge(2026-10-03). 수치 원본은 groo-design
  * specs/components/badge.yaml(값은 src/shared/ds/spec/badge.json).
- * porest-design recipes/shadcn/components/ui/badge.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
+ * groo-design recipes/shadcn/components/ui/badge.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
  * 컴포넌트는 badge.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Badge        대상의 상태 · 분류를 한두 낱말로 보이는 작은 라벨 — <span>. 누르지 않는다(호버 · 누름 · 포커스 · 비활성이 없다)

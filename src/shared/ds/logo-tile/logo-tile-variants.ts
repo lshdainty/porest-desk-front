@@ -2,8 +2,8 @@ import type { AvatarHue } from "@/shared/ds/avatar";
 import type { InstitutionText } from "@/shared/ds/institution-colors";
 
 /*
- * Porest Logo Tile 의 모양 규칙 — 크기 · 면 · 판의 클래스. 컴포넌트는 logo-tile.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다).
- * 값의 출처는 porest-design specs/components/logo-tile.yaml(src/shared/ds/spec/logo-tile.json).
+ * Groo Logo Tile 의 모양 규칙 — 크기 · 면 · 판의 클래스. 컴포넌트는 logo-tile.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다).
+ * 값의 출처는 groo-design specs/components/logo-tile.yaml(src/shared/ds/spec/logo-tile.json).
  */
 
 export type LogoTileSize = 32 | 40 | 48;

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /*
- * Porest Snackbar 의 띄우는 쪽 — 옵션 타입 · useSnackbar · Provider 가 내려 주는 값. 수치 원본은 porest-design
+ * Groo Snackbar 의 띄우는 쪽 — 옵션 타입 · useSnackbar · Provider 가 내려 주는 값. 수치 원본은 groo-design
  * specs/components/snackbar.yaml(값은 src/shared/ds/spec/snackbar.json). 컴포넌트(SnackbarProvider ·
  * SnackbarAvoidOverlap)와 규칙은 snackbar.tsx 머리 주석이다 — 컴포넌트 파일은 컴포넌트만 내보내므로(빠른 새로 고침)
  * 레시피 한 파일에 있던 훅 · 컨텍스트를 여기로 옮겼다.

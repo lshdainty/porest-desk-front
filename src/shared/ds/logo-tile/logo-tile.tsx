@@ -26,9 +26,9 @@ import {
 } from "./logo-tile-variants";
 
 /*
- * Porest Logo Tile — porest 에만 있는 부품(2026-10-04 — SEED 는 가게 · 업체를 원 Avatar 로 그리고 로고 타일 규칙이 없다).
- * 수치 원본은 porest-design specs/components/logo-tile.yaml(값은 src/shared/ds/spec/logo-tile.json), 기관 색은 institution-colors.yaml
- * (src/shared/ds/institution-colors). porest-design recipes/shadcn/components/ui/logo-tile.tsx 를 첫 판으로 가져왔다.
+ * Groo Logo Tile — groo 에만 있는 부품(2026-10-04 — SEED 는 가게 · 업체를 원 Avatar 로 그리고 로고 타일 규칙이 없다).
+ * 수치 원본은 groo-design specs/components/logo-tile.yaml(값은 src/shared/ds/spec/logo-tile.json), 기관 색은 institution-colors.yaml
+ * (src/shared/ds/institution-colors). groo-design recipes/shadcn/components/ui/logo-tile.tsx 를 첫 판으로 가져왔다.
  * 지금 제품의 자산 로고(웹 · 앱 AssetLogo)와 HR 회사 로고를 대신한다.
  *
  *   LogoTile   물건 하나(은행 · 증권 · 카드 · 코인 · 금 자산 · 회사)를 보이는 각진 타일 — 면 + 이름의 첫 글자, 그림이 있으면 오는 대로 덮는다

@@ -65,8 +65,8 @@ import {
 } from "./date-picker-variants";
 
 /*
- * Porest Date Picker — 구조는 SEED Date Picker(2026-10-03). 수치 원본은 porest-design specs/components/date-picker.yaml(값은
- * src/shared/ds/spec/date-picker.json). porest-design recipes/shadcn/components/ui/date-picker.tsx 를 첫 판으로 가져왔다 —
+ * Groo Date Picker — 구조는 SEED Date Picker(2026-10-03). 수치 원본은 groo-design specs/components/date-picker.yaml(값은
+ * src/shared/ds/spec/date-picker.json). groo-design recipes/shadcn/components/ui/date-picker.tsx 를 첫 판으로 가져왔다 —
  * 날짜 도구 · 글 · 빠른 기간 · 표기는 date-picker-dates.ts, 모양은 date-picker-variants.ts, 날짜 칸 하나는 date-picker-day.tsx.
  * 옛 Calendar(react-day-picker)를 대신한다.
  *

@@ -48,7 +48,7 @@ vi.mock("sonner", () => ({
 }));
 
 const { useLedgerResultToast } = await import("./useLedgerResultToast");
-const { money } = await import("@/shared/lib/porest/format");
+const { money } = await import("@/shared/lib/groo/format");
 
 let notify: ReturnType<typeof useLedgerResultToast> | null = null;
 function Probe() {

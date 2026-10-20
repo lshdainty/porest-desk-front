@@ -6,9 +6,9 @@ import { useFieldControl, useTextControl } from "@/shared/ds/field";
 import { textareaValueVariants, textareaVariants } from "./textarea-variants";
 
 /*
- * Porest Textarea — 구조는 SEED Textarea(Text Input 의 여러 줄, 2026-10-01). 수치 원본은 porest-design
+ * Groo Textarea — 구조는 SEED Textarea(Text Input 의 여러 줄, 2026-10-01). 수치 원본은 groo-design
  * specs/components/textarea.yaml(값은 src/shared/ds/spec/textarea.json).
- * porest-design recipes/shadcn/components/ui/textarea.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 상자 · 입력 변형(cva)은
+ * groo-design recipes/shadcn/components/ui/textarea.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 상자 · 입력 변형(cva)은
  * textarea-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 여러 줄 입력칸. 상자 · 테두리 · 상태는 Input 의 outline 과 같다 — 안쪽 1px, 포커스 · 오류 2px 는 ::after 로 덧그린다.

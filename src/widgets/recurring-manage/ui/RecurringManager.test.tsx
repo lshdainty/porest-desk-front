@@ -11,7 +11,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MINUS } from "@/shared/lib/porest/format";
+import { MINUS } from "@/shared/lib/groo/format";
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
 import type { TxKind } from "@/entities/expense";
 

@@ -17,14 +17,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { KRW, isEn } from "@/shared/lib/porest/format";
+import { KRW, isEn } from "@/shared/lib/groo/format";
 import { formatMonthShort } from "@/shared/lib/date";
-import {
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
+import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
+import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 import {
   ChartContainer,
   ChartTooltip,
@@ -33,9 +29,9 @@ import {
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
-import { Section } from "@/shared/ui/porest/section";
+import { Section } from "@/shared/ui/groo/section";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { Icon, MonthPicker } from "@/shared/ui/porest/primitives";
+import { Icon, MonthPicker } from "@/shared/ui/groo/primitives";
 import {
   useBudgetCompliance,
   useExpenseBudgets,
@@ -44,7 +40,7 @@ import {
 } from "@/features/expense";
 import { useUserPreferences } from "@/features/user";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 
 type OutletCtx = { mobile: boolean };
 

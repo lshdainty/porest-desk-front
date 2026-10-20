@@ -196,7 +196,7 @@ describe("List · ListItem", () => {
     render(
       <List>
         <ListItem title="가입일" suffix="2026년 3월 2일" />
-        <ListItem title="이메일" suffix="porest@example.com" />
+        <ListItem title="이메일" suffix="groo@example.com" />
       </List>,
     );
     expect(container.querySelector("[data-list-action]")).toBeNull();
@@ -1537,7 +1537,7 @@ describe("가장 나쁜 값", () => {
         <ListItem title="화살표" suffix={<svg />} />
         <ListItem
           title="이메일"
-          suffix="porest.desk.design.system.long.address@example-company-domain.co.kr"
+          suffix="groo.desk.design.system.long.address@example-company-domain.co.kr"
         />
         <ListItem title="횟수" suffix={12} />
       </List>,

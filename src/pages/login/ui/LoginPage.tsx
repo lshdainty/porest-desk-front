@@ -24,7 +24,7 @@ export const LoginPage = () => {
       className="flex min-h-svh flex-col items-center justify-center p-6"
       style={{ background: "var(--bg-surface)" }}
     >
-      {/* max-w-sm 금지 — porest --spacing-sm(8px) 이 Tailwind 스케일을 가려 8px 로 컴파일됨. */}
+      {/* max-w-sm 금지 — groo --spacing-sm(8px) 이 Tailwind 스케일을 가려 8px 로 컴파일됨. */}
       <div className="w-full max-w-[24rem]">
         <LoginForm />
       </div>
@@ -76,7 +76,7 @@ const LoginForm = () => {
     // gap 32(앱 x32)로 분리.
     <div className="flex w-full flex-col gap-8">
       <div className="flex flex-col items-center gap-2 text-center">
-        {/* 마크(아이콘)만 좌측 + 'Porest Desk' 는 실제 텍스트(합성 이미지 금지). 마크 56 / gap 0. */}
+        {/* 마크(아이콘)만 좌측 + '그루 담다' 는 실제 텍스트(합성 이미지 금지). 마크 56 / gap 0. */}
         <div className="flex items-center justify-center">
           <BrandMark size={56} />
           <span
@@ -87,7 +87,7 @@ const LoginForm = () => {
               color: "var(--fg-primary)",
             }}
           >
-            Porest Desk
+            그루 담다
           </span>
         </div>
         <p className="text-muted-foreground">{t("sso.description")}</p>

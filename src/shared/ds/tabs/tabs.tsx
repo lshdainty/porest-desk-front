@@ -46,8 +46,8 @@ import {
 } from "./tabs-variants";
 
 /*
- * Porest Tabs — 구조는 SEED Tabs(2026-10-02). 수치 원본은 porest-design specs/components/tabs.yaml(Line) · chip-tabs.yaml(Chip Tabs)
- * (값은 src/shared/ds/spec/tabs.json · chip-tabs.json). porest-design recipes/shadcn/components/ui/tabs.tsx 를 첫 판으로 가져왔다 —
+ * Groo Tabs — 구조는 SEED Tabs(2026-10-02). 수치 원본은 groo-design specs/components/tabs.yaml(Line) · chip-tabs.yaml(Chip Tabs)
+ * (값은 src/shared/ds/spec/tabs.json · chip-tabs.json). groo-design recipes/shadcn/components/ui/tabs.tsx 를 첫 판으로 가져왔다 —
  * 클래스 · 상수 · 순수 헬퍼는 tabs-variants.ts · tabs-swipe.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Tabs                             값을 쥔 묶음(Radix Tabs). ← → 로 옮기면 바로 고르고(자동), 끝에서 처음으로 돈다.

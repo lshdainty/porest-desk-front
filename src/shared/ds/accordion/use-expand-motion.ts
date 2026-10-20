@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /*
- * 펼치고 접는 모션 — porest-design recipes/shadcn/components/ui/accordion.tsx 의 useExpandMotion.
+ * 펼치고 접는 모션 — groo-design recipes/shadcn/components/ui/accordion.tsx 의 useExpandMotion.
  * Accordion · Collapsible · List 의 하위 줄(ListParentItem)이 모두 이 훅 하나를 쓴다("Accordion 과 같다", list.yaml motion).
  * Tree View 는 HR 전용이라 이 레포에 없다.
  *

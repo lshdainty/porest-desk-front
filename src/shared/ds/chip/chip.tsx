@@ -24,8 +24,8 @@ import {
 } from "./chip-variants";
 
 /*
- * Porest Chip — 구조는 SEED Chip(2026-10-02). 수치 원본은 porest-design specs/components/chip.yaml(값은
- * src/shared/ds/spec/chip.json). porest-design recipes/shadcn/components/ui/chip.tsx 를 첫 판으로 가져왔다 — 클래스는
+ * Groo Chip — 구조는 SEED Chip(2026-10-02). 수치 원본은 groo-design specs/components/chip.yaml(값은
+ * src/shared/ds/spec/chip.json). groo-design recipes/shadcn/components/ui/chip.tsx 를 첫 판으로 가져왔다 — 클래스는
  * chip-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Chip                         버튼 — 제안(누르면 칸에 값을 넣는다, 고른 모습 없음) · 필터 바의 여는 칩(뒤 아래 화살표 +

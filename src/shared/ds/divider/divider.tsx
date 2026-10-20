@@ -4,7 +4,7 @@ import { cn } from "@/shared/lib/cn";
 
 import { dividerVariants } from "./divider-variants";
 
-// 방향 · 들임 · 장식은 divider-variants.ts 머리 주석과 porest-design specs/components/divider.yaml 이 정한다.
+// 방향 · 들임 · 장식은 divider-variants.ts 머리 주석과 groo-design specs/components/divider.yaml 이 정한다.
 
 export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
   /** horizontal(기본) · vertical */

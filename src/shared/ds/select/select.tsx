@@ -27,8 +27,8 @@ import {
 } from "./select-variants";
 
 /*
- * Porest Select — 구조는 SEED Select(2026-10-01). 수치 원본은 porest-design specs/components/select.yaml(값은
- * src/shared/ds/spec/select.json). porest-design recipes/shadcn/components/ui/select.tsx 를 첫 판으로 가져왔다.
+ * Groo Select — 구조는 SEED Select(2026-10-01). 수치 원본은 groo-design specs/components/select.yaml(값은
+ * src/shared/ds/spec/select.json). groo-design recipes/shadcn/components/ui/select.tsx 를 첫 판으로 가져왔다.
  *
  *   Select        트리거(button role=combobox) + 칸 아래 목록(role=listbox). 하나 고르기(기본) · 여럿 고르기(multiple)
  *   SelectGroup   묶음 — 제목(label)은 없어도 된다. 묶음이 둘 이상이면 사이에 선을 저절로 그린다

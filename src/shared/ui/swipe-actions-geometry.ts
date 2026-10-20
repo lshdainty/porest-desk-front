@@ -1,5 +1,5 @@
 /*
- * SwipeActions 기하·판정 — porest-design specs/components/swipe-actions.md SoT.
+ * SwipeActions 기하·판정 — groo-design specs/components/swipe-actions.md SoT.
  *
  * 컴포넌트 파일에서 분리한 이유 둘.
  * 1. `react-refresh/only-export-components` — 컴포넌트 .tsx 에서 상수·함수를 export 하면

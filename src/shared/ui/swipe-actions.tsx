@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/index";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import {
   clampOffset,
   resolveAxis,
@@ -20,7 +20,7 @@ import {
 } from "@/shared/ui/swipe-actions-geometry";
 
 /*
- * Porest SwipeActions — porest-design specs/components/swipe-actions.md SoT 미러.
+ * Groo SwipeActions — groo-design specs/components/swipe-actions.md SoT 미러.
  *
  * 리스트 행을 왼쪽으로 밀면 오른쪽에서 액션이 드러난다. 행을 다시 만들지 않고
  * **감싸기만** 한다 — 행의 시각도 탭 동작도 그대로다. 걷어내면 원래 리스트로 돌아간다.
@@ -35,7 +35,7 @@ import {
  * **모바일 전용이다**(spec Platform). 데스크톱에서는 `enabled={false}` 로 래핑 자체를
  * 걷어낸다 — 판정은 뷰포트 폭이고, 이 컴포넌트는 판정하지 않고 받기만 한다.
  *
- * 이 파일은 shared/ui 루트에서 유일하게 `ui/porest/` 를 참조한다(ConfirmDialog).
+ * 이 파일은 shared/ui 루트에서 유일하게 `ui/groo/` 를 참조한다(ConfirmDialog).
  * spec 이 "파괴적 액션의 확인은 컴포넌트가 소유한다" 로 규정하고, 확인 모양은 상세 화면의
  * 삭제와 **같아야** 하기 때문이다 — 여기서만 다른 다이얼로그를 띄우면 같은 항목의 삭제가
  * 경로에 따라 두 모양이 된다. 확인을 호출처로 올리면 화면마다 같은 배선이 복제되고,

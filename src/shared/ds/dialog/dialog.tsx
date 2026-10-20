@@ -39,8 +39,8 @@ import {
 import { useBodyScroll } from "./use-body-scroll";
 
 /*
- * Porest Dialog — 구조는 SEED Dialog · Responsive Dialog(2026-10-02). 수치 원본은 porest-design specs/components/dialog.yaml
- * (값은 src/shared/ds/spec/dialog.json). porest-design recipes/shadcn/components/ui/dialog.tsx 를 첫 판으로 가져왔다.
+ * Groo Dialog — 구조는 SEED Dialog · Responsive Dialog(2026-10-02). 수치 원본은 groo-design specs/components/dialog.yaml
+ * (값은 src/shared/ds/spec/dialog.json). groo-design recipes/shadcn/components/ui/dialog.tsx 를 첫 판으로 가져왔다.
  *
  *   Dialog                  1280 이상의 가운데 대화상자(Radix Dialog) — open · defaultOpen · onOpenChange · form · dirty
  *   DialogTrigger           여는 버튼 — 닫으면 초점이 여기로 돌아온다

@@ -22,7 +22,7 @@ import {
   getMonthCellEvents,
 } from "@/widgets/calendar/lib/helpers";
 import { cn, formatNumber } from "@/shared/lib";
-import { useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
+import { useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 
 import type {

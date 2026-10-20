@@ -2,7 +2,7 @@ import { cn } from "@/shared/lib/cn";
 
 /*
  * Top Navigation 의 클래스 · 상수 — 컴포넌트 파일은 컴포넌트만 내보낸다(빠른 새로 고침).
- * 값의 원본은 porest-design specs/components/top-navigation.yaml(src/shared/ds/spec/top-navigation.json).
+ * 값의 원본은 groo-design specs/components/top-navigation.yaml(src/shared/ds/spec/top-navigation.json).
  * 임의 값([50px] 등)은 스펙 JSON 값과 같은 것이고, 토큰에 없는 숫자라 이유를 곁에 적었다.
  */
 

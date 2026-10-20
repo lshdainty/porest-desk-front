@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import {
   Select,

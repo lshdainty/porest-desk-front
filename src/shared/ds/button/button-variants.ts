@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Button — 구조는 SEED Action Button(2026-09-30). 수치 원본은 porest-design
+ * Groo Button — 구조는 SEED Action Button(2026-09-30). 수치 원본은 groo-design
  * specs/components/button.yaml(값은 src/shared/ds/spec/button.json).
- * porest-design recipes/shadcn/components/ui/button.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
+ * groo-design recipes/shadcn/components/ui/button.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
  * 컴포넌트는 button.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * Variants(7) — 한 화면의 강조 버튼(Solid)은 하나
@@ -72,7 +72,7 @@ export const buttonVariants = cva(
         xsmall: "h-8 rounded-full [--press-basis:32] [--progress-size:14px]",
         small: "h-9 rounded-r2 [--press-basis:36] [--progress-size:14px]",
         medium: "h-10 rounded-r2 [--press-basis:40] [--progress-size:16px]",
-        // SEED large 는 52 — porest 는 48(button.md "SEED 와 다른 점")
+        // SEED large 는 52 — groo 는 48(button.md "SEED 와 다른 점")
         large: "h-12 rounded-r3 [--press-basis:48] [--progress-size:18px]",
       },
       layout: {
@@ -149,7 +149,7 @@ export const buttonVariants = cva(
         ghostColor: "critical",
         className: "text-fg-critical",
       },
-      // flush ghost 는 텍스트 버튼 — 배경 없이 글자색으로만 반응한다(button.md "porest 에만 있는 것")
+      // flush ghost 는 텍스트 버튼 — 배경 없이 글자색으로만 반응한다(button.md "groo 에만 있는 것")
       {
         variant: "ghost",
         flush: ["left", "right"],

@@ -2,7 +2,7 @@ import type { MouseEvent } from "react";
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Input Button 의 상자 변형 · 상수 · 작은 헬퍼 — 수치 원본은 porest-design specs/components/input-button.yaml
+ * Groo Input Button 의 상자 변형 · 상수 · 작은 헬퍼 — 수치 원본은 groo-design specs/components/input-button.yaml
  * (값은 src/shared/ds/spec/input-button.json). 컴포넌트와 규칙은 input-button.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). Select 의 트리거가 같은 상자를 쓰도록 cva 를 따로 내보낸다.
  */

@@ -199,8 +199,8 @@ const HeadOnly = ({ sort }: { sort: TableSort }) => (
 );
 
 const RICH_ROWS = [
-  { name: "김하늘", id: "HR-0012", dept: "개발팀", mail: "haneul@porest.kr" },
-  { name: "박서준", id: "HR-0031", dept: "디자인팀", mail: "seojun@porest.kr" },
+  { name: "김하늘", id: "HR-0012", dept: "개발팀", mail: "haneul@groo.kr" },
+  { name: "박서준", id: "HR-0031", dept: "디자인팀", mail: "seojun@groo.kr" },
 ];
 
 const Thumb = () => (

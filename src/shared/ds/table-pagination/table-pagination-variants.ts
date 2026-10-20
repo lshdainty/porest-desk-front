@@ -1,5 +1,5 @@
 /*
- * Porest Table Pagination 의 모양과 쪽 계산 — 수치 원본은 porest-design specs/components/table-pagination.yaml(값은
+ * Groo Table Pagination 의 모양과 쪽 계산 — 수치 원본은 groo-design specs/components/table-pagination.yaml(값은
  * src/shared/ds/spec/table-pagination.json). 컴포넌트와 규칙은 table-pagination.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

@@ -1,4 +1,4 @@
-import { formatChartAxis } from "@/shared/lib/porest/format";
+import { formatChartAxis } from "@/shared/lib/groo/format";
 
 /**
  * 히트맵 셀 라벨 — 좁은 칸에 들어갈 만큼 짧게.

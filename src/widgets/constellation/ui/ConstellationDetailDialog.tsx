@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Lock } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
 import {
   constellationDesc,
   constellationName,

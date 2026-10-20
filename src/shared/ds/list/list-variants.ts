@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest List — 구조는 SEED List(2026-10-01). 수치 원본은 porest-design specs/components/list.yaml · list-header.yaml
- * (값은 src/shared/ds/spec/list.json · list-header.json). porest-design recipes/shadcn/components/ui/list.tsx 를 첫 판으로
+ * Groo List — 구조는 SEED List(2026-10-01). 수치 원본은 groo-design specs/components/list.yaml · list-header.yaml
+ * (값은 src/shared/ds/spec/list.json · list-header.json). groo-design recipes/shadcn/components/ui/list.tsx 를 첫 판으로
  * 가져왔다 — 이 파일은 변형 정의, 컴포넌트는 list.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   List · ListItem                  목록(ul) · 보기만 하는 줄

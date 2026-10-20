@@ -1,8 +1,8 @@
 import spec from "@/shared/ds/spec/category-icons.json";
 
 /*
- * Porest 카테고리 아이콘 세트 — 카테고리 · 저축 목표에 붙이는 아이콘을 고르는 Icon Picker 의 범위(2026-10-09).
- * 원본은 porest-design specs/components/category-icons.yaml 이고, 이 레포는 그 JSON(src/shared/ds/spec/category-icons.json —
+ * Groo 카테고리 아이콘 세트 — 카테고리 · 저축 목표에 붙이는 아이콘을 고르는 Icon Picker 의 범위(2026-10-09).
+ * 원본은 groo-design specs/components/category-icons.yaml 이고, 이 레포는 그 JSON(src/shared/ds/spec/category-icons.json —
  * npm run design:sync 가 가져온다)을 그대로 읽는다. 148개 · 13 묶음의 표를 TS 로 한 번 더 옮겨 적지 않는다(웹 · 앱이 같은 YAML 에서
  * 만든다 — 표가 둘이 되면 어긋난다). 아이콘 그림만 category-icon-glyphs.ts 가 id 에 잇는다.
  *

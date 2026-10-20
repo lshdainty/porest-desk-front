@@ -7,7 +7,7 @@ import { Check, ChevronRight, Circle } from "lucide-react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest DropdownMenu — porest-design specs/components/dropdown-menu.md SoT 기반.
+ * Groo DropdownMenu — groo-design specs/components/dropdown-menu.md SoT 기반.
  *
  * - Radix DropdownMenu 베이스. 키보드 네비/ARIA 자동 처리.
  * - menu family 시각 통일: rounded-md content + rounded-sm item + body-md font + p-xs padding.

@@ -47,7 +47,7 @@ export interface TossCandle {
 }
 
 /**
- * 백엔드 candle 응답 원형 — porest-core CursorResponse<Candle>.
+ * 백엔드 candle 응답 원형 — groo-core CursorResponse<Candle>.
  * 클라 내부에서는 {@link TossCandlePage}(candles/nextBefore)로 정규화해 사용한다.
  */
 export interface TossCandleCursorPage {
@@ -216,7 +216,7 @@ export interface StockMasterItem {
   currency: string;
 }
 
-/** porest-core PageResponse 미러 */
+/** groo-core PageResponse 미러 */
 export interface StockSearchPage {
   content: StockMasterItem[];
   meta: {

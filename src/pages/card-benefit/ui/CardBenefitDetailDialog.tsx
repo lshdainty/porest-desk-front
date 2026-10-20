@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import { Button } from "@/shared/ui/button";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { decodeHtml } from "@/shared/lib";
@@ -17,7 +17,7 @@ import type { CardCatalogDetail, CardCatalogSummary } from "@/entities/card";
 import { getCardBrand } from "@/entities/card";
 
 /**
- * 카드 혜택 상세 모달 — porest-design `card-benefits.jsx` CardBenefitDialog SoT 정합.
+ * 카드 혜택 상세 모달 — groo-design `card-benefits.jsx` CardBenefitDialog SoT 정합.
  *
  * - ModalShell(title="카드 상세", footer 닫기 버튼)
  * - 카드 hero: 3단계 fallback — imgUrl 로드 성공 → <img object-fit cover> /

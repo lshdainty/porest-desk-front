@@ -26,26 +26,26 @@ import {
   formatChartAxis,
   isEn,
   minusOf,
-} from "@/shared/lib/porest/format";
+} from "@/shared/lib/groo/format";
 import {
   formatYearMonth,
   formatMonthShort,
   formatMonthDay,
   parseLocalDate,
 } from "@/shared/lib/date";
-import { niceAxis } from "@/shared/lib/porest/chartAxis";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { niceAxis } from "@/shared/lib/groo/chartAxis";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import {
   HideCard,
   HideUnit,
   HideForce,
   MaskAmount,
   WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import type { HideCardKey } from "@/shared/lib/porest/hide-amounts-cards";
-import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
-import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
-import { getBrandColor } from "@/shared/lib/porest/bank-colors";
+} from "@/shared/lib/groo/hide-amounts";
+import type { HideCardKey } from "@/shared/lib/groo/hide-amounts-cards";
+import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
+import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
+import { getBrandColor } from "@/shared/lib/groo/bank-colors";
 import {
   ChartContainer,
   ChartTooltip,
@@ -53,9 +53,9 @@ import {
 } from "@/shared/ui/chart";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Section } from "@/shared/ui/porest/section";
+import { Section } from "@/shared/ui/groo/section";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { Donut } from "@/shared/ui/porest/charts";
+import { Donut } from "@/shared/ui/groo/charts";
 import {
   useAssets,
   useAssetSummary,
@@ -264,7 +264,7 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 type AssetGroupKey = "cash" | "invest" | "card" | "loan";
 
-// porest chart palette 정합 — AssetSummaryCard ASSET_TYPE_COLORS와 일관
+// groo chart palette 정합 — AssetSummaryCard ASSET_TYPE_COLORS와 일관
 const GROUP_META: Record<AssetGroupKey, { labelKey: string; color: string }> = {
   cash: { labelKey: "group.cashDeposit", color: "var(--color-chart-blue)" },
   invest: { labelKey: "group.invest", color: "var(--bg-brand)" },

@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Page Banner 의 띠 변형 — 톤 · 바탕 · 상호작용. 수치 원본은 porest-design specs/components/page-banner.yaml
+ * Groo Page Banner 의 띠 변형 — 톤 · 바탕 · 상호작용. 수치 원본은 groo-design specs/components/page-banner.yaml
  * (값은 src/shared/ds/spec/page-banner.json). 컴포넌트와 규칙은 page-banner.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

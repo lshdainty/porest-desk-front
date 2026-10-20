@@ -11,7 +11,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { __resetPointerBlockForTest } from "@/shared/lib/porest/pointer-block";
+import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { SubscriptionInfo } from "../api/subscriptionApi";
 
 declare global {
@@ -69,7 +69,7 @@ afterEach(() => {
 function subscription(over: Partial<SubscriptionInfo>): SubscriptionInfo {
   return {
     planCode: "SECURITIES",
-    planName: "Porest Pro",
+    planName: "그루 담다 Pro",
     status: "ACTIVE",
     startedAt: "2026-09-11T12:00:00",
     currentPeriodEnd: "2026-10-11T12:00:00",

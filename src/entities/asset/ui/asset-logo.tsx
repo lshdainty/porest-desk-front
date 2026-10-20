@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { getBrandColor } from "@/shared/lib/porest/bank-colors";
+import { getBrandColor } from "@/shared/lib/groo/bank-colors";
 import type { Asset } from "../model/types";
 
 function hashHue(text: string): number {

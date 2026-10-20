@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /*
- * Porest Scroll Fog — 흐림을 거는 훅. 수치 원본은 porest-design specs/components/scroll-fog.yaml
+ * Groo Scroll Fog — 흐림을 거는 훅. 수치 원본은 groo-design specs/components/scroll-fog.yaml
  * (값은 src/shared/ds/spec/scroll-fog.json). 컴포넌트는 scroll-fog.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   useScrollFog  다른 부품의 스크롤 상자에 같은 흐림을 건다 — Dialog · Bottom Sheet · Popover 본문(scrollFog), Chip 의 가로 줄,

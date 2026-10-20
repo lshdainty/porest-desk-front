@@ -11,12 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { useVerifyPasswordMutation } from "@/features/user";
-import { useDeviceSize } from "@/shared/lib/porest/responsive";
-import { useBackClose } from "@/shared/lib/porest/use-back-close";
+import { useDeviceSize } from "@/shared/lib/groo/responsive";
+import { useBackClose } from "@/shared/lib/groo/use-back-close";
 
 interface Props {
   open: boolean;

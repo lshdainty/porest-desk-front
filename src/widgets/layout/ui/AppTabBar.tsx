@@ -14,7 +14,7 @@ import {
   TabBarBack,
   TabBarFab,
   TabBarItem,
-} from "@/shared/ui/porest/tabbar";
+} from "@/shared/ui/groo/tabbar";
 
 /**
  * 모바일 하단 네비 — default(홈·가계부·+·캘린더·전체) / money(←·가계부·자산·통계·예산)

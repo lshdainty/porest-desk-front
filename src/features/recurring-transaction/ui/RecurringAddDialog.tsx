@@ -4,11 +4,11 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
 import { Bell, Zap, Calendar } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Textarea } from "@/shared/ui/textarea";

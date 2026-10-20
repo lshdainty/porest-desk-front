@@ -9,7 +9,7 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import {
   brokerFromSlug,

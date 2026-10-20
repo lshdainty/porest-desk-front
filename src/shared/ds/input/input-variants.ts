@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Input 의 상자 변형 — 모양 · 크기. 수치 원본은 porest-design specs/components/input.yaml
+ * Groo Input 의 상자 변형 — 모양 · 크기. 수치 원본은 groo-design specs/components/input.yaml
  * (값은 src/shared/ds/spec/input.json). 컴포넌트와 규칙은 input.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *

@@ -21,10 +21,10 @@ import { ChartTooltipRow } from "./chart-tooltip-row";
 import { useEscapeFirst } from "./use-escape-first";
 
 /*
- * Porest Chart — 색은 DESIGN.md v110 · v111, 부품은 SEED Layout 의 대시보드 그림(2026-10-08). 수치 원본은 porest-design specs/components/chart.yaml
- * (값은 src/shared/ds/spec/chart.json). porest-design recipes/shadcn/components/ui/chart.tsx 를 첫 판으로 가져왔다. recharts(3.x) 위에 짰다.
+ * Groo Chart — 색은 DESIGN.md v110 · v111, 부품은 SEED Layout 의 대시보드 그림(2026-10-08). 수치 원본은 groo-design specs/components/chart.yaml
+ * (값은 src/shared/ds/spec/chart.json). groo-design recipes/shadcn/components/ui/chart.tsx 를 첫 판으로 가져왔다. recharts(3.x) 위에 짰다.
  * SEED 에는 차트 컴포넌트도 차트 색도 없다 — 이중 축 · 계열 색 눈금 · 가로 격자 · 세로 점선 가리킴 · "■ 라벨 값" 툴팁 · 위 지표 타일은
- * SEED 그림을, 색 배정 · 범례 · 열지도 · 빈 · 실패 · 접근성은 porest 가 정했다.
+ * SEED 그림을, 색 배정 · 범례 · 열지도 · 빈 · 실패 · 접근성은 groo 가 정했다.
  *
  *   Chart               차트 상자 — label(필수, role="img" 의 요약 이름 — "10월 수입 · 지출 추이, 수입 4,200,000원 · …") · height(px) ·
  *                       legendId(대체가 되는 범례의 id → aria-describedby). 자식은 recharts 차트 하나(ResponsiveContainer 로 감싼다) +

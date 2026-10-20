@@ -1,5 +1,5 @@
 // Scroll Fog 의 동작 — 넘침 · 안쪽 여백 · 스크롤 여유는 scripts/check-ds-spec.mjs 가 크로미움에서 스펙 값과 맞춘다.
-// jsdom 은 토큰 CSS 를 읽지 않으므로 감싸개에 토큰(--gradient-fade-mask)을 둔다 — 화면에서는 porest-tokens.css 가 준다.
+// jsdom 은 토큰 CSS 를 읽지 않으므로 감싸개에 토큰(--gradient-fade-mask)을 둔다 — 화면에서는 groo-tokens.css 가 준다.
 import {
   act,
   createRef,

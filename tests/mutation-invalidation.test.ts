@@ -47,14 +47,14 @@ vi.mock("@tanstack/react-query", () => ({
   useInfiniteQuery: () => ({ data: undefined }),
 }));
 // 토글 훅들이 쓰는 상태 훅 — 리액트 밖에서 부르면 죽으므로 껍데기로 바꾼다.
-vi.mock("@/shared/lib/porest/use-pending-ids", () => ({
+vi.mock("@/shared/lib/groo/use-pending-ids", () => ({
   usePendingIds: () => ({
     pendingIds: new Set<number>(),
     begin: () => undefined,
     end: () => undefined,
   }),
 }));
-vi.mock("@/shared/lib/porest/use-hold-ids", () => ({
+vi.mock("@/shared/lib/groo/use-hold-ids", () => ({
   useHoldIds: () => ({ holdIds: new Set<number>(), hold: () => undefined }),
 }));
 

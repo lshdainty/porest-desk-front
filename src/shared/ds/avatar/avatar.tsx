@@ -12,9 +12,9 @@ import {
 } from "./avatar-variants";
 
 /*
- * Porest Avatar — 구조는 SEED Avatar · Avatar Stack(2026-10-03). 수치 원본은 porest-design
+ * Groo Avatar — 구조는 SEED Avatar · Avatar Stack(2026-10-03). 수치 원본은 groo-design
  * specs/components/avatar.yaml · avatar-stack.yaml(값은 src/shared/ds/spec/avatar.json · avatar-stack.json).
- * porest-design recipes/shadcn/components/ui/avatar.tsx 를 첫 판으로 가져왔다(앱 적용 1A). 이니셜 · 이름 색 규칙
+ * groo-design recipes/shadcn/components/ui/avatar.tsx 를 첫 판으로 가져왔다(앱 적용 1A). 이니셜 · 이름 색 규칙
  * (avatarInitial · avatarHue)은 avatar-variants.ts 에 있다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Avatar         사람 한 명을 보이는 원 — 사진(src)이 있으면 사진, 없거나 · 불러오는 동안 · 못 불러오면 이니셜 + 이름 색

@@ -18,12 +18,12 @@ import { Switch } from "@/shared/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { InputTimePicker } from "@/shared/ui/input-time-picker";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import {
   CHART_PAIRS,
   getPaletteByColor,
-} from "@/shared/lib/porest/chart-palette";
+} from "@/shared/lib/groo/chart-palette";
 import { useIsMobile } from "@/shared/hooks";
 import type {
   CalendarEvent,

@@ -19,7 +19,7 @@ import {
 } from "./quantity-picker-variants";
 
 /*
- * Porest Quantity Picker — 구조는 SEED Quantity Picker(2026-10-15, rootage quantity-picker · quantity-picker-button,
+ * Groo Quantity Picker — 구조는 SEED Quantity Picker(2026-10-15, rootage quantity-picker · quantity-picker-button,
  * react-headless useQuantityPicker). 수치 원본은 specs/components/quantity-picker.yaml.
  * 작은 정수를 한 단계씩 늘리고 줄이는 컨트롤 — 흔한 값이 열 단계 안쪽인 수(승인 필요 횟수 0 ~ 3 · 부여 시간 0 ~ 7시간)에 쓴다.
  * 흔한 값이 더 멀거나 돈 · 소수면 Input 의 숫자 칸, 날짜 부분 · 띄엄띄엄 이름 붙은 값은 Select, 범위 안의 자리는 Slider 다.

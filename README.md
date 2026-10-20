@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/POREST_DESK-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="POREST Desk" />
+  <img src="https://img.shields.io/badge/%EA%B7%B8%EB%A3%A8_%EB%8B%B4%EB%8B%A4-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="그루 담다" />
 </p>
 
-<h1 align="center">POREST Desk Frontend</h1>
+<h1 align="center">그루 담다 Frontend</h1>
 
 <p align="center">
   <strong>개인 생산성/라이프 로그 관리를 위한 Desk 프론트엔드</strong>
@@ -19,7 +19,7 @@
 
 ## 소개
 
-**POREST Desk Frontend**는 [POREST](https://github.com/lshdainty/POREST) 서비스의 Desk 프론트엔드입니다.
+**그루 담다 Frontend**는 [그루](https://github.com/lshdainty/groo) 서비스의 Desk 프론트엔드입니다.
 
 가계부, 자산, 예산, 통계, 할 일, 캘린더, 메모, 더치페이 등 생산성/자산 관리 기능 UI를 제공합니다.
 
@@ -150,10 +150,10 @@ VITE_SSO_URL="http://localhost:3000"    # SSO 프론트 base URL (OAuth2 Authori
 
 | Repository | Description |
 |------------|-------------|
-| [POREST](https://github.com/lshdainty/POREST) | 통합 레포지토리 (서비스 소개) |
+| [그루](https://github.com/lshdainty/groo) | 통합 레포지토리 (서비스 소개) |
 | [porest-desk-back](https://github.com/lshdainty/porest-desk-back) | Desk 백엔드 |
 | [porest-desk-app](https://github.com/lshdainty/porest-desk-app) | Desk 모바일 앱 (Flutter) |
-| [porest-core](https://github.com/lshdainty/porest-core) | 공통 라이브러리 |
+| [groo-core](https://github.com/lshdainty/groo-core) | 공통 라이브러리 |
 | [porest-sso-back](https://github.com/lshdainty/porest-sso-back) | SSO 백엔드 |
 | [porest-sso-front](https://github.com/lshdainty/porest-sso-front) | SSO 프론트엔드 |
 

@@ -6,9 +6,9 @@ import type { AspectRatioValue } from "@/shared/ds/aspect-ratio";
 import type { InstitutionText } from "@/shared/ds/institution-colors";
 
 /*
- * Porest Image Frame · Card Art 의 모양 규칙 — 틀 · 그림 · 그림 위 자리 · Indicator · 카드 면의 클래스와 모서리 규칙.
+ * Groo Image Frame · Card Art 의 모양 규칙 — 틀 · 그림 · 그림 위 자리 · Indicator · 카드 면의 클래스와 모서리 규칙.
  * 컴포넌트는 image-frame.tsx · card-art.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
- * 값의 출처는 porest-design specs/components/image-frame.yaml · card-art.yaml(src/shared/ds/spec/image-frame.json · card-art.json).
+ * 값의 출처는 groo-design specs/components/image-frame.yaml · card-art.yaml(src/shared/ds/spec/image-frame.json · card-art.json).
  * 윤곽 · 모서리 규칙은 Logo Tile(카드 그림 판)도 그대로 쓴다.
  */
 

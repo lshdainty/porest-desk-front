@@ -27,23 +27,19 @@ import {
   formatChartAxis,
   isEn,
   minusOf,
-} from "@/shared/lib/porest/format";
+} from "@/shared/lib/groo/format";
 import {
   formatMonthDay,
   formatYearMonth,
   parseLocalDate,
 } from "@/shared/lib/date";
-import { niceAxis } from "@/shared/lib/porest/chartAxis";
-import {
-  HideUnit,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
+import { niceAxis } from "@/shared/lib/groo/chartAxis";
+import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { expenseSum } from "@/entities/expense";
-import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
-import { useOpenHideAmountsSettings } from "@/shared/lib/porest/hide-amounts-nav";
-import { Icon, MonthPicker } from "@/shared/ui/porest/primitives";
-import { Donut } from "@/shared/ui/porest/charts";
+import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
+import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
+import { Icon, MonthPicker } from "@/shared/ui/groo/primitives";
+import { Donut } from "@/shared/ui/groo/charts";
 import { ExpenseRow } from "@/entities/expense";
 import {
   ChartContainer,
@@ -65,7 +61,7 @@ import {
   useMonthlyTrend,
   useExpenseBudgets,
 } from "@/features/expense";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { useUserPreferences } from "@/features/user";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import type {
@@ -300,7 +296,7 @@ function IncomeExpenseBarChart({
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-// porest chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
+// groo chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
 // `--color-cat-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
 const CATEGORY_PALETTE = [
   "var(--color-cat-blue)",

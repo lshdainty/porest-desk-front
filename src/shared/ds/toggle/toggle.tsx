@@ -5,10 +5,10 @@ import { cn } from "@/shared/lib/cn";
 import { toggleVariants } from "./toggle-variants";
 
 /*
- * Porest Toggle — 켜고 끄는 아이콘 단추(2026-10-09). 수치 원본은 porest-design specs/components/toggle.yaml(값은
- * src/shared/ds/spec/toggle.json). porest-design recipes/shadcn/components/ui/toggle.tsx 를 첫 판으로 가져왔다 — 클래스는
+ * Groo Toggle — 켜고 끄는 아이콘 단추(2026-10-09). 수치 원본은 groo-design specs/components/toggle.yaml(값은
+ * src/shared/ds/spec/toggle.json). groo-design recipes/shadcn/components/ui/toggle.tsx 를 첫 판으로 가져왔다 — 클래스는
  * toggle-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
- * SEED 에는 이 단추의 디자인 문서가 없다 — 글이 있는 알약 Toggle Button 은 코드에만 있고 porest 는 두지 않는다(사용자 결정 8A).
+ * SEED 에는 이 단추의 디자인 문서가 없다 — 글이 있는 알약 Toggle Button 은 코드에만 있고 groo 는 두지 않는다(사용자 결정 8A).
  * 옛 글 토글(default · outline 28 · 32 · 40)과 Toggle Group 은 걷었다 — 거르기 · 고르기는 Chip · Segmented Control, 설정은 Switch.
  *
  *   Toggle   <button type="button" aria-pressed> 하나 — 관심 등록 · 메모 고정 · 금액 가리기 · App Key 보기

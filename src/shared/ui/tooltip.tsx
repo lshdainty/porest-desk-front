@@ -4,7 +4,7 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Tooltip — porest-design specs/components/tooltip.md SoT 기반.
+ * Groo Tooltip — groo-design specs/components/tooltip.md SoT 기반.
  *
  * - Radix Tooltip 베이스. composition: TooltipProvider > Tooltip > Trigger + Content.
  * - True inverted tooltip — light 모드는 dark 배경, dark 모드는 light 배경.

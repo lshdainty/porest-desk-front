@@ -17,29 +17,25 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { KRW, money, isEn, formatChartAxis } from "@/shared/lib/porest/format";
+import { KRW, money, isEn, formatChartAxis } from "@/shared/lib/groo/format";
 import { heatCellLabel } from "@/pages/stats/lib/heat-label";
 import {
   formatYearMonth,
   formatYear,
   formatYearQuarter,
 } from "@/shared/lib/date";
-import { niceAxis, niceCeil } from "@/shared/lib/porest/chartAxis";
+import { niceAxis, niceCeil } from "@/shared/lib/groo/chartAxis";
 import { countableTx } from "@/entities/expense";
-import {
-  HideCard,
-  MaskAmount,
-  WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
-import { Donut } from "@/shared/ui/porest/charts";
+import { HideCard, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
+import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
+import { Donut } from "@/shared/ui/groo/charts";
 import {
   ChartContainer,
   ChartTooltip,
   type ChartConfig,
 } from "@/shared/ui/chart";
 import { Card, CardContent } from "@/shared/ui/card";
-import { Section } from "@/shared/ui/porest/section";
+import { Section } from "@/shared/ui/groo/section";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { useSwipeNav } from "@/shared/hooks";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -49,10 +45,10 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import {
   useRangeSummary,
   useMerchantSummary,
@@ -181,7 +177,7 @@ const labelsOf = ({ segMode }: RangeState) =>
             avg: "period.custom.avg",
           };
 
-// porest chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
+// groo chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
 // `--color-cat-*` alias — 라이트/다크 자동 swap.
 const DONUT_COLORS = [
   "var(--color-cat-blue)",
@@ -283,7 +279,7 @@ type TrendTooltipProps = {
   label?: string;
 };
 
-function PorestChartTooltip({
+function GrooChartTooltip({
   active,
   payload,
   label,
@@ -2299,7 +2295,7 @@ export const StatsPage = () => {
                   strokeDasharray: "3 3",
                 }}
                 content={
-                  <PorestChartTooltip
+                  <GrooChartTooltip
                     rows={[
                       {
                         dataKey: "income",
@@ -2691,7 +2687,7 @@ export const StatsPage = () => {
             <ChartTooltip
               cursor={{ fill: "var(--border-brand)", fillOpacity: 0.05 }}
               content={
-                <PorestChartTooltip
+                <GrooChartTooltip
                   rows={[
                     {
                       dataKey: "savings",
@@ -3812,7 +3808,7 @@ export const StatsPage = () => {
               zIndex: 5,
             }}
           >
-            <PorestChartTooltip
+            <GrooChartTooltip
               active
               label={t(WK_KEYS[wkTip.i] ?? "dow.mon")}
               payload={[

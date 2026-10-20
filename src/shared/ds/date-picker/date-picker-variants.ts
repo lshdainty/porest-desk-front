@@ -1,6 +1,6 @@
 /*
- * Porest Date Picker 의 모양 — 수치 원본은 porest-design specs/components/date-picker.yaml(값은 src/shared/ds/spec/date-picker.json).
- * porest-design recipes/shadcn/components/ui/date-picker.tsx 를 첫 판으로 가져왔다. 이 파일은 모양 정의(클래스 · 자리 상수),
+ * Groo Date Picker 의 모양 — 수치 원본은 groo-design specs/components/date-picker.yaml(값은 src/shared/ds/spec/date-picker.json).
+ * groo-design recipes/shadcn/components/ui/date-picker.tsx 를 첫 판으로 가져왔다. 이 파일은 모양 정의(클래스 · 자리 상수),
  * 컴포넌트는 date-picker.tsx · date-picker-day.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 레시피와 다른 자리 — 날짜 원 · 기간 띠 · 초점 링을 ::before / ::after 가 아니라 **진짜 요소**(span)로 그린다. 검사기(ds:check)는

@@ -13,7 +13,7 @@
  */
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import { Card } from "@/shared/ui/card";
 import { PortfolioDonut, type DonutSlice } from "./portfolio-donut";
 import { PanelEmpty } from "./stock-row";

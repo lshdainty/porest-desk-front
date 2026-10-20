@@ -4,7 +4,7 @@ import { cn } from "@/shared/lib/cn";
 
 import { tagGroupItemVariants, tagGroupVariants } from "./tag-group-variants";
 
-// 크기 · 톤 · 굵기 · 줄바꿈은 tag-group-variants.ts 머리 주석과 porest-design specs/components/tag-group.yaml 이 정한다.
+// 크기 · 톤 · 굵기 · 줄바꿈은 tag-group-variants.ts 머리 주석과 groo-design specs/components/tag-group.yaml 이 정한다.
 
 export type TagGroupSize = "t2" | "t3" | "t4";
 export type TagGroupTone = "neutralSubtle" | "neutral" | "brand";

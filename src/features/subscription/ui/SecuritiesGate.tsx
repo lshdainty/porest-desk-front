@@ -3,7 +3,7 @@ import { Link, Navigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { useMyFeatures } from "../model/useSubscription";
 
 /**

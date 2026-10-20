@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Card — porest-design specs/components/card.md SoT 기반.
+ * Groo Card — groo-design specs/components/card.md SoT 기반.
  * v5: variant 도입 — shadow (default) / bordered. v6: muted / brand 공식화.
  *
  * - Card: rounded-lg + variant 별 bg + (shadow variant) inline boxShadow.
@@ -38,7 +38,7 @@ const cardVariants = cva(
         // v7 raised: 모바일 카드 다이어트의 keep(강조 요약/히어로) 카드 — 페이지 배경이
         // surface 로 올라와 일반 카드는 플랫으로 벗겨지고, 유지가 필요한 요약만
         // surface-raised(다크 #2d3346 패널 / 라이트 흰 카드) + shadow-lg 로 확실히 띄운다.
-        // (design app.css `.m-scroll .p-card--keep` SoT — porest-design card.md 미러 필요)
+        // (design app.css `.m-scroll .p-card--keep` SoT — groo-design card.md 미러 필요)
         raised: "bg-[var(--bg-surface-raised)]",
       },
     },

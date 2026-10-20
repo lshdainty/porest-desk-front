@@ -2,28 +2,28 @@
 @import "tw-animate-css";
 
 /* =============================================================================
- * POREST Design System tokens — Phase 0 도입 (chore/design-tokens 브랜치)
+ * 그루 Design System tokens — Phase 0 도입 (chore/design-tokens 브랜치)
  *
- * `porest-design` 산출물 두 파일을 옆에 두기만 함. 기존 Mossy/Bark/Mist 토큰은
- * 그대로 보존(아래 :root 블록)되며, Porest 토큰(`--color-primary`, `--color-bg-page`,
+ * `groo-design` 산출물 두 파일을 옆에 두기만 함. 기존 Mossy/Bark/Mist 토큰은
+ * 그대로 보존(아래 :root 블록)되며, Groo 토큰(`--color-primary`, `--color-bg-page`,
  * `--color-text-*`, `--spacing-*`, `--text-*` 등)이 추가로 살아 있음.
  *
- * Phase 1 — 기존 semantic 토큰(`--bg-canvas`, `--fg-primary` 등)을 Porest 토큰으로
+ * Phase 1 — 기존 semantic 토큰(`--bg-canvas`, `--fg-primary` 등)을 Groo 토큰으로
  * alias하여 Mossy 색→Cobalt 색 일괄 전환.
- * Phase 2~ — 기존 컴포넌트가 Porest 토큰을 직접 참조하도록 점진 마이그레이션.
+ * Phase 2~ — 기존 컴포넌트가 Groo 토큰을 직접 참조하도록 점진 마이그레이션.
  *
  * 충돌 토큰 노트(현재 후승=기존 Mossy 값 유지):
- *   --radius-sm (Porest 4 / Mossy 6) — 기존 6 유지
- *   --shadow-sm/md/lg/xl (Mossy green tinted vs Porest neutral) — 기존 유지
+ *   --radius-sm (Groo 4 / Mossy 6) — 기존 6 유지
+ *   --shadow-sm/md/lg/xl (Mossy green tinted vs Groo neutral) — 기존 유지
  *   --font-sans (둘 다 Pretendard, 호환)
  * ========================================================================== */
-@import "./shared/styles/porest-tokens.css";
-@import "./shared/styles/porest-shadcn-bridge.css";
+@import "./shared/styles/groo-tokens.css";
+@import "./shared/styles/groo-shadcn-bridge.css";
 
 @custom-variant dark (&:is(.dark *));
 
 /* =============================================================================
- * POREST Design System — Foundation Tokens (SoT: porest-tokens.css `@theme {}`)
+ * 그루 Design System — Foundation Tokens (SoT: groo-tokens.css `@theme {}`)
  *
  * 옛 Mossy/Bark/Mist palette + sunlit/berry/sky/sprout status palette 는
  * SoT 정합으로 마이그됨:
@@ -35,8 +35,8 @@
  *   Berry / Sprout → 0 사용처 dead code, 제거됨
  * ========================================================================== */
 :root {
-  /* Semantic — light (Phase 1: Porest 토큰 alias)
-   * Mossy/Bark/Mist primitive 그대로 두되 semantic 토큰만 Porest로 alias.
+  /* Semantic — light (Phase 1: Groo 토큰 alias)
+   * Mossy/Bark/Mist primitive 그대로 두되 semantic 토큰만 Groo로 alias.
    * 기존 컴포넌트는 변수명 그대로 사용 — 색만 Cobalt 톤으로 전환. */
   /* 커스텀(비팔레트) 색 스와치 다크 lift — 라이트 0% / 다크에서 흰색 혼합 비율(가독성) */
   --swatch-lift: 0%;
@@ -62,7 +62,7 @@
   );
   --border-brand-mid: var(--color-primary);
 
-  /* Warm (Bark) tinted surfaces — Porest엔 warm 톤 없음, surface-input으로 통합 */
+  /* Warm (Bark) tinted surfaces — Groo엔 warm 톤 없음, surface-input으로 통합 */
   --bg-warm-tint: var(--color-surface-input);
   --bg-warm-tint-strong: var(--color-surface-input);
   --fg-on-warm-strong: var(--color-text-primary);
@@ -73,7 +73,7 @@
   --bg-income-subtle: var(--bg-brand-subtle);
   --bg-transfer-subtle: var(--status-info-subtle);
 
-  /* Radii — desk-front custom aliases (radius scale 은 porest-tokens.css SoT).
+  /* Radii — desk-front custom aliases (radius scale 은 groo-tokens.css SoT).
    * 옛 --radius-2xs(2px) 는 --radius-xs SoT 와 동일 값이라 마이그됨. */
   --radius-tile: var(
     --radius-lg
@@ -81,10 +81,10 @@
   --radius-card: 14px; /* desk-front custom: tx-row card, dashboard card (spec 외) */
   --radius-pill: 9999px; /* spec radius-full 별명 */
 
-  /* Spacing — porest-tokens.css `--spacing-xs/sm/md/lg/xl/2xl/3xl` (SoT) 사용.
+  /* Spacing — groo-tokens.css `--spacing-xs/sm/md/lg/xl/2xl/3xl` (SoT) 사용.
    * 옛 --space-N 시리즈는 마이그 후 제거됨. */
 
-  /* Shadow — porest-tokens.css `--shadow-sm/md/lg/xl` (SoT cool-neutral rgba(15,18,28,*)) cascade 사용.
+  /* Shadow — groo-tokens.css `--shadow-sm/md/lg/xl` (SoT cool-neutral rgba(15,18,28,*)) cascade 사용.
    * 옛 Mossy green-tinted rgba(28,36,20,*) 정의 4 라인 제거됨 — base color 분기:
    *   sm: rgba(28,36,20,0.06) → rgba(15,18,28,0.05)
    *   md/lg/xl: 같은 패턴 (Mossy green tint → cool-neutral gray-black) */
@@ -94,13 +94,13 @@
     "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont,
     "Apple SD Gothic Neo", "Noto Sans KR", "Inter", "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", monospace;
-  /* font-size / line-height / font-weight / letter-spacing — porest-tokens.css `--text-*` SoT 사용.
+  /* font-size / line-height / font-weight / letter-spacing — groo-tokens.css `--text-*` SoT 사용.
    * 옛 --fs-* / --lh-* / --fw-* / --tracking-* legacy 별명은 마이그됨:
    *   font-size: display-lg 44→40, display-md 36→32, h4 17→18 사이즈별 SoT 정합
    *   lh/fw/tracking: 직접 값 (숫자/em) 인라인 마이그 — general scale 토큰은 SoT에 없음 (SoT는 사이즈별만)
    * className utility (text-display-xl 등) 마이그는 별도 task — 인라인 패턴 case-by-case 처리 필요. */
 
-  /* Motion — porest-tokens.css `--motion-duration-*` / `--motion-ease-out` (SoT) 사용.
+  /* Motion — groo-tokens.css `--motion-duration-*` / `--motion-ease-out` (SoT) 사용.
    * 옛 --dur-* / --ease-standard 는 마이그됨. spring/decel 은 SoT 미정의 desk-front custom 보존. */
   --ease-spring: cubic-bezier(
     0.34,
@@ -115,12 +115,12 @@
     1
   ); /* SoT 미정의 — progress bar width 애니메이션 */
 
-  /* Z-index — porest-tokens.css `--z-*` SoT 사용 (v116 층 이름: base auto / sticky 50 / modal 100 · 101 / floating 200 /
-   * tooltip 210 / alert 300 · 301 / snackbar 400 / dev 9999 — porest-design specs/z-index.md).
+  /* Z-index — groo-tokens.css `--z-*` SoT 사용 (v116 층 이름: base auto / sticky 50 / modal 100 · 101 / floating 200 /
+   * tooltip 210 / alert 300 · 301 / snackbar 400 / dev 9999 — groo-design specs/z-index.md).
    * 옛 legacy scale (1/100/200/300/400/500) 은 cascade 우선 override 였음 — 제거 후 SoT 자동 적용.
    * --z-overlay 는 SoT 미정의 (0 사용처라 단순 제거). Tailwind 기본 z-N (z-50 등) 은 별개 scale 보존. */
 
-  /* ====== shadcn variable mapping → Porest semantic (Phase 1) ====== */
+  /* ====== shadcn variable mapping → Groo semantic (Phase 1) ====== */
   --background: var(--bg-canvas);
   --foreground: var(--fg-primary);
   --card: var(--bg-surface);
@@ -140,7 +140,7 @@
   --border: var(--border-subtle);
   --input: var(--border-default);
   --ring: var(--border-focus);
-  /* chart palette — Porest 10색 의미 기반(blue→red→orange→green→violet 등) */
+  /* chart palette — Groo 10색 의미 기반(blue→red→orange→green→violet 등) */
   --chart-1: var(--color-primary);
   --chart-2: var(--color-chart-red);
   --chart-3: var(--color-chart-orange);
@@ -169,14 +169,14 @@
   --radius: var(--radius-lg);
 }
 
-/* Dark mode — Phase 1: Porest *-dark 토큰 활성화 + semantic alias.
- * Porest는 dark variant를 별도 토큰(*-dark suffix)으로 정의 — 이 블록에서
+/* Dark mode — Phase 1: Groo *-dark 토큰 활성화 + semantic alias.
+ * Groo는 dark variant를 별도 토큰(*-dark suffix)으로 정의 — 이 블록에서
  * base 토큰을 *-dark로 alias해 다크모드에서 자동 적용. semantic alias는
- * light와 동일 (Porest 토큰이 *-dark로 바뀌었으니 자동 dark 색 적용). */
+ * light와 동일 (Groo 토큰이 *-dark로 바뀌었으니 자동 dark 색 적용). */
 .dark,
 :root.dark,
 [data-theme="dark"] {
-  /* Porest *-dark 토큰 활성화 */
+  /* Groo *-dark 토큰 활성화 */
   --color-bg-page: var(--color-bg-page-dark);
   --color-surface-default: var(--color-surface-default-dark);
   --color-surface-input: var(--color-surface-input-dark);
@@ -191,7 +191,7 @@
   --shadow-lg: var(--shadow-lg-dark);
   --shadow-xl: var(--shadow-xl-dark);
 
-  /* Semantic alias — Porest 토큰이 *-dark로 활성됐으니 light와 동일 매핑으로 dark 자동 적용 */
+  /* Semantic alias — Groo 토큰이 *-dark로 활성됐으니 light와 동일 매핑으로 dark 자동 적용 */
   --swatch-lift: 38%;
   --swatch-check: #1a1f2e; /* 다크: fill 이 light variant → 어두운 체크로 대비 */
   --bg-section-warm: var(--color-surface-input);
@@ -269,8 +269,8 @@
   --surface-hero: var(--bg-brand-subtle);
 }
 
-/* 옛 로컬 이름 → 역할 색 — porest-design DESIGN.md v102 표의 "Desk 웹 이름" 칸 그대로(앱 적용 5A, 2026-10-06).
- * 역할 색이 라이트 · 다크를 스스로 따라가므로(porest-tokens.css 의 다크 블록) 두 모드가 같은 식이다.
+/* 옛 로컬 이름 → 역할 색 — groo-design DESIGN.md v102 표의 "Desk 웹 이름" 칸 그대로(앱 적용 5A, 2026-10-06).
+ * 역할 색이 라이트 · 다크를 스스로 따라가므로(groo-tokens.css 의 다크 블록) 두 모드가 같은 식이다.
  * .dark 에도 적는다 — 하위 요소에 .dark 를 단 곳(카탈로그의 다크 판)에서 역할 색의 다크 값으로 다시 계산되게.
  * 새 코드는 이 이름 말고 역할 이름(--color-fg-neutral …)을 쓴다. 화면을 옮기면 걷는다. */
 :root,
@@ -342,7 +342,7 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
-  /* radius-* 토큰은 porest-tokens.css `@theme { ... }`에서 직접 정의됨.
+  /* radius-* 토큰은 groo-tokens.css `@theme { ... }`에서 직접 정의됨.
    * 여기서 self-reference(`--radius-lg: var(--radius-lg)`) 두면 Tailwind v4가
    * `:root { --radius-lg: var(--radius-lg) }` cascade-killing self-reference를
    * emit해서 모든 `rounded-*` / `rounded-[var(--radius-*)]` 무효화됨. 제거. */

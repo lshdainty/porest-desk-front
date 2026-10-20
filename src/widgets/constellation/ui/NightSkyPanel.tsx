@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
 import {
   useConstellationCollection,
   useConstellationSky,

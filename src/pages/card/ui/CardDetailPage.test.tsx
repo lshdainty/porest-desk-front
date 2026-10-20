@@ -27,7 +27,7 @@ vi.mock("react-i18next", () => ({
 vi.mock("@/widgets/card-detail", () => ({
   CardDetailWidget: () => <div data-widget />,
 }));
-vi.mock("@/shared/lib/porest/responsive", () => ({
+vi.mock("@/shared/lib/groo/responsive", () => ({
   useDeviceSize: () => "desktop",
 }));
 

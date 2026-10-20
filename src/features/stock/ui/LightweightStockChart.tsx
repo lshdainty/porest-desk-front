@@ -3,7 +3,7 @@
  * 캔들스틱 + 거래량 + 이동평균(MA5/MA20) + 크로스헤어 레전드, 줌/팬 내장.
  * 데이터는 viewport 커서 lazy-load: 초기 1페이지(≤200)만 받고, 과거로 팬해 좌측 끝
  * (logicalRange.from)이 임계치 아래로 떨어지면 백엔드 nextCursor 로 다음 과거 페이지를 당겨
- * prepend 한다. (백엔드 candle = porest-core CursorResponse 단일 페이지)
+ * prepend 한다. (백엔드 candle = groo-core CursorResponse 단일 페이지)
  *
  * 데이터는 **증권사 무관 경로**(`/v1/securities/candles`)에서 온다 — 사용자가 고른 소스로
  * 서버가 대신 조회한다. 커서의 뜻은 증권사가 정하므로(토스=불투명 문자열, 나무=날짜)

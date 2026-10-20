@@ -29,9 +29,9 @@ import {
 } from "./searchable-list-variants";
 
 /*
- * Porest Searchable List — 위 검색칸에 치는 대로 아래 목록이 걸러지고 하나를 고르는 묶음(2026-10-08). 수치 원본은 porest-design
+ * Groo Searchable List — 위 검색칸에 치는 대로 아래 목록이 걸러지고 하나를 고르는 묶음(2026-10-08). 수치 원본은 groo-design
  * specs/components/searchable-list.yaml(값은 src/shared/ds/spec/searchable-list.json). 줄 · 검색칸의 나머지 값은 list.yaml · input.yaml.
- * porest-design recipes/shadcn/components/ui/searchable-list.tsx 를 첫 판으로 가져왔다 — 문맥 · 훅은 searchable-list-context.ts,
+ * groo-design recipes/shadcn/components/ui/searchable-list.tsx 를 첫 판으로 가져왔다 — 문맥 · 훅은 searchable-list-context.ts,
  * 줄 · 검색칸 자리 상수는 searchable-list-variants.ts, 줄 찾기 · 스크롤은 searchable-list-dom.ts.
  * SEED 에는 이 컴포넌트가 없다(Combobox 를 아직 두지 않았다) — 부품마다 SEED 를 따른다: 검색칸은 Text Input 밑줄형, 결과는 List 줄 +
  * 오른쪽 Radiomark, 결과 없음은 Result Section, 키보드는 SEED 문서 사이트 검색 창(초점은 입력칸, 화살표는 강조만 옮긴다).

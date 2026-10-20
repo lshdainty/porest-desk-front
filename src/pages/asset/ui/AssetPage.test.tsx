@@ -6,7 +6,7 @@
 // 쓰지 않기로 한 `천만`(QA #73), 11,881 을 `1만` 으로 깎는 −16%(QA #38),
 // 4,900 이 `0만` 으로 사라지는 것, 음수의 ASCII 하이픈(QA #22).
 //
-// 값 자체의 표(51,750,000 → `5,175만` …)는 `shared/lib/porest/format.test.ts` 가 들고 있다.
+// 값 자체의 표(51,750,000 → `5,175만` …)는 `shared/lib/groo/format.test.ts` 가 들고 있다.
 // 여기서 고정하는 건 **화면이 그 함수를 실제로 통과하느냐** 다 — 인라인 계산이
 // 다시 들어오면 이 파일이 깨진다.
 import { act } from "react";
@@ -22,7 +22,7 @@ import {
   vi,
 } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { MINUS } from "@/shared/lib/porest/format";
+import { MINUS } from "@/shared/lib/groo/format";
 import type { Asset } from "@/entities/asset";
 import type { SavingGoal } from "@/entities/savingGoal";
 

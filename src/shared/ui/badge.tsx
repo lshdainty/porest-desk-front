@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Badge — porest-design specs/components/badge.md SoT 기반.
+ * Groo Badge — groo-design specs/components/badge.md SoT 기반.
  *
  * 3 styles × neutral·semantic 매트릭스 (12 variants):
  *   solid:    default(primary) / secondary(surface-input) / destructive(error)

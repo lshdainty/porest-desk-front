@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import {
   blockNonDigitKey,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
@@ -18,9 +18,9 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
-import { SplitActions } from "@/shared/ui/porest/split-actions";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
+import { SplitActions } from "@/shared/ui/groo/split-actions";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -30,14 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { KRW, money } from "@/shared/lib/porest/format";
+import { KRW, money } from "@/shared/lib/groo/format";
 import {
   useExpenseSplits,
   useReplaceExpenseSplits,
   useDeleteAllExpenseSplits,
 } from "@/features/expense-split";
 import { useExpenseCategories } from "@/features/expense";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import type { Expense } from "@/entities/expense";
 import type {

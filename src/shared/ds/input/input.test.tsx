@@ -233,7 +233,7 @@ describe("Input", () => {
         invalid
         errorMessage="이미 쓰고 있는 아이디예요."
       >
-        <Input defaultValue="porest" />
+        <Input defaultValue="groo" />
       </Field>,
     );
     const label = container.querySelector("label")!;

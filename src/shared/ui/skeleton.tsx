@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Skeleton — porest-design specs/components/skeleton.md SoT 기반.
+ * Groo Skeleton — groo-design specs/components/skeleton.md SoT 기반.
  * 2 variants: pulse(animate-pulse, default) / shimmer(sweep gradient).
  * shape는 className으로 조정 (h-4 w-32, h-10 w-10 rounded-full 등).
  */

@@ -1,5 +1,5 @@
 /*
- * Porest Tabs 의 밀어 넘기기(TabsSwipeArea) — 순수 DOM 헬퍼 · 상수. 폰에서 화면 전체를 바꾸는 1차 탭만 쓴다(tabs.md Behavior).
+ * Groo Tabs 의 밀어 넘기기(TabsSwipeArea) — 순수 DOM 헬퍼 · 상수. 폰에서 화면 전체를 바꾸는 1차 탭만 쓴다(tabs.md Behavior).
  * 컴포넌트는 tabs.tsx 의 TabsSwipeArea 다.
  */
 

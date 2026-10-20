@@ -295,7 +295,7 @@ function TryStates() {
 
 // 가장 나쁜 값 — 긴 선택지 이름 · 설명(두 줄을 넘는다), 선택지 20개, 좁은 폭 240 의 3열
 const LONG =
-  "주식회사 포레스트 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드";
+  "주식회사 그루 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드";
 function TryWorst() {
   return (
     <div className="flex w-[240px] flex-col gap-x6">

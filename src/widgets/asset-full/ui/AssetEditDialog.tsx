@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreditCard, EyeOff, Plus, Search, Trash2, Wallet } from "lucide-react";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
 import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
@@ -22,7 +22,7 @@ import {
 } from "@/shared/ui/select";
 import { useAssets } from "@/features/asset";
 import { useDefaultCurrency } from "@/features/user";
-import { KRW, formatDay, money } from "@/shared/lib/porest/format";
+import { KRW, formatDay, money } from "@/shared/lib/groo/format";
 import { formatMonthShort, todayLocalKey } from "@/shared/lib/date";
 import { pendingBillWindow, pendingCycleOnOldDay } from "@/entities/expense";
 import {
@@ -30,15 +30,15 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import {
   CURRENCIES,
   DEFAULT_CURRENCY,
   currencyUnit,
   formatOriginalAmount,
   isForeignCurrency,
-} from "@/shared/lib/porest/currency";
-import { nameIssue } from "@/shared/lib/porest/name-policy";
+} from "@/shared/lib/groo/currency";
+import { nameIssue } from "@/shared/lib/groo/name-policy";
 import {
   ACCOUNT_SUBS,
   ACCOUNT_SUB_KEY,
@@ -47,7 +47,7 @@ import {
   subToAssetType,
   type AccountSub,
 } from "../lib/account-sub";
-import { NameCounter } from "@/shared/ui/porest/name-counter";
+import { NameCounter } from "@/shared/ui/groo/name-counter";
 import {
   getBrandColor,
   BANK_ENTRIES,
@@ -57,7 +57,7 @@ import {
   CATEGORY_HOLDING_TYPE,
   type BankCategory,
   type BankEntry,
-} from "@/shared/lib/porest/bank-colors";
+} from "@/shared/lib/groo/bank-colors";
 
 const INVEST_CATEGORY_SET = new Set<BankCategory>(INVEST_CATEGORIES);
 

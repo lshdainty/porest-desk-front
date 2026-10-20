@@ -1,9 +1,9 @@
 /*
- * Porest Input OTP — 메일 · 문자로 받은 일회용 인증 코드(지금은 숫자 6자리)를 넣는 칸(2026-10-09). 수치 원본은 porest-design specs/components/input-otp.yaml(값은 src/shared/ds/spec/input-otp.json),
+ * Groo Input OTP — 메일 · 문자로 받은 일회용 인증 코드(지금은 숫자 6자리)를 넣는 칸(2026-10-09). 수치 원본은 groo-design specs/components/input-otp.yaml(값은 src/shared/ds/spec/input-otp.json),
  * 칸의 상자 · 글자 · 상태는 input.yaml(Input), 라벨 · 설명 · 오류는 field.yaml(Field)이 원본이다.
  * SEED 에는 이 컴포넌트가 없다 — Text Input 의 "Input을 나누지 말고 … 한 번에 입력" 을 따라 칸을 자릿수만큼 나누지 않는다(사용자 결정 10A).
  * 옛 Input OTP(칸 6 × 40 · 숨은 입력 하나 — input-otp 라이브러리)를 대신한다.
- * porest-design recipes/shadcn/components/ui/input-otp.tsx 를 첫 판으로 가져왔다 — 이 파일은 숫자 뽑기 · 남은 초 셈, 컴포넌트는 input-otp.tsx 다
+ * groo-design recipes/shadcn/components/ui/input-otp.tsx 를 첫 판으로 가져왔다 — 이 파일은 숫자 뽑기 · 남은 초 셈, 컴포넌트는 input-otp.tsx 다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로고침).
  *
  *   InputOTP         코드 칸 — Input 상자형 한 칸. Input 의 속성(size · disabled · id · placeholder …)에 value · defaultValue(숫자 글) ·
