@@ -6,7 +6,7 @@ import {
   sanitizeAmountInput,
 } from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
-import { Bell, Zap, Calendar } from "lucide-react";
+import { Bell, Zap, Calendar, Pin } from "lucide-react";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Input } from "@/shared/ui/input";
@@ -229,6 +229,8 @@ export function RecurringAddDialog({
     (recurring?.executionTime ?? "09:00:00").slice(0, 5),
   );
   const [autoLog, setAutoLog] = useState(recurring?.autoLog ?? true);
+  // 고정 수입·지출 — 이 반복이 만드는 거래가 표식을 물려받는다(이체는 해당 없음).
+  const [isFixed, setIsFixed] = useState(recurring?.isFixed ?? false);
   const [notifyDayBefore, setNotifyDayBefore] = useState(
     recurring?.notifyDayBefore ?? true,
   );
@@ -353,6 +355,8 @@ export function RecurringAddDialog({
       maxOccurrences: endMode === "COUNT" ? Number(endCount) : undefined,
       autoLog,
       notifyDayBefore,
+      // 이체는 고정이 없다 — 켜 둔 채 이체로 바꿔도 싣지 않는다(서버도 꺼 버린다).
+      isFixed: isTransfer ? undefined : isFixed,
     };
     if (recurring) {
       // 다음 실행분부터 이 값으로 만들어진다 — 이미 만들어진 거래는 그대로.
@@ -801,6 +805,15 @@ export function RecurringAddDialog({
             value={notifyDayBefore}
             onChange={setNotifyDayBefore}
           />
+          {!isTransfer && (
+            <ToggleRow
+              Icon={Pin}
+              title={t(type === "INCOME" ? "fixed.income" : "fixed.expense")}
+              sub={t("fixed.sub")}
+              value={isFixed}
+              onChange={setIsFixed}
+            />
+          )}
         </div>
       </Section>
 

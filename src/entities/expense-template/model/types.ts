@@ -24,6 +24,8 @@ export interface ExpenseTemplate {
   sortOrder: number;
   /** 'Y' = 고정 금액 사용, 'N' = 불러올 때 금액 비움 */
   lockAmount: YNType;
+  /** 고정 수입·지출 기본값 — 이 프리셋으로 만든 거래가 물려받는다. 이체는 늘 false. 옛 서버면 없다. */
+  isFixed?: boolean;
   /** 마지막 사용 시각 (ISO). 한 번도 안 썼으면 null */
   lastUsedAt: string | null;
   createAt: string;
@@ -72,4 +74,6 @@ export interface ExpenseTemplateFormValues {
   paymentMethod?: string | null;
   sortOrder?: number;
   lockAmount: YNType;
+  /** 고정 수입·지출 기본값. 안 실으면 생성은 변동, 수정은 유지. 이체에는 쓰지 않는다. */
+  isFixed?: boolean;
 }

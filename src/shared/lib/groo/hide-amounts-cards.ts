@@ -72,6 +72,7 @@ export const HIDE_CARDS = {
   "stats.category": "stats",
   "stats.trend": "stats",
   "stats.compare": "stats",
+  "stats.fixed": "stats",
   // 예산
   "budget.header": "budget",
   "budget.pace": "budget",

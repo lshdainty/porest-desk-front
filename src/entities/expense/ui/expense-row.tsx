@@ -83,6 +83,10 @@ export function ExpenseRow({
           )}
           {refunded && <ScheduledBadge label={t("refunded")} />}
           {recordOnly && <ScheduledBadge label={t("recordOnly")} />}
+          {/* 고정 수입·지출 — 환불된 거래는 합계에서 빠져 있어 표시할 이유가 없다. */}
+          {expense.isFixed && !refunded && (
+            <ScheduledBadge label={t("fixed.badge")} />
+          )}
           {(expense.splitCategoryRowIds?.length ?? 0) > 0 && (
             <span
               style={{

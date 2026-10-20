@@ -22,6 +22,8 @@ export type {
   DeleteExpenseResult,
 } from "./model/types";
 
+export { splitFixed, amountFor } from "./lib/fixed-split";
+export type { FixedSplit, FixedView } from "./lib/fixed-split";
 export {
   buildCategoryTree,
   getSelectableCategories,

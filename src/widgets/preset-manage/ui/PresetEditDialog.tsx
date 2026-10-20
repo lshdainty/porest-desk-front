@@ -102,6 +102,8 @@ export function PresetEditDialog({
     preset?.interestAmount ? String(preset.interestAmount) : "",
   );
   const [lockAmount, setLockAmount] = useState(preset?.lockAmount === "Y");
+  // 고정 수입·지출 기본값 — "고정 금액"(금액을 저장해 둘지)과는 별개다. 통계의 분류 표식이다.
+  const [isFixed, setIsFixed] = useState(preset?.isFixed ?? false);
   const [amount, setAmount] = useState(
     preset?.amount != null ? String(preset.amount) : "",
   );
@@ -218,6 +220,8 @@ export function PresetEditDialog({
       description: description.trim() || null,
       paymentMethod: isTransfer ? null : paymentMethod || null,
       lockAmount: lockAmount ? "Y" : "N",
+      // 이체는 고정이 없다 — 켜 둔 채 이체로 바꿔도 싣지 않는다(서버도 꺼 버린다).
+      isFixed: isTransfer ? undefined : isFixed,
     };
     if (preset) {
       updateMut.mutate(
@@ -534,6 +538,57 @@ export function PresetEditDialog({
           </div>
         )}
       </div>
+
+      {!isTransfer && (
+        <div
+          style={{
+            padding: 12,
+            background: "var(--bg-sunken)",
+            borderRadius: "var(--radius-tile)",
+            marginTop: 10,
+            marginBottom: 4,
+          }}
+        >
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              cursor: "pointer",
+            }}
+          >
+            <Checkbox
+              size="sm"
+              checked={isFixed}
+              onCheckedChange={(c) => setIsFixed(c === true)}
+            />
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontSize: "var(--text-label-sm)",
+                  fontWeight: "700",
+                  color: "var(--fg-primary)",
+                }}
+              >
+                {t(
+                  type === "INCOME"
+                    ? "preset.fixedTitle.income"
+                    : "preset.fixedTitle.expense",
+                )}
+              </div>
+              <div
+                style={{
+                  fontSize: "var(--text-caption)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 2,
+                }}
+              >
+                {t("preset.fixedDesc")}
+              </div>
+            </div>
+          </label>
+        </div>
+      )}
     </ModalShell>
   );
 }

@@ -310,6 +310,67 @@ describe("비운 칸은 명시 null 로 나간다 (QA #107)", () => {
 });
 
 /**
+ * 고정 수입·지출 — 통계가 전체 · 고정 · 변동으로 나눠 보는 **분류 표식**이다.
+ * 이 시트는 그 칸을 그리므로 늘 싣는다(키를 빼면 서버가 "유지" 로 읽어, 끈 표식이 남는다).
+ */
+describe("고정 수입·지출", () => {
+  const fixedSwitch = () =>
+    document.body.querySelector<HTMLElement>('[role="switch"]');
+  const toggle = () =>
+    act(() => {
+      fixedSwitch()!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+  it("표식이 없던 거래는 변동(false)으로 나간다 — 키가 아예 빠지지 않는다", async () => {
+    render({ expense: baseExpense });
+    await clickSave();
+
+    expect(sent.update!).toHaveProperty("isFixed");
+    expect(sent.update!.isFixed).toBe(false);
+  });
+
+  it("고정 거래를 열면 켜져 있고, 그대로 저장하면 고정을 지킨다", async () => {
+    render({ expense: { ...baseExpense, isFixed: true } });
+    expect(fixedSwitch()!.getAttribute("aria-checked")).toBe("true");
+    await clickSave();
+
+    expect(sent.update!.isFixed).toBe(true);
+  });
+
+  it("스위치를 켜고 저장하면 고정으로 나간다", async () => {
+    render({ expense: baseExpense });
+    toggle();
+    await clickSave();
+
+    expect(sent.update!.isFixed).toBe(true);
+  });
+
+  it("고정 거래의 스위치를 끄면 변동으로 되돌아간다", async () => {
+    render({ expense: { ...baseExpense, isFixed: true } });
+    toggle();
+    await clickSave();
+
+    expect(sent.update!.isFixed).toBe(false);
+  });
+
+  it("새 거래도 같은 칸을 싣는다 — 기본은 변동", async () => {
+    render({});
+    clickButton("식비");
+    setValue(
+      [...document.body.querySelectorAll<HTMLInputElement>("input")].find(
+        (el) => el.inputMode === "numeric",
+      )!,
+      "30000",
+    );
+    toggle();
+    await clickSave();
+
+    expect(sent.create).not.toBeNull();
+    expect(sent.create!.isFixed).toBe(true);
+  });
+});
+
+/**
  * QA #123 — 결제 문자로 만든 내역을 **수입**으로 고쳐 저장하면 400 이 났다.
  * 문자 저장은 전용 경로(`/import/sms/commit`)로 가는데 그 본문에 거래 종류가 없어
  * 서버가 지출로 봤다. 서버는 종류를 안 실은 옛 앱을 위해 비면 지출로 채우므로,

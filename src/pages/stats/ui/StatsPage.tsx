@@ -25,7 +25,8 @@ import {
   formatYearQuarter,
 } from "@/shared/lib/date";
 import { niceAxis, niceCeil } from "@/shared/lib/groo/chartAxis";
-import { countableTx } from "@/entities/expense";
+import { amountFor, countableTx, splitFixed } from "@/entities/expense";
+import type { FixedView } from "@/entities/expense";
 import { HideCard, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { Donut } from "@/shared/ui/groo/charts";
@@ -39,6 +40,10 @@ import { Section } from "@/shared/ui/groo/section";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { useSwipeNav } from "@/shared/hooks";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "@/shared/ds/segmented-control";
 import {
   CalendarClock,
   ChevronDown,
@@ -62,6 +67,8 @@ import type {
   ExpenseCategory,
 } from "@/entities/expense";
 import { renderIcon, tileRadius } from "@/shared/lib";
+import { FixedBulkDialog } from "@/features/expense/ui/FixedBulkDialog";
+import { FixedVariableTab } from "./FixedVariableTab";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -71,7 +78,7 @@ import { renderIcon, tileRadius } from "@/shared/lib";
 const EMPTY_HEATMAP: HeatmapCell[] = [];
 
 type OutletCtx = { mobile: boolean };
-type TabKey = "cat" | "trend" | "compare";
+type TabKey = "cat" | "trend" | "compare" | "fixed";
 type SegMode = "m" | "q" | "y" | "custom";
 type RangeState = { from: Date; to: Date; segMode: SegMode };
 
@@ -928,6 +935,10 @@ export const StatsPage = () => {
     monthRangeOf(new Date()),
   );
   const [activeParentId, setActiveParentId] = useState<number | null>(null);
+  // 카테고리 탭 도넛의 보기 — 전체 / 고정 제외 / 고정만. 고정·변동 탭은 이 값과 무관하게 셋을 다 보여 준다.
+  const [fixedView, setFixedView] = useState<FixedView>("all");
+  // 거래를 고정으로 정리하는 대화상자(고정·변동 탭과 카테고리 탭이 함께 연다).
+  const [manageOpen, setManageOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   // 카테고리 추이 막대 — 터치/호버 중인 월 index (상세 툴팁 노출용)
   const [catActiveIdx, setCatActiveIdx] = useState<number | null>(null);
@@ -1042,11 +1053,18 @@ export const StatsPage = () => {
         };
         map.set(groupRowId, row);
       }
-      row.amount += c.totalAmount;
+      row.amount += amountFor(
+        splitFixed(c.totalAmount, c.fixedAmount),
+        fixedView,
+      );
       if (c.parentCategoryRowId != null) row.hasChildren = true;
     }
-    return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
-  }, [periodBreakdown, categoryById, t]);
+    // 고정 제외·고정만 보기에서는 몫이 0 인 카테고리를 뺀다 — 0원 조각이 범례에 남으면 헷갈린다.
+    // 전체 보기는 종전 그대로 둔다(0원 카테고리가 원래 있던 적은 없지만 동작을 바꾸지 않는다).
+    return Array.from(map.values())
+      .filter((r) => fixedView === "all" || r.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
+  }, [periodBreakdown, categoryById, t, fixedView]);
 
   // 드릴 모드: 활성 부모의 자식 leaf 집계
   const drillBreakdown = useMemo<DonutRow[]>(() => {
@@ -1070,10 +1088,15 @@ export const StatsPage = () => {
         };
         map.set(c.categoryRowId, row);
       }
-      row.amount += c.totalAmount;
+      row.amount += amountFor(
+        splitFixed(c.totalAmount, c.fixedAmount),
+        fixedView,
+      );
     }
-    return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
-  }, [activeParentId, periodBreakdown, categoryById, t]);
+    return Array.from(map.values())
+      .filter((r) => fixedView === "all" || r.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
+  }, [activeParentId, periodBreakdown, categoryById, t, fixedView]);
 
   const activeParent =
     activeParentId != null
@@ -1090,6 +1113,7 @@ export const StatsPage = () => {
     { v: "cat", l: t("tab.category") },
     { v: "trend", l: t("tab.trend") },
     { v: "compare", l: t("tab.compare") },
+    { v: "fixed", l: t("tab.fixed") },
   ];
 
   // 좌우로 밀어서 탭 이동 — 칩을 눌러야만 넘어가면 한 손으로 쓰기 불편하다.
@@ -1236,7 +1260,14 @@ export const StatsPage = () => {
     period.segMode === "custom" ? t("period.custom.now") : periodLbl;
   const donutCenterLbl = isDrilled
     ? t("category.drilledCenter", { name: activeParent?.name ?? "" })
-    : t("compare.periodExpense", { period: centerPeriodLbl });
+    : t(
+        fixedView === "variable"
+          ? "category.centerVariable"
+          : fixedView === "fixed"
+            ? "category.centerFixed"
+            : "compare.periodExpense",
+        { period: centerPeriodLbl },
+      );
 
   const DonutCard = (
     // 모바일 = 카드 다이어트(flat Section) / 데스크톱 = Card.
@@ -1272,6 +1303,26 @@ export const StatsPage = () => {
       }
       action={PeriodSeg}
     >
+      {/* 같은 내용을 거르는 자리라 그 내용 바로 위에 둔다(Segmented Control 스펙). */}
+      <SegmentedControl
+        aria-label={t("fixedView.aria")}
+        value={fixedView}
+        onValueChange={(v) => {
+          setFixedView(v as FixedView);
+          setActiveParentId(null);
+        }}
+        style={{ marginBottom: 16 }}
+      >
+        <SegmentedControlItem value="all">
+          {t("fixedView.all")}
+        </SegmentedControlItem>
+        <SegmentedControlItem value="variable">
+          {t("fixedView.variable")}
+        </SegmentedControlItem>
+        <SegmentedControlItem value="fixed">
+          {t("fixedView.fixed")}
+        </SegmentedControlItem>
+      </SegmentedControl>
       {donutLoading ? (
         <div
           style={{
@@ -3906,7 +3957,7 @@ export const StatsPage = () => {
         {SavingsBars}
         {CatTrend}
       </div>
-    ) : (
+    ) : tab === "compare" ? (
       <div
         style={{
           display: "flex",
@@ -3919,6 +3970,15 @@ export const StatsPage = () => {
         {CompareCategory}
         {CompareWeekday}
       </div>
+    ) : (
+      <FixedVariableTab
+        mobile={mobile}
+        loading={rangeQ.isLoading}
+        summary={rangeQ.data}
+        categoryById={categoryById}
+        periodAction={PeriodSeg}
+        onManage={() => setManageOpen(true)}
+      />
     );
 
   // Suppress unused warning if totalIncome isn't used elsewhere
@@ -3932,10 +3992,20 @@ export const StatsPage = () => {
           ? "stats.category"
           : tab === "trend"
             ? "stats.trend"
-            : "stats.compare"
+            : tab === "compare"
+              ? "stats.compare"
+              : "stats.fixed"
       }
     >
       {ContentInner}
+      {manageOpen && (
+        <FixedBulkDialog
+          mobile={mobile}
+          startDate={startDate}
+          endDate={endDate}
+          onClose={() => setManageOpen(false)}
+        />
+      )}
     </HideCard>
   );
 

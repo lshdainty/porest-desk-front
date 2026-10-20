@@ -8,6 +8,7 @@ export {
   useExpenses,
   useCreateExpense,
   useUpdateExpense,
+  useBulkMarkFixed,
   useRefundExpense,
   useCancelRefund,
   useReplaceExpense,
