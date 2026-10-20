@@ -1715,8 +1715,10 @@ export function AddTxSheet({
         </div>
       </Field>
 
-      {/* 고정 수입·지출 — 이체에는 없다(내 통장끼리 옮기는 돈이라 합계가 안 달라진다). */}
-      {!isTransfer && (
+      {/* 고정 수입·지출 — 이체에는 없다(내 통장끼리 옮기는 돈이라 합계가 안 달라진다).
+          문자 초안도 없다: 저장이 전용 경로(`/import/sms/commit`)라 고정 표식을 못 싣는다 —
+          스위치를 두면 켜도 조용히 무시된다. 저장한 뒤 거래를 열어 켜거나 통계의 정리 화면에서 바꾼다. */}
+      {!isTransfer && !smsDraft && (
         <div
           style={{
             display: "flex",

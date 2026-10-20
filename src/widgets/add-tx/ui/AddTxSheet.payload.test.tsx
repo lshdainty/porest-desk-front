@@ -353,6 +353,13 @@ describe("고정 수입·지출", () => {
     expect(sent.update!.isFixed).toBe(false);
   });
 
+  it("문자 초안에는 스위치가 없다 — 저장 경로가 표식을 못 받아 켜도 무시된다", () => {
+    render({});
+    expect(fixedSwitch()).not.toBeNull();
+    clickButton("sms-parse");
+    expect(fixedSwitch()).toBeNull();
+  });
+
   it("새 거래도 같은 칸을 싣는다 — 기본은 변동", async () => {
     render({});
     clickButton("식비");
