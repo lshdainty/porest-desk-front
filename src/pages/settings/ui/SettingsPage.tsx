@@ -1517,7 +1517,7 @@ export function SubscriptionRow({
             letterSpacing: "-0.01em",
           }}
         >
-          그루 담다 Pro
+          담다 Pro
         </div>
         <div
           style={{

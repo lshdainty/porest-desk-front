@@ -69,7 +69,7 @@ afterEach(() => {
 function subscription(over: Partial<SubscriptionInfo>): SubscriptionInfo {
   return {
     planCode: "SECURITIES",
-    planName: "그루 담다 Pro",
+    planName: "담다 Pro",
     status: "ACTIVE",
     startedAt: "2026-09-11T12:00:00",
     currentPeriodEnd: "2026-10-11T12:00:00",
