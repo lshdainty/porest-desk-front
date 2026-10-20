@@ -21,7 +21,7 @@ import {
   vi,
 } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { __resetPointerBlockForTest } from "@/shared/lib/porest/pointer-block";
+import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
 
 declare global {

@@ -25,11 +25,11 @@ import {
 } from "./card-variants";
 
 /*
- * Porest Card — 면은 SEED Elevation · stroke.neutral-weak · Feedback(2026-10-08). 수치 원본은 porest-design
- * specs/components/card.yaml(값은 src/shared/ds/spec/card.json). porest-design recipes/shadcn/components/ui/card.tsx 를 첫 판으로
+ * Groo Card — 면은 SEED Elevation · stroke.neutral-weak · Feedback(2026-10-08). 수치 원본은 groo-design
+ * specs/components/card.yaml(값은 src/shared/ds/spec/card.json). groo-design recipes/shadcn/components/ui/card.tsx 를 첫 판으로
  * 가져왔다 — 모양(cva · 클래스 상수)은 card-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  * SEED 에는 카드 컴포넌트가 없다 — 바닥 위 흰 면 + 1px 테두리 · 그림자 없음 · 누름은 SEED 를, 머리 · 여백 · 지표 · 순자산 · 증감은
- * porest 가 정했다. 옛 변형 넷(shadow · bordered · muted · brand) · 모서리 12 · 여백 16 / 24 · 그림자 상승은 걷었다.
+ * groo 가 정했다. 옛 변형 넷(shadow · bordered · muted · brand) · 모서리 12 · 여백 16 / 24 · 그림자 상승은 걷었다.
  *
  *   Card            카드 면. variant "default"(바닥 위 흰 면 + 1px 테두리) · "hero"(순자산 — 브랜드 채움 · 흰 글자, 한 화면에 하나).
  *                   body "content"(기본 — 여백 24) · "list"(List 를 담는다 — 좌우 여백 0, 머리 위 · 좌우 24 · 아래 4, 카드 아래 12) ·

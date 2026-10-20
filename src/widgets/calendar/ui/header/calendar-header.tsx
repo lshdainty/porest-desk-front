@@ -38,7 +38,7 @@ import { useIsMobile } from "@/shared/hooks";
 import { cn } from "@/shared/lib";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
-import { useBackClose } from "@/shared/lib/porest/use-back-close";
+import { useBackClose } from "@/shared/lib/groo/use-back-close";
 
 interface IProps {
   events: IEvent[];

@@ -146,9 +146,9 @@ function buildFilename(
   const ext = SLUG_TO_EXT[format];
   const rangePart = `${range.start}_${range.end}`;
   if (format !== "EXCEL" && types.length > 1)
-    return `porest-export-${rangePart}.zip`;
+    return `groo-export-${rangePart}.zip`;
   const namePart = types.length === 1 ? TYPE_SLUG[types[0]!] : "export";
-  return `porest-${namePart}-${rangePart}.${ext}`;
+  return `groo-${namePart}-${rangePart}.${ext}`;
 }
 
 // ─── 메인 섹션 ─────────────────────────────────────────────────

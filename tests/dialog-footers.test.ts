@@ -110,7 +110,7 @@ describe("대화상자 footer 는 표준 위젯을 지난다", () => {
     // `flush`(좌우 padding 0)는 footer 밖의 광학 정렬용이다 — footer 에서 쓰면
     // 글자가 여백선에 붙는다.
     const modalFooter = readFileSync(
-      join(process.cwd(), "src/shared/ui/porest/modal-footer.tsx"),
+      join(process.cwd(), "src/shared/ui/groo/modal-footer.tsx"),
       "utf8",
     );
     expect(stripComments(modalFooter)).not.toMatch(/flush=/);

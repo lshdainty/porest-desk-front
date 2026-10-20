@@ -27,7 +27,7 @@ const HUE_NAMES = [
   "유승우",
 ];
 
-// 사진 자리 — 사람 사진처럼 칠한 그림(실제 사람 · 사진이 아니다). porest-design avatar-examples.mjs 의 photo() 와 같다
+// 사진 자리 — 사람 사진처럼 칠한 그림(실제 사람 · 사진이 아니다). groo-design avatar-examples.mjs 의 photo() 와 같다
 const photo = ([a, b, hair]: readonly [string, string, string]) =>
   `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="96" height="96" fill="url(#g)"/><circle cx="48" cy="40" r="18" fill="#f1d5bd"/><path d="M29 37c0-13 9-20 19-20s19 7 19 20c-4-4-10-6-19-6s-15 2-19 6Z" fill="${hair}"/><path d="M12 96c0-21 16-35 36-35s36 14 36 35Z" fill="#f4f4f4"/></svg>`,

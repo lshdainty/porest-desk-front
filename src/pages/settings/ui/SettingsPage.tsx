@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { isEn } from "@/shared/lib/porest/format";
+import { isEn } from "@/shared/lib/groo/format";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import {
@@ -69,9 +69,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { ALL_HIDE_CARDS } from "@/shared/lib/porest/hide-amounts-cards";
-import { useHiddenCards } from "@/shared/lib/porest/hide-amounts-core";
-import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
+import { ALL_HIDE_CARDS } from "@/shared/lib/groo/hide-amounts-cards";
+import { useHiddenCards } from "@/shared/lib/groo/hide-amounts-core";
+import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 /*
  * 비밀번호 변경 다이얼로그만 지연 로딩한다.
  *
@@ -87,8 +87,8 @@ const PasswordChangeDialog = lazy(() =>
     default: m.PasswordChangeDialog,
   })),
 );
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 type SectionId =
@@ -1517,7 +1517,7 @@ export function SubscriptionRow({
             letterSpacing: "-0.01em",
           }}
         >
-          Porest Pro
+          그루 담다 Pro
         </div>
         <div
           style={{

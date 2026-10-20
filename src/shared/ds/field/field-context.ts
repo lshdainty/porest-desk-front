@@ -2,7 +2,7 @@ import * as React from "react";
 
 /*
  * Field 문맥 — 입력 · 묶음이 Field 의 값을 받는 훅과 자소(grapheme) 셈. 컴포넌트는 field.tsx 다
- * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). porest-design recipes/shadcn/components/ui/field.tsx 에서
+ * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). groo-design recipes/shadcn/components/ui/field.tsx 에서
  * 컴포넌트가 아닌 것을 옮겨 왔다.
  *
  *   useField         Field 안이면 그 문맥, 밖이면 null — 고르는 칸(Input Button · Select)이 글자 수 · 묶음 여부를 본다

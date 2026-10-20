@@ -19,8 +19,8 @@ import {
 } from "./tooltip-variants";
 
 /*
- * Porest Tooltip — 구조는 SEED Help Bubble Tooltip(2026-10-02). 수치 원본은 porest-design specs/components/help-bubble.yaml 의
- * opens: hover(값은 src/shared/ds/spec/help-bubble.json). porest-design recipes/shadcn/components/ui/tooltip.tsx 를 첫 판으로 가져왔다.
+ * Groo Tooltip — 구조는 SEED Help Bubble Tooltip(2026-10-02). 수치 원본은 groo-design specs/components/help-bubble.yaml 의
+ * opens: hover(값은 src/shared/ds/spec/help-bubble.json). groo-design recipes/shadcn/components/ui/tooltip.tsx 를 첫 판으로 가져왔다.
  * Radix Tooltip 위에 짰고, 말풍선의 모양은 Help Bubble 의 것(BUBBLE · BubbleArrow)을 그대로 쓴다 — 한 벌이다.
  *
  *   TooltipProvider   화면에 한 번 둔다 — 하나가 열린 뒤 옆 트리거로 옮기면 기다리지 않는다. 지연 값은 고정이다(바꾸지 않는다)

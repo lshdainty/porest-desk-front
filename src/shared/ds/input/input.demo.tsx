@@ -124,7 +124,7 @@ export const InputDemo = () => (
             caption="앞 글자"
             aria-label="주소"
             prefix="https://"
-            defaultValue="porest.app"
+            defaultValue="groo.app"
           />
           <Sample
             {...combo}

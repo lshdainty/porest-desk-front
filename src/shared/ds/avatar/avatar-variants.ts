@@ -1,5 +1,5 @@
 /*
- * Porest Avatar 의 이니셜 · 이름 색 규칙 — 웹 · 앱이 같은 규칙(porest-design specs/components/avatar.md "이니셜과 이름 색").
+ * Groo Avatar 의 이니셜 · 이름 색 규칙 — 웹 · 앱이 같은 규칙(groo-design specs/components/avatar.md "이니셜과 이름 색").
  * 컴포넌트는 avatar.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). 크기 · 모양은 avatar.tsx 머리 주석.
  *
  *   avatarInitial  이니셜 — 표시 이름(앞뒤 공백만 뺀 글)의 첫 글자 하나(사용자가 보는 글자 단위 — Intl.Segmenter). 로마자는

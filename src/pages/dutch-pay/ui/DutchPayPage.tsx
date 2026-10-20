@@ -3,7 +3,7 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -31,24 +31,24 @@ import type {
 import { PARTICIPANT_NAME_MAX } from "@/entities/dutch-pay";
 import { resolveAddParticipant, splitEqually } from "../lib/participants";
 import { Button } from "@/shared/ui/button";
-import { Fab } from "@/shared/ui/porest/fab";
+import { Fab } from "@/shared/ui/groo/fab";
 import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Chip } from "@/shared/ui/chip";
-import { NameCounter } from "@/shared/ui/porest/name-counter";
+import { NameCounter } from "@/shared/ui/groo/name-counter";
 import { Field, FieldLabel } from "@/shared/ui/field";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter, ModalViewFooter } from "@/shared/ui/porest/modal-footer";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { KRW, isEn } from "@/shared/lib/porest/format";
+import { KRW, isEn } from "@/shared/lib/groo/format";
 import {
   MaskAmount,
   HideUnit,
   WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
+} from "@/shared/lib/groo/hide-amounts";
+import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 

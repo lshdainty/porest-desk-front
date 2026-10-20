@@ -13,9 +13,9 @@ import { cn } from "@/shared/lib/cn";
 import { pageBannerVariants } from "./page-banner-variants";
 
 /*
- * Porest Page Banner — 구조는 SEED Page Banner(2026-10-02). 수치 원본은 porest-design
+ * Groo Page Banner — 구조는 SEED Page Banner(2026-10-02). 수치 원본은 groo-design
  * specs/components/page-banner.yaml(값은 src/shared/ds/spec/page-banner.json).
- * porest-design recipes/shadcn/components/ui/page-banner.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 띠 변형(cva)은
+ * groo-design recipes/shadcn/components/ui/page-banner.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 띠 변형(cva)은
  * page-banner-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 페이지 맨 위(머리 바로 아래, 위에 사진이 있으면 그 아래)에 화면 폭 전체로 놓는 띠 — 그 페이지 전체의 상태를 알린다

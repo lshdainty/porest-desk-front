@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Scroll Area — 기본 스크롤 + 전역 스크롤바 한 벌(2026-10-10). 수치 원본은 porest-design specs/components/scroll-area.yaml
- * (값은 src/shared/ds/spec/scroll-area.json). porest-design recipes/shadcn/components/ui/scroll-area.tsx 를 첫 판으로 가져왔다 —
+ * Groo Scroll Area — 기본 스크롤 + 전역 스크롤바 한 벌(2026-10-10). 수치 원본은 groo-design specs/components/scroll-area.yaml
+ * (값은 src/shared/ds/spec/scroll-area.json). groo-design recipes/shadcn/components/ui/scroll-area.tsx 를 첫 판으로 가져왔다 —
  * 이 파일은 변형 정의, 컴포넌트는 scroll-area.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 스크롤은 브라우저 그대로(휠 · 키보드 · 끌기 · 관성)이고 스크롤바 모양은 컴포넌트가 아니라 src/index.css 의 전역 한 벌이다

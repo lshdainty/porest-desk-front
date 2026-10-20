@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Swipe Actions 의 모양 · 판정 — 수치 원본은 porest-design specs/components/swipe-actions.yaml
- * (값은 src/shared/ds/spec/swipe-actions.json). porest-design recipes/shadcn/components/ui/swipe-actions.tsx 를 첫 판으로
+ * Groo Swipe Actions 의 모양 · 판정 — 수치 원본은 groo-design specs/components/swipe-actions.yaml
+ * (값은 src/shared/ds/spec/swipe-actions.json). groo-design recipes/shadcn/components/ui/swipe-actions.tsx 를 첫 판으로
  * 가져왔다 — 이 파일은 모양 · 판정 정의, 컴포넌트는 swipe-actions.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

@@ -17,8 +17,8 @@ import {
 } from "./time-picker-variants";
 
 /*
- * Porest Time Picker — 구조는 SEED Time Picker(2026-10-03). 수치 원본은 porest-design specs/components/time-picker.yaml
- * (값은 src/shared/ds/spec/time-picker.json — 휠의 크기 · 색 · 띠 · 안개는 wheel-picker.yaml medium · 5칸). porest-design
+ * Groo Time Picker — 구조는 SEED Time Picker(2026-10-03). 수치 원본은 groo-design specs/components/time-picker.yaml
+ * (값은 src/shared/ds/spec/time-picker.json — 휠의 크기 · 색 · 띠 · 안개는 wheel-picker.yaml medium · 5칸). groo-design
  * recipes/shadcn/components/ui/time-picker.tsx 를 첫 판으로 가져왔다(값 · 글 · 반올림 도구는 time-picker-variants.ts).
  *
  *   TimePicker        12시간 휠 — 오전·오후 → 시 → 분. value · onValueChange 는 24시간 { hour 0 ~ 23, minute 0 ~ 59 }.

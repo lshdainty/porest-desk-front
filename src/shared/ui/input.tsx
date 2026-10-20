@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Input — porest-design specs/components/input.md SoT 기반.
+ * Groo Input — groo-design specs/components/input.md SoT 기반.
  *
  * - 높이 40px (h-10) 고정 — variant 분리 안 함 (form 안 통일 우선).
  * - 색상: surface-input(회색 채움 — 1.4.11 보강) / border-default / text-primary / placeholder text-tertiary

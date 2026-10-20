@@ -32,8 +32,8 @@ import {
 } from "./bottom-sheet-variants";
 
 /*
- * Porest Bottom Sheet — 구조는 SEED Bottom Sheet(2026-10-02). 수치 원본은 porest-design specs/components/bottom-sheet.yaml
- * (값은 src/shared/ds/spec/bottom-sheet.json). porest-design recipes/shadcn/components/ui/bottom-sheet.tsx 를 첫 판으로 가져왔다. vaul 위에 짰다.
+ * Groo Bottom Sheet — 구조는 SEED Bottom Sheet(2026-10-02). 수치 원본은 groo-design specs/components/bottom-sheet.yaml
+ * (값은 src/shared/ds/spec/bottom-sheet.json). groo-design recipes/shadcn/components/ui/bottom-sheet.tsx 를 첫 판으로 가져왔다. vaul 위에 짰다.
  *
  *   BottomSheet          화면 아래에서 올라오는 모달 — open · defaultOpen · onOpenChange · form · dirty · snapPoints
  *   BottomSheetTrigger   여는 버튼 — 닫으면 초점이 여기로 돌아온다

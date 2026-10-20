@@ -12,7 +12,7 @@ import {
 
 /*
  * 작성 중 나가기 — 바뀐 값이 있으면 닫기 전에 "작성한 내용이 사라져요" 를 묻는다(Field 의 이탈 시 안내). Dialog · Bottom Sheet 가 쓴다.
- * porest-design recipes/shadcn/components/ui/alert-dialog.tsx 의 useLeaveConfirm 을 옮겼다.
+ * groo-design recipes/shadcn/components/ui/alert-dialog.tsx 의 useLeaveConfirm 을 옮겼다.
  * 이 파일은 훅만 내보낸다(컴포넌트 파일이 아니다) — 확인창은 alert-dialog.tsx 를 부른다.
  */
 

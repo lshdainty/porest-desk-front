@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /*
- * 겹침 표면(Alert Dialog · Bottom Sheet · Dialog)이 함께 쓰는 작은 도구. porest-design recipes/shadcn/components/ui/
+ * 겹침 표면(Alert Dialog · Bottom Sheet · Dialog)이 함께 쓰는 작은 도구. groo-design recipes/shadcn/components/ui/
  * {alert-dialog,bottom-sheet,dialog}.tsx 가 파일마다 되풀이하던 것을 한 곳에 모았다.
  */
 

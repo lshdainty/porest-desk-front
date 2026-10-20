@@ -6,7 +6,7 @@ import type {
   AxiosResponse,
 } from "axios";
 import { toast } from "sonner";
-import { rememberCurrentPath } from "@/shared/lib/porest/login-redirect";
+import { rememberCurrentPath } from "@/shared/lib/groo/login-redirect";
 import { userFacingMessage } from "./error-message";
 
 const AUTH_FLAG_KEY = "authenticated";

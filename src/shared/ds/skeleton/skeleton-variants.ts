@@ -1,6 +1,6 @@
 /*
- * Porest Skeleton — 기다리는 영역의 시간표. 수치 원본은 porest-design specs/components/skeleton.yaml 의 region
- * (값은 src/shared/ds/spec/skeleton.json). porest-design recipes/shadcn/components/ui/skeleton.tsx 를 첫 판으로
+ * Groo Skeleton — 기다리는 영역의 시간표. 수치 원본은 groo-design specs/components/skeleton.yaml 의 region
+ * (값은 src/shared/ds/spec/skeleton.json). groo-design recipes/shadcn/components/ui/skeleton.tsx 를 첫 판으로
  * 가져왔다(앱 적용 1A) — 이 파일은 시간표 상수, 기다린 시간 훅은 use-wait-phase.ts, 컴포넌트는 skeleton.tsx 다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

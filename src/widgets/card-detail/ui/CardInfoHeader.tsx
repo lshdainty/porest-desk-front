@@ -4,7 +4,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Separator } from "@/shared/ui/separator";
 import { decodeHtml } from "@/shared/lib";
-import { money } from "@/shared/lib/porest/format";
+import { money } from "@/shared/lib/groo/format";
 import type { CardCatalogDetail } from "@/entities/card";
 
 interface Props {

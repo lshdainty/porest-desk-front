@@ -94,7 +94,7 @@ import {
 } from "./attachment-input-variants";
 
 /*
- * Porest Attachment Input — 구조는 SEED Attachment Input(2026-10-15, rootage attachment-input · -trigger · -item · -item-action-button ·
+ * Groo Attachment Input — 구조는 SEED Attachment Input(2026-10-15, rootage attachment-input · -trigger · -item · -item-action-button ·
  * -item-remove-button · -dropzone, qvism-preset recipe, React AttachmentField). 수치 원본은 specs/components/attachment-input.yaml.
  * 사진 · 파일을 골라 붙이는 칸. 사람의 프로필 사진은 Avatar 의 "사진 바꾸기", 붙은 사진을 보이기만 하는 자리는 Image Frame 이다.
  *

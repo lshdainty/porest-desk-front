@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Checkbox — 구조는 SEED Checkbox(2026-09-30). 수치 원본은 porest-design
+ * Groo Checkbox — 구조는 SEED Checkbox(2026-09-30). 수치 원본은 groo-design
  * specs/components/checkbox.yaml(값은 src/shared/ds/spec/checkbox.json).
- * porest-design recipes/shadcn/components/ui/checkbox.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
+ * groo-design recipes/shadcn/components/ui/checkbox.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
  * 컴포넌트는 checkbox.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Checkmark      칸만 — 목록 행 · 표 머리에 넣어 쓴다(누르는 영역은 행 전체가 맡는다, aria-label 필수)

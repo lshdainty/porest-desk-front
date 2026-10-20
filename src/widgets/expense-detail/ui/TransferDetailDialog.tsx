@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Repeat } from "lucide-react";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import {
   HIDE_AMOUNTS_MASK,
   useHideAmounts,
-} from "@/shared/lib/porest/hide-amounts-core";
-import { KRW, isEn } from "@/shared/lib/porest/format";
+} from "@/shared/lib/groo/hide-amounts-core";
+import { KRW, isEn } from "@/shared/lib/groo/format";
 import { formatMonthDayDow } from "@/shared/lib/date";
-import { DetailQuickAction } from "@/shared/ui/porest/detail";
+import { DetailQuickAction } from "@/shared/ui/groo/detail";
 import { useDeleteTransfer } from "@/features/asset";
 import { RecurringAddDialog } from "@/features/recurring-transaction/ui/RecurringAddDialog";
 import type { AssetTransfer } from "@/entities/asset";

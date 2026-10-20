@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Notification Badge — 구조는 SEED Notification Badge(2026-10-03). 수치 원본은 porest-design
+ * Groo Notification Badge — 구조는 SEED Notification Badge(2026-10-03). 수치 원본은 groo-design
  * specs/components/notification-badge.yaml(값은 src/shared/ds/spec/notification-badge.json).
- * porest-design recipes/shadcn/components/ui/notification-badge.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의와
+ * groo-design recipes/shadcn/components/ui/notification-badge.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의와
  * 숫자 표기 규칙, 컴포넌트는 notification-badge.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   NotificationBadge         붙을 대상(아이콘 · 글)을 감싸고 그 상자 위에 점 · 숫자를 겹쳐 놓는다 — 자리를 차지하지 않아

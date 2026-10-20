@@ -3,8 +3,8 @@ import * as RechartsPrimitive from "recharts";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Chart — porest-design specs/components/chart.md SoT 기반.
- * Phase 2 마이그레이션: porest tooltip 시각 토큰 + desk-front 구조 보존.
+ * Groo Chart — groo-design specs/components/chart.md SoT 기반.
+ * Phase 2 마이그레이션: groo tooltip 시각 토큰 + desk-front 구조 보존.
  *
  * - recharts 래퍼. ChartContainer + ChartTooltip + ChartLegend 조립.
  * - chart 색상은 토큰(--color-chart-1 ~ --color-chart-5, ChartStyle로 주입).

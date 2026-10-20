@@ -16,8 +16,8 @@ import {
 } from "./input-button-variants";
 
 /*
- * Porest Input Button — 구조는 SEED Input Button(React 이름 Field Button, 2026-10-01). 수치 원본은 porest-design
- * specs/components/input-button.yaml(값은 src/shared/ds/spec/input-button.json). porest-design recipes/shadcn/components/ui/
+ * Groo Input Button — 구조는 SEED Input Button(React 이름 Field Button, 2026-10-01). 수치 원본은 groo-design
+ * specs/components/input-button.yaml(값은 src/shared/ds/spec/input-button.json). groo-design recipes/shadcn/components/ui/
  * input-button.tsx 를 첫 판으로 가져왔다 — 변형(cva) · 상수는 input-button-variants.ts, 여는 자리 훅은 use-input-button-surface.ts.
  *
  * 입력칸 모양의 버튼 — 누르면 고르는 자리(달력 · 시각 휠 · 아이콘 격자 · 검색 시트)를 연다. 이 컴포넌트는 무엇을 여는지 모른다:

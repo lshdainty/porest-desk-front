@@ -1,5 +1,5 @@
 /*
- * Porest Time Picker 의 값 · 글 · 도구 — 수치 원본은 porest-design specs/components/time-picker.yaml(값은
+ * Groo Time Picker 의 값 · 글 · 도구 — 수치 원본은 groo-design specs/components/time-picker.yaml(값은
  * src/shared/ds/spec/time-picker.json). 컴포넌트는 time-picker.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   roundToStep       시각 · Date 를 분 간격에 맞춰 반올림한다(시각 전체 기준 — 9시 58분 → 10시 00분). 빈 칸을 열 때 지금을 짚는 데 쓴다

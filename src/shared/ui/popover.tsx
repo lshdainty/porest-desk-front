@@ -4,7 +4,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Popover — porest-design specs/components/popover.md SoT 기반.
+ * Groo Popover — groo-design specs/components/popover.md SoT 기반.
  *
  * - Radix Popover 베이스. 트리거 클릭 시 떠오르는 패널.
  * - composition: Popover > PopoverTrigger / PopoverAnchor + PopoverContent

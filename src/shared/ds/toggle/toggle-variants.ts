@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Toggle 의 클래스 — 켜고 끄는 아이콘 단추. 수치 원본은 porest-design specs/components/toggle.yaml
+ * Groo Toggle 의 클래스 — 켜고 끄는 아이콘 단추. 수치 원본은 groo-design specs/components/toggle.yaml
  * (값은 src/shared/ds/spec/toggle.json). 무엇이 언제 바뀌는지는 toggle.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

@@ -18,7 +18,7 @@ import {
   type Dir,
 } from "./slider-variants";
 
-// 구조 · 값 · 키보드 · 저장 시점은 slider-variants.ts 머리 주석과 porest-design specs/components/slider.md 가 정한다.
+// 구조 · 값 · 키보드 · 저장 시점은 slider-variants.ts 머리 주석과 groo-design specs/components/slider.md 가 정한다.
 
 type Interaction = {
   pointerId: number;

@@ -1,4 +1,4 @@
-import { formatChartAxis, isEn } from "@/shared/lib/porest/format";
+import { formatChartAxis, isEn } from "@/shared/lib/groo/format";
 
 /**
  * 지난달 대비 차액이 이보다 작으면 금액을 말하지 않고 "비슷하게 쓰고 있어요" 로 넘긴다.

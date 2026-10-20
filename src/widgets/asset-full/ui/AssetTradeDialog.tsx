@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import {
   blockNonDigitKey,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import {
   Select,
   SelectContent,
@@ -26,7 +26,7 @@ import type {
   AssetTradeFormValues,
   TradeType,
 } from "@/entities/asset";
-import { KRW } from "@/shared/lib/porest/format";
+import { KRW } from "@/shared/lib/groo/format";
 
 /**
  * 매수·매도 입력.

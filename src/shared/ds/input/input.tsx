@@ -11,9 +11,9 @@ import {
 import { AFFIX_EDGE, textInputVariants } from "./input-variants";
 
 /*
- * Porest Input(Text Input) — 구조는 SEED Text Input(2026-10-01). 수치 원본은 porest-design
+ * Groo Input(Text Input) — 구조는 SEED Text Input(2026-10-01). 수치 원본은 groo-design
  * specs/components/input.yaml(값은 src/shared/ds/spec/input.json).
- * porest-design recipes/shadcn/components/ui/input.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 상자 변형(cva)은
+ * groo-design recipes/shadcn/components/ui/input.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 상자 변형(cva)은
  * input-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 한 줄 입력칸. 라벨 · 설명 · 오류 · 글자 수는 Field 가 둘레에서 그린다 — Field 안에 두면 id · aria 를 받는다.

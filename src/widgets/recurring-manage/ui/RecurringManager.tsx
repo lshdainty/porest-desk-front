@@ -15,11 +15,11 @@ import {
 } from "lucide-react";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { renderIcon, tileRadius } from "@/shared/lib";
 import { parseLocalDate } from "@/shared/lib/date";
-import { KRW, minusOf, plusOf } from "@/shared/lib/porest/format";
-import { MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { KRW, minusOf, plusOf } from "@/shared/lib/groo/format";
+import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import {
   useDeleteRecurringTransaction,
   useRecurringTransactions,
@@ -27,7 +27,7 @@ import {
 } from "@/features/recurring-transaction";
 import { useExpenseCategories } from "@/features/expense";
 import type { RecurringTransaction } from "@/entities/recurring-transaction";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import {
   displayTitle,
   recurringAmountTone,

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
-import { useHoldIds } from "@/shared/lib/porest/use-hold-ids";
+import { usePendingIds } from "@/shared/lib/groo/use-pending-ids";
+import { useHoldIds } from "@/shared/lib/groo/use-hold-ids";
 import { invalidateFor, todoKeys } from "@/shared/config";
 import { todoApi } from "../api/todoApi";
 import type { TodoListParams } from "../api/todoApi";

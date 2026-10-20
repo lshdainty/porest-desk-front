@@ -9,8 +9,8 @@ import {
   passwordChangeErrorKey,
   useChangePasswordMutation,
 } from "@/features/user";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { useIsMobile } from "@/shared/hooks";
 import { Form } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";

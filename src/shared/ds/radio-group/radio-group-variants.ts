@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Radio — 구조는 SEED Radio(2026-09-30). 수치 원본은 porest-design
+ * Groo Radio — 구조는 SEED Radio(2026-09-30). 수치 원본은 groo-design
  * specs/components/radio-group.yaml(값은 src/shared/ds/spec/radio-group.json).
- * porest-design recipes/shadcn/components/ui/radio-group.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
+ * groo-design recipes/shadcn/components/ui/radio-group.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
  * 컴포넌트는 radio-group.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Radiomark   동그라미만 — 라벨이 따로 서는 자리에 넣어 쓴다(누르는 영역은 그 줄 전체가 맡는다, 라벨 연결 필수)

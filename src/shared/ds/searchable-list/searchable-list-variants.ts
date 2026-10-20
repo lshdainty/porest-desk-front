@@ -1,5 +1,5 @@
 /*
- * Porest Searchable List 의 줄 · 검색칸 자리 상수 — 수치 원본은 porest-design specs/components/searchable-list.yaml
+ * Groo Searchable List 의 줄 · 검색칸 자리 상수 — 수치 원본은 groo-design specs/components/searchable-list.yaml
  * (값은 src/shared/ds/spec/searchable-list.json). 줄 · 검색칸의 나머지 값은 list.yaml · input.yaml 이다.
  * 컴포넌트와 규칙은 searchable-list.tsx 머리 주석이다.
  */

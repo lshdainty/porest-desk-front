@@ -4,9 +4,9 @@ import { ImageIcon } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 
 /*
- * Porest Content Placeholder — 구조는 SEED Content Placeholder(2026-10-03). 수치 원본은 porest-design
+ * Groo Content Placeholder — 구조는 SEED Content Placeholder(2026-10-03). 수치 원본은 groo-design
  * specs/components/content-placeholder.yaml(값은 src/shared/ds/spec/content-placeholder.json).
- * porest-design recipes/shadcn/components/ui/content-placeholder.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
+ * groo-design recipes/shadcn/components/ui/content-placeholder.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * 이미지가 없거나 불러오지 못했을 때 그 자리를 채우는 대체 그림 — 옅은 면 가운데에 무엇이 없는지 말하는 선 아이콘.
  * 불러오는 동안에는 쓰지 않는다 — 같은 모서리 · 크기의 Skeleton 이다(불러오는 중과 없음을 같은 그림으로 두지 않는다).
  * 깨진 이미지 아이콘 · 대체 글 · 투명한 빈 칸 · 외부 주소의 기본 그림 대신 이것으로 바꾼다.

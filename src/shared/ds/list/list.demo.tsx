@@ -98,7 +98,7 @@ const KindsDemo = () => {
           <Specimen spec="list" combo={{}}>
             <List aria-label="계정 정보">
               <ListItem title="가입일" suffix="2026년 3월 2일" />
-              <ListItem title="이메일" suffix="porest@example.com" />
+              <ListItem title="이메일" suffix="groo@example.com" />
             </List>
           </Specimen>
         </Cell>
@@ -305,7 +305,7 @@ const PrefixDemo = () => (
                     포
                   </span>
                 }
-                title="포레스트은행 입출금"
+                title="그루은행 입출금"
                 detail="1,284,000원"
                 suffix={<ChevronRight />}
               />
@@ -323,7 +323,7 @@ const PrefixDemo = () => (
                     className="inline-block h-9 w-14 shrink-0 rounded-r1_5 bg-bg-neutral-weak"
                   />
                 }
-                title="포레스트 체크카드"
+                title="그루 체크카드"
                 detail="전월 30만원 이상 · 할인형"
                 suffix={<ChevronRight />}
               />
@@ -433,7 +433,7 @@ const PrefixDemo = () => (
                 detail={
                   <TagGroup size="t3">
                     <TagGroupItem>쇼핑</TagGroupItem>
-                    <TagGroupItem>포레스트 체크카드</TagGroupItem>
+                    <TagGroupItem>그루 체크카드</TagGroupItem>
                     <TagGroupItem>10월 2일 오후 2:30</TagGroupItem>
                   </TagGroup>
                 }
@@ -508,7 +508,7 @@ const AlignHighlightDemo = () => (
                   </Tile>
                 }
                 title="안 읽음 · 카드 결제 예정"
-                detail="내일 포레스트 체크카드 214,000원"
+                detail="내일 그루 체크카드 214,000원"
                 suffix="1시간 전"
               />
             </List>
@@ -822,7 +822,7 @@ const HeaderDividerDemo = () => (
           <Specimen spec="list" combo={{}}>
             <List aria-label="구분선 없음">
               <ListItem title="가입일" suffix="2026년 3월 2일" />
-              <ListItem title="이메일" suffix="porest@example.com" />
+              <ListItem title="이메일" suffix="groo@example.com" />
             </List>
           </Specimen>
         </Cell>
@@ -831,7 +831,7 @@ const HeaderDividerDemo = () => (
             <List aria-label="구분선 · 줄 폭 전체">
               <ListItem title="가입일" suffix="2026년 3월 2일" />
               <ListDivider />
-              <ListItem title="이메일" suffix="porest@example.com" />
+              <ListItem title="이메일" suffix="groo@example.com" />
             </List>
           </Specimen>
         </Cell>
@@ -1139,7 +1139,7 @@ const WorstDemo = () => (
               detail={
                 <TagGroup size="t3">
                   <TagGroupItem>쇼핑</TagGroupItem>
-                  <TagGroupItem>포레스트 체크카드 · 개인 사업자</TagGroupItem>
+                  <TagGroupItem>그루 체크카드 · 개인 사업자</TagGroupItem>
                   <TagGroupItem>2026년 10월 2일 오후 2:30</TagGroupItem>
                 </TagGroup>
               }
@@ -1176,7 +1176,7 @@ const WorstDemo = () => (
           <List aria-label="가장 나쁜 값 · 글 값 320">
             <ListItem
               title="이메일"
-              suffix="porest.desk.design.system.long.address@example-company-domain.co.kr"
+              suffix="groo.desk.design.system.long.address@example-company-domain.co.kr"
             />
             <ListItem
               title="계좌번호"
@@ -1189,9 +1189,9 @@ const WorstDemo = () => (
         <Specimen spec="list" combo={{}}>
           <List aria-label="가장 나쁜 값 · 긴 제목과 긴 글 값 360">
             <ListItem
-              title="포레스트 체크카드 · 개인 사업자 연결 계정 이름"
-              detail="porest-desk-design-system-account-identifier-0123456789"
-              suffix="주식회사 포레스트 데스크 디자인 시스템 연구소 대표자 명의"
+              title="그루 체크카드 · 개인 사업자 연결 계정 이름"
+              detail="groo-desk-design-system-account-identifier-0123456789"
+              suffix="주식회사 그루 담다 디자인 시스템 연구소 대표자 명의"
             />
           </List>
         </Specimen>
@@ -1208,7 +1208,7 @@ const WorstDemo = () => (
             />
             <ListItem
               title="이메일"
-              suffix="porest.desk.design.system@example-company-domain.co.kr"
+              suffix="groo.desk.design.system@example-company-domain.co.kr"
             />
           </List>
         </Specimen>

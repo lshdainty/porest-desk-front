@@ -33,7 +33,7 @@ import {
 } from "./side-navigation-variants";
 
 /*
- * Porest Side Navigation — 구조는 SEED Side Navigation(2026-10-04). 수치 원본은 porest-design specs/components/side-navigation.yaml
+ * Groo Side Navigation — 구조는 SEED Side Navigation(2026-10-04). 수치 원본은 groo-design specs/components/side-navigation.yaml
  * (값은 src/shared/ds/spec/side-navigation.json). recipes/shadcn/components/ui/side-navigation.tsx 를 첫 판으로 가져왔다.
  * 옛 Sidebar(shadcn — 256 · 48 · 모바일 Sheet · 항목 32 · ⌘B · 쿠키 · floating · inset)를 대신한다. 항목 · 하위 항목은 side-navigation-item.tsx.
  *
@@ -195,7 +195,7 @@ SideNavigation.displayName = "SideNavigation";
 
 // ── 머리 ─────────────────────────────────────────────────────
 export interface SideNavigationHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** 서비스 마크(24) + 이름("Porest Desk" · "Porest HR") — 누르지 않는다(홈은 첫 항목) */
+  /** 서비스 마크(24) + 이름("그루 담다" · "그루 이음") — 누르지 않는다(홈은 첫 항목) */
   logo?: React.ReactNode;
 }
 

@@ -152,7 +152,7 @@ import {
 
 /*
  * 카테고리 아이콘 세트의 그림 — 저장 값(lucide 이름, kebab) → lucide 컴포넌트.
- * 세트(id · 묶음 · 이름 · 찾는 말)의 원본은 src/shared/ds/spec/category-icons.json(porest-design category-icons.yaml)이고 category-icons.ts 가
+ * 세트(id · 묶음 · 이름 · 찾는 말)의 원본은 src/shared/ds/spec/category-icons.json(groo-design category-icons.yaml)이고 category-icons.ts 가
  * 그 JSON 을 그대로 읽는다. 이 표는 그 id 에 그림을 잇는 것뿐이다 — 148개를 낱개로 import 해 쓰는 것만 번들에 들어간다
  * (lucide 전체 · DynamicIcon 의 비동기 조각 148개를 격자를 그릴 때 받지 않는다). id 가 JSON 과 어긋나면 icon-picker.test.tsx 가 멈춘다.
  * id → 이름은 규칙대로(kebab → Pascal — "chart-line" → ChartLine, "dice-5" → Dice5)이고 세트가 바뀌면 이 표도 같이 고친다.

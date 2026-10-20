@@ -1,8 +1,8 @@
 /*
- * Porest Color Swatch — 카테고리 · 태그 · 라벨 · 저축 목표 · 캘린더에 붙일 색을 고르는 묶음(2026-10-09). 수치 원본은 porest-design specs/components/color-swatch.yaml(값은 src/shared/ds/spec/color-swatch.json).
- * porest-design recipes/shadcn/components/ui/color-swatch.tsx 를 첫 판으로 가져왔다 — 이 파일은 색 이름 · 차례 · 배정 · 칸 클래스 · 대비 셈, 컴포넌트는 color-swatch.tsx 다
- * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). ChartColor 는 차트 색 열 이름 — 이 레포에는 shared/ds 차트가 아직 없어 여기서 정한다(색은 porest-tokens.css 의 --color-chart-* — 다크는 토큰이 스스로 바꾼다).
- * SEED 에는 색 고르기 부품이 없다 — 칸의 칠 · 크기 · 고른 표시 · 키보드 · 새 항목의 첫 색은 porest 가 정했다(사용자 결정 12C · 13B · 14B).
+ * Groo Color Swatch — 카테고리 · 태그 · 라벨 · 저축 목표 · 캘린더에 붙일 색을 고르는 묶음(2026-10-09). 수치 원본은 groo-design specs/components/color-swatch.yaml(값은 src/shared/ds/spec/color-swatch.json).
+ * groo-design recipes/shadcn/components/ui/color-swatch.tsx 를 첫 판으로 가져왔다 — 이 파일은 색 이름 · 차례 · 배정 · 칸 클래스 · 대비 셈, 컴포넌트는 color-swatch.tsx 다
+ * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). ChartColor 는 차트 색 열 이름 — 이 레포에는 shared/ds 차트가 아직 없어 여기서 정한다(색은 groo-tokens.css 의 --color-chart-* — 다크는 토큰이 스스로 바꾼다).
+ * SEED 에는 색 고르기 부품이 없다 — 칸의 칠 · 크기 · 고른 표시 · 키보드 · 새 항목의 첫 색은 groo 가 정했다(사용자 결정 12C · 13B · 14B).
  * 옛 Color Swatch(폭을 나눈 정사각 칸 · currentColor 테두리 · 마우스 1.05배 · options 를 받는 묶음)를 대신한다.
  *
  *   ColorSwatchGroup   묶음(radiogroup · 5 × 2). value · defaultValue(ChartColor 또는 "current" — 지금 색 칸, null 이면 고른 칸 없음) ·
@@ -15,7 +15,7 @@
  *
  * 칸: 원 40(누르는 44 — ::before) · 5개씩 두 줄 · 사이 12(폭과 상관없이 248), v110 차트 색(라이트 700 · 다크 800-dark)으로 꽉 채운다 —
  *   옅게 섞은 칸 · v111 옅은 바탕 칸은 쓰지 않는다. 칸의 이름은 색 이름("빨강") — "색상 N" · hex 를 이름으로 두지 않는다. 보조 기술이
- *   읽고, 마우스를 올리거나 키보드 초점이 오면 같은 이름의 툴팁(porest Tooltip — 네이티브 title 은 쓰지 않는다, Icon Picker 칸과 같다)이
+ *   읽고, 마우스를 올리거나 키보드 초점이 오면 같은 이름의 툴팁(groo Tooltip — 네이티브 title 은 쓰지 않는다, Icon Picker 칸과 같다)이
  *   뜬다 — 색으로 가리기 어려운 사람도 이름을 본다. 지금 색 칸은 이름이 아래 글로 보이므로 툴팁을 두지 않는다. 호버는 모양이 바뀌지
  *   않는다(커서만).
  * 고름: 칸 바깥 2 띄운 2px 고리(stroke-neutral-contrast — Select Box 의 고른 테두리와 같은 색, outline) + 가운데 체크 16 · 선 2.5
@@ -34,7 +34,7 @@
  * 막힘: 색은 그대로 두고 누르기만 막는다(진짜 disabled — Tab 에서 빠진다). 고른 칸의 고리는 stroke-neutral-solid 로 남긴다.
  */
 
-/** 차트 색 열 이름 — v110 10색. 값은 porest-tokens.css 의 --color-chart-<이름>(라이트 700 · 다크 800-dark) */
+/** 차트 색 열 이름 — v110 10색. 값은 groo-tokens.css 의 --color-chart-<이름>(라이트 700 · 다크 800-dark) */
 export type ChartColor =
   | "red"
   | "orange"

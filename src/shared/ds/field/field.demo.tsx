@@ -59,7 +59,7 @@ export const FieldDemo = () => (
                   invalid
                   errorMessage="이미 쓰고 있는 아이디예요."
                 >
-                  <Input defaultValue="porest" />
+                  <Input defaultValue="groo" />
                 </Field>
               </Specimen>
             </div>

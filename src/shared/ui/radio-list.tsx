@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * RadioList — porest-design spec radio-list.md SoT 정합.
+ * RadioList — groo-design spec radio-list.md SoT 정합.
  * full-width row stack + divide-y single-select.
  * 사용처: 통화/언어/국가/지역 등 목록형 선택.
  */

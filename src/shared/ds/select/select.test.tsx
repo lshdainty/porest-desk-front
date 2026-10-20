@@ -192,7 +192,7 @@ describe("Select — 트리거", () => {
       <Select aria-label="긴 이름" defaultValue="long">
         <SelectItem
           value="long"
-          label="주식회사 포레스트 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드"
+          label="주식회사 그루 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드"
         />
       </Select>,
     );
@@ -507,7 +507,7 @@ describe("Select — 목록", () => {
       <Select aria-label="긴 이름">
         <SelectItem
           value="long"
-          label="주식회사 포레스트 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드"
+          label="주식회사 그루 디자인 시스템 운영팀 서울 본사 3층 공용 회의실 예약 정산용 법인카드"
           description="설명도 아주 길면 목록 안에서 줄바꿈돼요"
         />
       </Select>,

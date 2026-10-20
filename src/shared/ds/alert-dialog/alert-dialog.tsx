@@ -22,8 +22,8 @@ import {
 } from "./alert-dialog-variants";
 
 /*
- * Porest Alert Dialog — 구조는 SEED Alert Dialog(2026-10-02). 수치 원본은 porest-design specs/components/alert-dialog.yaml
- * (값은 src/shared/ds/spec/alert-dialog.json). porest-design recipes/shadcn/components/ui/alert-dialog.tsx 를 첫 판으로 가져왔다.
+ * Groo Alert Dialog — 구조는 SEED Alert Dialog(2026-10-02). 수치 원본은 groo-design specs/components/alert-dialog.yaml
+ * (값은 src/shared/ds/spec/alert-dialog.json). groo-design recipes/shadcn/components/ui/alert-dialog.tsx 를 첫 판으로 가져왔다.
  *
  *   AlertDialog              되돌릴 수 없는 일 앞에서 묻는 확인창 — open · defaultOpen · onOpenChange
  *   AlertDialogTrigger       여는 버튼 — 닫으면 초점이 여기로 돌아온다

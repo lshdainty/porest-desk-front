@@ -49,9 +49,9 @@ import {
   LedgerSumBtn,
   LedgerTotal,
   LedgerWeek,
-} from "@/shared/ui/porest/ledger";
-import { useLedgerScroll } from "@/shared/ui/porest/use-ledger-scroll";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+} from "@/shared/ui/groo/ledger";
+import { useLedgerScroll } from "@/shared/ui/groo/use-ledger-scroll";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
 import {
   constellationColorVar,
   constellationName,

@@ -13,7 +13,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { KRW, formatDay, isEn, minusOf } from "@/shared/lib/porest/format";
+import { KRW, formatDay, isEn, minusOf } from "@/shared/lib/groo/format";
 import {
   INSIGHT_SAME_MAX,
   insightDiffAmount,
@@ -26,12 +26,12 @@ import {
 import { monthFromQuery } from "@/pages/expense/lib/month-query";
 import { useExpenseSwipeActions } from "@/pages/expense/lib/use-expense-swipe-actions";
 import { formatMonthDayWeekday, formatYearMonth } from "@/shared/lib/date";
-import { MaskAmount, WonUnit } from "@/shared/lib/porest/hide-amounts";
+import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import {
   HIDE_AMOUNTS_MASK,
   useHideAmounts,
   wonPre,
-} from "@/shared/lib/porest/hide-amounts-core";
+} from "@/shared/lib/groo/hide-amounts-core";
 import { Button } from "@/shared/ui/button";
 import {
   LedgerCalendar,
@@ -62,16 +62,16 @@ import {
   LedgerSummaryRow,
   LedgerTotal,
   LedgerWeek,
-} from "@/shared/ui/porest/ledger";
-import { useLedgerScroll } from "@/shared/ui/porest/use-ledger-scroll";
+} from "@/shared/ui/groo/ledger";
+import { useLedgerScroll } from "@/shared/ui/groo/use-ledger-scroll";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
 import { ExpenseRow } from "@/entities/expense";
 import { TransferRow } from "@/entities/asset";
 import { TransferDetailDialog } from "@/widgets/expense-detail/ui/TransferDetailDialog";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 // 기존 캘린더 소스 — 홈 > 캘린더 (CalendarPage) 가 사용하는 CalendarMonthView 를
 // 그대로 활용. expense → IEvent 변환은 convertExpenseToIEvent 가 처리 (income/
 // expense color 분기 + 금액 title parse 모두 CalendarMonthView 자체 로직).
@@ -84,7 +84,7 @@ import {
   useExpenseCategories,
 } from "@/features/expense";
 import { SwipeActions } from "@/shared/ui/swipe-actions";
-import type { HideCardKey } from "@/shared/lib/porest/hide-amounts-cards";
+import type { HideCardKey } from "@/shared/lib/groo/hide-amounts-cards";
 
 /**
  * 캘린더 셀의 일별 지출·수입은 두 카드에 걸친다 — '캘린더 금액' 이면서 '거래 목록' 의
@@ -2114,7 +2114,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               onClick={() => setExpanded((v) => !v)}
               aria-label={expanded ? t("viewCalendar") : t("viewList")}
             />
-            {/* 차트형 셀 툴팁 — 통계 PorestChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
+            {/* 차트형 셀 툴팁 — 통계 GrooChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
             {cellTip && tipDay && (
               <LedgerCellTip
                 left={cellTip.left}

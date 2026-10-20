@@ -3,12 +3,12 @@ import { Plus, X } from "lucide-react";
 import {
   blockNonDigitKey,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
 import type { Asset } from "@/entities/asset";
 import type { ExpenseCategory, ExpenseType } from "@/entities/expense";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Button } from "@/shared/ui/button";
 import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
 import { Input } from "@/shared/ui/input";

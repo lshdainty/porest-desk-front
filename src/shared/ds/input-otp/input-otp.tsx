@@ -6,7 +6,7 @@ import { Input, type InputProps } from "@/shared/ds/input";
 
 import { digitsOf, remainingOf } from "./input-otp-variants";
 
-// 숫자 뽑기 · 붙여넣기 · 다시 받기의 규칙은 input-otp-variants.ts 머리 주석과 porest-design specs/components/input-otp.md 가 정한다.
+// 숫자 뽑기 · 붙여넣기 · 다시 받기의 규칙은 input-otp-variants.ts 머리 주석과 groo-design specs/components/input-otp.md 가 정한다.
 
 export interface InputOTPProps extends Omit<
   InputProps,

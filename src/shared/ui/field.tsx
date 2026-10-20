@@ -113,7 +113,7 @@ function FieldLabel({
     <Label
       data-slot="field-label"
       className={cn(
-        // POREST .p-field__label spec: 12px / 600 / secondary / -0.005em
+        // 그루 .p-field__label spec: 12px / 600 / secondary / -0.005em
         "text-xs font-semibold tracking-[-0.005em] text-[var(--fg-secondary)]",
         "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>[data-slot=field]]:p-4",

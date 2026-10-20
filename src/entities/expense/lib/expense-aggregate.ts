@@ -1,4 +1,4 @@
-import { isScheduledDate } from "@/shared/lib/porest/ledger-format";
+import { isScheduledDate } from "@/shared/lib/groo/ledger-format";
 import type { Expense } from "../model/types";
 
 /*

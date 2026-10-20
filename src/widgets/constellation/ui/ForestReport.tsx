@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
 import {
   constellationColorVar,
   constellationName,

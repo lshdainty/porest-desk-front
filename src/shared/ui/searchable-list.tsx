@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/index";
 import { Input } from "@/shared/ui/input";
 
 /*
- * SearchableList — porest-design spec searchable-list.md SoT 정합.
+ * SearchableList — groo-design spec searchable-list.md SoT 정합.
  * header (label + 총 개수) + search input + scrollable result list (single-select pattern).
  * 사용처: 카드 카탈로그·은행·증권사·종목 등 대량 옵션 + 검색.
  */

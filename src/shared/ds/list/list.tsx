@@ -35,7 +35,7 @@ import {
   listVariants,
 } from "./list-variants";
 
-// 구조 · 크기 · 상태 · 하위 줄은 list-variants.ts 머리 주석과 porest-design specs/components/list.yaml · list-header.yaml 이 정한다.
+// 구조 · 크기 · 상태 · 하위 줄은 list-variants.ts 머리 주석과 groo-design specs/components/list.yaml · list-header.yaml 이 정한다.
 //
 // 줄의 종류 — 보기만 하는 줄(ListItem) · 누르는 줄(ListButtonItem) · 링크 줄(ListLinkItem) · 컨트롤 줄(ListSwitchItem · ListCheckItem ·
 // ListRadioItem). 누르는 줄만 호버 · 누름 · 포커스를 가진다. 화면을 옮기는 줄에만 오른쪽 화살표를 단다.

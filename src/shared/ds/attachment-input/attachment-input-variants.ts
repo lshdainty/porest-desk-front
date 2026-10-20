@@ -6,7 +6,7 @@ import type {
 } from "./attachment-input";
 
 /*
- * Porest Attachment Input 의 모양 · 검사 — 수치 원본은 porest-design specs/components/attachment-input.yaml
+ * Groo Attachment Input 의 모양 · 검사 — 수치 원본은 groo-design specs/components/attachment-input.yaml
  * (값은 src/shared/ds/spec/attachment-input.json). 컴포넌트와 규칙은 attachment-input.tsx 머리 주석이다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */

@@ -3,8 +3,8 @@ import { parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/ui/button";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { formatMonthDayWeekday } from "@/shared/lib/date";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 

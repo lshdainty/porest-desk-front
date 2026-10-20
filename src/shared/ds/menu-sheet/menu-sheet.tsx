@@ -28,8 +28,8 @@ import { isPressKey, measurePress } from "./press";
 import { usePendingSelect } from "./use-pending-select";
 
 /*
- * Porest Menu Sheet — 구조는 SEED Swipeable Menu Sheet(2026-10-02). 수치 원본은 porest-design specs/components/menu-sheet.yaml
- * (값은 src/shared/ds/spec/menu-sheet.json). porest-design recipes/shadcn/components/ui/menu-sheet.tsx 를 첫 판으로 가져왔다.
+ * Groo Menu Sheet — 구조는 SEED Swipeable Menu Sheet(2026-10-02). 수치 원본은 groo-design specs/components/menu-sheet.yaml
+ * (값은 src/shared/ds/spec/menu-sheet.json). groo-design recipes/shadcn/components/ui/menu-sheet.tsx 를 첫 판으로 가져왔다.
  * Bottom Sheet(src/shared/ds/bottom-sheet — vaul) 위에 짰다.
  *
  *   MenuSheet          화면 아래에서 올라오는 동작 목록 — open · defaultOpen · onOpenChange

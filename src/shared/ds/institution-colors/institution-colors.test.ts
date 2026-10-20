@@ -1,4 +1,4 @@
-// 기관 색 표 찾기 — porest-design specs/components/institution-colors.yaml(JSON 사본) 그대로인지와 찾는 순서.
+// 기관 색 표 찾기 — groo-design specs/components/institution-colors.yaml(JSON 사본) 그대로인지와 찾는 순서.
 import { describe, expect, it } from "vitest";
 
 import spec from "@/shared/ds/spec/institution-colors.json";

@@ -1,6 +1,6 @@
 /*
  * Floating Action Button 의 클래스 — 컴포넌트 파일은 컴포넌트만 내보낸다(빠른 새로 고침).
- * 값의 원본은 porest-design specs/components/floating-action-button.yaml(src/shared/ds/spec/floating-action-button.json).
+ * 값의 원본은 groo-design specs/components/floating-action-button.yaml(src/shared/ds/spec/floating-action-button.json).
  * 20 은 화면 끝 · 아래에서의 거리(토큰 spacing-x5 와 같다 — 안전 영역을 더하는 식이라 calc 안에 숫자로 적는다).
  */
 export const ROOT = [

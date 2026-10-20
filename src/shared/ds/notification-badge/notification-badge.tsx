@@ -8,7 +8,7 @@ import {
 } from "./notification-badge-variants";
 
 // 크기 · 붙는 자리 · 숫자 표기는 notification-badge-variants.ts 머리 주석과
-// porest-design specs/components/notification-badge.yaml 이 정한다.
+// groo-design specs/components/notification-badge.yaml 이 정한다.
 
 // 붙을 대상 — 상자가 곧 아이콘 · 글의 상자다(inline-flex: 아이콘이면 아이콘 크기, 글이면 글 줄 상자)
 const TARGET = "relative inline-flex";

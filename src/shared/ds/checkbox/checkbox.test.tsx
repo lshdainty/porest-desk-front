@@ -454,7 +454,7 @@ describe("CheckboxGroup", () => {
       "내보낼 데이터를 하나 이상 골라 주세요.",
     ]);
     // 오류는 칸마다 aria-invalid 로 건다 — role=group 은 aria-invalid 를 받지 않아 묶음에는 걸지 않는다(SEED useFieldset,
-    // porest-design 2026-10-08). 모양은 바뀌지 않는다 — 오류는 묶음 아래 글이다
+    // groo-design 2026-10-08). 모양은 바뀌지 않는다 — 오류는 묶음 아래 글이다
     expect(group.hasAttribute("aria-invalid")).toBe(false);
     expect(group.hasAttribute("aria-required")).toBe(false);
     expect(

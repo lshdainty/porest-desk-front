@@ -1,10 +1,10 @@
 import spec from "@/shared/ds/spec/institution-colors.json";
 
 /*
- * Porest 기관 색 — 은행 · 증권 · 카드사 · 코인 · 금 기관마다 색 하나와 그 위 글자색(2026-10-04 사용자 결정).
- * 원본은 porest-design specs/components/institution-colors.yaml 이고, 이 레포는 그 JSON(src/shared/ds/spec/institution-colors.json —
+ * Groo 기관 색 — 은행 · 증권 · 카드사 · 코인 · 금 기관마다 색 하나와 그 위 글자색(2026-10-04 사용자 결정).
+ * 원본은 groo-design specs/components/institution-colors.yaml 이고, 이 레포는 그 JSON(src/shared/ds/spec/institution-colors.json —
  * npm run design:sync 가 가져온다)을 그대로 읽는다. 표를 TS 로 한 번 더 옮겨 적지 않는다(표가 둘이 되면 같은 회사가 다른 색이 된다 —
- * 지금 제품의 두 표가 그랬다). 표를 바꾸려면 porest-design 의 YAML 을 고치고 다시 가져온다.
+ * 지금 제품의 두 표가 그랬다). 표를 바꾸려면 groo-design 의 YAML 을 고치고 다시 가져온다.
  *
  * 쓰는 곳 — Logo Tile 의 첫 글자 타일(face="institution") · 그림 없는 카드의 면(CardArt).
  * 기관의 브랜드 색이라 디자인 토큰이 아니다 — 모드를 따르지 않는다(라이트 · 다크 같다). 브랜드 hex 를 화면 · 컴포넌트에 따로 적지 않는다.

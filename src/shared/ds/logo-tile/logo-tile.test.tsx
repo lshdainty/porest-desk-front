@@ -110,7 +110,7 @@ describe("면과 첫 글자", () => {
 
 describe("그림", () => {
   it("그림이 오기 전에는 첫 글자 — 판은 보이지 않는다(받기는 한다), 오면 첫 글자를 덮는다", () => {
-    const el = render(<LogoTile name="포레스트" face="name" src="a.svg" />);
+    const el = render(<LogoTile name="그루" face="name" src="a.svg" />);
     expect(initial(el)).not.toBeNull();
     const plate = el.querySelector("[data-slot=logo-tile-plate]")!;
     expect(plate.className).toContain("invisible");

@@ -4,7 +4,7 @@ import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Scroll Area — porest-design specs/components/scroll-area.md SoT 기반.
+ * Groo Scroll Area — groo-design specs/components/scroll-area.md SoT 기반.
  *
  * - Radix ScrollAreaPrimitive — 커스텀 스타일 스크롤바
  * - 사용: <ScrollArea className="h-72 w-48 rounded-md border">...</ScrollArea>

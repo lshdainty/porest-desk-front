@@ -17,8 +17,8 @@ import { TOOLTIP_SURFACE, formatWon } from "./chart-variants";
 import { useEscapeFirst } from "./use-escape-first";
 
 /*
- * Porest Chart 의 열지도 — 요일 × 시간 같은 두 축의 세기. 수치 원본은 porest-design specs/components/chart.yaml 의 heatmapCell · heatmapValue.
- * porest-design recipes/shadcn/components/ui/chart.tsx 의 ChartHeatmap 을 파일로 나눴다(chart.tsx 는 컴포넌트가 많다).
+ * Groo Chart 의 열지도 — 요일 × 시간 같은 두 축의 세기. 수치 원본은 groo-design specs/components/chart.yaml 의 heatmapCell · heatmapValue.
+ * groo-design recipes/shadcn/components/ui/chart.tsx 의 ChartHeatmap 을 파일로 나눴다(chart.tsx 는 컴포넌트가 많다).
  *
  * 왼쪽 시간대 라벨 열 56(이름 13 · 700 + 시간 11 · fg-neutral-subtle) + 요일 칸, 위 요일 머리 12 · fg-neutral-subtle. 칸은 정사각형 · 모서리 4 · 사이 6.
  * 세기 다섯 — bg-brand-solid 를 카드 면에 18 · 35 · 55 · 75 · 100% 섞는다(가장 큰 값의 8 · 22 · 45 · 75% 에서 끊는다), 값이 없으면 bg-neutral-weak.

@@ -21,7 +21,7 @@ export const toggleVariants = cva(
           "bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary",
         outline:
           "border border-border-default bg-transparent text-text-secondary hover:bg-surface-input hover:text-text-primary data-[state=on]:bg-surface-input data-[state=on]:text-text-primary data-[state=on]:border-border-default-strong",
-        // POREST .p-seg__btn (solid) — segmented item, active 강조 톤.
+        // 그루 .p-seg__btn (solid) — segmented item, active 강조 톤.
         // spec toggle-group.md visual=solid 정합 — primary 채움 + 흰글씨 + bold + shadow.
         // 앱 PSegmented 정합 — active 는 primary 채움 + 흰글씨 + semi(600), shadow 없음.
         // (spec toggle-group.md solid 은 700+shadow 였으나 desk 구독 세그먼트 기준 앱 룩 채택)
@@ -31,7 +31,7 @@ export const toggleVariants = cva(
           "hover:bg-transparent hover:text-text-secondary",
           "data-[state=on]:bg-bg-brand-solid data-[state=on]:text-text-on-accent",
         ].join(" "),
-        // POREST .p-seg__btn--subtle — segmented item, 토스 절제 톤.
+        // 그루 .p-seg__btn--subtle — segmented item, 토스 절제 톤.
         // spec toggle-group.md visual=subtle 정합 — surface-input 채움 + 검정 + semi.
         "segmented-subtle": [
           "flex-1 gap-0 rounded-[var(--radius-sm)] bg-transparent px-3 py-1 whitespace-nowrap",

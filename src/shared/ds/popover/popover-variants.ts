@@ -1,6 +1,6 @@
 /*
- * Porest Popover 의 모양 — 수치 원본은 porest-design specs/components/popover.yaml(값은 src/shared/ds/spec/popover.json).
- * porest-design recipes/shadcn/components/ui/popover.tsx 를 첫 판으로 가져왔다. 이 파일은 모양 정의(클래스 · 자리 상수),
+ * Groo Popover 의 모양 — 수치 원본은 groo-design specs/components/popover.yaml(값은 src/shared/ds/spec/popover.json).
+ * groo-design recipes/shadcn/components/ui/popover.tsx 를 첫 판으로 가져왔다. 이 파일은 모양 정의(클래스 · 자리 상수),
  * 컴포넌트는 popover.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

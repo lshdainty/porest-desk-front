@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { editAssetPath } from "@/entities/asset";
-import { money } from "@/shared/lib/porest/format";
+import { money } from "@/shared/lib/groo/format";
 
 /**
  * 버튼이 달린 토스트는 기본(4초)보다 오래 둔다 — 누를지 정할 시간이 필요하다
- * (porest-design sonner.md: action 동반 toast 는 6000ms+).
+ * (groo-design sonner.md: action 동반 toast 는 6000ms+).
  */
 const ACTION_TOAST_MS = 6000;
 

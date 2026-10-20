@@ -109,7 +109,7 @@ function Nav({
 }: { current?: string } & React.ComponentProps<typeof SideNavigation>) {
   return (
     <SideNavigation {...rest}>
-      <SideNavigationHeader logo={<span>Porest Desk</span>} />
+      <SideNavigationHeader logo={<span>그루 담다</span>} />
       <SideNavigationContent>
         <SideNavigationGroup label="워크스페이스">
           <SideNavigationItem
@@ -259,7 +259,7 @@ describe("머리 · 접기 버튼", () => {
     expect(button.getAttribute("aria-controls")).toBe("side");
     expect(button.type).toBe("button");
     const logo = container.querySelector("[data-slot=side-navigation-logo]");
-    expect(logo?.textContent).toBe("Porest Desk");
+    expect(logo?.textContent).toBe("그루 담다");
     expect(logo?.closest("a,button")).toBeNull();
     click(button);
     expect(trigger()?.getAttribute("aria-expanded")).toBe("false");

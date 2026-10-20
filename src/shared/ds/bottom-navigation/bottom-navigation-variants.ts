@@ -1,6 +1,6 @@
 /*
  * Bottom Navigation 의 클래스 · 상수 — 컴포넌트 파일은 컴포넌트만 내보낸다(빠른 새로 고침).
- * 값의 원본은 porest-design specs/components/bottom-navigation.yaml(src/shared/ds/spec/bottom-navigation.json).
+ * 값의 원본은 groo-design specs/components/bottom-navigation.yaml(src/shared/ds/spec/bottom-navigation.json).
  * 임의 값은 스펙 JSON 값과 같은 것이고, 토큰에 없는 숫자(66 · 48 · 480)라 이유를 곁에 적었다.
  */
 

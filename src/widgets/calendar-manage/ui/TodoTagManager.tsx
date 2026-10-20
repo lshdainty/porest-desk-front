@@ -4,20 +4,20 @@ import { ChevronRight, Pencil, Plus, Tag, Tags, Trash2 } from "lucide-react";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
-import { settingsRowPadding } from "@/shared/ui/porest/manage-row-tokens";
+import { settingsRowPadding } from "@/shared/ui/groo/manage-row-tokens";
 import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { NameCounter } from "@/shared/ui/porest/name-counter";
-import { nameIssue } from "@/shared/lib/porest/name-policy";
-import { ManagerHead, ManagerShell } from "@/shared/ui/porest/manager-layout";
+import { NameCounter } from "@/shared/ui/groo/name-counter";
+import { nameIssue } from "@/shared/lib/groo/name-policy";
+import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
   CAT_PALETTE,
   getPaletteByColor,
-} from "@/shared/lib/porest/chart-palette";
+} from "@/shared/lib/groo/chart-palette";
 import type { TodoTag } from "@/entities/todo-tag";
 import {
   useCreateTodoTag,

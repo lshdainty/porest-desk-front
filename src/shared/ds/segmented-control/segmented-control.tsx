@@ -12,9 +12,9 @@ import {
 } from "./segmented-control-variants";
 
 /*
- * Porest Segmented Control — 구조는 SEED Segmented Control(2026-10-02). 수치 원본은 porest-design
+ * Groo Segmented Control — 구조는 SEED Segmented Control(2026-10-02). 수치 원본은 groo-design
  * specs/components/segmented-control.yaml(값은 src/shared/ds/spec/segmented-control.json).
- * porest-design recipes/shadcn/components/ui/segmented-control.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 클래스는
+ * groo-design recipes/shadcn/components/ui/segmented-control.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 클래스는
  * segmented-control-variants.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   SegmentedControl       트랙 — 라디오 묶음(role=radiogroup). 같은 내용을 2 ~ 4가지로 바로 거르거나 · 정렬하거나 · 다르게

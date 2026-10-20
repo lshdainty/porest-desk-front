@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { KRW, MINUS, isEn } from "@/shared/lib/porest/format";
-import { HideUnit, MaskAmount } from "@/shared/lib/porest/hide-amounts";
-import { kindOfExpense } from "@/shared/lib/porest/hide-amounts-cards";
+import { KRW, MINUS, isEn } from "@/shared/lib/groo/format";
+import { HideUnit, MaskAmount } from "@/shared/lib/groo/hide-amounts";
+import { kindOfExpense } from "@/shared/lib/groo/hide-amounts-cards";
 import {
   isScheduledDate,
   txDateFull,
   txTimeLabel,
-} from "@/shared/lib/porest/ledger-format";
-import { CategoryChip } from "@/shared/ui/porest/category-chip";
-import { Icon } from "@/shared/ui/porest/primitives";
+} from "@/shared/lib/groo/ledger-format";
+import { CategoryChip } from "@/shared/ui/groo/category-chip";
+import { Icon } from "@/shared/ui/groo/primitives";
 import {
   LedgerRow,
   LedgerRowAmt,
@@ -18,7 +18,7 @@ import {
   LedgerRowSub,
   LedgerRowTitle,
   ScheduledBadge,
-} from "@/shared/ui/porest/ledger";
+} from "@/shared/ui/groo/ledger";
 import type { Expense } from "../model/types";
 import { isRefundedTx } from "../lib/expense-aggregate";
 

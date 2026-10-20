@@ -5,7 +5,7 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Select — porest-design specs/components/select.md SoT 기반.
+ * Groo Select — groo-design specs/components/select.md SoT 기반.
  *
  * - Radix Select 베이스. 키보드 네비게이션 / ARIA / 포털 자동.
  * - composition: Select > SelectTrigger > SelectValue + SelectContent > SelectItem / SelectGroup / SelectLabel / SelectSeparator

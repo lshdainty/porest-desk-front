@@ -22,8 +22,8 @@ import {
 } from "./table-pagination-variants";
 
 /*
- * Porest Table Pagination — 구조는 SEED Table Pagination(2026-10-04). 수치 원본은 porest-design
- * specs/components/table-pagination.yaml(값은 src/shared/ds/spec/table-pagination.json). porest-design
+ * Groo Table Pagination — 구조는 SEED Table Pagination(2026-10-04). 수치 원본은 groo-design
+ * specs/components/table-pagination.yaml(값은 src/shared/ds/spec/table-pagination.json). groo-design
  * recipes/shadcn/components/ui/table-pagination.tsx 를 첫 판으로 가져왔다 — 모양 · 쪽 계산은 table-pagination-variants.ts 다
  * (컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). 고르기 둘은 Select medium(select), 이전 · 다음은 Pagination 의 화살표 칸이다.
  *

@@ -173,7 +173,7 @@ export const LogoTileDemo = () => (
             >
               <LogoTile
                 size={size}
-                name="포레스트컴퍼니"
+                name="그루컴퍼니"
                 face="name"
                 src={LOGO}
                 imageType="logo"

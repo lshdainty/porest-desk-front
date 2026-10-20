@@ -2,14 +2,14 @@ import { type ClassValue, clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
 /**
- * porest 토큰 스케일을 twMerge 에 알린다 — porest-design `recipes/shadcn/lib/utils.ts` 와 같다.
+ * groo 토큰 스케일을 twMerge 에 알린다 — groo-design `recipes/shadcn/lib/utils.ts` 와 같다.
  *
- * 기본 설정은 porest 이름을 그 자리의 스케일로 읽지 못한다.
+ * 기본 설정은 groo 이름을 그 자리의 스케일로 읽지 못한다.
  *   - `text-t4` · `text-caption` 을 글자 크기가 아니라 글자 색으로 읽어, 앞의 `text-fg-neutral` ·
  *     `text-[var(--fg-brand)]` 를 지운다(Button accent+sm 에서 브랜드색이 사라져 흰색을 이어받았다).
  *   - `px-x4` · `rounded-r2` 를 여백 · 모서리로 못 읽어, 뒤에서 덮어 쓴 `p-0` · `rounded-full` 과
  *     둘 다 남긴다 — 그러면 어느 쪽이 이길지 CSS 순서가 정한다.
- * 이름은 porest-tokens.css 의 `--spacing-*` · `--radius-*` · `--text-*` 와 같다. 토큰을 더하면 여기도 더한다.
+ * 이름은 groo-tokens.css 의 `--spacing-*` · `--radius-*` · `--text-*` 와 같다. 토큰을 더하면 여기도 더한다.
  */
 const SPACING = [
   "x0_5",

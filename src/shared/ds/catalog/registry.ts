@@ -3,11 +3,11 @@ import type { ComponentType } from "react";
 /**
  * 컴포넌트 라이브러리(src/shared/ds) 등록부 — 개발 전용 카탈로그(/dev/ds)가 그린다.
  *
- * 묶음 차례는 만드는 순서다. porest-design 레시피끼리 가져다 쓰는 관계로 정했다
+ * 묶음 차례는 만드는 순서다. groo-design 레시피끼리 가져다 쓰는 관계로 정했다
  * (Button ← Progress Circle, Chip ← Field · Scroll Fog, Dialog ← Alert Dialog · Bottom Sheet …).
- * 묶음은 porest-design 에서 스펙을 정할 때 묶은 단위와 같다.
+ * 묶음은 groo-design 에서 스펙을 정할 때 묶은 단위와 같다.
  *
- * spec 은 porest-design specs/components/<이름>.md 의 이름이고, 값은 src/shared/ds/spec/<이름>.json 이다.
+ * spec 은 groo-design specs/components/<이름>.md 의 이름이고, 값은 src/shared/ds/spec/<이름>.json 이다.
  * 컴포넌트 폴더도 같은 이름이다(src/shared/ds/<이름>/).
  *
  * 데모는 그 폴더의 <이름>.demo.tsx 가 내보내는 컴포넌트 하나다 — 스펙의 변형 · 크기 · 상태를 모두 그린 화면.

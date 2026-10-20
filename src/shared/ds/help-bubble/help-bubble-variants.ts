@@ -1,7 +1,7 @@
 /*
- * Porest Help Bubble 의 말풍선 모양 — Help Bubble · Tooltip 한 벌. 수치 원본은 porest-design
+ * Groo Help Bubble 의 말풍선 모양 — Help Bubble · Tooltip 한 벌. 수치 원본은 groo-design
  * specs/components/help-bubble.yaml(값은 src/shared/ds/spec/help-bubble.json — Tooltip 과 한 파일).
- * porest-design recipes/shadcn/components/ui/help-bubble.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 모양 정의,
+ * groo-design recipes/shadcn/components/ui/help-bubble.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 모양 정의,
  * 컴포넌트는 help-bubble.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침). 화살표(BubbleArrow)는 컴포넌트라 그쪽에 있다.
  * Tooltip(tooltip.tsx)이 BUBBLE · BUBBLE_TITLE · BUBBLE_POSITION · BubbleArrow 를 그대로 쓴다.
  */

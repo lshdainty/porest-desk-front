@@ -1,6 +1,6 @@
 /*
- * Porest Icon Picker 의 모양 · 헬퍼 — 규칙은 icon-picker.tsx 머리 주석이다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
- * 수치 원본은 porest-design specs/components/icon-picker.yaml(값은 src/shared/ds/spec/icon-picker.json).
+ * Groo Icon Picker 의 모양 · 헬퍼 — 규칙은 icon-picker.tsx 머리 주석이다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
+ * 수치 원본은 groo-design specs/components/icon-picker.yaml(값은 src/shared/ds/spec/icon-picker.json).
  */
 
 // 칸 — 48 · 모서리 12 · 아이콘 24. 고른 칸은 안쪽 2px(::after) + 선 2.5. 호버 · 누름 바탕 + 2px 거리 축소, 키보드 포커스에만 바깥 링

@@ -13,7 +13,7 @@ import {
   radioVariants,
 } from "./radio-group-variants";
 
-// 크기 · 톤 · 굵기 · 상태는 radio-group-variants.ts 머리 주석과 porest-design specs/components/radio-group.yaml 이 정한다.
+// 크기 · 톤 · 굵기 · 상태는 radio-group-variants.ts 머리 주석과 groo-design specs/components/radio-group.yaml 이 정한다.
 // 키 — 화살표는 옮기며 고르고 Space 는 포커스된 선택지를 고른다. Enter 는 폼을 제출한다(진짜 input · SEED 와 같다 — 폼의 기본 버튼을
 // 누른다, 고르지 않는다). Radix 의 항목은 onKeyDown 을 덮어써 Enter 를 막기만 하므로 묶음이 받는다(submitOnRadioEnter — Radiomark 를
 // 담는 List · Select Box 의 묶음도 같이 쓴다, 사용자 결정 2026-10-08). 라벨 안에 링크 · 버튼을 두지 않는다 — 누르는 영역(::before)이

@@ -1,0 +1,708 @@
+import * as React from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { cn } from "@/shared/lib/index";
+import { Card } from "@/shared/ui/card";
+
+/*
+ * Groo Ledger — 모바일 "원장" 레이아웃 공용 컴포넌트 (shadcn 서브컴포넌트 패턴).
+ *
+ * 가계부(ExpensePage)·할일(TodoMobileLedger)이 공유하는 캘린더+일별 리스트 통합 뷰의
+ * 큰 틀을 위에서 아래로 컴포넌트화한 것 (design tx-mobile.jsx / todo-mobile.jsx):
+ *
+ *   <LedgerShell ref={rootRef}>
+ *     <LedgerPin ref={pinRef} compact={compact}>
+ *       <LedgerMonthNav> <LedgerNavBtn/> <LedgerMonthLabel/> … </LedgerMonthNav>
+ *       <LedgerCollapse>
+ *         <LedgerHead> <LedgerTotal/> <LedgerSub/> <LedgerSumBtn/> </LedgerHead>
+ *         <LedgerSummary> <LedgerSummaryRow/> … </LedgerSummary>
+ *       </LedgerCollapse>
+ *       <LedgerCalendar>
+ *         <LedgerDow/> <LedgerWeek> <LedgerCell> <LedgerCellNum/> <LedgerCellAmt/> …
+ *         <LedgerExpand/> <LedgerCellTip/>
+ *       </LedgerCalendar>
+ *       <LedgerDivider/>
+ *     </LedgerPin>
+ *     <LedgerList> <LedgerDayGroup day> <LedgerDayHead> … </LedgerList>
+ *     <LedgerPrevBtn/>
+ *   </LedgerShell>
+ *
+ * - 페이지 인셋은 Shell(--spacing-xl=24)이 담당, 내부 요소 인셋 0 (사용자 결정).
+ *   Pin·Divider는 배경/구분선 풀블리드를 위해 negative margin full-bleed.
+ * - 행(row)은 도메인별로 다르므로 children 슬롯 — 화면이 소유.
+ * - 스크롤 동작(compact 히스테리시스·스파이·lock)은 `use-ledger-scroll.ts` 의
+ *   `useLedgerScroll` 훅 공용 — 컴포넌트 파일이 훅을 함께 export 하면 Fast Refresh 가
+ *   이 파일의 상태를 매번 버려서 갈라 뒀다.
+ */
+
+export const LedgerShell = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("px-[var(--spacing-xl)] pb-[28px]", className)}
+    {...props}
+  />
+));
+LedgerShell.displayName = "LedgerShell";
+
+/** 상단 고정 영역 — sticky + surface 배경(풀블리드), compact 시 Collapse 접힘. */
+export const LedgerPin = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & { compact?: boolean; top?: number }
+>(({ className, compact = false, top, style, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-compact={compact}
+    className={cn(
+      "group/pin sticky z-[5] bg-[var(--bg-surface)] pt-[10px]",
+      "-mx-[var(--spacing-xl)] px-[var(--spacing-xl)]",
+      className,
+    )}
+    style={{ top: top ?? 0, ...style }}
+    {...props}
+  />
+));
+LedgerPin.displayName = "LedgerPin";
+
+/** compact 시 접히는 영역 (총액/인사이트/요약 등). */
+export function LedgerCollapse({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-ledger-collapse
+      className={cn(
+        "overflow-hidden max-h-[340px] opacity-100",
+        "transition-[max-height,opacity] duration-[220ms] ease-[var(--motion-ease-out)]",
+        "group-data-[compact=true]/pin:max-h-0 group-data-[compact=true]/pin:opacity-0 group-data-[compact=true]/pin:pointer-events-none",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** 구분선 — 풀블리드. */
+export function LedgerDivider({
+  className,
+  inset,
+  subtle,
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** 페이지 인셋 안에서 끝나는 구분선 — 리스트 행 사이용. 기본은 풀블리드(핀 아래 경계). */
+  inset?: boolean;
+  /** 행 사이의 옅은 선. 기본은 영역을 가르는 진한 선. */
+  subtle?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "h-px",
+        subtle ? "bg-[var(--border-subtle)]" : "bg-[var(--border-default)]",
+        !inset && "-mx-[var(--spacing-xl)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+// ─── 월 네비 ────────────────────────────────────────────────
+
+export function LedgerMonthNav({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div className={cn("flex items-center gap-[2px]", className)} {...props} />
+  );
+}
+
+/** 월 이동/필터/추가 등 36px 아이콘 버튼 — active 시 브랜드 틴트. */
+export function LedgerNavBtn({
+  className,
+  active = false,
+  type = "button",
+  ...props
+}: React.ComponentProps<"button"> & { active?: boolean }) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        "w-9 h-9 inline-flex items-center justify-center border-0 bg-transparent",
+        "text-[var(--fg-secondary)] cursor-pointer rounded-[10px]",
+        "disabled:opacity-30 disabled:cursor-default",
+        active && "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerMonthLabel({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      className={cn(
+        "text-[17px] font-extrabold tracking-[-0.01em] text-[var(--fg-primary)] px-1 tabular-nums",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+// ─── 헤드(총액/타이틀 + 우측 토글) ──────────────────────────
+
+export function LedgerHead({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div className={cn("flex items-start gap-3 pt-2", className)} {...props} />
+  );
+}
+
+export function LedgerTotal({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "text-[28px] font-extrabold tracking-[-0.02em] text-[var(--fg-primary)] leading-[1.15]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerSub({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "text-[length:var(--text-label-sm)] text-[var(--fg-secondary)] mt-[7px]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** 헤드 우측 토글 버튼 (소비 요약 / 밤하늘). */
+export function LedgerSumBtn({
+  className,
+  active = false,
+  type = "button",
+  ...props
+}: React.ComponentProps<"button"> & { active?: boolean }) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        "ml-auto shrink-0 inline-flex items-center whitespace-nowrap border border-[var(--border-default)] bg-transparent",
+        "text-[var(--fg-primary)] text-[length:var(--text-label-sm)] font-semibold",
+        "px-3.5 py-[9px] rounded-xl cursor-pointer",
+        "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "active:bg-[var(--bg-brand-subtle)] active:border-[var(--border-brand)] active:text-[var(--fg-brand-strong)]",
+        active &&
+          "bg-[var(--bg-brand-subtle)] border-[var(--border-brand)] text-[var(--fg-brand-strong)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+// ─── 접힘 영역 내부 카드(요약 rows / 히어로 등) ─────────────
+
+/**
+ * 헤드 아래 드롭 카드 — raised + 진입 애니메이션 (요약 rows 컨테이너).
+ *
+ * 아래 마진 28px 은 그림자 자리다. 이 카드는 `LedgerCollapse`(overflow-hidden) 안
+ * 마지막 요소라, 마진이 없으면 클립 경계가 카드 바닥선과 겹쳐 shadow-lg 가 칼같이
+ * 잘린다. 28 = dy 8 + blur 24 + spread −4 (그림자가 아래로 퍼지는 거리).
+ * spacing 유틸(mb-7)은 이 프로젝트에서 --spacing-* 재정의와 충돌하므로 명시값을 쓴다.
+ */
+export function LedgerSummary({
+  className,
+  ...props
+}: React.ComponentProps<typeof Card>) {
+  return (
+    <Card
+      variant="raised"
+      className={cn(
+        "mt-[14px] mb-[28px] px-4 py-1 animate-[txmDrop_0.18s_var(--motion-ease-out)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerSummaryRow({
+  className,
+  total = false,
+  ...props
+}: React.ComponentProps<"div"> & { total?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between py-3 text-[length:var(--text-body-sm)] text-[var(--fg-secondary)]",
+        "border-t border-[var(--border-subtle)] first:border-t-0",
+        "[&_.num]:text-[length:var(--text-body-md)] [&_.num]:font-bold",
+        total &&
+          "text-[var(--fg-primary)] font-semibold [&_.num]:text-[var(--fg-primary)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** 헤드 아래 드롭 콘텐츠(밤하늘 히어로 등) — 카드 없이 진입 애니메이션만. */
+export function LedgerDrop({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "mt-[14px] animate-[txmDrop_0.18s_var(--motion-ease-out)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+// ─── 캘린더 ─────────────────────────────────────────────────
+
+export const LedgerCalendar = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  // -mx-2: 셀 콘텐츠가 중앙정렬이라 그리드를 페이지 라인보다 8px 바깥으로 —
+  // 첫/끝 셀(일·토)이 다른 요소와 같은 라인에서 시작해 보이게 (design txm-cal 정합).
+  <div ref={ref} className={cn("relative pt-3 -mx-2", className)} {...props} />
+));
+LedgerCalendar.displayName = "LedgerCalendar";
+
+/** 요일 헤더 — colorFor(i)로 일/토 색 지정 (도메인별 상이). */
+export function LedgerDow({
+  labels,
+  colorFor,
+  className,
+}: {
+  labels: string[];
+  colorFor?: (i: number) => string | undefined;
+  className?: string;
+}) {
+  return (
+    <div className={cn("grid grid-cols-7", className)}>
+      {labels.map((d, i) => (
+        <span
+          key={i}
+          // 평일 = 일반 텍스트색(fg-primary), 일/토는 colorFor 로 지정(사용자 결정)
+          className="text-center text-[length:var(--text-caption)] font-semibold text-[var(--fg-primary)] pt-1.5 pb-2"
+          style={{ color: colorFor?.(i) }}
+        >
+          {d}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function LedgerWeek({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return <div className={cn("grid grid-cols-7", className)} {...props} />;
+}
+
+const cellClass =
+  "border-0 bg-transparent px-0 pt-1 pb-2 flex flex-col items-center gap-[3px] rounded-xl min-h-[56px] [-webkit-tap-highlight-color:transparent]";
+
+/** 날짜 셀 — empty면 자리 채움 div, 아니면 클릭 가능한 button. */
+export function LedgerCell({
+  className,
+  empty = false,
+  selected = false,
+  ...props
+}: React.ComponentProps<"button"> & { empty?: boolean; selected?: boolean }) {
+  if (empty) return <div className={cn(cellClass, className)} />;
+  return (
+    <button
+      type="button"
+      data-sel={selected}
+      className={cn(
+        cellClass,
+        "group/cell cursor-pointer active:bg-[var(--bg-muted)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerCellNum({
+  className,
+  selected = false,
+  ...props
+}: React.ComponentProps<"span"> & { selected?: boolean }) {
+  return (
+    <span
+      className={cn(
+        "w-[33px] h-[33px] rounded-full inline-flex items-center justify-center",
+        "text-[length:var(--text-body-md)] font-semibold tabular-nums",
+        selected && "bg-[var(--bg-brand)] text-[var(--fg-on-brand)] font-bold",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerCellAmt({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      className={cn(
+        "text-[10px] font-semibold text-[var(--fg-tertiary)] tabular-nums tracking-[-0.02em]",
+        "min-h-3 max-w-full whitespace-nowrap overflow-hidden text-ellipsis",
+        "group-data-[sel=true]/cell:font-bold",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** 주 1줄 ↔ 월 전체 토글. */
+export function LedgerExpand({
+  expanded = false,
+  className,
+  type = "button",
+  ...props
+}: React.ComponentProps<"button"> & { expanded?: boolean }) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        "w-full border-0 bg-transparent text-[var(--fg-tertiary)] pt-[2px] pb-2.5",
+        "flex items-center justify-center cursor-pointer",
+        className,
+      )}
+      {...props}
+    >
+      {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+    </button>
+  );
+}
+
+/** 차트형 셀 툴팁 — 통계 GrooChartTooltip 시각 미러. */
+export function LedgerCellTip({
+  left,
+  top,
+  title,
+  rows,
+}: {
+  left: number;
+  top: number;
+  title: React.ReactNode;
+  rows: { label: React.ReactNode; color: string; value: React.ReactNode }[];
+}) {
+  return (
+    <div
+      className={cn(
+        "absolute z-20 pointer-events-none min-w-[150px]",
+        "bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-tile)]",
+        "shadow-[var(--shadow-md)] px-3 py-2.5 text-[length:var(--text-caption)]",
+      )}
+      style={{ left, top, transform: "translate(-50%, calc(-100% - 8px))" }}
+    >
+      <div className="text-[length:var(--text-badge)] text-[var(--fg-tertiary)] font-semibold mb-1.5">
+        {title}
+      </div>
+      {rows.map((row, i) => (
+        <div key={i} className="flex items-center gap-2 mt-0.5">
+          <span
+            className="w-2.5 h-2.5 rounded-[var(--radius-xs)] shrink-0"
+            style={{ background: row.color }}
+          />
+          <span className="text-[length:var(--text-caption)] text-[var(--fg-secondary)]">
+            {row.label}
+          </span>
+          <span className="num ml-auto font-bold" style={{ color: row.color }}>
+            {row.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── 일별 리스트 ────────────────────────────────────────────
+
+export function LedgerList({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return <div className={className} {...props} />;
+}
+
+/** 날짜 그룹 — day를 주면 스크롤 스파이·scrollToDay 앵커([data-ledger-day]). */
+export function LedgerDayGroup({
+  day,
+  className,
+  ...props
+}: React.ComponentProps<"div"> & { day?: string }) {
+  return (
+    <div data-ledger-day={day} className={cn("pt-6", className)} {...props} />
+  );
+}
+
+export function LedgerDayHead({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "flex items-baseline pb-1.5 text-[length:var(--text-label-sm)] text-[var(--fg-secondary)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerDayDate({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span className={cn("font-semibold tabular-nums", className)} {...props} />
+  );
+}
+
+export function LedgerDayRel({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span className={cn("text-[var(--fg-tertiary)]", className)} {...props} />
+  );
+}
+
+export function LedgerDaySum({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      className={cn(
+        "ml-auto text-[length:var(--text-caption)] tabular-nums",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+// ─── 리스트 행 골격 (tx-row spec 공용화) ────────────────────
+// leading(카테고리 칩/체크) · Main(Title+Sub) · trailing(금액/뱃지)은 화면이 소유.
+
+export function LedgerRow({
+  className,
+  dim,
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** 아직 일어나지 않은 거래(예정) — 합계에 안 들어가므로 시각적으로도 물러나 있게. */
+  dim?: boolean;
+}) {
+  // 같은 행 컴포넌트가 상세로 들어가는 목록에도, 그냥 보여 주기만 하는 목록에도 쓰인다
+  // (자산 상세의 거래 내역·환불 목록). 후자에 손가락 커서와 hover 를 주면 눌리는 줄 알고
+  // 누르게 된다 — 핸들러가 있을 때만 인터랙티브 시각을 준다.
+  const interactive = props.onClick != null;
+  return (
+    <div
+      className={cn(
+        // 좌우는 페이지가 쥔다. 행이 여기서 더 얹으면 그만큼 날짜 헤더와 어긋난다 —
+        // 미세하지만 목록 전체가 헤더보다 오른쪽으로 밀려 보인다.
+        //
+        // 그래서 좌우는 **아무것도 안 준다**. 예전에는 `px-1 -mx-1` 로 4 를 주고
+        // 같은 만큼 빼서 상쇄했는데(hover 배경만 4 넓히려던 것), 정렬과 무관한
+        // 트릭이 정렬 코드처럼 읽혀 앱이 따라 하다 10 을 얹는 일이 있었다
+        // (porest-desk-app #362). 배경 4 보다 "좌우 0" 이 읽히는 편이 낫다.
+        "flex items-center gap-3 rounded-lg py-3",
+        "transition-[background] duration-[var(--motion-duration-fast)]",
+        interactive &&
+          "cursor-pointer hover:bg-[var(--bg-muted)] active:bg-[var(--bg-muted)]",
+        "[-webkit-tap-highlight-color:transparent]",
+        dim && "opacity-60",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerRowMain({
+  as = "div",
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLElement> & {
+  /**
+   * `'button'` 이면 제목+부제 영역이 실제 `<button>` 이 된다 — 행 탭으로만 열리던 상세를
+   * 키보드로도 열 수 있게 하는 진입점이다(WCAG 2.1.1).
+   *
+   * <p>행 전체에 `role="button"` 을 씌우지 않는다. 할일 행은 안에 체크 토글을, 메모 행은
+   * 고정 버튼을 품는데 button role 은 자식을 presentational 로 만들어 그것들이 스크린리더에서
+   * 사라진다(4.1.2). 제목 영역만 버튼으로 두면 중첩이 아예 생기지 않는다.
+   *
+   * <p>클릭은 그대로 행의 `onClick` 으로 버블링되므로 여기에 핸들러를 따로 달지 않는다 —
+   * Enter·Space 도 네이티브 버튼이 click 으로 바꿔 준다.
+   */
+  as?: "div" | "button";
+}) {
+  const cls = cn("flex-1 min-w-0", className);
+  if (as === "button") {
+    return (
+      <button
+        type="button"
+        className={cn(
+          cls,
+          // 시각은 div 그대로 — 버튼 기본값만 벗긴다. 글꼴은 자식(Title/Sub)이 각자 정한다.
+          "appearance-none bg-transparent border-0 p-0 text-left [font:inherit] [color:inherit]",
+          // 행이 -mx-1 로 넘쳐 있어 바깥쪽 offset 이면 포커스 링이 이웃 행과 겹친다.
+          "focus-visible:outline-offset-[-2px]",
+        )}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+  return (
+    <div className={cls} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function LedgerRowTitle({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "text-[14px] font-semibold text-[var(--fg-primary)] tracking-[-0.005em]",
+        "whitespace-nowrap overflow-hidden text-ellipsis",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function LedgerRowSub({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "text-[12px] text-[var(--fg-tertiary)] mt-[2px] flex items-center gap-1",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** sub 안 구분점(·). */
+export function LedgerRowSep({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      className={cn(
+        "w-[2px] h-[2px] rounded-full bg-[var(--border-strong)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** 우측 금액 — income이면 fg-income, 아니면 fg-expense. */
+export function LedgerRowAmt({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        // 행 금액은 지출/수입 무관 일반 텍스트색 — 색 구분은 날짜 헤더 일 합계만(사용자 결정).
+        "text-[14px] font-bold tabular-nums tracking-[-0.01em] text-right shrink-0 text-[var(--fg-primary)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** 리스트 하단 이전 달 로드 버튼. */
+export function LedgerPrevBtn({
+  className,
+  type = "button",
+  ...props
+}: React.ComponentProps<"button">) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        "block mt-7 w-full h-[52px] rounded-[14px] border-0 bg-[var(--bg-sunken)]",
+        "text-[var(--fg-primary)] text-[length:var(--text-body-md)] font-semibold cursor-pointer",
+        "active:bg-[var(--bg-muted)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** "예정" 배지 — 아직 오지 않은 거래·이체 행에 붙는다. */
+export function ScheduledBadge({ label }: { label: string }) {
+  return (
+    <span
+      style={{
+        flexShrink: 0,
+        fontSize: "var(--text-badge)",
+        fontWeight: 700,
+        color: "var(--fg-tertiary)",
+        background: "var(--bg-sunken)",
+        borderRadius: "var(--radius-xs)",
+        padding: "1px 5px",
+      }}
+    >
+      {label}
+    </span>
+  );
+}

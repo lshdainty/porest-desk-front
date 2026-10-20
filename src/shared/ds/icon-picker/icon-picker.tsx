@@ -40,10 +40,10 @@ import {
 } from "./icon-picker-variants";
 
 /*
- * Porest Icon Picker — 카테고리 · 저축 목표에 붙일 아이콘을 고르는 칸(2026-10-09). 수치 원본은 porest-design specs/components/icon-picker.yaml(값은 src/shared/ds/spec/icon-picker.json),
+ * Groo Icon Picker — 카테고리 · 저축 목표에 붙일 아이콘을 고르는 칸(2026-10-09). 수치 원본은 groo-design specs/components/icon-picker.yaml(값은 src/shared/ds/spec/icon-picker.json),
  * 세트는 specs/components/category-icons.yaml(JSON — category-icons.ts 가 그대로 읽는다). 트리거 · 시트 · 팝오버 · 찾기 칸의 나머지 값은 각 레시피(input-button ·
  * bottom-sheet · popover · input)가 그대로다. SEED 에는 아이콘 고르기 부품이 없다 — 세트 · 칸 · 고른 표시 · 키보드 · 한국어 찾기는
- * porest 가 정했다(사용자 결정 15A · 16A · 17A). 옛 Icon Picker(40 정사각 트리거 · 팝오버 320 · lucide 전체 · 영어 이름 · "없음")를 대신한다.
+ * groo 가 정했다(사용자 결정 15A · 16A · 17A). 옛 Icon Picker(40 정사각 트리거 · 팝오버 320 · lucide 전체 · 영어 이름 · "없음")를 대신한다.
  *
  *   IconPicker   트리거 + 여는 자리 + 찾기 + 격자. value(저장된 lucide 이름 — null · "" 이면 태그) · onValueChange(id — 고르면, 닫는 것은
  *                스스로 한다) · size(트리거 — "responsive" 기본 · "large" · "medium") · disabled · id, 나머지는 Input Button 의 속성.

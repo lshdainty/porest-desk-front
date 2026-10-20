@@ -3,8 +3,8 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/shared/lib/cn";
 
 /*
- * Porest Accordion — 구조는 SEED Accordion(rootage accordion.json · accordion-item.json, 2026-10-10). 수치 원본은 porest-design
- * specs/components/accordion.yaml(값은 src/shared/ds/spec/accordion.json). porest-design recipes/shadcn/components/ui/accordion.tsx 를
+ * Groo Accordion — 구조는 SEED Accordion(rootage accordion.json · accordion-item.json, 2026-10-10). 수치 원본은 groo-design
+ * specs/components/accordion.yaml(값은 src/shared/ds/spec/accordion.json). groo-design recipes/shadcn/components/ui/accordion.tsx 를
  * 첫 판으로 가져왔다 — 이 파일은 변형 정의 · 상수, 컴포넌트는 accordion.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  * 트리거의 짜임(accordionTrigger*)은 Collapsible 이 같은 모양으로 쓴다.
  *

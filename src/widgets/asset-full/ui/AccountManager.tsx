@@ -16,26 +16,26 @@ import {
   useDeleteAsset,
   useUpdateAsset,
 } from "@/features/asset";
-import { KRW } from "@/shared/lib/porest/format";
+import { KRW } from "@/shared/lib/groo/format";
 import {
   HideForce,
   MaskAmount,
   WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre } from "@/shared/lib/porest/hide-amounts-core";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+} from "@/shared/lib/groo/hide-amounts";
+import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { Button } from "@/shared/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {
   MANAGE_ROW,
   manageRowClass,
-} from "@/shared/ui/porest/manage-row-tokens";
+} from "@/shared/ui/groo/manage-row-tokens";
 import {
   ManagerHead,
   ManagerShell,
   ManagerTabs,
-} from "@/shared/ui/porest/manager-layout";
+} from "@/shared/ui/groo/manager-layout";
 import { AssetDetailDialog } from "./AssetDetailDialog";
 import { AssetEditDialog, type AssetGroup } from "./AssetEditDialog";
 

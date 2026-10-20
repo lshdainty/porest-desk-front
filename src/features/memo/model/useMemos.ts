@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePendingIds } from "@/shared/lib/porest/use-pending-ids";
+import { usePendingIds } from "@/shared/lib/groo/use-pending-ids";
 import { invalidateFor, memoKeys } from "@/shared/config";
 import { memoApi } from "../api/memoApi";
 import type { MemoListParams } from "../api/memoApi";

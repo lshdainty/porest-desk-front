@@ -30,8 +30,8 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/shared/ui/card";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 
 /** 좌측 단 고정 폭. 종목명 + 평가금액 + 등락률이 줄바꿈 없이 들어가는 최소치다. */
 const LIST_COL_WIDTH = 352;

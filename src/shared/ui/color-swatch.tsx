@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * ColorSwatch — porest-design spec color-swatch.md SoT 정합.
+ * ColorSwatch — groo-design spec color-swatch.md SoT 정합.
  * single-select 색 grid: aspect-square + radius-tile + border 2px transparent (active=currentColor) + ✓ check.
  * 사용처: 카테고리/라벨/태그 색 선택.
  */

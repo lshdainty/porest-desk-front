@@ -3,9 +3,9 @@ import * as React from "react";
 import { cn } from "@/shared/lib/cn";
 
 /*
- * Porest Progress Circle — 구조는 SEED Progress Circle(2026-10-03). 수치 원본은 porest-design
+ * 그루 담다 Progress Circle — 구조는 SEED Progress Circle(2026-10-03). 수치 원본은 groo-design
  * specs/components/progress-circle.yaml(값은 src/shared/ds/spec/progress-circle.json).
- * porest-design recipes/shadcn/components/ui/progress-circle.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
+ * groo-design recipes/shadcn/components/ui/progress-circle.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * 옛 Spinner(spinner.tsx — 16 · 24 · 32 · 48, 브랜드 4분의 1 호 · 1.5초 일정 속도)를 대신한다.
  *
  *   ProgressCircle   작업이 진행 중임을 알리는 원(SVG) — 트랙 · 호
@@ -62,7 +62,7 @@ const TONE: Record<ProgressCircleTone, string> = {
 // 상자 — 값 없는 원은 1.2초에 한 바퀴(모션 줄이기면 멈춘다)
 const ROOT = "inline-block shrink-0 overflow-visible align-middle";
 const SPIN =
-  "animate-[porest-progress-circle-rotate_1200ms_cubic-bezier(0.35,0.25,0.65,0.75)_infinite] motion-reduce:animate-none";
+  "animate-[groo-progress-circle-rotate_1200ms_cubic-bezier(0.35,0.25,0.65,0.75)_infinite] motion-reduce:animate-none";
 
 // 원 — 상자 가운데, 선 가운데 반지름 (크기 − 두께) ÷ 2
 const CIRCLE =
@@ -72,7 +72,7 @@ const TRACK = `${CIRCLE} [stroke:var(--pc-track)]`;
 const RANGE = `${CIRCLE} [stroke:var(--pc-range)] [stroke-linecap:round] [transform-box:fill-box] [transform-origin:center] [transform:rotate(-90deg)]`;
 // 값 없는 원 — 머리(0 ~ 75%) · 꼬리(33.33 ~ 100%)가 1.2초 박자로. 모션 줄이기면 3/4 고정 호
 const RANGE_INDETERMINATE = [
-  "animate-[porest-progress-circle-head_1200ms_cubic-bezier(0.35,0,0.65,1)_infinite,porest-progress-circle-tail_1200ms_cubic-bezier(0.35,0,0.65,0.6)_infinite]",
+  "animate-[groo-progress-circle-head_1200ms_cubic-bezier(0.35,0,0.65,1)_infinite,groo-progress-circle-tail_1200ms_cubic-bezier(0.35,0,0.65,0.6)_infinite]",
   "motion-reduce:animate-none motion-reduce:[stroke-dasharray:75_200]",
 ].join(" ");
 // 값 있는 원 — 호 길이 100(원 전체) 을 dashoffset 으로 밀어 값만큼 보인다. 값이 바뀌면 300ms 로 따라 찬다
@@ -82,9 +82,9 @@ const RANGE_DETERMINATE =
 // 회전 · 머리 · 꼬리 키프레임 — 머리 · 꼬리는 pathLength 100 기준(원둘레 = 100). 간격 200 은 원둘레보다 길어 대시가 하나만
 // 보이게 한다. 시간 곡선은 CSS 처럼 키프레임 구간마다 걸린다(머리는 0 ~ 75%, 꼬리는 33.33 ~ 100% 에서만 움직인다)
 const KEYFRAMES = [
-  "@keyframes porest-progress-circle-rotate { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }",
-  "@keyframes porest-progress-circle-head { 0% { stroke-dasharray: 0 200 } 75%, 100% { stroke-dasharray: 100 200 } }",
-  "@keyframes porest-progress-circle-tail { 0%, 33.33% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: -100 } }",
+  "@keyframes groo-progress-circle-rotate { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }",
+  "@keyframes groo-progress-circle-head { 0% { stroke-dasharray: 0 200 } 75%, 100% { stroke-dasharray: 100 200 } }",
+  "@keyframes groo-progress-circle-tail { 0%, 33.33% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: -100 } }",
 ].join("\n");
 
 const clamp = (n: number, lo: number, hi: number) =>
@@ -162,7 +162,7 @@ const ProgressCircle = React.forwardRef<SVGSVGElement, ProgressCircleProps>(
     return (
       <>
         {!determinate && (
-          <style href="porest-progress-circle" precedence="porest">
+          <style href="groo-progress-circle" precedence="groo">
             {KEYFRAMES}
           </style>
         )}

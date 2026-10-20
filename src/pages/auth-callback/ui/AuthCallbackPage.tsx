@@ -8,7 +8,7 @@ import {
   clearPkce,
 } from "@/features/auth/lib/pkce";
 import { Spinner } from "@/shared/ui/spinner";
-import { takeLoginRedirect } from "@/shared/lib/porest/login-redirect";
+import { takeLoginRedirect } from "@/shared/lib/groo/login-redirect";
 
 export const AuthCallbackPage = () => {
   const { t } = useTranslation("login");

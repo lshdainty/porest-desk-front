@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Collapsible — 트리거는 Accordion 항목 하나의 모양(2026-10-10). 수치 원본은 porest-design specs/components/collapsible.yaml
+ * Groo Collapsible — 트리거는 Accordion 항목 하나의 모양(2026-10-10). 수치 원본은 groo-design specs/components/collapsible.yaml
  * (값은 src/shared/ds/spec/collapsible.json). 트리거 · 글 · 꺾쇠의 짜임은 accordion-variants.ts 를 그대로 쓰고, 이 파일은 놓인 면(surface)과
  * 펼친 내용의 여백만 가진다. 컴포넌트는 collapsible.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *

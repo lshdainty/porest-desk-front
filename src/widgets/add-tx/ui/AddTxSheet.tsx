@@ -4,7 +4,7 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
@@ -14,8 +14,8 @@ import {
   Plus,
   Scissors,
 } from "lucide-react";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Button } from "@/shared/ui/button";
 import { CategoryGrid, CategoryTile } from "@/shared/ui/category-tile";
 import { Input } from "@/shared/ui/input";
@@ -24,14 +24,14 @@ import { Field, FieldLabel } from "@/shared/ui/field";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { renderIcon } from "@/shared/lib";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import {
   KRW,
   money,
   formatChartAxis,
   formatDay,
-} from "@/shared/lib/porest/format";
+} from "@/shared/lib/groo/format";
 import {
   Select,
   SelectContent,
@@ -82,7 +82,7 @@ import {
   CURRENCIES,
   DEFAULT_CURRENCY,
   formatOriginalAmount,
-} from "@/shared/lib/porest/currency";
+} from "@/shared/lib/groo/currency";
 import { SplitTxDialog } from "@/features/expense-split/ui/SplitTxDialog";
 import {
   TransferAccountFields,

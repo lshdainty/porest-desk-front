@@ -13,10 +13,10 @@ import { Button } from "@/shared/ui/button";
 import { buttonVariants } from "@/shared/ui/button-variants";
 
 /*
- * Porest Calendar — porest-design specs/components/calendar.md SoT 기반.
- * Phase 2 마이그레이션: react-day-picker v9 API(desk-front) 호환 보존 + porest 시각 토큰.
+ * Groo Calendar — groo-design specs/components/calendar.md SoT 기반.
+ * Phase 2 마이그레이션: react-day-picker v9 API(desk-front) 호환 보존 + groo 시각 토큰.
  *
- * Porest 시각:
+ * Groo 시각:
  *   - day cell: rounded-full(원형 40×40, preview .cal-cell SoT, Toss 톤)
  *   - today: outline 2px primary(테두리만, fill 없음 — selected와 시각 분리,
  *     사용자가 오늘 보면서 다른 날 선택 가능)
@@ -120,7 +120,7 @@ function Calendar({
           "relative w-full h-full p-0 text-center group/day aspect-square select-none",
           defaultClassNames.day,
         ),
-        // range 시각: porest-design spec 정합. 시작/끝은 셀의 좌/우 절반만 middle 톤 그라데이션 →
+        // range 시각: groo-design spec 정합. 시작/끝은 셀의 좌/우 절반만 middle 톤 그라데이션 →
         // 그 위에 button 의 원형 primary fill. middle 은 셀 전체 옅은 톤 사각형 fill.
         range_start: cn(
           "rounded-none bg-[linear-gradient(to_right,transparent_50%,color-mix(in_srgb,var(--color-primary)_12%,transparent)_50%)]",
@@ -226,7 +226,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        // base shape: rounded-full(원형 cell) — Porest preview .cal-cell SoT — 일반 day cell 의 hover/default 모양
+        // base shape: rounded-full(원형 cell) — Groo preview .cal-cell SoT — 일반 day cell 의 hover/default 모양
         "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal rounded-full",
         "group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50",
         "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px]",

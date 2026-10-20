@@ -8,21 +8,21 @@ import { cn } from "@/shared/lib/index";
 import { Spinner } from "@/shared/ui/spinner";
 
 /*
- * Porest Button — porest-design SoT(specs/components/button.md) 기반.
- * Phase 2 마이그레이션(2026-05-13): porest 시각 토큰 + desk-front 호환 보존.
+ * Groo Button — groo-design SoT(specs/components/button.md) 기반.
+ * Phase 2 마이그레이션(2026-05-13): groo 시각 토큰 + desk-front 호환 보존.
  *
- * Porest 시각 (preview-html `.btn` SoT):
+ * Groo 시각 (preview-html `.btn` SoT):
  *   - gap-sm + transition-[box-shadow] + focus-visible:ring-2 ring-ring ring-offset-2
  *   - default: bg-primary + shadow-sm/md + brightness hover/active
  *   - destructive: bg-destructive + 동일 패턴
  *   - outline: border-border-default + hover:bg-surface-input
  *   - secondary: bg-secondary + hover:bg-surface-input
- *   - ghost: hover:bg-surface-input (Porest는 hover:bg-surface-input, desk-front token alias 후 동일)
+ *   - ghost: hover:bg-surface-input (Groo는 hover:bg-surface-input, desk-front token alias 후 동일)
  *
  * desk-front 호환 보존:
  *   - size: default(=md 톤, h-9)/xs(h-6)/sm(h-8)/md(h-10 신규)/lg(h-11)/icon(h-9)
  *   - variant: warm 보존 (사용 1건, --bg-section-warm semantic alias 사용)
- *   - loading prop — porest Spinner(size=sm) 노출. currentColor 상속으로
+ *   - loading prop — groo Spinner(size=sm) 노출. currentColor 상속으로
  *     filled(default/destructive)에선 white, outline/ghost에선 primary 자동 적응.
  *     asChild와 함께 쓰지 말 것 (Slot 단일 child 제약).
  */

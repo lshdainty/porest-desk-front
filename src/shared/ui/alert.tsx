@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Porest Alert — porest-design specs/components/alert.md SoT 기반.
+ * Groo Alert — groo-design specs/components/alert.md SoT 기반.
  *
  * - 인라인 정보·경고 메시지. 페이지 안 한 위치에 고정 표시.
  * - composition: Alert > [icon] AlertBody > AlertTitle / AlertDescription

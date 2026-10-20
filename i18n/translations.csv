@@ -1,5 +1,5 @@
 namespace,key,ko,en
-common,app.title,POREST Desk,POREST Desk
+common,app.title,그루 담다,그루 담다
 common,save,저장,Save
 common,cancel,취소,Cancel
 common,delete,삭제,Delete
@@ -1593,7 +1593,7 @@ expense,addTx.parent,상위,Parent
 expense,addTx.detail,세부,Details
 expense,addTx.incomeSource,수입처,Income source
 expense,addTx.merchantPlaceholder,예: 스타벅스 강남점,e.g. Starbucks Gangnam
-expense,addTx.incomeSourcePlaceholder,예: (주)포레스트,e.g. Acme Inc.
+expense,addTx.incomeSourcePlaceholder,예: (주)그루,e.g. Acme Inc.
 expense,addTx.incomeMethod,수입 방식,Income method
 expense,addTx.depositAccount,입금 계좌,Deposit account
 expense,addTx.basisOf,{{method}} 기준,by {{method}}
@@ -2299,7 +2299,7 @@ recurring,editTitle,반복 거래 수정,Edit recurring transaction
 recurring,typeTitle,유형,Type
 recurring,startDateLabel,반복 시작일,Start date
 recurring,merchantPlaceholderExpense,예: 넷플릭스,e.g. Netflix
-recurring,merchantPlaceholderIncome,예: (주)포레스트,e.g. Porest Inc.
+recurring,merchantPlaceholderIncome,예: (주)그루,e.g. Groo Inc.
 recurring,settingsTitle,반복 설정,Recurring settings
 recurring,saveLabel,반복 저장,Save recurring
 recurring,defaultTitle,반복 거래,Recurring
@@ -2337,7 +2337,7 @@ recurring,summaryMonthly,매월 {{day}}일,Day {{day}} monthly
 subscription,title,구독 관리,Manage subscription
 subscription,startPro,Pro 시작하기,Start Pro
 subscription,cancelSub,구독 해지,Cancel subscription
-subscription,proInUse,Porest Pro 이용 중,Using Porest Pro
+subscription,proInUse,그루 담다 Pro 이용 중,Using 그루 담다 Pro
 subscription,freeInUse,Free 플랜 이용 중,On the Free plan
 subscription,nextBill,다음 결제 {{date}},Next billing {{date}}
 subscription,activeUntil,{{date}}까지 이용,Access until {{date}}
@@ -2357,7 +2357,7 @@ subscription,colFeature,기능,Feature
 subscription,feature.core,가계부 · 자산 관리,Budget and asset management
 subscription,feature.budget,예산 · 저축 목표 · 캘린더,Budget · savings goals · calendar
 subscription,feature.securities,증권사 연동 · 실시간 시세 · 자산 실시간 금액,Securities link · real-time quotes · real-time asset value
-subscription,toast.subscribed,Porest Pro 구독이 시작되었어요,Porest Pro subscription started
+subscription,toast.subscribed,그루 담다 Pro 구독이 시작되었어요,그루 담다 Pro subscription started
 subscription,toast.subscribeFailed,구독에 실패했어요,Subscription failed
 subscription,toast.canceled,구독을 해지했어요,Subscription canceled
 subscription,toast.cancelFailed,해지에 실패했어요,Cancellation failed
@@ -2460,8 +2460,8 @@ stats,compare.unitCount,건,
 export,import.tab,가져오기,Import
 export,import.sourceTitle,어떤 앱에서 가져오나요?,Which app are you importing from?
 export,import.sourceDesc,기존에 쓰던 가계부를 고르면 열 구조를 자동으로 맞춰드려요,Pick your previous app and we'll auto-map the columns
-export,import.source.porest,Porest 백업,Porest backup
-export,import.source.porestDesc,내보내기 파일 다시 가져오기,Re-import an export file
+export,import.source.groo,그루 백업,그루 백업
+export,import.source.grooDesc,내보내기 파일 다시 가져오기,Re-import an export file
 export,import.source.easybudget,편한가계부·머니매니저,EasyBudget · Money Manager
 export,import.source.easybudgetDesc,Excel 백업,Excel backup
 export,import.source.banksalad,뱅크샐러드,Banksalad
@@ -2716,7 +2716,7 @@ asset,assetDetail.recordCycle,기록 회차,Record-only cycle
 asset,assetDetail.recordedMoreNote,계좌에서 나간 돈은 <amt>{{paid}}</amt>이에요. 나머지 <amt>{{diff}}</amt>은 기록만 남긴 금액이에요,<amt>{{paid}}</amt> left your account. The other <amt>{{diff}}</amt> is record only
 asset,assetDetail.recordedLessNote,기록은 <amt>{{recorded}}</amt>인데 계좌에서는 <amt>{{paid}}</amt>이 나갔어요,"The records add up to <amt>{{recorded}}</amt>, but <amt>{{paid}}</amt> left your account"
 asset,assetDetail.preRegistrationNote,카드 등록 이전 거래라 실제와 맞지 않을 수 있어요,"These transactions are from before the card was added, so they may not match your actual statement"
-download,title,포레스트 데스크 앱,Porest Desk App
+download,title,그루 담다 앱,그루 담다 App
 download,subtitleLoading,최신 버전을 확인하는 중…,Checking the latest version…
 download,subtitleNoRelease,아직 배포된 버전이 없어요,No release published yet
 download,subtitleWithVersion,{{version}} (빌드 {{build}}),{{version}} (build {{build}})

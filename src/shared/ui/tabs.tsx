@@ -5,8 +5,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib";
 
 /*
- * Porest Tabs — porest-design specs/components/tabs.md SoT 기반.
- * Phase 2 마이그레이션: porest 토큰 + desk-front variants(pill/underline) 보존.
+ * Groo Tabs — groo-design specs/components/tabs.md SoT 기반.
+ * Phase 2 마이그레이션: groo 토큰 + desk-front variants(pill/underline) 보존.
  *
  * 2 variants:
  *   pill (default): bg-surface-input 컨테이너 + active bg-surface-default + shadow-sm.

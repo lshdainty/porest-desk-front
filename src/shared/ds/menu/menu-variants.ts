@@ -1,6 +1,6 @@
 /*
- * Porest Menu 의 모양 — 수치 원본은 porest-design specs/components/menu.yaml(값은 src/shared/ds/spec/menu.json).
- * porest-design recipes/shadcn/components/ui/menu.tsx 를 첫 판으로 가져왔다 — 이 파일은 모양 정의,
+ * Groo Menu 의 모양 — 수치 원본은 groo-design specs/components/menu.yaml(값은 src/shared/ds/spec/menu.json).
+ * groo-design recipes/shadcn/components/ui/menu.tsx 를 첫 판으로 가져왔다 — 이 파일은 모양 정의,
  * 컴포넌트는 menu.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  */
 

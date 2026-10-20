@@ -26,21 +26,21 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Icon } from "@/shared/ui/porest/primitives";
+import { Icon } from "@/shared/ui/groo/primitives";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import {
   MANAGE_ROW,
   manageRowClass,
-} from "@/shared/ui/porest/manage-row-tokens";
+} from "@/shared/ui/groo/manage-row-tokens";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {
   MANAGER_LAYOUT,
   ManagerHead,
   ManagerShell,
   ManagerTabs,
-} from "@/shared/ui/porest/manager-layout";
+} from "@/shared/ui/groo/manager-layout";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import {
   useExpenseCategories,
@@ -51,13 +51,13 @@ import {
   useExpenseBudgets,
   useRangeSummary,
 } from "@/features/expense";
-import { KRW } from "@/shared/lib/porest/format";
+import { KRW } from "@/shared/lib/groo/format";
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,
   ExpenseType,
 } from "@/entities/expense";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { CategoryEditDialog } from "./CategoryEditDialog";
 import { CategoryMoveTxDialog } from "@/features/expense/ui/CategoryMoveTxDialog";
 

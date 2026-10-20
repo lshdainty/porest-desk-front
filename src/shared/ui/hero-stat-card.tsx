@@ -23,7 +23,7 @@ interface HeroStatCardProps {
   className?: string;
 }
 
-// porest status 토큰 정합 — success/error 색이 light/dark 자동 swap.
+// groo status 토큰 정합 — success/error 색이 light/dark 자동 swap.
 const toneStyles: Record<HeroStatTone, string> = {
   default: "bg-surface-default",
   brand:

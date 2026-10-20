@@ -23,7 +23,7 @@ import {
 } from "@/features/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { InputTimePicker } from "@/shared/ui/input-time-picker";
-import { ManagerHead } from "@/shared/ui/porest/manager-layout";
+import { ManagerHead } from "@/shared/ui/groo/manager-layout";
 import {
   Select,
   SelectContent,

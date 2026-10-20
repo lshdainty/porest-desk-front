@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { authApi } from "../api/authApi";
 import { setAuthenticated, clearAuthenticated } from "@/shared/api";
 import { config } from "@/shared/config";
-import { rememberCurrentPath } from "@/shared/lib/porest/login-redirect";
+import { rememberCurrentPath } from "@/shared/lib/groo/login-redirect";
 import { isWithdrawnAccountError } from "../lib/withdrawn-error";
 
 export const useAuth = () => {

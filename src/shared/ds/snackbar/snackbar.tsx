@@ -13,9 +13,9 @@ import {
 } from "./snackbar-context";
 
 /*
- * Porest Snackbar — 구조는 SEED Snackbar(2026-10-02). 수치 원본은 porest-design
+ * Groo Snackbar — 구조는 SEED Snackbar(2026-10-02). 수치 원본은 groo-design
  * specs/components/snackbar.yaml(값은 src/shared/ds/spec/snackbar.json).
- * porest-design recipes/shadcn/components/ui/snackbar.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 옵션 타입 · useSnackbar ·
+ * groo-design recipes/shadcn/components/ui/snackbar.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 옵션 타입 · useSnackbar ·
  * 컨텍스트는 snackbar-context.ts 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  * 옛 Sonner(sonner.tsx — 흰 카드 · 위 가운데 · 3장 쌓기)를 대신한다.
  *

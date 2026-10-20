@@ -8,8 +8,8 @@ import { LOADING_TIMING } from "./skeleton-variants";
 import { useWaitPhase, type WaitPhase } from "./use-wait-phase";
 
 /*
- * Porest Skeleton — 구조는 SEED Skeleton(2026-10-03). 수치 원본은 porest-design specs/components/skeleton.yaml
- * (값은 src/shared/ds/spec/skeleton.json). porest-design recipes/shadcn/components/ui/skeleton.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
+ * Groo Skeleton — 구조는 SEED Skeleton(2026-10-03). 수치 원본은 groo-design specs/components/skeleton.yaml
+ * (값은 src/shared/ds/spec/skeleton.json). groo-design recipes/shadcn/components/ui/skeleton.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * 기다리는 동안의 시간표(1초 · 5초 · 10초)는 SEED Loading 패턴을 규칙으로 옮긴 것이다 — skeleton.md 의 "기다리는 동안".
  * 옛 Skeleton(깜빡임 · surface-input · 모서리 4 · 브랜드 25% 띠의 SkeletonShimmer)을 대신한다.
  *

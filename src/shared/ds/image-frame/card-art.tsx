@@ -19,8 +19,8 @@ import {
 } from "./image-frame-variants";
 
 /*
- * Porest Card Art — 카드 그림. 수치 원본은 porest-design specs/components/card-art.yaml(값은 src/shared/ds/spec/card-art.json),
- * 구조는 Image Frame(image-frame.tsx) 이다. porest-design recipes/shadcn/components/ui/image-frame.tsx 의 CardArt 를 가져왔다.
+ * Groo Card Art — 카드 그림. 수치 원본은 groo-design specs/components/card-art.yaml(값은 src/shared/ds/spec/card-art.json),
+ * 구조는 Image Frame(image-frame.tsx) 이다. groo-design recipes/shadcn/components/ui/image-frame.tsx 의 CardArt 를 가져왔다.
  *
  *   CardArt   카드 그림 — ratio card(1.586)의 Image Frame. 그림이 없거나 실패하면 카드사(issuer)로 가른다
  *     issuer      카드사 이름 — 기관 색 · 첫 글자 · 모르는 회사 가르기

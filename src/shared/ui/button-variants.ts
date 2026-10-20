@@ -74,7 +74,7 @@ export const buttonVariants = cva(
     },
     compoundVariants: [
       // 아이콘 액션 버튼(ghost+icon): 글씨색을 보조톤(text-secondary)으로 약화 —
-      // 리스트 행/툴바의 quiet 아이콘 액션. porest-design button.md v96 정합.
+      // 리스트 행/툴바의 quiet 아이콘 액션. groo-design button.md v96 정합.
       // (iconLg는 페이지당 1개뿐인 주 액션이라 약화 없이 중립 유지 — v97)
       { variant: "ghost", size: "icon", className: "text-text-secondary" },
       // flush ghost 는 **텍스트 버튼**이다 — hover 에 배경을 깔지 않고 글자색으로만

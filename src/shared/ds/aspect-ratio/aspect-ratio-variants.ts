@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Aspect Ratio — 구조는 SEED Aspect Ratio(2026-10-04). 수치 원본은 porest-design
+ * Groo Aspect Ratio — 구조는 SEED Aspect Ratio(2026-10-04). 수치 원본은 groo-design
  * specs/components/aspect-ratio.yaml(값은 src/shared/ds/spec/aspect-ratio.json).
- * porest-design recipes/shadcn/components/ui/aspect-ratio.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 비율 정의,
+ * groo-design recipes/shadcn/components/ui/aspect-ratio.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 비율 정의,
  * 컴포넌트는 aspect-ratio.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 비율은 Image Frame · Logo Tile 이 그대로 쓴다(aspectRatioVariants).

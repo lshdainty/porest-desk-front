@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/index";
 
 /*
- * Tile — porest-design spec tile.md SoT 정합.
+ * Tile — groo-design spec tile.md SoT 정합.
  * swatch + label + desc + active check 의 큰 카드 single-select.
  * 사용처: 테마/기본 단위/시작 화면 등 시각 미리보기가 의미인 선택.
  */

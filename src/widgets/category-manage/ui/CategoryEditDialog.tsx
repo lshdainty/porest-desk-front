@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "@/shared/ui/porest/primitives";
-import { ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { Icon } from "@/shared/ui/groo/primitives";
+import { ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
 import { IconPicker } from "@/shared/ui/icon-picker";
 import { Input } from "@/shared/ui/input";
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { CAT_PALETTE } from "@/shared/lib/porest/chart-palette";
+import { CAT_PALETTE } from "@/shared/lib/groo/chart-palette";
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,

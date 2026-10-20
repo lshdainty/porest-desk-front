@@ -1,5 +1,5 @@
 /*
- * Porest Tooltip 의 값 — 수치 원본은 porest-design specs/components/help-bubble.yaml 의 opens: hover(값은
+ * Groo Tooltip 의 값 — 수치 원본은 groo-design specs/components/help-bubble.yaml 의 opens: hover(값은
  * src/shared/ds/spec/help-bubble.json — Help Bubble 과 한 파일, tooltip.json 은 없다). 말풍선의 모양(BUBBLE ·
  * BUBBLE_TITLE · BUBBLE_POSITION · BubbleArrow)은 Help Bubble 의 것을 그대로 쓴다 — 한 벌이다(help-bubble-variants.ts).
  * 이 파일은 툴팁에만 있는 값(기다림 · 걷힘)을 둔다. 컴포넌트는 tooltip.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다).

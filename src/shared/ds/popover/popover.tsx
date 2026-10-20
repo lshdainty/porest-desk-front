@@ -19,8 +19,8 @@ import {
 } from "./popover-variants";
 
 /*
- * Porest Popover — 구조는 SEED Popover(2026-10-02). 수치 원본은 porest-design specs/components/popover.yaml
- * (값은 src/shared/ds/spec/popover.json). porest-design recipes/shadcn/components/ui/popover.tsx 를 첫 판으로 가져왔다.
+ * Groo Popover — 구조는 SEED Popover(2026-10-02). 수치 원본은 groo-design specs/components/popover.yaml
+ * (값은 src/shared/ds/spec/popover.json). groo-design recipes/shadcn/components/ui/popover.tsx 를 첫 판으로 가져왔다.
  * Radix Popover(비모달) 위에 짰다.
  *
  *   Popover           트리거에 붙어 떠 있는 비모달 표면 — open · defaultOpen · onOpenChange

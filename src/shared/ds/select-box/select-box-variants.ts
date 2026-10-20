@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Select Box 의 모양 — 수치 원본은 porest-design specs/components/select-box.yaml(값은
- * src/shared/ds/spec/select-box.json). porest-design recipes/shadcn/components/ui/select-box.tsx 를 첫 판으로 가져왔다.
+ * Groo Select Box 의 모양 — 수치 원본은 groo-design specs/components/select-box.yaml(값은
+ * src/shared/ds/spec/select-box.json). groo-design recipes/shadcn/components/ui/select-box.tsx 를 첫 판으로 가져왔다.
  * 이 파일은 모양 정의(cva · 클래스 상수), 컴포넌트는 select-box.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 상자(div)는 테두리 · 바탕만 맡고, 그 안의 누르는 자리(label)가 콘텐츠 + 컨트롤을 담아 펼침(footer)을 뺀 상자 전체가 누르는 영역이

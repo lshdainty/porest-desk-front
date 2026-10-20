@@ -86,7 +86,7 @@ const Mark = () => (
 const Logo = () => (
   <>
     <Mark />
-    Porest Desk
+    그루 담다
   </>
 );
 

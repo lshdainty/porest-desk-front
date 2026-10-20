@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Check, Minus, Sparkles, TrendingUp } from "lucide-react";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { KRW, money } from "@/shared/lib/porest/format";
+import { KRW, money } from "@/shared/lib/groo/format";
 import { toLocalDateKey } from "@/shared/lib/date";
 import {
   useMyFeatures,

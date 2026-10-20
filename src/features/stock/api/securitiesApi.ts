@@ -42,7 +42,7 @@ export interface BrokerCandle {
   currency: string;
 }
 
-/** 백엔드 원형 — porest-core `CursorResponse<SecuritiesCandle>`. */
+/** 백엔드 원형 — groo-core `CursorResponse<SecuritiesCandle>`. */
 export interface BrokerCandleCursorPage {
   content: BrokerCandle[];
   meta: { size: number; hasNext: boolean; nextCursor: string | null };

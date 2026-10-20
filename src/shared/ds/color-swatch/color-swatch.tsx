@@ -25,7 +25,7 @@ import {
   type CheckTone,
 } from "./color-swatch-variants";
 
-// 칸 · 고름 · 지금 색 · 키보드의 규칙은 color-swatch-variants.ts 머리 주석과 porest-design specs/components/color-swatch.md 가 정한다.
+// 칸 · 고름 · 지금 색 · 키보드의 규칙은 color-swatch-variants.ts 머리 주석과 groo-design specs/components/color-swatch.md 가 정한다.
 
 // 지금 색 칸의 체크 — fg-neutral · fg-neutral-inverted 가운데 그 색 위 대비가 큰 쪽(두 모드 모두 하나는 짙고 하나는 밝다 —
 // 라이트 4.06 · 다크 3.67 이상). 저장 색은 모드를 따르지 않으므로 모드 · 브랜드가 바뀌면(문서의 class · data-theme · 색 모드) 다시 정한다

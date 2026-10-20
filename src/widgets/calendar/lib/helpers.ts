@@ -27,8 +27,8 @@ import {
   type Locale,
 } from "date-fns";
 
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
-import { MINUS, money } from "@/shared/lib/porest/format";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { MINUS, money } from "@/shared/lib/groo/format";
 import type {
   CalendarEvent,
   CalendarEventFormValues,

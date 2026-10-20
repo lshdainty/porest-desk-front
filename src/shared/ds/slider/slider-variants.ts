@@ -1,6 +1,6 @@
 /*
- * Porest Slider — 구조는 SEED Slider(2026-10-09). 수치 원본은 porest-design specs/components/slider.yaml(값은 src/shared/ds/spec/slider.json).
- * porest-design recipes/shadcn/components/ui/slider.tsx 를 첫 판으로 가져왔다 — 이 파일은 상수 · 길이 식 · 문서 입력 추적, 컴포넌트는 slider.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
+ * Groo Slider — 구조는 SEED Slider(2026-10-09). 수치 원본은 groo-design specs/components/slider.yaml(값은 src/shared/ds/spec/slider.json).
+ * groo-design recipes/shadcn/components/ui/slider.tsx 를 첫 판으로 가져왔다 — 이 파일은 상수 · 길이 식 · 문서 입력 추적, 컴포넌트는 slider.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  * 레시피와 다른 자리 — 누르는 동안 손잡이 24 는 scale 1.2 가 아니라 크기(size-5 → size-6)다. 손잡이는 가운데 기준으로 놓여 자라도 자리가 안 바뀌고,
  * 검사기(ds:check)가 계산된 폭으로 스펙 24 를 잴 수 있다.

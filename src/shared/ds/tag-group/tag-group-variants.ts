@@ -1,9 +1,9 @@
 import { cva } from "class-variance-authority";
 
 /*
- * Porest Tag Group — 구조는 SEED Tag Group(2026-10-03). 수치 원본은 porest-design
+ * Groo Tag Group — 구조는 SEED Tag Group(2026-10-03). 수치 원본은 groo-design
  * specs/components/tag-group.yaml(값은 src/shared/ds/spec/tag-group.json).
- * porest-design recipes/shadcn/components/ui/tag-group.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
+ * groo-design recipes/shadcn/components/ui/tag-group.tsx 를 첫 판으로 가져왔다(앱 적용 1A) — 이 파일은 변형 정의,
  * 컴포넌트는 tag-group.tsx 다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   TagGroup       여러 메타 정보(카테고리 이름 · 자산 · 시각 · 거리 · 개수 · 금액)를 " · " 로 이은 글줄 — 묶음 <span>, 역할 없음

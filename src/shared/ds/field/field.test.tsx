@@ -203,10 +203,10 @@ describe("Field", () => {
   it("오류면 글자 수도 빨갛다", () => {
     render(
       <Field label="아이디" maxGraphemeCount={20} invalid errorMessage="오류">
-        <TestInput defaultValue="porest" />
+        <TestInput defaultValue="groo" />
       </Field>,
     );
-    expect(count().textContent).toBe("6/20");
+    expect(count().textContent).toBe("4/20");
     for (const span of count().children) {
       expect(span.className).toBe("text-fg-critical");
     }

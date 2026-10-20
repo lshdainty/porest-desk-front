@@ -5,8 +5,8 @@ import { cn } from "@/shared/lib/cn";
 import { useScrollFog, type ScrollFogUse } from "./use-scroll-fog";
 
 /*
- * Porest Scroll Fog — 구조는 SEED Scroll Fog(2026-10-03). 수치 원본은 porest-design specs/components/scroll-fog.yaml
- * (값은 src/shared/ds/spec/scroll-fog.json). porest-design recipes/shadcn/components/ui/scroll-fog.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
+ * Groo Scroll Fog — 구조는 SEED Scroll Fog(2026-10-03). 수치 원본은 groo-design specs/components/scroll-fog.yaml
+ * (값은 src/shared/ds/spec/scroll-fog.json). groo-design recipes/shadcn/components/ui/scroll-fog.tsx 를 첫 판으로 가져왔다(앱 적용 1A).
  * 스크롤되는 영역의 끝을 흐려 뒤에 더 있다는 것을 알린다. 색을 덮는 막이 아니라 스크롤 상자에 거는 투명도 마스크라 어느 바탕
  * (흰 면 · 회색 바탕 · 다크)에서도 같고, 흐린 자리의 칩 · 줄도 그대로 눌린다. 스크롤 위치 · 넘침을 재지 않고 늘 켜 둔다.
  *

@@ -5,18 +5,18 @@ import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/shared/lib/index";
-import { registerOverlay } from "@/shared/lib/porest/pointer-block";
+import { registerOverlay } from "@/shared/lib/groo/pointer-block";
 
 /*
- * Porest Dialog — porest-design specs/components/dialog.md SoT 기반.
- * Phase 2 마이그레이션: porest overlay/shadow 토큰 + desk-front 구조 보존.
+ * Groo Dialog — groo-design specs/components/dialog.md SoT 기반.
+ * Phase 2 마이그레이션: groo overlay/shadow 토큰 + desk-front 구조 보존.
  *
  * 호환 보존:
  *   - sizes: sm 420 / md 520 (default) / lg 720 (desk-front 사용처 정합)
  *   - composition: DialogHeader > DialogTitle / DialogDescription / + DialogBody + DialogFooter
  *   - hideClose prop — 호출자가 직접 close 그리는 패턴(기본 true)
  *
- * Porest 시각:
+ * Groo 시각:
  *   - overlay: var(--overlay-dim-light) light / var(--overlay-dim-dark) dark
  *   - bg-[var(--bg-surface)]: Phase 1 alias로 자동 Cobalt 톤 surface-default
  *   - shadow-[var(--shadow-xl)]: Tailwind arbitrary(분해 회피, dark token swap 안전)

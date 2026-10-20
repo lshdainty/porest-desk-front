@@ -3,7 +3,7 @@ import {
   blockNonDigitKey,
   parseAmount,
   sanitizeAmountInput,
-} from "@/shared/lib/porest/amount";
+} from "@/shared/lib/groo/amount";
 import { AssetTradeDialog } from "./AssetTradeDialog";
 import { useAssetTrades, useDeleteTrade } from "@/features/asset";
 import type { TradeType } from "@/entities/asset";
@@ -53,11 +53,11 @@ import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
 import { useCardPerformance } from "@/features/card-performance";
 import { useSearchExpenses } from "@/features/expense";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter } from "@/shared/ui/porest/modal-footer";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { ModalViewFooter } from "@/shared/ui/porest/modal-footer";
+import { ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import { Button } from "@/shared/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ExpenseRow } from "@/entities/expense";
@@ -73,18 +73,18 @@ import {
   formatChartAxis,
   isEn,
   formatDay,
-} from "@/shared/lib/porest/format";
+} from "@/shared/lib/groo/format";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
-import { niceAxis } from "@/shared/lib/porest/chartAxis";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { niceAxis } from "@/shared/lib/groo/chartAxis";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { assetTypeLabel } from "@/entities/asset";
 import {
   HideForce,
   HideUnit,
   MaskAmount,
   WonUnit,
-} from "@/shared/lib/porest/hide-amounts";
-import { wonPre, useHideAmounts } from "@/shared/lib/porest/hide-amounts-core";
+} from "@/shared/lib/groo/hide-amounts";
+import { wonPre, useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 

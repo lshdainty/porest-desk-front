@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
 import { Bookmark, Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ConfirmDialog } from "@/shared/ui/porest/dialogs";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { transferPartiesLabel } from "@/features/asset-transfer";
 import { renderIcon } from "@/shared/lib";
-import { KRW } from "@/shared/lib/porest/format";
-import { getPaletteByColor } from "@/shared/lib/porest/chart-palette";
+import { KRW } from "@/shared/lib/groo/format";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import {
   useDeleteExpenseTemplate,
   useExpenseCategories,

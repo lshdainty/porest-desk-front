@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { KRW, MINUS, isEn } from "@/shared/lib/porest/format";
-import { HideUnit, MaskAmount } from "@/shared/lib/porest/hide-amounts";
+import { KRW, MINUS, isEn } from "@/shared/lib/groo/format";
+import { HideUnit, MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import {
   isScheduledDate,
   txDateFull,
   txTimeLabel,
-} from "@/shared/lib/porest/ledger-format";
-import { CategoryChip } from "@/shared/ui/porest/category-chip";
+} from "@/shared/lib/groo/ledger-format";
+import { CategoryChip } from "@/shared/ui/groo/category-chip";
 import {
   LedgerRow,
   LedgerRowAmt,
@@ -15,7 +15,7 @@ import {
   LedgerRowSub,
   LedgerRowTitle,
   ScheduledBadge,
-} from "@/shared/ui/porest/ledger";
+} from "@/shared/ui/groo/ledger";
 import type { AssetTransfer } from "../model/types";
 
 /**

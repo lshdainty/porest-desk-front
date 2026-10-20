@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
-import { PorestSidebar } from "./PorestSidebar";
-import { PorestTopBar } from "./PorestTopBar";
+import { GrooSidebar } from "./GrooSidebar";
+import { GrooTopBar } from "./GrooTopBar";
 import { MobileHeader } from "./MobileHeader";
 import { AppTabBar } from "./AppTabBar";
-import { useDeviceSize } from "@/shared/lib/porest/responsive";
+import { useDeviceSize } from "@/shared/lib/groo/responsive";
 import { SwipeActionsProvider } from "@/shared/ui/swipe-actions";
 import { AddTxSheet } from "@/widgets/add-tx";
 import { EventForm } from "@/widgets/calendar/ui/EventForm";
@@ -114,9 +114,9 @@ export const AppLayout = () => {
 
   return (
     <SidebarProvider className="h-svh">
-      <PorestSidebar />
+      <GrooSidebar />
       <SidebarInset className="h-svh overflow-hidden">
-        <PorestTopBar onOpenAdd={() => setAddOpen(true)} />
+        <GrooTopBar onOpenAdd={() => setAddOpen(true)} />
         {/* flex flex-col — 페이지가 flex-1 로 scroll wrapper 전체 height 를 차지하도록
             (viewport fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작. */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col">

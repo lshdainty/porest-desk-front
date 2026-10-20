@@ -55,7 +55,7 @@ import {
 import { TodoMobileLedger } from "./TodoMobileLedger";
 import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
 import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
-import { Fab } from "@/shared/ui/porest/fab";
+import { Fab } from "@/shared/ui/groo/fab";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import {
@@ -69,9 +69,9 @@ import { Field, FieldLabel } from "@/shared/ui/field";
 import { Card } from "@/shared/ui/card";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/porest/dialogs";
-import { ModalFooter, ModalViewFooter } from "@/shared/ui/porest/modal-footer";
-import { MobileBackHeader } from "@/shared/ui/porest/mobile-back-header";
+import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
+import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
 /**

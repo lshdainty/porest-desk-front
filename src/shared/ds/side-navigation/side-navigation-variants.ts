@@ -1,6 +1,6 @@
 /*
  * Side Navigation 의 클래스 · 상수 — 컴포넌트 파일은 컴포넌트만 내보낸다(빠른 새로 고침).
- * 값의 원본은 porest-design specs/components/side-navigation.yaml(src/shared/ds/spec/side-navigation.json).
+ * 값의 원본은 groo-design specs/components/side-navigation.yaml(src/shared/ds/spec/side-navigation.json).
  * 임의 값([24px] 등)은 스펙 JSON 값과 같은 것이다 — 토큰에 없는 숫자(끝 흐림 24 · 하위 시작 40 · 펼침 메뉴 200 · 접기 버튼 위 12)라 이유를 곁에 적었다.
  */
 

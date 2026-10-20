@@ -1,5 +1,5 @@
 /**
- * 브랜드 마크(rect 4단 나무) — `porest-desk-mark.svg` 미러.
+ * 브랜드 마크(rect 4단 나무) — `groo-desk-mark.svg` 미러.
  * 인라인 svg + fg-brand 토큰이라 다크에서 자동으로 밝은 색(primary-light) 전환.
  * 사용처: 로그인, 사이드바 접힘 헤더. (img 자산은 색 고정이라 다크 전환 불가 — 이걸 사용)
  */
