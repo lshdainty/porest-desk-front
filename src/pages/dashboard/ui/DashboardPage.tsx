@@ -2399,9 +2399,11 @@ function HomeMobile() {
                 </MaskAmount>
               </div>
             </Donut>
+            {/* minWidth 0 — 없으면 긴 금액이 범례 칸을 밀어 띠 밖으로 나간다(이름이 말줄임으로 양보한다) */}
             <div
               style={{
                 flex: 1,
+                minWidth: 0,
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
@@ -2439,6 +2441,7 @@ function HomeMobile() {
                       fontSize: "var(--text-caption)",
                       color: "var(--fg-primary)",
                       fontWeight: "600",
+                      flexShrink: 0,
                     }}
                   >
                     <MaskAmount card="home.categoryDonut" mask="••••">
