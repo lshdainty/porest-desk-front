@@ -29,7 +29,7 @@ export const CalendarPage = () => {
       }}
     >
       {!mobile && (
-        <div className="shrink-0 px-layout-margin pt-nav-to-title">
+        <div className="shrink-0 px-[var(--layout-margin)] pt-nav-to-title">
           <PageHead title={t("calendar")} />
         </div>
       )}

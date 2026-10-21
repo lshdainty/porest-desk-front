@@ -204,7 +204,7 @@ export function NotificationsPage() {
   // ── 데스크탑 ────────────────────────────────────────────────────────────────
   return (
     <div className="m-scroll" style={{ padding: 0 }}>
-      <div className="px-layout-margin pt-nav-to-title">
+      <div className="px-[var(--layout-margin)] pt-nav-to-title">
         <PageHead title={t("title")} actions={markAllButton} />
       </div>
       {unreadSub}
