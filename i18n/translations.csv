@@ -2984,6 +2984,8 @@ common,searchWon,원,KRW
 common,searchPeriod,기간,Period
 common,searchStart,시작,Start
 common,searchEnd,종료,End
+common,searchPeriodPick,기간 선택,Select period
+common,searchDone,완료,Done
 common,searchReset,초기화,Reset
 common,searchApply,적용,Apply
 common,searchBadAmount,최소 금액을 최대 금액보다 작게 해 주세요,Make the minimum smaller than the maximum

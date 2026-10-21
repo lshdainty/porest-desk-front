@@ -13,9 +13,10 @@ import { Field } from "@/shared/ds/field";
 import { Input } from "@/shared/ds/input";
 import { TopNavigationIconButton } from "@/shared/ds/top-navigation";
 import { hasAdvanced, type SearchCondition } from "../model/search-state";
+import { PeriodField } from "./PeriodField";
 
 /**
- * 고급 필터 — 금액 범위와 기간(앱 search_screen 과 같은 두 조건). 폰은 상단 바의 아이콘 버튼, 데스크톱은 제목 줄의 작은 버튼이 연다.
+ * 고급 필터 — 금액 범위와 기간(앱 search_screen 과 같은 두 조건). 기간은 Input Button + Date Picker 기간(PeriodField). 폰은 상단 바의 아이콘 버튼, 데스크톱은 제목 줄의 작은 버튼이 연다.
  * 고르는 동안 검색 결과는 바뀌지 않고, [적용] 에서만 주소에 쓴다(draft). 걸려 있으면 아이콘에 점.
  */
 export function AdvancedFilter({
@@ -34,7 +35,6 @@ export function AdvancedFilter({
   const active = hasAdvanced(condition);
 
   const badAmount = !!draft.min && !!draft.max && +draft.min > +draft.max;
-  const badPeriod = !!draft.from && !!draft.to && draft.from > draft.to;
   const digits = (v: string) => v.replace(/\D/g, "");
 
   const label = t("searchAdvanced");
@@ -93,27 +93,11 @@ export function AdvancedFilter({
                 />
               </div>
             </Field>
-            <Field
-              label={t("searchPeriod")}
-              invalid={badPeriod}
-              errorMessage={t("searchBadPeriod")}
-            >
-              <div className="flex items-center gap-x2">
-                <Input
-                  type="date"
-                  aria-label={t("searchStart")}
-                  value={draft.from}
-                  onChange={(e) => setDraft({ ...draft, from: e.target.value })}
-                />
-                <span aria-hidden>~</span>
-                <Input
-                  type="date"
-                  aria-label={t("searchEnd")}
-                  value={draft.to}
-                  onChange={(e) => setDraft({ ...draft, to: e.target.value })}
-                />
-              </div>
-            </Field>
+            <PeriodField
+              from={draft.from}
+              to={draft.to}
+              onChange={(p) => setDraft({ ...draft, ...p })}
+            />
           </div>
         </ResponsiveDialogBody>
         <ResponsiveDialogFooter>
@@ -126,7 +110,7 @@ export function AdvancedFilter({
             {t("searchReset")}
           </Button>
           <Button
-            disabled={badAmount || badPeriod}
+            disabled={badAmount}
             onClick={() => {
               onApply({
                 min: draft.min,
