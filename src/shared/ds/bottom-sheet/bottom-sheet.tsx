@@ -1,3 +1,4 @@
+import { ResponsivePair } from "@/shared/ds/button";
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Drawer as DrawerPrimitive } from "vaul";
@@ -496,14 +497,14 @@ const BottomSheetFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => (
-  <div
+  <ResponsivePair
     ref={ref}
     data-slot="bottom-sheet-footer"
     className={cn(SHEET_FOOTER, className)}
     {...props}
   >
     {withButtonSize(children, "large")}
-  </div>
+  </ResponsivePair>
 ));
 BottomSheetFooter.displayName = "BottomSheetFooter";
 

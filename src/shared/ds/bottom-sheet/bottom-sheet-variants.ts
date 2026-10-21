@@ -70,5 +70,5 @@ export const SHEET_BODY_FOG =
 
 // 바닥 — 위 12 · 아래 16(그 아래 안전 영역은 시트가 둔다), 버튼 하나면 폭 전체 · 둘이면 반씩(사이 8). Button large 48
 // 짝 버튼은 ResponsivePair(03A-013 A): 한 라벨이 반 폭을 넘으면(min-content = 한 줄 라벨) 세로로 쌓고 뒤 버튼(주)이 위로 간다 — wrap-reverse
-export const SHEET_FOOTER =
-  "flex shrink-0 flex-wrap-reverse gap-x2 px-global-gutter pb-x4 pt-x3 [&>*]:min-w-max [&>*]:grow [&>*]:basis-[calc(50%-var(--spacing-x2)/2)]";
+// 짝 버튼 판정은 ResponsivePair(button 폴더)가 맡는다 — 여기는 바닥 자리 여백만(I-01 결정 6A)
+export const SHEET_FOOTER = "shrink-0 px-global-gutter pb-x4 pt-x3";

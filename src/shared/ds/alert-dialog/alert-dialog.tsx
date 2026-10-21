@@ -2,7 +2,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import { cn } from "@/shared/lib/cn";
-import { Button, type ButtonProps } from "@/shared/ds/button";
+import { Button, ResponsivePair, type ButtonProps } from "@/shared/ds/button";
 import {
   focusOpener,
   mergeRefs,
@@ -241,14 +241,14 @@ const AlertDialogFooter = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const size = useWideSurface() ? "small" : "medium";
   return (
-    <div
+    <ResponsivePair
       ref={ref}
       data-slot="alert-dialog-footer"
       className={cn(ALERT_FOOTER, className)}
       {...props}
     >
       {withButtonSize(children, size)}
-    </div>
+    </ResponsivePair>
   );
 });
 AlertDialogFooter.displayName = "AlertDialogFooter";

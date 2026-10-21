@@ -172,3 +172,8 @@ export const buttonVariants = cva(
     },
   },
 );
+
+// 짝 버튼(ResponsivePair) — 한 라벨이 반 폭을 넘으면 세로로 쌓고 주 버튼이 위(button.md "긴 라벨", I-01 결정 6A).
+// 사이 8 · 버튼마다 반 폭 바탕 · 글 폭보다 줄지 않는다 — 넘치면 줄이 넘어가고 wrap-reverse 라 뒤(주) 버튼이 위로 간다
+export const RESPONSIVE_PAIR =
+  "flex flex-wrap-reverse gap-x2 [&>*]:min-w-max [&>*]:grow [&>*]:basis-[calc(50%-var(--spacing-x2)/2)]";

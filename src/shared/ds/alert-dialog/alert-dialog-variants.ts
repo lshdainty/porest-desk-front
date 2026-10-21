@@ -32,5 +32,5 @@ export const ALERT_DESCRIPTION =
 
 // 바닥 — 위 16, 버튼 사이 8. 버튼마다 반 폭을 바탕으로(늘어나 채운다) 글 폭보다 줄지 않는다 — 한쪽 글이 반을 넘으면
 // 줄이 넘어가고 wrap-reverse 라 둘째(확정)가 위로 간다. 하나면 폭 전체
-export const ALERT_FOOTER =
-  "flex flex-wrap-reverse gap-x2 pt-x4 [&>*]:min-w-max [&>*]:grow [&>*]:basis-[calc(50%-var(--spacing-x2)/2)]";
+// 짝 버튼 판정은 ResponsivePair(button 폴더)가 맡는다 — 여기는 바닥 위 16 만(I-01 결정 6A)
+export const ALERT_FOOTER = "pt-x4";
