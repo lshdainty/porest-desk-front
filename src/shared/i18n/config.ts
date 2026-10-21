@@ -175,4 +175,13 @@ i18n
     },
   });
 
+// 문서 언어를 화면 언어에 맞춘다 — 영어로 바꿨는데 lang 이 ko 로 남으면 낭독기가 영어 글을 한국어 발음으로
+// 읽는다(WCAG 3.1.1, I-01 결과 확인 고치기 W1). "en-US" 같은 지역 꼬리는 그대로 둔다.
+export function syncDocumentLang(lng: string | undefined) {
+  if (typeof document === "undefined" || !lng) return;
+  document.documentElement.lang = lng;
+}
+syncDocumentLang(i18n.resolvedLanguage ?? i18n.language);
+i18n.on("languageChanged", syncDocumentLang);
+
 export { i18n };
