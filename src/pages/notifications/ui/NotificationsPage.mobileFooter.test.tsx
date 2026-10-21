@@ -54,8 +54,16 @@ vi.mock("@/shared/hooks", () => ({
 }));
 
 vi.mock("@/entities/notification", () => ({
-  NotificationRow: ({ notification }: { notification: { title: string } }) => (
-    <div className="notif-row">{notification.title}</div>
+  NotificationRow: ({
+    notification,
+    ...rest
+  }: {
+    notification: { title: string };
+  }) => (
+    // 줄에 넘어온 속성 이름을 남긴다 — 줄마다 × 같은 추가 액션(trailing)을 넘기지 않는지 본다
+    <div className="notif-row" data-props={Object.keys(rest).sort().join(",")}>
+      {notification.title}
+    </div>
   ),
 }));
 
@@ -129,6 +137,21 @@ describe("모바일 알림 — footer 고정", () => {
     render();
     expect(footerBox().style.paddingBottom).toContain("safe-area-inset-bottom");
   });
+});
+
+describe("알림 줄 — 줄마다 × 를 달지 않는다(W4)", () => {
+  it.each([true, false])(
+    "모바일 %s — 줄에 trailing 을 넘기지 않고 삭제 단추가 없다",
+    (isMobile) => {
+      mobile = isMobile;
+      render();
+      const row = container.querySelector(".notif-row")!;
+      expect(row.getAttribute("data-props")).not.toContain("trailing");
+      expect(
+        container.querySelector("[aria-label=delete], [aria-label='삭제']"),
+      ).toBeNull();
+    },
+  );
 });
 
 describe("데스크탑은 종전 그대로", () => {
