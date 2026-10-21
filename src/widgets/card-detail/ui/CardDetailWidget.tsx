@@ -49,7 +49,7 @@ export function CardDetailWidget({
 
   if (isLoading) {
     return (
-      <div className={mobile ? "space-y-9" : "space-y-4"}>
+      <div className={mobile ? "screen-bands" : "space-y-4"}>
         {/* CardInfoHeader: 카드 이미지(h-32 w-52) + 회사명/카드명/배지 */}
         <Shell mobile={mobile}>
           <div className="flex flex-col gap-5 sm:flex-row">
@@ -101,8 +101,8 @@ export function CardDetailWidget({
   }
 
   return (
-    // 모바일 카드 다이어트 — 섹션 gap 36 이 카드 대신 구분 담당.
-    <div className={mobile ? "space-y-9" : "space-y-4"}>
+    // 폰 구역 화면 — 구역마다 화면 폭 흰 띠(I-01 결정 3, groo.css .screen-bands), 데스크톱은 카드
+    <div className={mobile ? "screen-bands" : "space-y-4"}>
       <CardInfoHeader detail={detail} mobile={mobile} />
       {assetRowId != null && (
         <CardPerformanceSection assetRowId={assetRowId} mobile={mobile} />

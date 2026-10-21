@@ -416,18 +416,20 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
     // 실제 Content(2149~) 정합 — 한 덩어리(flex-col gap)에 4섹션 균일 gap.
     // mobile 은 도넛/가맹점도 부모 gap 을 그대로 받게 display:contents, desktop 만 grid 2열.
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       <div
-        style={{
-          display: mobile ? "contents" : "grid",
-          gridTemplateColumns: mobile ? undefined : "1.4fr 1fr",
-          gap: mobile ? undefined : 20,
-        }}
+        className={mobile ? "contents" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }
+        }
       >
         {/* DonutCard 프레임(Section) + 도넛 로딩 (실제 745·778~803 미러) */}
         <Section
@@ -603,11 +605,12 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
 
   const TrendSkeleton = (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       {/* TrendBig 프레임(Section) + 차트 로딩 (실제 1424·1428~1437 미러) */}
       <Section
@@ -712,11 +715,12 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
 
   const CompareSkeleton = (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       {/* CompareSummary — MTile 요약(기간 지출 + 증감칩 + vs 문구 + 이번/이전 막대 2행) (실제 1817~1860 미러) */}
       <MTile mobile={mobile}>
@@ -3930,11 +3934,12 @@ export const StatsPage = () => {
       // 한 덩어리(flex-col gap) — 카테고리/가맹점/히트맵/통계 4섹션 균일 gap(앱·추이·비교 탭 정합).
       // 데스크톱만 도넛|가맹점을 grid 2열로 나란히, 그 외엔 세로. margin-bottom 혼재 제거.
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: mobile ? "var(--spacing-2xl)" : 20,
-        }}
+        className={mobile ? "screen-bands" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "flex", flexDirection: "column", gap: 20 }
+        }
       >
         {mobile ? (
           <>
@@ -3958,11 +3963,12 @@ export const StatsPage = () => {
       </div>
     ) : tab === "trend" ? (
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: mobile ? "var(--spacing-2xl)" : 20,
-        }}
+        className={mobile ? "screen-bands" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "flex", flexDirection: "column", gap: 20 }
+        }
       >
         {TrendBig}
         {TrendStats}
@@ -3971,11 +3977,12 @@ export const StatsPage = () => {
       </div>
     ) : tab === "compare" ? (
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: mobile ? "var(--spacing-2xl)" : 20,
-        }}
+        className={mobile ? "screen-bands" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "flex", flexDirection: "column", gap: 20 }
+        }
       >
         {CompareSummary}
         {CompareMetrics}
@@ -4031,7 +4038,7 @@ export const StatsPage = () => {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
     // viewport fit 패턴 — AppLayout `.m-scroll` 가 flex-col 이므로 페이지 root 는
     // flex-1 + min-h-0 으로 부모 전체 height 차지. 탭 띠는 shrink-0 로 상단 고정,
-    // Content 만 별도 overflow-y-auto 스크롤 영역(좌우 24, 상 20 · 하 24 padding).
+    // Content 만 별도 overflow-y-auto 스크롤 영역 — 구역마다 화면 폭 흰 띠(ScreenBands 클래스, I-01 결정 3).
     return (
       <div className="flex flex-col flex-1 min-h-0">
         <div className="shrink-0" style={{ background: "var(--bg-surface)" }}>
@@ -4039,7 +4046,7 @@ export const StatsPage = () => {
         </div>
         <div
           className="flex-1 min-h-0 overflow-y-auto scrollbar-hide"
-          style={{ padding: "20px 24px 24px", ...swipeNav.style }}
+          style={swipeNav.style}
           {...swipeNav.handlers}
         >
           {content}

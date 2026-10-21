@@ -746,11 +746,12 @@ export function FixedVariableTab({
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       <Overview
         kind="expense"

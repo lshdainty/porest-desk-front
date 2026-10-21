@@ -13,7 +13,7 @@ export const CardDetailPage = () => {
   const { t } = useTranslation("card");
   const { assetRowId } = useParams<{ assetRowId: string }>();
   const navigate = useNavigate();
-  // 모바일 카드 다이어트 — 이 페이지는 Outlet ctx 밖 라우트라 디바이스 훅으로 판정.
+  // 폰 구역 화면(띠) · 데스크톱 카드 — 이 페이지는 Outlet ctx 밖 라우트라 디바이스 훅으로 판정.
   const mobile = useDeviceSize() === "mobile";
 
   const assetId = Number(assetRowId);
@@ -29,20 +29,30 @@ export const CardDetailPage = () => {
 
   return (
     // max-w-3xl 금지 — groo --spacing-3xl 이 Tailwind 스케일을 가려 48px 로 컴파일됨.
-    <div className="mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 md:p-6">
+    // 폰은 구역 띠가 화면 폭이라 페이지 여백 없이(I-01 결정 3). 폰 머리에 ← 가 없어 뒤로 버튼은
+    // 띠 위 바닥에 둔다 — 상단 바 ← 로 옮기는 것은 화면 이관 때.
+    <div
+      className={
+        mobile
+          ? "flex flex-col"
+          : "mx-auto w-full max-w-[48rem] space-y-4 px-5 py-6 md:p-6"
+      }
+    >
       {!mobile && <PageHead title={asset?.assetName ?? t("cardDetail.back")} />}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="gap-1"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        {t("cardDetail.back")}
-      </Button>
+      <div className={mobile ? "px-x4 pt-x2" : undefined}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          {t("cardDetail.back")}
+        </Button>
+      </div>
 
       {isLoading && (
-        <div className={mobile ? "space-y-9" : "space-y-4"}>
+        <div className={mobile ? "screen-bands" : "space-y-4"}>
           {/* CardInfoHeader: 카드 이미지(h-32 w-52) + 회사명/카드명/배지 — 모바일은 셸 카드 없이 */}
           {mobile ? (
             <>
@@ -99,13 +109,13 @@ export const CardDetailPage = () => {
       {/* 없는 카드(404)·비활성 쿼리 — 종전엔 이 자리가 비어 뒤로 버튼만 남았다(QA #4).
           사용자에게는 '삭제됐다'와 '주소가 틀렸다'가 같은 결과라 한 문구로 받는다. */}
       {!isLoading && !asset && (
-        <div className="rounded-md border bg-muted/50 p-4 text-sm">
+        <div className="m-x4 rounded-md border bg-surface-default p-4 text-sm md:m-0 md:bg-muted/50">
           {t("cardDetail.notFound")}
         </div>
       )}
 
       {!isLoading && asset && !asset.cardCatalog && (
-        <div className="rounded-md border bg-muted/50 p-4 text-sm">
+        <div className="m-x4 rounded-md border bg-surface-default p-4 text-sm md:m-0 md:bg-muted/50">
           {t("cardDetail.noCardCatalog")}
         </div>
       )}

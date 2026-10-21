@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -405,15 +406,8 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
   const [period, setPeriod] = useState(initialKey);
   if (mobile) {
     return (
-      // 모바일 카드 다이어트 — 실제 렌더와 동일한 플랫 구조/간격 (gap 32)
-      <div
-        style={{
-          padding: "20px 24px 24px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--spacing-2xl)",
-        }}
-      >
+      // 폰 구역 화면 — 구역마다 화면 폭 흰 띠(I-01 결정 3, 실제 렌더와 같은 구조)
+      <ScreenBands>
         <DashboardHeroSkeleton mobile year={year} month={month} />
         <DashboardSummaryCardSkeleton
           mobile
@@ -456,7 +450,7 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
           variant="tx"
           amount
         />
-      </div>
+      </ScreenBands>
     );
   }
   return (
@@ -2152,15 +2146,8 @@ function HomeMobile() {
   }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold, t]);
 
   return (
-    // 모바일 카드 다이어트 — 카드 없이 섹션 gap(32)이 간격을 담당 (design HomeMobile).
-    <div
-      style={{
-        padding: "20px 24px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--spacing-2xl)",
-      }}
-    >
+    // 폰 구역 화면 — 구역마다 화면 폭 흰 띠, 사이 · 맨 위 8 (I-01 결정 3 · DESIGN Layout "화면 바탕")
+    <ScreenBands>
       <div className="balance-hero">
         <div
           className="balance-hero__eyebrow"
@@ -2647,7 +2634,7 @@ function HomeMobile() {
           )}
         </div>
       </div>
-    </div>
+    </ScreenBands>
   );
 }
 

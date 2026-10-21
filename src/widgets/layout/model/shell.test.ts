@@ -5,11 +5,11 @@ import { screenFloor, screenTitleKey } from "./shell";
 // 폰 화면 바탕(02-005 C) — 카드 화면 · 띠 화면 · 흰 화면
 describe("screenFloor", () => {
   it.each([
-    ["/desk", "card"],
-    ["/desk/asset", "card"],
-    ["/desk/stats", "card"],
-    ["/desk/budget", "card"],
-    ["/desk/card/12", "card"],
+    ["/desk", "bands"],
+    ["/desk/asset", "bands"],
+    ["/desk/stats", "bands"],
+    ["/desk/budget", "bands"],
+    ["/desk/card/12", "bands"],
     ["/desk/expense", "white"],
     ["/desk/calendar", "strip"],
     ["/desk/more", "strip"],

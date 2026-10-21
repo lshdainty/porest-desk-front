@@ -68,6 +68,29 @@
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card
  * ========================================================================== */
+/* 폰 구역 화면 — 구역(직계 자식)마다 화면 폭 흰 띠, 사이 · 맨 위 8 은 바닥이 보이는 틈(DESIGN Layout "화면 바탕",
+   2026-10-21 I-01 결정 3). 띠 안은 카드 안과 같은 사방 24. 순자산은 모서리 없는 띠(screen-bands.tsx) */
+.screen-bands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-x2);
+  padding-top: var(--spacing-x2);
+}
+.screen-bands > :not(.contents),
+.screen-bands > .contents > * {
+  padding: var(--spacing-x6);
+}
+.screen-bands > :not(.contents, .balance-hero),
+.screen-bands > .contents > * {
+  background: var(--color-surface-default);
+}
+.screen-bands > .balance-hero {
+  border-radius: 0;
+}
+.screen-bands > :empty {
+  display: none;
+}
+
 .balance-hero {
   background: linear-gradient(
     135deg,

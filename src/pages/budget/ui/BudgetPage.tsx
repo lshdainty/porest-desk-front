@@ -1,3 +1,4 @@
+import { BandSurface, ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,6 @@ import {
 } from "@/shared/ui/chart";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
 import { Section } from "@/shared/ui/groo/section";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { Icon, MonthPicker } from "@/shared/ui/groo/primitives";
@@ -231,51 +231,49 @@ function SkelSection({
 function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("budget");
   const HeaderCardSkeleton = (
-    <Card>
-      <CardContent>
-        <SkeletonBase className="h-3 w-24 mb-2" />
-        <SkeletonBase className="h-3 w-3/4 mb-3" />
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 6,
-            marginBottom: 12,
-          }}
-        >
-          <SkeletonBase className={mobile ? "h-7 w-32" : "h-9 w-40"} />
-          <SkeletonBase className="h-4 w-28" />
-        </div>
-        <SkeletonBase className="h-2.5 w-full rounded-full" />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: 8,
-          }}
-        >
-          <SkeletonBase className="h-3 w-16" />
-          <SkeletonBase className="h-3 w-24" />
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 12,
-            paddingTop: 14,
-            marginTop: 14,
-            borderTop: "1px solid var(--border-subtle)",
-          }}
-        >
-          {[0, 1, 2].map((i) => (
-            <div key={i}>
-              <SkeletonBase className="h-3 w-16 mb-2" />
-              <SkeletonBase className="h-4 w-20" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <BandSurface mobile={mobile}>
+      <SkeletonBase className="h-3 w-24 mb-2" />
+      <SkeletonBase className="h-3 w-3/4 mb-3" />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 6,
+          marginBottom: 12,
+        }}
+      >
+        <SkeletonBase className={mobile ? "h-7 w-32" : "h-9 w-40"} />
+        <SkeletonBase className="h-4 w-28" />
+      </div>
+      <SkeletonBase className="h-2.5 w-full rounded-full" />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 8,
+        }}
+      >
+        <SkeletonBase className="h-3 w-16" />
+        <SkeletonBase className="h-3 w-24" />
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          paddingTop: 14,
+          marginTop: 14,
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <div key={i}>
+            <SkeletonBase className="h-3 w-16 mb-2" />
+            <SkeletonBase className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
+    </BandSurface>
   );
 
   const PaceCardSkeleton = (
@@ -411,34 +409,27 @@ function BudgetPageSkeleton({ mobile }: { mobile: boolean }) {
 
   if (mobile) {
     return (
-      // 카드 다이어트 — 실렌더(브랜드 헤더 카드 + flat 섹션, gap 36)와 동일 구조.
-      <div style={{ padding: "16px 24px 24px" }}>
+      // 폰 구역 화면 — 기간 고르기 · 요약 · 구역마다 화면 폭 흰 띠(I-01 결정 3, 실렌더와 같은 구조)
+      <ScreenBands>
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 6,
-            marginBottom: 12,
             flexWrap: "wrap",
           }}
         >
           <SkeletonBase className="h-8 w-32" />
           <SkeletonBase className="h-8 w-24" />
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--spacing-2xl)",
-          }}
-        >
+        <>
           {HeaderCardSkeleton}
           {PaceCardSkeleton}
           {StatusTilesSkeleton}
           {ListCardSkeleton}
           {ComplianceCardSkeleton}
-        </div>
-      </div>
+        </>
+      </ScreenBands>
     );
   }
 
@@ -577,261 +568,259 @@ export const BudgetPage = () => {
   // ---- Cards ----
   const HeaderCard = (
     // 가계부 취합 카드 정합(사용자 결정) — raised(surface-raised + shadow-lg) 히어로.
-    <Card variant="raised">
-      <CardContent>
-        <div
-          style={{
-            fontSize: "var(--text-caption)",
-            color: "var(--fg-brand-strong)",
-            fontWeight: "600",
-            letterSpacing: "0.04em",
-            marginBottom: 2,
-          }}
-        >
-          {t("monthlyCap", { month })}
-        </div>
-        <div
-          style={{
-            fontSize: "var(--text-caption)",
-            color: "var(--fg-tertiary)",
-            lineHeight: "1.5",
-            marginBottom: 10,
-          }}
-        >
-          {t("capHint")}
-        </div>
-        {overallBudget ? (
-          <>
+    <BandSurface mobile={mobile} variant="raised">
+      <div
+        style={{
+          fontSize: "var(--text-caption)",
+          color: "var(--fg-brand-strong)",
+          fontWeight: "600",
+          letterSpacing: "0.04em",
+          marginBottom: 2,
+        }}
+      >
+        {t("monthlyCap", { month })}
+      </div>
+      <div
+        style={{
+          fontSize: "var(--text-caption)",
+          color: "var(--fg-tertiary)",
+          lineHeight: "1.5",
+          marginBottom: 10,
+        }}
+      >
+        {t("capHint")}
+      </div>
+      {overallBudget ? (
+        <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 6,
+              marginBottom: 12,
+            }}
+          >
             <div
+              className="num"
               style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 6,
-                marginBottom: 12,
+                fontSize: mobile ? 24 : 30,
+                fontWeight: "800",
+                letterSpacing: "-0.022em",
               }}
             >
+              <MaskAmount card="budget.header" mask="••••">
+                {wonPre()}
+                {KRW(totalSpent)}
+              </MaskAmount>
+            </div>
+            <div
+              style={{
+                fontSize: "var(--text-body-sm)",
+                color: "var(--fg-secondary)",
+                fontWeight: "500",
+              }}
+            >
+              /{" "}
+              <MaskAmount card="budget.header" mask="••••">
+                {wonPre()}
+                {KRW(totalLimit)}
+              </MaskAmount>
+              <WonUnit card="budget.header" />
+            </div>
+          </div>
+          <div className="budget-bar" style={{ height: 10 }}>
+            <div
+              className={`budget-bar__fill ${headerState}`}
+              style={{ width: `${Math.min(100, pct)}%` }}
+            />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "var(--text-caption)",
+              color: "var(--fg-secondary)",
+              marginTop: 8,
+            }}
+          >
+            <span>
+              {pct.toFixed(0)}% {t("manager.spent")}
+            </span>
+            <span
+              style={{
+                color:
+                  totalLimit - totalSpent < 0
+                    ? "var(--color-fg-critical)"
+                    : undefined,
+              }}
+            >
+              {totalLimit - totalSpent >= 0 ? (
+                <>
+                  {t("manager.remaining")}{" "}
+                  <MaskAmount card="budget.header" mask="••••">
+                    {wonPre()}
+                    {KRW(totalLimit - totalSpent)}
+                  </MaskAmount>
+                  <WonUnit card="budget.header" />
+                </>
+              ) : (
+                <>
+                  {t("limit")}{" "}
+                  <MaskAmount card="budget.header" mask="••••">
+                    {wonPre()}
+                    {KRW(totalSpent - totalLimit)}
+                  </MaskAmount>
+                  <WonUnit card="budget.header" /> {t("over")}
+                </>
+              )}
+            </span>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 12,
+              paddingTop: 14,
+              marginTop: 14,
+              borderTop:
+                "1px solid color-mix(in srgb, var(--border-strong) 28%, var(--border-subtle))",
+            }}
+          >
+            <div>
               <div
-                className="num"
                 style={{
-                  fontSize: mobile ? 24 : 30,
-                  fontWeight: "800",
-                  letterSpacing: "-0.022em",
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "500",
+                  marginBottom: 2,
                 }}
               >
-                <MaskAmount card="budget.header" mask="••••">
-                  {wonPre()}
-                  {KRW(totalSpent)}
-                </MaskAmount>
+                {t("totalCap")}
               </div>
               <div
-                style={{
-                  fontSize: "var(--text-body-sm)",
-                  color: "var(--fg-secondary)",
-                  fontWeight: "500",
-                }}
+                className="num"
+                style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
               >
-                /{" "}
                 <MaskAmount card="budget.header" mask="••••">
                   {wonPre()}
-                  {KRW(totalLimit)}
+                  {KRW(overallLimit)}
                 </MaskAmount>
                 <WonUnit card="budget.header" />
               </div>
             </div>
-            <div className="budget-bar" style={{ height: 10 }}>
-              <div
-                className={`budget-bar__fill ${headerState}`}
-                style={{ width: `${Math.min(100, pct)}%` }}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-secondary)",
-                marginTop: 8,
-              }}
-            >
-              <span>
-                {pct.toFixed(0)}% {t("manager.spent")}
-              </span>
-              <span
-                style={{
-                  color:
-                    totalLimit - totalSpent < 0
-                      ? "var(--color-fg-critical)"
-                      : undefined,
-                }}
-              >
-                {totalLimit - totalSpent >= 0 ? (
-                  <>
-                    {t("manager.remaining")}{" "}
-                    <MaskAmount card="budget.header" mask="••••">
-                      {wonPre()}
-                      {KRW(totalLimit - totalSpent)}
-                    </MaskAmount>
-                    <WonUnit card="budget.header" />
-                  </>
-                ) : (
-                  <>
-                    {t("limit")}{" "}
-                    <MaskAmount card="budget.header" mask="••••">
-                      {wonPre()}
-                      {KRW(totalSpent - totalLimit)}
-                    </MaskAmount>
-                    <WonUnit card="budget.header" /> {t("over")}
-                  </>
-                )}
-              </span>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 12,
-                paddingTop: 14,
-                marginTop: 14,
-                borderTop:
-                  "1px solid color-mix(in srgb, var(--border-strong) 28%, var(--border-subtle))",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: "var(--text-badge)",
-                    color: "var(--fg-tertiary)",
-                    fontWeight: "500",
-                    marginBottom: 2,
-                  }}
-                >
-                  {t("totalCap")}
-                </div>
-                <div
-                  className="num"
-                  style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
-                >
-                  <MaskAmount card="budget.header" mask="••••">
-                    {wonPre()}
-                    {KRW(overallLimit)}
-                  </MaskAmount>
-                  <WonUnit card="budget.header" />
-                </div>
-              </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: "var(--text-badge)",
-                    color: "var(--fg-tertiary)",
-                    fontWeight: "500",
-                    marginBottom: 2,
-                  }}
-                >
-                  {t("categoryAllocated")}
-                </div>
-                <div
-                  className="num"
-                  style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
-                >
-                  <MaskAmount card="budget.header" mask="••••">
-                    {wonPre()}
-                    {KRW(categoryLimitSum)}
-                  </MaskAmount>
-                  <WonUnit card="budget.header" />
-                </div>
-              </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: "var(--text-badge)",
-                    color: "var(--fg-tertiary)",
-                    fontWeight: "500",
-                    marginBottom: 2,
-                  }}
-                >
-                  {t("manager.assignable")}
-                </div>
-                <div
-                  className="num"
-                  style={{
-                    fontSize: "var(--text-body-sm)",
-                    fontWeight: "700",
-                    color: overAllocated
-                      ? "var(--color-fg-critical)"
-                      : "var(--fg-income)",
-                  }}
-                >
-                  <MaskAmount card="budget.header" mask="••••">
-                    {overAllocated ? "−" : "+"}
-                    {wonPre()}
-                    {KRW(Math.abs(allocable))}
-                  </MaskAmount>
-                  <WonUnit card="budget.header" />
-                </div>
-              </div>
-            </div>
-            {overAllocated && (
+            <div>
               <div
                 style={{
-                  marginTop: 10,
-                  padding: "8px 12px",
-                  background: "var(--status-danger-subtle)",
-                  border:
-                    "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "var(--text-caption)",
-                  color: "var(--status-danger-fg)",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 6,
-                }}
-              >
-                <AlertTriangle
-                  size={13}
-                  style={{ flexShrink: 0, marginTop: 1 }}
-                />
-                <span>
-                  {t("manager.overCapPre")}{" "}
-                  <MaskAmount card="budget.header" mask="••••">
-                    {wonPre()}
-                    {KRW(categoryLimitSum - overallLimit)}
-                  </MaskAmount>
-                  <WonUnit card="budget.header" /> {t("manager.overCapPost")}
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            style={{
-              padding: "14px 0 2px",
-              fontSize: "var(--text-label-sm)",
-              color: "var(--fg-secondary)",
-              lineHeight: "1.7",
-            }}
-          >
-            {t("capUnsetPre")} <strong>{t("manager.setBudget")}</strong>{" "}
-            {t("capUnsetPost")}
-            {categoryLimitSum > 0 && (
-              <div
-                style={{
-                  marginTop: 8,
-                  fontSize: "var(--text-caption)",
+                  fontSize: "var(--text-badge)",
                   color: "var(--fg-tertiary)",
+                  fontWeight: "500",
+                  marginBottom: 2,
                 }}
               >
-                {t("currentCategorySum")}:{" "}
+                {t("categoryAllocated")}
+              </div>
+              <div
+                className="num"
+                style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
+              >
                 <MaskAmount card="budget.header" mask="••••">
                   {wonPre()}
                   {KRW(categoryLimitSum)}
                 </MaskAmount>
                 <WonUnit card="budget.header" />
               </div>
-            )}
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: "var(--text-badge)",
+                  color: "var(--fg-tertiary)",
+                  fontWeight: "500",
+                  marginBottom: 2,
+                }}
+              >
+                {t("manager.assignable")}
+              </div>
+              <div
+                className="num"
+                style={{
+                  fontSize: "var(--text-body-sm)",
+                  fontWeight: "700",
+                  color: overAllocated
+                    ? "var(--color-fg-critical)"
+                    : "var(--fg-income)",
+                }}
+              >
+                <MaskAmount card="budget.header" mask="••••">
+                  {overAllocated ? "−" : "+"}
+                  {wonPre()}
+                  {KRW(Math.abs(allocable))}
+                </MaskAmount>
+                <WonUnit card="budget.header" />
+              </div>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          {overAllocated && (
+            <div
+              style={{
+                marginTop: 10,
+                padding: "8px 12px",
+                background: "var(--status-danger-subtle)",
+                border:
+                  "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
+                borderRadius: "var(--radius-md)",
+                fontSize: "var(--text-caption)",
+                color: "var(--status-danger-fg)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 6,
+              }}
+            >
+              <AlertTriangle
+                size={13}
+                style={{ flexShrink: 0, marginTop: 1 }}
+              />
+              <span>
+                {t("manager.overCapPre")}{" "}
+                <MaskAmount card="budget.header" mask="••••">
+                  {wonPre()}
+                  {KRW(categoryLimitSum - overallLimit)}
+                </MaskAmount>
+                <WonUnit card="budget.header" /> {t("manager.overCapPost")}
+              </span>
+            </div>
+          )}
+        </>
+      ) : (
+        <div
+          style={{
+            padding: "14px 0 2px",
+            fontSize: "var(--text-label-sm)",
+            color: "var(--fg-secondary)",
+            lineHeight: "1.7",
+          }}
+        >
+          {t("capUnsetPre")} <strong>{t("manager.setBudget")}</strong>{" "}
+          {t("capUnsetPost")}
+          {categoryLimitSum > 0 && (
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: "var(--text-caption)",
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              {t("currentCategorySum")}:{" "}
+              <MaskAmount card="budget.header" mask="••••">
+                {wonPre()}
+                {KRW(categoryLimitSum)}
+              </MaskAmount>
+              <WonUnit card="budget.header" />
+            </div>
+          )}
+        </div>
+      )}
+    </BandSurface>
   );
 
   const PaceCard = (
@@ -1466,33 +1455,26 @@ export const BudgetPage = () => {
 
   if (mobile) {
     return (
-      // 카드 다이어트 — 브랜드 헤더만 카드 유지, 나머지 flat 섹션 + gap 36 (design BudgetScreen).
-      <div style={{ padding: "16px 24px 24px" }}>
+      // 폰 구역 화면 — 기간 고르기 · 요약 · 구역마다 화면 폭 흰 띠, 사이 8(I-01 결정 3)
+      <ScreenBands>
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 6,
-            marginBottom: 12,
             flexWrap: "wrap",
           }}
         >
           {PageControls}
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--spacing-2xl)",
-          }}
-        >
+        <>
           {HeaderCard}
           {PaceCard}
           {StatusTiles}
           {ListCard}
           {ComplianceCard}
-        </div>
-      </div>
+        </>
+      </ScreenBands>
     );
   }
 
