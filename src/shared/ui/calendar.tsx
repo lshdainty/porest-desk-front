@@ -142,10 +142,8 @@ function Calendar({
           "text-text-tertiary aria-selected:text-text-tertiary",
           defaultClassNames.outside,
         ),
-        disabled: cn(
-          "text-text-tertiary opacity-50",
-          defaultClassNames.disabled,
-        ),
+        // 막힌 날 — 불투명도로 흐리게 하지 않고 비활성 전용 글자 색(fg-disabled)을 쓴다(01-029, 기초 STA-01)
+        disabled: cn("text-fg-disabled", defaultClassNames.disabled),
         hidden: cn("invisible", defaultClassNames.hidden),
         ...classNames,
       }}

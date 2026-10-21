@@ -7,6 +7,7 @@ import { cn } from "@/shared/lib";
  * Slider — groo-design specs/components/slider.md SoT 정합.
  * Radix Slider 베이스. 키보드 / 마우스 / 터치 드래그.
  * track: 4px(h-1) + primary fill, thumb 16(h-4 w-4) + bg-text-on-accent(흰색 고정).
+ * 막힘(Radix 는 :disabled 가 아니라 data-disabled 를 단다): 트랙 bg-disabled · 채움 · 손잡이 fg-disabled — 불투명도로 흐리게 하지 않는다(01-029, 스펙 slider.yaml disabled).
  * ticks: 트랙 위 균등 간격 눈금 점 — step 단위 선택 가능함을 시각화 (앱 divisions 정합).
  */
 
@@ -36,8 +37,8 @@ const Slider = React.forwardRef<
       )}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-surface-input">
-        <SliderPrimitive.Range className="absolute h-full bg-bg-brand-solid" />
+      <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-surface-input data-[disabled]:bg-bg-disabled">
+        <SliderPrimitive.Range className="absolute h-full bg-bg-brand-solid data-[disabled]:bg-fg-disabled" />
         {ticks != null &&
           ticks > 1 &&
           Array.from({ length: ticks }).map((_, i) => {
@@ -64,7 +65,7 @@ const Slider = React.forwardRef<
             );
           })}
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-stroke-brand-solid bg-text-on-accent shadow-sm transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:pointer-events-none disabled:opacity-50" />
+      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-stroke-brand-solid bg-text-on-accent shadow-sm transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring data-[disabled]:pointer-events-none data-[disabled]:border-fg-disabled data-[disabled]:bg-fg-disabled" />
     </SliderPrimitive.Root>
   );
 });

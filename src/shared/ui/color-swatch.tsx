@@ -59,7 +59,9 @@ const ColorSwatchItem = React.forwardRef<
       "hover:scale-[1.05]",
       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
       "data-[state=checked]:border-[currentColor]",
-      "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+      // 막혀도 칸의 색은 그대로 — 색이 곧 값이다(스펙 color-swatch.yaml disabled). 불투명도로 흐리게 하지 않고(01-029),
+      // 고른 채 막히면 고리만 회색(stroke-neutral-solid)으로 남긴다
+      "disabled:cursor-not-allowed disabled:hover:scale-100 disabled:data-[state=checked]:border-stroke-neutral-solid",
     )}
     style={{ background: option.bg, color: option.fg }}
     {...props}
