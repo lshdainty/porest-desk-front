@@ -734,8 +734,9 @@ const StateSample = ({
       );
       break;
   }
+  // 폭 320 — 줄 안 272 가 문턱(16em = 256)을 넘는 넓은 줄이다. 300 이면 줄 안 252 라 좁은 줄(값이 아래로)이 되어 스펙 조합(regular)과 갈린다
   return (
-    <Cell width={300}>
+    <Cell width={320}>
       <Specimen spec="list" combo={combo} state={state}>
         {list}
       </Specimen>
