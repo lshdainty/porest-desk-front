@@ -83,7 +83,7 @@ export type RootAction = "search" | "notifications";
 export const rootActionsFor = (pathname: string): RootAction[] =>
   pathname === "/desk" ? ["search", "notifications"] : ["search"];
 
-// 화면 제목 — layout ns 키. 문서 제목("{제목} - Groo Desk") · root 머리 제목이 함께 쓴다
+// 화면 제목 — layout ns 키. 문서 제목("{제목} - 그루 담다") · root 머리 제목이 함께 쓴다
 const TITLE_KEYS: Record<string, string> = {
   "/desk": "home",
   "/desk/calendar": "calendar",

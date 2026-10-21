@@ -81,7 +81,7 @@ export function DesktopSidebar() {
         logo={
           <>
             <BrandMark size={24} />
-            Groo Desk
+            그루 담다
           </>
         }
       />

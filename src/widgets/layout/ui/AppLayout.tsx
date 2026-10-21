@@ -45,7 +45,7 @@ const CalendarEventAddForm = ({ onClose }: { onClose: () => void }) => {
 };
 
 /**
- * 화면을 옮길 때의 셸 몫 — 문서 제목 "{제목} - Groo Desk" 와, 옮긴 뒤 본문을 맨 위로 + 제목에 초점.
+ * 화면을 옮길 때의 셸 몫 — 문서 제목 "{제목} - 그루 담다" 와, 옮긴 뒤 본문을 맨 위로 + 제목에 초점.
  * TopNavigationProvider 안에 둔다(제품 이름을 거기서 읽는다). 처음 열 때는 초점을 훔치지 않는다.
  */
 const ScreenEffects = () => {
@@ -64,7 +64,7 @@ const ScreenEffects = () => {
 };
 
 export const AppLayout = () => (
-  <TopNavigationProvider product="Groo Desk">
+  <TopNavigationProvider product="그루 담다">
     <ScreenEffects />
     <Shell />
   </TopNavigationProvider>
