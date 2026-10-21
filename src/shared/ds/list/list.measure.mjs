@@ -64,8 +64,8 @@ export default {
   "tile.color": [TILE, "color", "color"],
   "body.gap": [BODY, "px", "row-gap"],
   "body.paddingRight": [BODY, "px", "padding-right"],
-  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth("1em")는 글자 단위 값이라 재지 않는다 — 계산값이 26px(1em + 뒤 여백 10)로
-  // 풀려 스펙 글과 맞지 않는다. list.test.tsx 가 클래스로 본다
+  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth("1em")는 글자 단위 값이라 재지 않는다 — 계산값이 26px(제목 글자 16 + 뒤 여백 10)로
+  // 풀려 스펙 글과 맞지 않는다. list.test.tsx 가 클래스로, i02-measure 가 크로미움에서 26 을 본다
   "body.flexGrow": [BODY, "exact", "flex-grow"],
   "title.typography": ["[data-slot=list-title]", "typography"],
   "title.fontWeight": ["[data-slot=list-title]", "exact", "font-weight"],
@@ -80,6 +80,9 @@ export default {
     "overflow-wrap",
   ],
   "suffix.gap": [SUFFIX, "px", "column-gap"],
+  // 좁은 줄(width narrow — 줄 안 폭 < 16em): 값이 본문 아래, 설명 ↔ 값 4 = 본문 사이 2 + 여백 2
+  "suffix.marginTop": [SUFFIX, "px", "margin-top"],
+  "suffix.textAlign": [SUFFIX, "exact", "text-align"],
   // 금액 · 화살표 · 컨트롤은 줄지 않고, 글로 넘긴 값만 본문이 1em 이 된 뒤에 준다 — list-suffix 의 data-value 로 가른다
   "suffix.shrink": [`${SUFFIX}[data-value=node]`, "exact", "flex-shrink"],
   "suffixText.shrink": [`${SUFFIX}[data-value=text]`, "exact", "flex-shrink"],

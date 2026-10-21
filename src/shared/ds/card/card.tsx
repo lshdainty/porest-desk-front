@@ -22,7 +22,7 @@ import {
   cardHeaderVariants,
   cardVariants,
 } from "./card-variants";
-import { dsText, useDsText } from "@/shared/ds/i18n";
+import { dsText, useDsText, withCommaBreaks } from "@/shared/ds/i18n";
 
 /*
  * Groo Card — 면은 SEED Elevation · stroke.neutral-weak · Feedback(2026-10-08). 수치 원본은 groo-design
@@ -511,7 +511,7 @@ const CardStat = React.forwardRef<HTMLDivElement, CardStatProps>(
         data-slot="card-stat-value"
         className={cn(CARD_STAT_VALUE, CARD_STAT_SIZE[size])}
       >
-        {value}
+        {withCommaBreaks(value)}
       </span>
       {delta != null && (
         <Delta {...delta} className={cn("mt-x1", delta.className)} />
@@ -538,13 +538,15 @@ CardHeroLabel.displayName = "CardHeroLabel";
 const CardHeroAmount = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
     data-slot="card-hero-amount"
     className={cn(CARD_HERO_AMOUNT, className)}
     {...props}
-  />
+  >
+    {withCommaBreaks(children)}
+  </div>
 ));
 CardHeroAmount.displayName = "CardHeroAmount";
 

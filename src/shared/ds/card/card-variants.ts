@@ -115,7 +115,7 @@ export const DELTA_TONE = {
 export const CARD_STAT_LABEL =
   "font-sans text-t3 font-medium text-fg-neutral-subtle";
 export const CARD_STAT_VALUE =
-  "mt-x1 font-sans font-bold tabular-nums text-fg-neutral";
+  "mt-x1 max-w-full font-sans font-bold tabular-nums text-fg-neutral [overflow-wrap:anywhere]";
 export const CARD_STAT_SIZE = { large: "text-t9", small: "text-t7" } as const;
 
 // 순자산 카드의 흰 글자 셋 — 라벨 13 · 500, 금액 32 / 42 · 700(아래 6), 아래 글 13(아래 4). 흐리게(불투명도) 두지 않는다

@@ -22,6 +22,7 @@ import { Avatar } from "@/shared/ds/avatar";
 import { Badge } from "@/shared/ds/badge";
 import { Button } from "@/shared/ds/button";
 import { DemoBlock, DemoRow, Specimen } from "@/shared/ds/catalog/DemoKit";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { TagGroup, TagGroupItem } from "@/shared/ds/tag-group";
 
 import {
@@ -61,6 +62,11 @@ const Tile = ({
 // 링크는 견본 안에서 어디로도 가지 않는다 — 검사기가 눌렀다 떼면 클릭이 되어 페이지가 바뀐다
 const stay = (e: { preventDefault: () => void }) => e.preventDefault();
 const noop = () => {};
+
+// 목록 금액 — 쉼표 뒤에서만 줄을 바꾼다(금액 글 함수 withCommaBreaks 의 <wbr>)
+const Amount = ({ children }: { children: string }) => (
+  <b className="font-bold text-fg-neutral">{withCommaBreaks(children)}</b>
+);
 
 // 폰 폭 칸 — 줄은 24 가장자리 여백이라 폭이 그림의 일부다
 const Cell = ({
@@ -250,7 +256,7 @@ const PrefixDemo = () => (
                 }
                 title="점심 · 김치찌개"
                 detail="식비"
-                suffix={<b className="font-bold text-fg-neutral">-9,000원</b>}
+                suffix={<Amount>-9,000원</Amount>}
               />
               <ListButtonItem
                 prefix={
@@ -260,7 +266,7 @@ const PrefixDemo = () => (
                 }
                 title="주유"
                 detail="교통"
-                suffix={<b className="font-bold text-fg-neutral">-62,000원</b>}
+                suffix={<Amount>-62,000원</Amount>}
               />
             </List>
           </Specimen>
@@ -276,7 +282,7 @@ const PrefixDemo = () => (
                 }
                 title="월급통장 → 생활비"
                 detail="이체"
-                suffix={<b className="font-bold text-fg-neutral">500,000원</b>}
+                suffix={<Amount>500,000원</Amount>}
               />
               <ListButtonItem
                 prefix={
@@ -437,7 +443,7 @@ const PrefixDemo = () => (
                     <TagGroupItem>10월 2일 오후 2:30</TagGroupItem>
                   </TagGroup>
                 }
-                suffix={<b className="font-bold text-fg-neutral">-89,000원</b>}
+                suffix={<Amount>-89,000원</Amount>}
               />
             </List>
           </Specimen>
@@ -1148,9 +1154,7 @@ const WorstDemo = () => (
                   <TagGroupItem>2026년 10월 2일 오후 2:30</TagGroupItem>
                 </TagGroup>
               }
-              suffix={
-                <b className="font-bold text-fg-neutral">-123,456,789원</b>
-              }
+              suffix={<Amount>-123,456,789원</Amount>}
             />
           </List>
         </Specimen>
@@ -1165,11 +1169,7 @@ const WorstDemo = () => (
                 </Tile>
               }
               title="입출금 통장"
-              suffix={
-                <b className="font-bold text-fg-neutral">
-                  -1,234,567,890,123원
-                </b>
-              }
+              suffix={<Amount>-1,234,567,890,123원</Amount>}
             />
           </List>
         </Specimen>
@@ -1255,6 +1255,109 @@ const WorstDemo = () => (
   </DemoBlock>
 );
 
+// ── 좁은 줄 — 값이 본문 아래로 ──────────────────────────────────
+
+// 줄 안 폭 < 16em(제목 글자 16개 = 16rem = 256) 이면 값(글 값 · 금액)이 본문 아래로 내려간다(03-D 결정 1 B). 화살표 · 스위치 · 체크 · 작은 버튼은 줄 끝 그대로.
+// 폭 300(좌우 24 → 줄 안 252)이 문턱(256) 아래라 보통 글자에서도 좁은 줄이다. 부모 줄은 왼쪽 4 라 문턱이 304 − 20 = 284 쪽으로 내려오고, 하위 줄은 104 라 더 일찍 좁아진다.
+const NarrowDemo = () => (
+  <DemoBlock title="좁은 줄 — 줄 안 폭이 제목 글자 16개(16em)보다 좁으면 값이 본문 아래로(폭 300 = 줄 안 252). 앞 붙이개는 위에 맞추고, 화살표 · 스위치 · 체크 · 작은 버튼은 줄 끝 그대로">
+    <DemoRow label="글 값 · 금액 300">
+      <Cell width={300}>
+        <Specimen spec="list" combo={{ width: "narrow" }}>
+          <List aria-label="좁은 줄 · 글 값 · 금액">
+            <ListItem
+              title="이메일"
+              suffix="groo.desk.design.system@example-company-domain.co.kr"
+            />
+            <ListButtonItem
+              prefix={
+                <Tile color="orange">
+                  <Utensils />
+                </Tile>
+              }
+              title="점심 — 아주 긴 가게 이름이 두 줄 이상으로 이어질 때"
+              detail="식비 · 지어낸카드"
+              suffix={<Amount>-123,456,789,012원</Amount>}
+            />
+            <ListButtonItem
+              prefix={
+                <Tile color="blue">
+                  <Coffee />
+                </Tile>
+              }
+              title="숲길커피"
+              detail="카페 · 간식"
+              suffix={<Amount>-4,500원</Amount>}
+            />
+          </List>
+        </Specimen>
+      </Cell>
+      <Cell width={300}>
+        <Specimen spec="list" combo={{ width: "narrow" }}>
+          <List aria-label="좁은 줄 · 줄 끝에 남는 것">
+            <ListButtonItem
+              prefix={<User />}
+              title="계정"
+              detail="아이디 · 비밀번호 · 이메일 · 연결된 로그인"
+              suffix={<ChevronRight />}
+              onClick={noop}
+            />
+            <ListSwitchItem
+              title="알림 받기"
+              detail="새 소식이 있으면 알려 드려요"
+              defaultChecked
+            />
+          </List>
+        </Specimen>
+      </Cell>
+    </DemoRow>
+    <DemoRow label="부모 · 하위 줄 360 — 문턱이 단계마다 다르다(부모 284 · 하위 384). 하위 줄만 좁다 — 견본이 아니라 i02-measure 가 잰다">
+      <Cell width={360}>
+        <div>
+          <List aria-label="좁은 줄 · 부모 줄">
+            <ListParentItem
+              prefix={
+                <Tile color="orange">
+                  <Utensils />
+                </Tile>
+              }
+              title="식비 · 외식 · 배달음식"
+              detail="지출 · 하위 2개"
+              suffix={<Amount>240,000원</Amount>}
+              expandLabel="식비 하위 카테고리"
+              defaultOpen
+              onClick={noop}
+            >
+              <ListButtonItem
+                prefix={
+                  <Tile color="orange">
+                    <Tag />
+                  </Tile>
+                }
+                title="외식"
+                detail="지출"
+                suffix={<Amount>120,000원</Amount>}
+                onClick={noop}
+              />
+              <ListButtonItem
+                prefix={
+                  <Tile color="orange">
+                    <Tag />
+                  </Tile>
+                }
+                title="배달음식"
+                detail="지출"
+                suffix={<Amount>-4,500원</Amount>}
+                onClick={noop}
+              />
+            </ListParentItem>
+          </List>
+        </div>
+      </Cell>
+    </DemoRow>
+  </DemoBlock>
+);
+
 // ── 직접 눌러 보기 ───────────────────────────────────────────
 
 const LiveDemo = () => {
@@ -1330,6 +1433,7 @@ export const ListDemo = () => (
     <NestedDemo />
     <NestedStatesDemo />
     <WorstDemo />
+    <NarrowDemo />
     <LiveDemo />
   </div>
 );

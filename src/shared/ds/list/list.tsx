@@ -12,6 +12,7 @@ import {
   submitOnRadioEnter,
   type RadiomarkProps,
 } from "@/shared/ds/radio-group";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { Switchmark, type SwitchmarkProps } from "@/shared/ds/switch";
 
 import {
@@ -204,7 +205,7 @@ function Row({
             value: suffixValue,
           })}
         >
-          {suffix}
+          {withCommaBreaks(suffix)}
         </span>
       )}
     </>

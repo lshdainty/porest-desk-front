@@ -94,6 +94,76 @@ const pressEnter = (el: Element) =>
 
 // ── 목록 · 보기만 하는 줄 ────────────────────────────────────
 
+describe("List — 좁은 줄(03-D 결정 1 B · 결정 2 B)", () => {
+  it("줄(li)이 컨테이너다 — 줄 안 폭 16em(16rem) 미만이면 격자로 바뀌어 값이 본문 아래로 간다", () => {
+    render(
+      <List>
+        <ListItem title="점심" suffix="-123,456,789,012원" />
+      </List>,
+    );
+    const li = slot("list-item");
+    expect(classes(li)).toContain("@container/list-item");
+    const content = classes(slot("list-content"));
+    // 문턱 = 16rem + 좌우 여백(줄 24 + 24)
+    expect(content).toEqual(
+      expect.arrayContaining([
+        "@max-[calc(16rem+48px)]/list-item:grid",
+        "@max-[calc(16rem+48px)]/list-item:items-start",
+        "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+      ]),
+    );
+    // 값은 본문 칸 안 왼쪽 · 설명 아래 4(바깥 여백 2 + 안쪽 여백 2) — 화살표 · 컨트롤 · 작은 버튼이 든 뒤 붙이개는 값이 아니다(줄 끝 그대로)
+    expect(content.join(" ")).toContain(
+      "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5",
+    );
+    expect(content.join(" ")).toContain(
+      "[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:row-start-2",
+    );
+    expect(content.join(" ")).toContain(
+      "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5",
+    );
+    expect(content).toContain("[&>[data-slot=list-suffix]]:col-start-4");
+  });
+
+  it("문턱은 단계마다 다르다 — 부모 줄은 왼쪽 4 라 16rem + 28, 하위 줄은 104 라 16rem + 128", () => {
+    render(
+      <List>
+        <ListParentItem
+          title="식비"
+          expandLabel="식비 하위 카테고리"
+          defaultOpen
+        >
+          <ListButtonItem title="외식" suffix="-4,500원" />
+        </ListParentItem>
+      </List>,
+    );
+    const [parent, child] = slots("list-content");
+    expect(classes(parent!)).toContain(
+      "@max-[calc(16rem+28px)]/list-item:grid",
+    );
+    expect(classes(child!)).toContain(
+      "@max-[calc(16rem+128px)]/list-item:grid",
+    );
+    // 꺾쇠 단추 · 앞 붙이개는 격자 첫 · 둘째 칸에서 위에 맞춘다
+    expect(classes(parent!).join(" ")).toContain(
+      "[&>:is([data-slot=list-expand-button],[data-slot=list-expand-slot])]:col-start-1",
+    );
+  });
+
+  it("글로 넘긴 금액은 쉼표 뒤에 <wbr> — 글 값(이메일)은 그대로", () => {
+    render(
+      <List>
+        <ListItem title="점심" suffix="-123,456,789,012원" />
+        <ListItem title="이메일" suffix="groo@example.com" />
+      </List>,
+    );
+    const [amount, mail] = slots("list-suffix");
+    expect(amount!.innerHTML).toBe("-123,<wbr>456,<wbr>789,<wbr>012원");
+    expect(amount!.textContent).toBe("-123,456,789,012원");
+    expect(mail!.innerHTML).toBe("groo@example.com");
+  });
+});
+
 describe("List · ListItem", () => {
   it("목록은 ul · 줄 사이 간격 0 · 줄은 li — 바탕 층 + 콘텐츠 층(앞 · 본문 · 뒤)", () => {
     const list = render(
@@ -154,10 +224,10 @@ describe("List · ListItem", () => {
       expect.arrayContaining(["text-t3", "text-fg-neutral-subtle"]),
     );
     expect(slot("list-detail", second)).toBeNull();
-    // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 최소 폭 1em + 뒤 여백 10
+    // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 최소 폭 제목 글자 1개(--text-t5) + 뒤 여백 10
     expect(classes(slot("list-body", second))).toEqual(
       expect.arrayContaining([
-        "min-w-[calc(1em+var(--spacing-x2_5))]",
+        "min-w-[calc(var(--text-t5)+var(--spacing-x2_5))]",
         "flex-1",
         "flex-col",
         "gap-x0_5",
@@ -331,7 +401,7 @@ describe("ListButtonItem · ListLinkItem", () => {
         "after:absolute",
         "after:inset-0",
         "data-[disabled]:cursor-not-allowed",
-        "min-w-[calc(1em+var(--spacing-x2_5))]",
+        "min-w-[calc(var(--text-t5)+var(--spacing-x2_5))]",
       ]),
     );
     click(button);
@@ -1519,7 +1589,7 @@ describe("가장 나쁜 값", () => {
     // 본문은 한 글자(1em) + 뒤 여백 10 까지만 줄고, 제목 · 글 설명은 칸 끝에서 끊는다(Q-001 A)
     expect(classes(slot("list-body"))).toEqual(
       expect.arrayContaining([
-        "min-w-[calc(1em+var(--spacing-x2_5))]",
+        "min-w-[calc(var(--text-t5)+var(--spacing-x2_5))]",
         "flex-1",
         "pr-x2_5",
       ]),
