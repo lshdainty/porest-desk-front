@@ -147,7 +147,7 @@ describe("Table — 구조", () => {
     expect(one("table").className).toContain("min-w-[800px]");
   });
 
-  it("상자는 가로로 밀린다 — 넘김 줄이 같은 상자 안(위 12 · 좌우 24)이다", () => {
+  it("상자는 가로로 밀린다 — 넘김 줄이 같은 상자 안이고 자리는 좌우 24 만이다(위 12 는 Table Pagination 이 갖는다)", () => {
     render(
       <Table caption="x" pagination={<span id="pg">쪽</span>}>
         <TableBody />
@@ -155,8 +155,9 @@ describe("Table — 구조", () => {
     );
     expect(one("[data-slot=table]").className).toContain("overflow-x-auto");
     const slot = one("[data-slot=table-pagination-slot]");
-    expect(slot.className).toContain("pt-x3");
     expect(slot.className).toContain("px-x6");
+    // 위 12 를 자리와 Table Pagination 이 함께 갖지 않는다(24 가 되던 것 — 03-D 결정 5 B)
+    expect(slot.className).not.toMatch(/\bp[ty]-/);
     expect(one("[data-slot=table-frame]").contains(slot)).toBe(true);
     expect(one("[data-slot=table-frame]").className).toContain("w-fit");
   });
