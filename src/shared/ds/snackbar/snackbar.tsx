@@ -11,6 +11,7 @@ import {
   type SnackbarOptions,
   type SnackbarTone,
 } from "./snackbar-context";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Snackbar — 구조는 SEED Snackbar(2026-10-02). 수치 원본은 groo-design
@@ -219,6 +220,7 @@ function SnackbarItem({
   entry: Entry;
   dispatch: React.Dispatch<Action>;
 }) {
+  const dsT = useDsText();
   const { id, open, options } = entry;
   const { message, tone = "neutral", action } = options;
   const ref = React.useRef<HTMLDivElement>(null);
@@ -345,7 +347,7 @@ function SnackbarItem({
       <button
         type="button"
         data-slot="snackbar-close"
-        aria-label="닫기"
+        aria-label={dsT("common.close")}
         className={CLOSE}
         onClick={() => dispatch({ type: "close", id })}
       >
@@ -399,6 +401,7 @@ function createAvoidance(setOffset: (offset: number) => void) {
 }
 
 function SnackbarProvider({ children }: { children?: React.ReactNode }) {
+  const dsT = useDsText();
   const [state, dispatch] = React.useReducer(reducer, INITIAL_STATE);
   const [container, setContainer] = React.useState<HTMLElement | null>(null);
   const [avoidOffset, setAvoidOffset] = React.useState(0);
@@ -438,7 +441,7 @@ function SnackbarProvider({ children }: { children?: React.ReactNode }) {
   const region = (
     <div
       role="region"
-      aria-label="알림"
+      aria-label={dsT("snackbar.region")}
       aria-live="polite"
       data-slot="snackbar-region"
       className={REGION}

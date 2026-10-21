@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
   eventBadgeColor,
+  eventBadgeTone,
   getCurrentEvents,
   getEventBlockStyle,
   getVisibleHours,
@@ -85,16 +86,18 @@ const DayViewMultiDayEventsRow = ({
           const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1;
 
           const badgeColor = eventBadgeColor(event);
+
+          const tone = eventBadgeTone(event);
           return (
             <div
               key={event.id}
               role="button"
               tabIndex={0}
-              className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="mx-1 flex h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
               style={{
-                background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                background: tone.bg,
                 borderColor: "transparent",
-                color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+                color: tone.fg,
               }}
               onClick={(e) => onEventClick?.(event, e.currentTarget)}
               onKeyDown={(e) => {
@@ -155,11 +158,11 @@ const CalendarTimeline = ({
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-50 border-t border-primary"
+      className="pointer-events-none absolute inset-x-0 z-50 border-t border-stroke-brand-solid"
       style={{ top: `${position}%` }}
     >
-      <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
-      <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-primary">
+      <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bg-brand-solid" />
+      <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-fg-brand">
         {format(now, timeFormat, { locale })}
       </div>
     </div>
@@ -184,20 +187,21 @@ const EventBlock = ({
   const durationInMinutes = differenceInMinutes(end, start);
   const heightInPixels = (durationInMinutes / 60) * 96 - 8;
   const badgeColor = eventBadgeColor(event);
+  const tone = eventBadgeTone(event);
 
   return (
     <div
       role="button"
       tabIndex={0}
       className={cn(
-        "flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
         durationInMinutes < 35 && "py-0 justify-center",
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        background: tone.bg,
         borderColor: "transparent",
-        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+        color: tone.fg,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => {
@@ -274,7 +278,7 @@ const CalendarDayView = ({
               <div
                 style={{
                   color: isSunday
-                    ? "var(--fg-expense)"
+                    ? "var(--color-fg-critical)"
                     : isSaturday
                       ? "var(--fg-brand)"
                       : undefined,
@@ -382,7 +386,7 @@ const CalendarDayView = ({
       </div>
 
       {/* Side panel */}
-      <div className="hidden w-64 divide-y border-l min-[736px]:block">
+      <div className="hidden w-64 divide-y border-l md:block">
         <div className="flex-1 space-y-3">
           {currentEvents.length > 0 ? (
             <div className="flex items-start gap-2 px-4 pt-4">

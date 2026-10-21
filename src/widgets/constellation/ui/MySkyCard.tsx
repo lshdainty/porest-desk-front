@@ -119,12 +119,12 @@ export function MySkyCard({
                   alignItems: "center",
                   justifyContent: "center",
                   background: isToday
-                    ? "color-mix(in oklab, var(--color-primary) 10%, var(--bg-surface))"
+                    ? "var(--color-bg-brand-weak)"
                     : day.status === "GROWN"
                       ? `color-mix(in oklab, ${grownColor} 13%, var(--bg-surface))`
                       : "var(--bg-sunken)",
                   boxShadow: isToday
-                    ? "inset 0 0 0 1.5px var(--color-primary)"
+                    ? "inset 0 0 0 1.5px var(--color-stroke-brand-solid)"
                     : "none",
                   color: isToday
                     ? "var(--fg-brand)"

@@ -371,7 +371,7 @@ describe("본문 · 바닥 · 손잡이", () => {
     expect(body.hasAttribute("data-scroll-fog")).toBe(false);
   });
 
-  it("바닥 버튼은 Button large 48 이고 나눠 가진다", async () => {
+  it("바닥 버튼은 Button large 48 이고 반씩 나눠 가진다 — 라벨이 반 폭을 넘으면 세로로 쌓는다(ResponsivePair)", async () => {
     render(<Sheet />);
     open();
     await tick();
@@ -379,7 +379,7 @@ describe("본문 · 바닥 · 손잡이", () => {
     expect(byText("초기화").className).toContain("h-12");
     expect(
       document.querySelector("[data-slot=bottom-sheet-footer]")!.className,
-    ).toContain("[&>*]:flex-1");
+    ).toMatch(/flex-wrap-reverse.*\[&>\*\]:grow/);
   });
 
   it("스냅 높이가 있으면 손잡이를 달고 보조 기술에서 숨긴다 — 누르면 다음 높이, 마지막에서 닫는다", async () => {

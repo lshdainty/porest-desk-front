@@ -19,6 +19,7 @@ import {
 import { withSeriesDefaults } from "./chart-series";
 import { ChartTooltipRow } from "./chart-tooltip-row";
 import { useEscapeFirst } from "./use-escape-first";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Chart — 색은 DESIGN.md v110 · v111, 부품은 SEED Layout 의 대시보드 그림(2026-10-08). 수치 원본은 groo-design specs/components/chart.yaml
@@ -382,11 +383,13 @@ const ChartLegendTiles = React.forwardRef<
       onHiddenChange,
       id,
       className,
-      "aria-label": ariaLabel = "범례",
+      "aria-label": ariaLabelProp,
       ...props
     },
     ref,
   ) => {
+    const dsT = useDsText();
+    const ariaLabel = ariaLabelProp ?? dsT("chart.legend");
     const off = hidden ?? new Set<string>();
     const shown = items.filter((item) => !off.has(item.key)).length;
     return (
@@ -437,7 +440,7 @@ const ChartLegendTiles = React.forwardRef<
               >
                 <span
                   data-slot="chart-legend-name"
-                  className="flex items-center gap-x1_5 text-t3 text-fg-neutral-muted"
+                  className="flex items-center gap-x1_5 text-t3 text-fg-neutral-subtle"
                 >
                   <span
                     aria-hidden

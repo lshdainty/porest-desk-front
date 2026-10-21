@@ -13,13 +13,13 @@ import { Card } from "@/shared/ui/card";
 import { Donut } from "@/shared/ui/groo/charts";
 
 const DONUT_PALETTE = [
-  "var(--color-cat-blue)",
-  "var(--color-cat-green)",
-  "var(--color-cat-violet)",
-  "var(--color-cat-orange)",
-  "var(--color-cat-pink)",
-  "var(--color-cat-indigo)",
-  "var(--color-cat-brown)",
+  "var(--color-chart-blue)",
+  "var(--color-chart-green)",
+  "var(--color-chart-violet)",
+  "var(--color-chart-orange)",
+  "var(--color-chart-pink)",
+  "var(--color-chart-indigo)",
+  "var(--color-chart-brown)",
 ];
 
 /** 도넛 한 조각 — 이름과 크기만. 통화·증권사는 도넛이 알 필요가 없다(비중은 비율이다). */

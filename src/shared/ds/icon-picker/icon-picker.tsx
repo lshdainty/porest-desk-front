@@ -38,6 +38,7 @@ import {
   GROUP_HEADER,
   POPOVER_SCROLL,
 } from "./icon-picker-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Icon Picker — 카테고리 · 저축 목표에 붙일 아이콘을 고르는 칸(2026-10-09). 수치 원본은 groo-design specs/components/icon-picker.yaml(값은 src/shared/ds/spec/icon-picker.json),
@@ -188,6 +189,7 @@ function IconPickerPanel({
   listboxRef: listboxRefProp,
   searchRef: searchRefProp,
 }: IconPickerPanelProps) {
+  const dsT = useDsText();
   const ownListbox = React.useRef<HTMLDivElement>(null);
   const ownSearch = React.useRef<HTMLInputElement>(null);
   const listboxRef = listboxRefProp ?? ownListbox;
@@ -225,7 +227,7 @@ function IconPickerPanel({
   }, [searching, resultCount, query]);
   const announcement =
     searching && announced?.query === query
-      ? `검색 결과 ${announced.count}개`
+      ? dsT("iconPicker.results", { count: announced.count })
       : "";
 
   const focusCell = (cell: HTMLElement | undefined) => {
@@ -324,8 +326,8 @@ function IconPickerPanel({
       type="text"
       value={query}
       onChange={(e) => onQueryChange(e.target.value)}
-      placeholder="아이콘 이름 검색"
-      aria-label="아이콘 검색"
+      placeholder={dsT("iconPicker.searchPlaceholder")}
+      aria-label={dsT("iconPicker.searchLabel")}
       autoComplete="off"
       spellCheck={false}
       onKeyDown={(e) => {
@@ -350,14 +352,14 @@ function IconPickerPanel({
           size="medium"
           icon={<SearchX />}
           data-icon-picker="empty"
-          title={`'${query.trim()}'에 대한 아이콘이 없어요`}
-          description="다른 말로 찾거나 묶음에서 골라주세요."
+          title={dsT("iconPicker.emptyTitle", { query: query.trim() })}
+          description={dsT("iconPicker.emptyDescription")}
         />
       ) : (
         <div
           ref={listboxRef}
           role="listbox"
-          aria-label="아이콘"
+          aria-label={dsT("iconPicker.label")}
           data-slot="icon-picker-grid"
           onKeyDown={onGridKeyDown}
         >
@@ -452,6 +454,7 @@ export interface IconPickerProps extends Omit<
 
 const IconPicker = React.forwardRef<HTMLButtonElement, IconPickerProps>(
   ({ value, onValueChange, size = "responsive", ...props }, ref) => {
+    const dsT = useDsText();
     const surface = useInputButtonSurface();
     const [open, setOpen] = React.useState(false);
     const [query, setQuery] = React.useState("");
@@ -466,8 +469,9 @@ const IconPicker = React.forwardRef<HTMLButtonElement, IconPickerProps>(
     const shownName = entry
       ? entry.name
       : empty
-        ? (findCategoryIcon(DEFAULT_CATEGORY_ICON)?.name ?? "태그")
-        : "지금 아이콘";
+        ? (findCategoryIcon(DEFAULT_CATEGORY_ICON)?.name ??
+          dsT("iconPicker.tag"))
+        : dsT("iconPicker.current");
     const selectedId = entry ? entry.id : empty ? DEFAULT_CATEGORY_ICON : null;
 
     const changeOpen = (next: boolean) => {
@@ -531,7 +535,7 @@ const IconPicker = React.forwardRef<HTMLButtonElement, IconPickerProps>(
         <BottomSheet open={open} onOpenChange={changeOpen}>
           <BottomSheetTrigger asChild>{trigger}</BottomSheetTrigger>
           <BottomSheetContent
-            title="아이콘"
+            title={dsT("iconPicker.label")}
             data-icon-picker="sheet"
             onOpenAutoFocus={onOpenAutoFocus}
             onEscapeKeyDown={onEscapeKeyDown}
@@ -545,7 +549,7 @@ const IconPicker = React.forwardRef<HTMLButtonElement, IconPickerProps>(
       <Popover open={open} onOpenChange={changeOpen}>
         <PopoverTrigger asChild>{trigger}</PopoverTrigger>
         <PopoverContent
-          aria-label="아이콘"
+          aria-label={dsT("iconPicker.label")}
           align="start"
           data-icon-picker="popover"
           className="w-[408px]"

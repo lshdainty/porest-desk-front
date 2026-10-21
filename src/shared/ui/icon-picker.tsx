@@ -175,7 +175,7 @@ export const IconPicker = ({
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-sm transition-all hover:bg-surface-input hover:scale-110",
                     value === name &&
-                      "bg-surface-input ring-2 ring-primary ring-offset-1 ring-offset-background",
+                      "bg-surface-input ring-2 ring-stroke-brand-solid ring-offset-1",
                   )}
                 >
                   <DynamicIcon name={name as IconName} size={16} />

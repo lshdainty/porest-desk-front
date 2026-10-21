@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -8,8 +9,6 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  TrendingDown,
-  TrendingUp,
   Wallet,
 } from "lucide-react";
 import {
@@ -46,6 +45,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from "@/shared/ui/chart";
+import { PageHead } from "@/shared/ui/groo/page-head";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
@@ -156,7 +156,7 @@ function IncomeExpenseTooltip({ active, payload, label }: BarTooltipProps) {
             width: 8,
             height: 8,
             borderRadius: "var(--radius-xs)",
-            background: "var(--fg-expense)",
+            background: "var(--color-fg-critical)",
           }}
         />
         <span
@@ -232,7 +232,7 @@ function IncomeExpenseBarChart({
   const hidden = useHideAmounts("home.monthExpense");
   const barChartConfig = {
     income: { label: t("chart.income"), color: "var(--status-info-fg)" },
-    expense: { label: t("chart.expense"), color: "var(--fg-expense)" },
+    expense: { label: t("chart.expense"), color: "var(--color-fg-critical)" },
   } satisfies ChartConfig;
   // Y축: 0기준 nice 눈금 (수입·지출 둘 다 포함, 앱 niceAxis 정합).
   const yAxis = useMemo(() => {
@@ -297,18 +297,18 @@ function IncomeExpenseBarChart({
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // groo chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
-// `--color-cat-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
+// `--color-chart-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
 const CATEGORY_PALETTE = [
-  "var(--color-cat-blue)",
-  "var(--color-cat-green)",
-  "var(--color-cat-orange)",
-  "var(--color-cat-violet)",
-  "var(--color-cat-pink)",
-  "var(--color-cat-indigo)",
-  "var(--color-cat-red)",
-  "var(--color-cat-yellow)",
-  "var(--color-cat-brown)",
-  "var(--color-cat-gray)",
+  "var(--color-chart-blue)",
+  "var(--color-chart-green)",
+  "var(--color-chart-orange)",
+  "var(--color-chart-violet)",
+  "var(--color-chart-pink)",
+  "var(--color-chart-indigo)",
+  "var(--color-chart-red)",
+  "var(--color-chart-yellow)",
+  "var(--color-chart-brown)",
+  "var(--color-chart-gray)",
 ];
 
 /**
@@ -399,21 +399,15 @@ function useDashboardPageData(
  * 실제 렌더하고 서버 데이터 영역만 스켈레톤. desktop 2-col(좌 hero+수입지출+오늘 / 우 카테고리+예산+예정+할일+일정).
  */
 function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
-  const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
+  const { t: tLayout } = useTranslation("layout");
+  const navigate = useNavigate();
   const { key: initialKey, year, month } = useCurrentMonthKey();
   const [period, setPeriod] = useState(initialKey);
   if (mobile) {
     return (
-      // 모바일 카드 다이어트 — 실제 렌더와 동일한 플랫 구조/간격 (gap 32)
-      <div
-        style={{
-          padding: "20px 24px 24px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--spacing-2xl)",
-        }}
-      >
+      // 폰 구역 화면 — 구역마다 화면 폭 흰 띠(I-01 결정 3, 실제 렌더와 같은 구조)
+      <ScreenBands>
         <DashboardHeroSkeleton mobile year={year} month={month} />
         <DashboardSummaryCardSkeleton
           mobile
@@ -456,11 +450,14 @@ function DashboardPageSkeleton({ mobile }: { mobile: boolean }) {
           variant="tx"
           amount
         />
-      </div>
+      </ScreenBands>
     );
   }
   return (
     <div className="dash-grid">
+      <div style={{ gridColumn: "1 / -1" }}>
+        <PageHead title={tLayout("home")} />
+      </div>
       <div className="dash-grid__left">
         <DashboardHeroSkeleton mobile={false} year={year} month={month} />
         <DashboardSummaryCardSkeleton
@@ -543,24 +540,28 @@ function DashboardHeroSkeleton({
       </div>
       <div className="balance-hero__amount num">
         <SkeletonBase
-          className={mobile ? "h-8 w-40 bg-white/15" : "h-10 w-56 bg-white/15"}
+          className={
+            mobile
+              ? "h-8 w-40 bg-static-white/15"
+              : "h-10 w-56 bg-static-white/15"
+          }
         />
       </div>
       <div className="balance-hero__sub">
-        <SkeletonBase className="h-3 w-32 bg-white/15" />
+        <SkeletonBase className="h-3 w-32 bg-static-white/15" />
       </div>
       <div className="balance-hero__split">
         <div>
           <div className="l">
             {mobile ? t("asset.assetTab") : t("asset.totalAsset")}
           </div>
-          <SkeletonBase className="h-5 w-24 bg-white/15" />
+          <SkeletonBase className="h-5 w-24 bg-static-white/15" />
         </div>
         <div>
           <div className="l">
             {mobile ? t("asset.debtTab") : t("asset.totalDebt")}
           </div>
-          <SkeletonBase className="h-5 w-24 bg-white/15" />
+          <SkeletonBase className="h-5 w-24 bg-static-white/15" />
         </div>
       </div>
     </div>
@@ -985,6 +986,7 @@ function useCurrentMonthKey() {
 
 function HomeDesktop() {
   const { t } = useTranslation("dashboard");
+  const { t: tLayout } = useTranslation("layout");
   const { t: tc } = useTranslation("common");
   const navigate = useNavigate();
   const hidden = useHideAmounts();
@@ -1153,6 +1155,9 @@ function HomeDesktop() {
 
   return (
     <div className="dash-grid">
+      <div style={{ gridColumn: "1 / -1" }}>
+        <PageHead title={tLayout("home")} />
+      </div>
       <div className="dash-grid__left">
         <div className="balance-hero" style={{ padding: "28px 32px 24px" }}>
           <div
@@ -1201,16 +1206,10 @@ function HomeDesktop() {
               <>
                 {t("vsLastMonth")}
                 <span className={`chg ${isUp ? "up" : "down"}`}>
-                  {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}{" "}
-                  {isUp ? "+" : ""}
-                  {changePercent.toFixed(1)}%
+                  {isUp ? "▲" : "▼"} {Math.abs(changePercent).toFixed(1)}%
                   {changeAmount !== 0 && (
                     <HideUnit>
-                      <>
-                        {" "}
-                        ({isUp ? "+" : MINUS}
-                        {money(Math.abs(changeAmount))})
-                      </>
+                      <> ({money(Math.abs(changeAmount))})</>
                     </HideUnit>
                   )}
                 </span>
@@ -1703,7 +1702,7 @@ function HomeDesktop() {
                             fontWeight: "600",
                             color:
                               b.state === "over"
-                                ? "var(--fg-expense)"
+                                ? "var(--color-fg-critical)"
                                 : "var(--fg-secondary)",
                           }}
                         >
@@ -1794,7 +1793,7 @@ function HomeDesktop() {
                             : "var(--bg-sunken)",
                         color:
                           p.d <= 7
-                            ? "var(--color-warning)"
+                            ? "var(--color-fg-warning)"
                             : "var(--fg-secondary)",
                         display: "inline-flex",
                         alignItems: "center",
@@ -1862,7 +1861,7 @@ function HomeDesktop() {
                     fontSize: "var(--text-badge)",
                     fontWeight: 600,
                     background: "var(--status-danger-subtle)",
-                    color: "var(--fg-expense)",
+                    color: "var(--color-fg-critical)",
                   }}
                 >
                   {t("todo.overdueBadge", {
@@ -1901,9 +1900,9 @@ function HomeDesktop() {
                       borderRadius: "var(--radius-pill)",
                       background:
                         td.priority === "HIGH"
-                          ? "var(--fg-expense)"
+                          ? "var(--color-fg-critical)"
                           : td.priority === "MEDIUM"
-                            ? "var(--color-warning-light)"
+                            ? "var(--color-bg-warning-solid)"
                             : "var(--bg-brand)",
                     }}
                   />
@@ -1970,7 +1969,7 @@ function HomeDesktop() {
                           : "var(--bg-sunken)",
                       color:
                         ev.daysUntil <= 3
-                          ? "var(--color-warning)"
+                          ? "var(--color-fg-warning)"
                           : "var(--fg-secondary)",
                       display: "inline-flex",
                       alignItems: "center",
@@ -2147,15 +2146,8 @@ function HomeMobile() {
   }, [budgetsQ.data, categoriesQ.data, monthlyQ.data, warnThreshold, t]);
 
   return (
-    // 모바일 카드 다이어트 — 카드 없이 섹션 gap(32)이 간격을 담당 (design HomeMobile).
-    <div
-      style={{
-        padding: "20px 24px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--spacing-2xl)",
-      }}
-    >
+    // 폰 구역 화면 — 구역마다 화면 폭 흰 띠, 사이 · 맨 위 8 (I-01 결정 3 · DESIGN Layout "화면 바탕")
+    <ScreenBands>
       <div className="balance-hero">
         <div
           className="balance-hero__eyebrow"
@@ -2202,9 +2194,7 @@ function HomeMobile() {
             <>
               {t("vsLastMonth")}
               <span className={`chg ${isUp ? "up" : "down"}`}>
-                {isUp ? <TrendingUp size={13} /> : <TrendingDown size={13} />}{" "}
-                {isUp ? "+" : ""}
-                {changePercent.toFixed(1)}%
+                {isUp ? "▲" : "▼"} {Math.abs(changePercent).toFixed(1)}%
               </span>
             </>
           ) : (
@@ -2409,9 +2399,11 @@ function HomeMobile() {
                 </MaskAmount>
               </div>
             </Donut>
+            {/* minWidth 0 — 없으면 긴 금액이 범례 칸을 밀어 띠 밖으로 나간다(이름이 말줄임으로 양보한다) */}
             <div
               style={{
                 flex: 1,
+                minWidth: 0,
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
@@ -2449,6 +2441,7 @@ function HomeMobile() {
                       fontSize: "var(--text-caption)",
                       color: "var(--fg-primary)",
                       fontWeight: "600",
+                      flexShrink: 0,
                     }}
                   >
                     <MaskAmount card="home.categoryDonut" mask="••••">
@@ -2546,7 +2539,7 @@ function HomeMobile() {
                         fontWeight: "700",
                         color:
                           b.state === "over"
-                            ? "var(--fg-expense)"
+                            ? "var(--color-fg-critical)"
                             : "var(--fg-primary)",
                       }}
                     >
@@ -2644,7 +2637,7 @@ function HomeMobile() {
           )}
         </div>
       </div>
-    </div>
+    </ScreenBands>
   );
 }
 
@@ -2749,7 +2742,9 @@ function HomeUpcomingSection({
                 style={{
                   fontSize: 12.5,
                   fontWeight: 700,
-                  color: urgent ? "var(--fg-expense)" : "var(--fg-tertiary)",
+                  color: urgent
+                    ? "var(--color-fg-critical)"
+                    : "var(--fg-tertiary)",
                   flexShrink: 0,
                 }}
               >
@@ -2803,7 +2798,7 @@ function HomeTodosSection({
                 fontSize: "var(--text-badge)",
                 fontWeight: 700,
                 background: "var(--status-danger-subtle)",
-                color: "var(--fg-expense)",
+                color: "var(--color-fg-critical)",
                 padding: "2px 8px",
                 borderRadius: "var(--radius-pill)",
                 letterSpacing: "-0.01em",
@@ -2833,7 +2828,7 @@ function HomeTodosSection({
                     height: 18,
                     borderRadius: 999,
                     flexShrink: 0,
-                    border: `2px solid ${isOver ? "var(--fg-expense)" : "var(--border-strong)"}`,
+                    border: `2px solid ${isOver ? "var(--color-fg-critical)" : "var(--border-strong)"}`,
                   }}
                 />
               )}
@@ -2859,7 +2854,9 @@ function HomeTodosSection({
                   style={{
                     fontSize: 12.5,
                     fontWeight: 600,
-                    color: isOver ? "var(--fg-expense)" : "var(--fg-tertiary)",
+                    color: isOver
+                      ? "var(--color-fg-critical)"
+                      : "var(--fg-tertiary)",
                     flexShrink: 0,
                   }}
                 >

@@ -22,8 +22,8 @@ export function CardPerformanceBar({ performance, className }: Props) {
   const barColor = performance.isAchieved
     ? "bg-bg-positive-solid"
     : pct >= 70
-      ? "bg-amber-500"
-      : "bg-rose-500";
+      ? "bg-bg-warning-solid"
+      : "bg-bg-critical-solid";
 
   return (
     <div className={cn("space-y-1.5", className)}>

@@ -157,6 +157,7 @@ describe("ResultSection", () => {
     expect(secondary!.className).toContain("bg-transparent");
     expect(secondary!.className).toContain("h-9");
     expect(secondary!.className).toContain("-my-x2");
+    expect(secondary!.className).toContain("text-fg-neutral-muted");
     act(() => primary!.click());
     act(() => secondary!.click());
     expect(onPrimary).toHaveBeenCalledTimes(1);

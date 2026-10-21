@@ -59,6 +59,7 @@ import { MANAGER_LAYOUT } from "@/shared/ui/groo/manager-layout";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { CAT_PALETTE } from "@/shared/lib/groo/chart-palette";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 /** 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
  *  제한이 없어 500자 제목이 서버 500 으로 터지던 자리다(QA #30 · #33). */
@@ -83,80 +84,58 @@ type MemoTone = {
   key: string;
   baseHex: string;
   cssVar: string;
-  bgPct: number;
-  fgPct: number;
 };
 
 const MEMO_TONES: MemoTone[] = [
   {
     key: "blue",
     baseHex: "#2c70bf",
-    cssVar: "--color-cat-blue",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-blue",
   },
   {
     key: "green",
     baseHex: "#2d8060",
-    cssVar: "--color-cat-green",
-    bgPct: 14,
-    fgPct: 70,
+    cssVar: "--color-chart-green",
   },
   {
     key: "pink",
     baseHex: "#b83b7a",
-    cssVar: "--color-cat-pink",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-pink",
   },
   {
     key: "violet",
     baseHex: "#8b4dba",
-    cssVar: "--color-cat-violet",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-violet",
   },
   {
     key: "red",
     baseHex: "#c73838",
-    cssVar: "--color-cat-red",
-    bgPct: 12,
-    fgPct: 72,
+    cssVar: "--color-chart-red",
   },
   {
     key: "orange",
     baseHex: "#b36418",
-    cssVar: "--color-cat-orange",
-    bgPct: 13,
-    fgPct: 70,
+    cssVar: "--color-chart-orange",
   },
   {
     key: "indigo",
     baseHex: "#5e60c8",
-    cssVar: "--color-cat-indigo",
-    bgPct: 13,
-    fgPct: 72,
+    cssVar: "--color-chart-indigo",
   },
   {
     key: "yellow",
     baseHex: "#8c7400",
-    cssVar: "--color-cat-yellow",
-    bgPct: 16,
-    fgPct: 64,
+    cssVar: "--color-chart-yellow",
   },
   {
     key: "brown",
     baseHex: "#9a6536",
-    cssVar: "--color-cat-brown",
-    bgPct: 14,
-    fgPct: 68,
+    cssVar: "--color-chart-brown",
   },
   {
     key: "gray",
     baseHex: "#6b7484",
-    cssVar: "--color-cat-gray",
-    bgPct: 16,
-    fgPct: 60,
+    cssVar: "--color-chart-gray",
   },
 ];
 
@@ -173,8 +152,9 @@ function resolveTone(color: string | null | undefined): ResolvedTone {
   const v = `var(${tone.cssVar})`;
   return {
     swatch: v,
-    bg: `color-mix(in oklab, ${v} ${tone.bgPct}%, var(--bg-surface))`,
-    fg: `color-mix(in oklab, ${v} ${tone.fgPct}%, var(--fg-primary))`,
+    // v111 짝 — 옅은 바탕 chart-{hue}-subtle · 글 chart-{hue}-contrast(라이트/다크 불투명 한 값)
+    bg: `var(${tone.cssVar}-subtle)`,
+    fg: `var(${tone.cssVar}-contrast)`,
   };
 }
 
@@ -818,19 +798,15 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
 
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">{AddBtn}</div>
-      </div>
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={<>{AddBtn}</>}
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
       <div
         style={{
-          padding: "0 28px 24px",
+          padding: "0 32px 24px",
           maxWidth: 1320,
           display: "flex",
           flexDirection: "column",
@@ -1304,21 +1280,16 @@ function MemoPageSkeleton({ mobile }: { mobile: boolean }) {
   }
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <SkeletonBase className="h-8 w-20 mb-2" />
-          <SkeletonBase className="h-4 w-36" />
-        </div>
-        <div className="right">
-          <SkeletonBase className="h-8 w-24 rounded-md" />
-        </div>
-      </div>
+      {/* 제목은 정해진 글이라 로딩 중에도 그린다 — 모든 화면에 h1 하나 */}
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={<SkeletonBase className="h-8 w-24 rounded-md" />}
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
       <div
         style={{
-          padding: "0 28px 24px",
+          padding: "0 32px 24px",
           maxWidth: 1320,
           display: "flex",
           flexDirection: "column",

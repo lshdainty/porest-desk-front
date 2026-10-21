@@ -62,7 +62,7 @@ export function CardCautionList({ cautions, mobile = false }: Props) {
       <section>
         <div className="flat-group__head">
           <h2 className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertTriangle className="h-4 w-4 text-fg-warning" />
             {t("detail.cautionsTitle")}
           </h2>
         </div>
@@ -74,7 +74,7 @@ export function CardCautionList({ cautions, mobile = false }: Props) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <AlertTriangle className="h-4 w-4 text-fg-warning" />
           {t("detail.cautionsTitle")}
         </CardTitle>
       </CardHeader>

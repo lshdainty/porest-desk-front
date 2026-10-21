@@ -69,6 +69,7 @@ import type {
 import { renderIcon, tileRadius } from "@/shared/lib";
 import { FixedBulkDialog } from "@/features/expense/ui/FixedBulkDialog";
 import { FixedVariableTab } from "./FixedVariableTab";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -185,25 +186,25 @@ const labelsOf = ({ segMode }: RangeState) =>
           };
 
 // groo chart palette 10색 — 카테고리 donut fallback (카테고리 자체 색 없을 때만 사용).
-// `--color-cat-*` alias — 라이트/다크 자동 swap.
+// `--color-chart-*` alias — 라이트/다크 자동 swap.
 const DONUT_COLORS = [
-  "var(--color-cat-blue)",
-  "var(--color-cat-green)",
-  "var(--color-cat-orange)",
-  "var(--color-cat-violet)",
-  "var(--color-cat-pink)",
-  "var(--color-cat-indigo)",
-  "var(--color-cat-red)",
-  "var(--color-cat-yellow)",
-  "var(--color-cat-brown)",
-  "var(--color-cat-gray)",
+  "var(--color-chart-blue)",
+  "var(--color-chart-green)",
+  "var(--color-chart-orange)",
+  "var(--color-chart-violet)",
+  "var(--color-chart-pink)",
+  "var(--color-chart-indigo)",
+  "var(--color-chart-red)",
+  "var(--color-chart-yellow)",
+  "var(--color-chart-brown)",
+  "var(--color-chart-gray)",
 ];
 
 // 6-step heatmap palette (empty → deep mossy).
 // color-mix 로 --mossy-500 을 투명도 다르게 섞어 라이트/다크 양쪽에서 자동 적응.
 // 레벨 0 은 semantic muted bg 로 두어 "빈 셀" 구분 명확.
 const HEAT_PALETTE: { bg: string; fg: string }[] = [
-  { bg: "var(--bg-muted)", fg: "var(--fg-tertiary)" }, // 0 empty
+  { bg: "var(--color-bg-neutral-weak-alpha)", fg: "var(--fg-tertiary)" }, // 0 empty
   {
     bg: "color-mix(in oklch, var(--border-brand) 18%, transparent)",
     fg: "var(--fg-primary)",
@@ -415,18 +416,20 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
     // 실제 Content(2149~) 정합 — 한 덩어리(flex-col gap)에 4섹션 균일 gap.
     // mobile 은 도넛/가맹점도 부모 gap 을 그대로 받게 display:contents, desktop 만 grid 2열.
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       <div
-        style={{
-          display: mobile ? "contents" : "grid",
-          gridTemplateColumns: mobile ? undefined : "1.4fr 1fr",
-          gap: mobile ? undefined : 20,
-        }}
+        className={mobile ? "contents" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }
+        }
       >
         {/* DonutCard 프레임(Section) + 도넛 로딩 (실제 745·778~803 미러) */}
         <Section
@@ -602,11 +605,12 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
 
   const TrendSkeleton = (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       {/* TrendBig 프레임(Section) + 차트 로딩 (실제 1424·1428~1437 미러) */}
       <Section
@@ -711,11 +715,12 @@ function StatsPageSkeleton({ mobile, tab }: { mobile: boolean; tab: TabKey }) {
 
   const CompareSkeleton = (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: mobile ? "var(--spacing-2xl)" : 20,
-      }}
+      className={mobile ? "screen-bands" : undefined}
+      style={
+        mobile
+          ? undefined
+          : { display: "flex", flexDirection: "column", gap: 20 }
+      }
     >
       {/* CompareSummary — MTile 요약(기간 지출 + 증감칩 + vs 문구 + 이번/이전 막대 2행) (실제 1817~1860 미러) */}
       <MTile mobile={mobile}>
@@ -1974,7 +1979,10 @@ export const StatsPage = () => {
         {t(labels.mom)}{" "}
         <span
           style={{
-            color: dayPct >= 0 ? "var(--fg-expense)" : "var(--fg-income)",
+            color:
+              dayPct >= 0
+                ? "var(--color-fg-critical)"
+                : "var(--color-fg-informative)",
             fontWeight: 600,
           }}
         >
@@ -2200,7 +2208,7 @@ export const StatsPage = () => {
 
   const trendChartConfig: ChartConfig = {
     income: { label: te("income"), color: "var(--status-info-fg)" },
-    expense: { label: te("expense"), color: "var(--fg-expense)" },
+    expense: { label: te("expense"), color: "var(--color-fg-critical)" },
   };
   const savingsChartConfig: ChartConfig = {
     savings: { label: t("trend.savings"), color: "var(--bg-brand)" },
@@ -2356,7 +2364,7 @@ export const StatsPage = () => {
                       {
                         dataKey: "expense",
                         label: te("expense"),
-                        color: "var(--fg-expense)",
+                        color: "var(--color-fg-critical)",
                       },
                     ]}
                   />
@@ -2424,7 +2432,7 @@ export const StatsPage = () => {
                   width: 10,
                   height: 10,
                   borderRadius: "var(--radius-xs)",
-                  background: "var(--fg-expense)",
+                  background: "var(--color-fg-critical)",
                 }}
               />{" "}
               {te("expense")}
@@ -2473,7 +2481,7 @@ export const StatsPage = () => {
           <WonUnit />
         </>
       ),
-      dot: "var(--fg-expense)",
+      dot: "var(--color-fg-critical)",
       pct: spendRate,
     },
     {
@@ -2596,7 +2604,7 @@ export const StatsPage = () => {
             <div
               style={{
                 width: `${spendRate}%`,
-                background: "var(--fg-expense)",
+                background: "var(--color-fg-critical)",
                 borderRadius: 999,
               }}
             />
@@ -2744,7 +2752,9 @@ export const StatsPage = () => {
                       dataKey: "savings",
                       label: t("trend.savings"),
                       color: (v) =>
-                        v < 0 ? "var(--fg-expense)" : "var(--status-info-fg)",
+                        v < 0
+                          ? "var(--color-fg-critical)"
+                          : "var(--status-info-fg)",
                       format: (v) =>
                         `${v >= 0 ? "+" : "−"}${money(Math.abs(v))}`,
                     },
@@ -2763,7 +2773,7 @@ export const StatsPage = () => {
                   key={i}
                   fill={
                     d.savings < 0
-                      ? "var(--fg-expense)"
+                      ? "var(--color-fg-critical)"
                       : "var(--status-info-fg)"
                   }
                 />
@@ -3100,7 +3110,9 @@ export const StatsPage = () => {
   // 비교 탭 헤더/지표 (design StatsScreen). 감소=파랑(good)/증가=빨강(지출성).
   const cmpDiff = totalNow - totalPrev;
   const cmpLess = cmpDiff <= 0;
-  const cmpColor = cmpLess ? "var(--fg-income)" : "var(--fg-expense)";
+  const cmpColor = cmpLess
+    ? "var(--color-fg-informative)"
+    : "var(--color-fg-critical)";
   const cmpPct =
     totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null;
   const cmpBarMax = Math.max(1, totalNow, totalPrev);
@@ -3341,7 +3353,9 @@ export const StatsPage = () => {
       {cmpMetrics.map((m, i) => {
         const d = m.now - m.prev;
         const up = d > 0;
-        const c = up ? "var(--fg-expense)" : "var(--fg-income)";
+        const c = up
+          ? "var(--color-fg-critical)"
+          : "var(--color-fg-informative)";
         return (
           // 앱 _CompareMetricsCard 미러: 라벨+값(좌) / 증감(윗줄)+지난기간(아랫줄) 2줄(우, 우측·하단 정렬)
           <MTile
@@ -3496,7 +3510,9 @@ export const StatsPage = () => {
             const up = r.diff > 0;
             // 증가=지출성(빨강 --fg-expense) / 감소=good(파랑 --fg-income).
             // design chart-line-expense / bg-brand 의 web 시맨틱 매핑(CompareSummary·CompareMetrics 정합).
-            const color = up ? "var(--fg-expense)" : "var(--fg-income)";
+            const color = up
+              ? "var(--color-fg-critical)"
+              : "var(--color-fg-informative)";
             // getPaletteByColor 경유 — dark light-variant swap + null 은 brand-light 틴트
             const pal = getPaletteByColor(r.color);
             return (
@@ -3831,7 +3847,7 @@ export const StatsPage = () => {
                     fontSize: "var(--text-badge)",
                     fontWeight: 600,
                     color: isSun
-                      ? "var(--fg-expense)"
+                      ? "var(--color-fg-critical)"
                       : isSat
                         ? "var(--fg-brand)"
                         : "var(--fg-tertiary)",
@@ -3918,11 +3934,12 @@ export const StatsPage = () => {
       // 한 덩어리(flex-col gap) — 카테고리/가맹점/히트맵/통계 4섹션 균일 gap(앱·추이·비교 탭 정합).
       // 데스크톱만 도넛|가맹점을 grid 2열로 나란히, 그 외엔 세로. margin-bottom 혼재 제거.
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: mobile ? "var(--spacing-2xl)" : 20,
-        }}
+        className={mobile ? "screen-bands" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "flex", flexDirection: "column", gap: 20 }
+        }
       >
         {mobile ? (
           <>
@@ -3946,11 +3963,12 @@ export const StatsPage = () => {
       </div>
     ) : tab === "trend" ? (
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: mobile ? "var(--spacing-2xl)" : 20,
-        }}
+        className={mobile ? "screen-bands" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "flex", flexDirection: "column", gap: 20 }
+        }
       >
         {TrendBig}
         {TrendStats}
@@ -3959,11 +3977,12 @@ export const StatsPage = () => {
       </div>
     ) : tab === "compare" ? (
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: mobile ? "var(--spacing-2xl)" : 20,
-        }}
+        className={mobile ? "screen-bands" : undefined}
+        style={
+          mobile
+            ? undefined
+            : { display: "flex", flexDirection: "column", gap: 20 }
+        }
       >
         {CompareSummary}
         {CompareMetrics}
@@ -4019,7 +4038,7 @@ export const StatsPage = () => {
     // 탭은 화면 가로 전체 + bg-surface 띠 (모바일 앱과 매칭, header 바로 아래 고정).
     // viewport fit 패턴 — AppLayout `.m-scroll` 가 flex-col 이므로 페이지 root 는
     // flex-1 + min-h-0 으로 부모 전체 height 차지. 탭 띠는 shrink-0 로 상단 고정,
-    // Content 만 별도 overflow-y-auto 스크롤 영역(좌우 24, 상 20 · 하 24 padding).
+    // Content 만 별도 overflow-y-auto 스크롤 영역 — 구역마다 화면 폭 흰 띠(ScreenBands 클래스, I-01 결정 3).
     return (
       <div className="flex flex-col flex-1 min-h-0">
         <div className="shrink-0" style={{ background: "var(--bg-surface)" }}>
@@ -4027,7 +4046,7 @@ export const StatsPage = () => {
         </div>
         <div
           className="flex-1 min-h-0 overflow-y-auto scrollbar-hide"
-          style={{ padding: "20px 24px 24px", ...swipeNav.style }}
+          style={swipeNav.style}
           {...swipeNav.handlers}
         >
           {content}
@@ -4038,12 +4057,7 @@ export const StatsPage = () => {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("page.title")}</h1>
-          <div className="sub">{t("page.subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("page.title")} description={t("page.subtitle")} />
       {StatsTabs}
       {content}
     </div>

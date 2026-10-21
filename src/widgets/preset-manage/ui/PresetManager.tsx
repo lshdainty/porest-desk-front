@@ -666,7 +666,9 @@ function PMIconBtn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={tone === "danger" ? "!text-[var(--fg-expense)]" : undefined}
+      className={
+        tone === "danger" ? "!text-[var(--color-fg-critical)]" : undefined
+      }
     >
       <Comp size={16} strokeWidth={1.9} />
     </Button>

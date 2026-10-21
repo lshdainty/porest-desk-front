@@ -1,16 +1,9 @@
 import { useMemo, useState } from "react";
+import { BandSurface, ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  ChevronRight,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  Target,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronRight, Eye, EyeOff, RefreshCw, Target } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
@@ -75,6 +68,7 @@ import {
   type AssetType,
 } from "@/entities/asset";
 import type { SavingGoal } from "@/entities/savingGoal";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type NetWorthPayload = { value?: number; payload?: { monthLabel?: string } };
 function NetWorthTooltip({
@@ -268,7 +262,7 @@ type AssetGroupKey = "cash" | "invest" | "card" | "loan";
 const GROUP_META: Record<AssetGroupKey, { labelKey: string; color: string }> = {
   cash: { labelKey: "group.cashDeposit", color: "var(--color-chart-blue)" },
   invest: { labelKey: "group.invest", color: "var(--bg-brand)" },
-  card: { labelKey: "group.card", color: "var(--fg-expense)" },
+  card: { labelKey: "group.card", color: "var(--color-fg-critical)" },
   loan: { labelKey: "assetType.loan", color: "var(--color-chart-brown)" },
 };
 
@@ -685,7 +679,7 @@ function UpcomingBillsCard() {
                       fontSize: "var(--text-body-sm)",
                       fontWeight: urgent ? 600 : 500,
                       color: urgent
-                        ? "var(--fg-expense)"
+                        ? "var(--color-fg-critical)"
                         : "var(--fg-tertiary)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -954,30 +948,18 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
   // 페이지가 따로 흉내내면 두 스켈레톤이 서로 어긋난다. 실컴포넌트를 그대로 쓴다.
   if (mobile) {
     return (
-      // 카드 다이어트 — 실렌더(keep 요약 + flat 그룹, gap 36)와 동일 구조.
-      <div
-        style={{
-          padding: "16px 24px 24px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--spacing-2xl)",
-        }}
-      >
+      // 폰 구역 화면 — 구역마다 화면 폭 흰 띠(I-01 결정 3, 실렌더와 같은 구조)
+      <ScreenBands>
         <AssetSummarySkeleton mobile />
         <TypeGroupSkeleton mobile rows={3} />
         <TypeGroupSkeleton mobile rows={2} />
         <SavingGoalsCard mobile />
-      </div>
+      </ScreenBands>
     );
   }
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("assets")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("assets")} description={t("subtitle")} />
       <div
         style={{
           display: "grid",
@@ -1003,51 +985,49 @@ function AssetPageSkeleton({ mobile }: { mobile: boolean }) {
 
 function AssetSummarySkeleton({ mobile }: { mobile: boolean }) {
   return (
-    // 실렌더 SummaryCard 와 같은 여백 — 라벨 6 / 금액 6 / 증감 14·18.
-    <Card variant={mobile ? "raised" : undefined}>
-      <CardContent>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 6,
-          }}
-        >
-          <SkeletonBase className="h-3 w-16" />
-        </div>
-        {/* 순자산 금액 — 실렌더 28(모바일)/36 + lineHeight 1.15 */}
-        <SkeletonBase
-          className={mobile ? "h-8 w-40" : "h-10 w-56"}
-          style={{ marginBottom: 6 }}
-        />
-        <SkeletonBase
-          className="h-4 w-32"
-          style={{ marginBottom: mobile ? 14 : 18 }}
-        />
-        <SkeletonBase
-          className={mobile ? "h-[140px] w-full" : "h-[180px] w-full"}
-        />
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 12,
-            paddingTop: mobile ? 14 : 20,
-            marginTop: mobile ? 14 : 20,
-            borderTop: "1px solid var(--border-subtle)",
-          }}
-        >
-          {[0, 1, 2].map((i) => (
-            <div key={i}>
-              {/* 라벨 badge + 값 사이는 실렌더 2 */}
-              <SkeletonBase className="h-3 w-12" style={{ marginBottom: 2 }} />
-              <SkeletonBase className="h-4 w-20" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    // 실렌더 SummaryCard 와 같은 여백 — 라벨 6 / 금액 6 / 증감 14·18. 폰은 띠가 면이다
+    <BandSurface mobile={mobile}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 6,
+        }}
+      >
+        <SkeletonBase className="h-3 w-16" />
+      </div>
+      {/* 순자산 금액 — 실렌더 28(모바일)/36 + lineHeight 1.15 */}
+      <SkeletonBase
+        className={mobile ? "h-8 w-40" : "h-10 w-56"}
+        style={{ marginBottom: 6 }}
+      />
+      <SkeletonBase
+        className="h-4 w-32"
+        style={{ marginBottom: mobile ? 14 : 18 }}
+      />
+      <SkeletonBase
+        className={mobile ? "h-[140px] w-full" : "h-[180px] w-full"}
+      />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          paddingTop: mobile ? 14 : 20,
+          marginTop: mobile ? 14 : 20,
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <div key={i}>
+            {/* 라벨 badge + 값 사이는 실렌더 2 */}
+            <SkeletonBase className="h-3 w-12" style={{ marginBottom: 2 }} />
+            <SkeletonBase className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
+    </BandSurface>
   );
 }
 
@@ -1175,9 +1155,9 @@ function cardUsageOf(asset: Asset) {
   const usage = (used / asset.creditLimit) * 100;
   const barColor =
     usage >= 90
-      ? "var(--color-error)"
+      ? "var(--color-bg-critical-solid)"
       : usage >= 70
-        ? "var(--color-warning)"
+        ? "var(--color-bg-warning-solid)"
         : "var(--fg-brand)";
   return { used, limit: asset.creditLimit, usage, barColor };
 }
@@ -1639,208 +1619,199 @@ function SummaryCard({
   const handleHideToggle = useOpenHideAmountsSettings("asset");
 
   return (
-    // 모바일 = keep 카드(raised + shadow-lg) — 카드 다이어트에서 유지되는 강조 요약 (design p-card--keep).
-    // 간격은 부모 flex gap 이 담당하므로 모바일 marginBottom 제거.
-    <Card
-      variant={mobile ? "raised" : undefined}
-      style={mobile ? undefined : { marginBottom: 20 }}
-    >
-      <CardContent>
-        <div
+    // 폰은 띠가 면이다(I-01 결정 3 — 띠 안에 카드를 두지 않는다), 데스크톱은 카드.
+    <BandSurface mobile={mobile} style={{ marginBottom: 20 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 6,
+        }}
+      >
+        <span
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 6,
+            fontSize: "var(--text-caption)",
+            color: "var(--fg-tertiary)",
+            fontWeight: "500",
           }}
         >
-          <span
+          {t("totalNetWorth")}
+        </span>
+        <button
+          onClick={handleHideToggle}
+          style={{
+            background: "transparent",
+            border: 0,
+            color: "var(--fg-tertiary)",
+            cursor: "pointer",
+            padding: 2,
+            display: "inline-flex",
+          }}
+          title={hidden ? t("showAmount") : t("hideAmount")}
+        >
+          {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+        </button>
+      </div>
+      <div
+        className="num"
+        style={{
+          fontSize: mobile ? 28 : 36,
+          fontWeight: "800",
+          letterSpacing: "-0.022em",
+          lineHeight: "1.15",
+          marginBottom: 6,
+        }}
+      >
+        {isLoading ? (
+          "—"
+        ) : (
+          <MaskAmount card="asset.netWorth">
+            {wonPre()}
+            {KRW(netWorth)}
+          </MaskAmount>
+        )}
+        {!isEn() && (
+          <HideUnit>
+            <span
+              style={{
+                fontSize: mobile ? 16 : 20,
+                fontWeight: "700",
+                marginLeft: 4,
+              }}
+            >
+              원
+            </span>
+          </HideUnit>
+        )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          fontSize: "var(--text-label-sm)",
+          color: "var(--fg-secondary)",
+          marginBottom: mobile ? 14 : 18,
+        }}
+      >
+        {hasLastMonth ? (
+          <>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 2,
+                color: isUp
+                  ? "var(--color-fg-critical)"
+                  : "var(--color-fg-informative)",
+                fontWeight: "600",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {isUp ? "▲" : "▼"} {Math.abs(changePercent).toFixed(1)}%
+              {changeAmount !== 0 && (
+                <HideUnit>
+                  <span
+                    style={{
+                      color: "var(--fg-tertiary)",
+                      marginLeft: 4,
+                      fontWeight: "500",
+                    }}
+                  >
+                    ({money(Math.abs(changeAmount))})
+                  </span>
+                </HideUnit>
+              )}
+            </span>
+            <span style={{ color: "var(--fg-tertiary)" }}>
+              {t("vsLastMonth")}
+            </span>
+          </>
+        ) : (
+          <span style={{ color: "var(--fg-tertiary)" }}>
+            {t("noLastMonth")}
+          </span>
+        )}
+      </div>
+
+      <NetWorthChart height={mobile ? 140 : 180} />
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          paddingTop: mobile ? 14 : 20,
+          marginTop: mobile ? 14 : 20,
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      >
+        <div>
+          <div
             style={{
-              fontSize: "var(--text-caption)",
+              fontSize: "var(--text-badge)",
               color: "var(--fg-tertiary)",
               fontWeight: "500",
+              marginBottom: 2,
             }}
           >
-            {t("totalNetWorth")}
-          </span>
-          <button
-            onClick={handleHideToggle}
+            {t("tab.accountDeposit")}
+          </div>
+          <div
+            className="num"
+            style={{ fontSize: mobile ? 14 : 16, fontWeight: "700" }}
+          >
+            <MaskAmount card="asset.netWorth">{KRW(accountsTotal)}</MaskAmount>
+          </div>
+        </div>
+        <div>
+          <div
             style={{
-              background: "transparent",
-              border: 0,
+              fontSize: "var(--text-badge)",
               color: "var(--fg-tertiary)",
-              cursor: "pointer",
-              padding: 2,
-              display: "inline-flex",
+              fontWeight: "500",
+              marginBottom: 2,
             }}
-            title={hidden ? t("showAmount") : t("hideAmount")}
           >
-            {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-          </button>
-        </div>
-        <div
-          className="num"
-          style={{
-            fontSize: mobile ? 28 : 36,
-            fontWeight: "800",
-            letterSpacing: "-0.022em",
-            lineHeight: "1.15",
-            marginBottom: 6,
-          }}
-        >
-          {isLoading ? (
-            "—"
-          ) : (
+            {t("group.invest")}
+          </div>
+          <div
+            className="num"
+            style={{ fontSize: mobile ? 14 : 16, fontWeight: "700" }}
+          >
             <MaskAmount card="asset.netWorth">
-              {wonPre()}
-              {KRW(netWorth)}
+              {KRW(investmentsTotal)}
             </MaskAmount>
-          )}
-          {!isEn() && (
-            <HideUnit>
-              <span
-                style={{
-                  fontSize: mobile ? 16 : 20,
-                  fontWeight: "700",
-                  marginLeft: 4,
-                }}
-              >
-                원
-              </span>
-            </HideUnit>
-          )}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            fontSize: "var(--text-label-sm)",
-            color: "var(--fg-secondary)",
-            marginBottom: mobile ? 14 : 18,
-          }}
-        >
-          {hasLastMonth ? (
-            <>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 2,
-                  color: isUp ? "var(--fg-income)" : "var(--fg-expense)",
-                  fontWeight: "600",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                {isUp ? "+" : ""}
-                {changePercent.toFixed(1)}%
-                {changeAmount !== 0 && (
-                  <HideUnit>
-                    <span
-                      style={{
-                        color: "var(--fg-tertiary)",
-                        marginLeft: 4,
-                        fontWeight: "500",
-                      }}
-                    >
-                      ({isUp ? "+" : MINUS}
-                      {money(Math.abs(changeAmount))})
-                    </span>
-                  </HideUnit>
-                )}
-              </span>
-              <span style={{ color: "var(--fg-tertiary)" }}>
-                {t("vsLastMonth")}
-              </span>
-            </>
-          ) : (
-            <span style={{ color: "var(--fg-tertiary)" }}>
-              {t("noLastMonth")}
-            </span>
-          )}
-        </div>
-
-        <NetWorthChart height={mobile ? 140 : 180} />
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 12,
-            paddingTop: mobile ? 14 : 20,
-            marginTop: mobile ? 14 : 20,
-            borderTop: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-                fontWeight: "500",
-                marginBottom: 2,
-              }}
-            >
-              {t("tab.accountDeposit")}
-            </div>
-            <div
-              className="num"
-              style={{ fontSize: mobile ? 14 : 16, fontWeight: "700" }}
-            >
-              <MaskAmount card="asset.netWorth">
-                {KRW(accountsTotal)}
-              </MaskAmount>
-            </div>
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-                fontWeight: "500",
-                marginBottom: 2,
-              }}
-            >
-              {t("group.invest")}
-            </div>
-            <div
-              className="num"
-              style={{ fontSize: mobile ? 14 : 16, fontWeight: "700" }}
-            >
-              <MaskAmount card="asset.netWorth">
-                {KRW(investmentsTotal)}
-              </MaskAmount>
-            </div>
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-                fontWeight: "500",
-                marginBottom: 2,
-              }}
-            >
-              {t("cardBalance")}
-            </div>
-            <div
-              className="num"
-              style={{
-                fontSize: mobile ? 14 : 16,
-                fontWeight: "700",
-                color: "var(--fg-expense)",
-              }}
-            >
-              <MaskAmount card="asset.netWorth">
-                {minusOf(cardsTotal)}
-                {KRW(Math.abs(cardsTotal))}
-              </MaskAmount>
-            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        <div>
+          <div
+            style={{
+              fontSize: "var(--text-badge)",
+              color: "var(--fg-tertiary)",
+              fontWeight: "500",
+              marginBottom: 2,
+            }}
+          >
+            {t("cardBalance")}
+          </div>
+          <div
+            className="num"
+            style={{
+              fontSize: mobile ? 14 : 16,
+              fontWeight: "700",
+              color: "var(--fg-expense)",
+            }}
+          >
+            <MaskAmount card="asset.netWorth">
+              {minusOf(cardsTotal)}
+              {KRW(Math.abs(cardsTotal))}
+            </MaskAmount>
+          </div>
+        </div>
+      </div>
+    </BandSurface>
   );
 }
 
@@ -1962,26 +1933,26 @@ function AssetDesktop() {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <h1>{t("assets")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button variant="secondary" size="sm" onClick={handleHideToggle}>
-            {hidden ? <EyeOff size={13} /> : <Eye size={13} />}{" "}
-            {hidden ? t("show") : t("hide")}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={g.refetch}
-            disabled={g.isFetching}
-          >
-            <RefreshCw size={13} /> {t("refresh")}
-          </Button>
-        </div>
-      </div>
+      <PageHead
+        title={t("assets")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={handleHideToggle}>
+              {hidden ? <EyeOff size={13} /> : <Eye size={13} />}{" "}
+              {hidden ? t("show") : t("hide")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={g.refetch}
+              disabled={g.isFetching}
+            >
+              <RefreshCw size={13} /> {t("refresh")}
+            </Button>
+          </>
+        }
+      />
 
       {isEmpty ? (
         <Card>
@@ -2160,15 +2131,8 @@ function AssetMobile() {
   }
 
   return (
-    // 모바일 카드 다이어트 — keep 요약 + flat 그룹, 섹션 gap 36 (design AssetsScreen).
-    <div
-      style={{
-        padding: "16px 24px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--spacing-2xl)",
-      }}
-    >
+    // 폰 구역 화면 — 순자산 요약 · 자산 묶음마다 화면 폭 흰 띠(I-01 결정 3)
+    <ScreenBands>
       <SummaryCard
         mobile
         netWorth={g.netWorth}
@@ -2180,13 +2144,7 @@ function AssetMobile() {
         cardsTotal={g.cardsTotal}
         isLoading={g.isLoading}
       />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--spacing-2xl)",
-        }}
-      >
+      <>
         <TypeGroup
           card="asset.accounts"
           title={t("accountDepositTitle")}
@@ -2229,7 +2187,7 @@ function AssetMobile() {
           />
         )}
         <SavingGoalsCard mobile />
-      </div>
+      </>
       {detailAsset && (
         <AssetDetailDialog
           asset={detailAsset}
@@ -2243,7 +2201,7 @@ function AssetMobile() {
           }}
         />
       )}
-    </div>
+    </ScreenBands>
   );
 }
 

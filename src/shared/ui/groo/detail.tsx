@@ -194,7 +194,7 @@ export function DetailQuickAction({
     <button
       type="button"
       className={cn(
-        "relative flex flex-col items-center gap-2 border-0 bg-transparent px-1 py-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
+        "relative flex flex-col items-center gap-2 border-0 bg-transparent px-1 py-2 cursor-pointer disabled:cursor-not-allowed disabled:text-fg-disabled",
         className,
       )}
       {...props}
@@ -202,7 +202,7 @@ export function DetailQuickAction({
       <span
         className={cn(
           "relative inline-flex h-11 w-11 items-center justify-center rounded-full",
-          "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+          "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
           active
             ? "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand)]"
             : "bg-[var(--bg-sunken)] text-[var(--fg-secondary)]",

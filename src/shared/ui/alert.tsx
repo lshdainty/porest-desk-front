@@ -24,18 +24,18 @@ const alertVariants = cva(
       variant: {
         default:
           "border border-border-default bg-surface-default text-text-primary",
-        info: "border-l-4 border-l-info bg-[color-mix(in_srgb,var(--color-info)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-info",
+        info: "border-l-4 border-l-stroke-informative-solid bg-bg-informative-weak text-text-primary [&>svg]:text-fg-informative",
         success:
-          "border-l-4 border-l-success bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-success",
+          "border-l-4 border-l-stroke-positive-solid bg-bg-positive-weak text-text-primary [&>svg]:text-fg-positive",
         warning:
-          "border-l-4 border-l-warning bg-[color-mix(in_srgb,var(--color-warning)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-warning",
+          "border-l-4 border-l-stroke-warning-solid bg-bg-warning-weak text-text-primary [&>svg]:text-fg-warning",
         error:
-          "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
+          "border-l-4 border-l-stroke-critical-solid bg-bg-critical-weak text-text-primary [&>svg]:text-fg-critical",
         // 호환 별칭 — desk-front 사용처 보존
         danger:
-          "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
+          "border-l-4 border-l-stroke-critical-solid bg-bg-critical-weak text-text-primary [&>svg]:text-fg-critical",
         destructive:
-          "border-l-4 border-l-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-surface-default))] text-text-primary [&>svg]:text-error",
+          "border-l-4 border-l-stroke-critical-solid bg-bg-critical-weak text-text-primary [&>svg]:text-fg-critical",
       },
     },
     defaultVariants: {

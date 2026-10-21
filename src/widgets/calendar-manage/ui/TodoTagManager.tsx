@@ -300,7 +300,7 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="!text-[var(--fg-expense)]"
+                            className="!text-[var(--color-fg-critical)]"
                             aria-label={tc("delete")}
                             onClick={(e) => {
                               e.stopPropagation();

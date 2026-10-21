@@ -260,7 +260,7 @@ export function HideAmountsSection({
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: 100,
+          zIndex: "var(--z-modal)",
           background: "var(--bg-surface)",
           display: "flex",
           flexDirection: "column",

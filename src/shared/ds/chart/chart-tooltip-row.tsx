@@ -21,7 +21,7 @@ export function ChartTooltipRow({
         className="size-2 shrink-0 rounded-[2px]"
         style={{ background: swatch }}
       />
-      <span data-slot="chart-tooltip-label" className="text-fg-neutral-muted">
+      <span data-slot="chart-tooltip-label" className="text-fg-neutral-subtle">
         {name}
       </span>
       <span

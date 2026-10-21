@@ -73,6 +73,7 @@ import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 /**
  * 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
@@ -99,19 +100,19 @@ const PRIO: Record<
   HIGH: {
     labelKey: "prio.HIGH",
     color: "var(--status-danger-fg)",
-    bg: "color-mix(in oklab, var(--status-danger-fg) 14%, var(--bg-surface))",
+    bg: "var(--color-bg-critical-weak)",
     order: 0,
   },
   MEDIUM: {
     labelKey: "prio.MEDIUM",
     color: "var(--status-warning-fg)",
-    bg: "color-mix(in oklab, var(--status-warning-fg) 14%, var(--bg-surface))",
+    bg: "var(--color-bg-warning-weak)",
     order: 1,
   },
   LOW: {
     labelKey: "prio.LOW",
     color: "var(--status-info-fg)",
-    bg: "color-mix(in oklab, var(--status-info-fg) 14%, var(--bg-surface))",
+    bg: "var(--color-bg-informative-weak)",
     order: 2,
   },
 };
@@ -402,7 +403,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
             border: done
               ? "0"
               : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
-            background: done ? "var(--color-primary)" : "transparent",
+            background: done ? "var(--color-bg-brand-solid)" : "transparent",
             cursor: "pointer",
             flexShrink: 0,
             display: "inline-flex",
@@ -416,7 +417,13 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
           {toggleStatus.pendingIds.has(todo.rowId) ? (
             <Spinner size="sm" />
           ) : (
-            done && <Check size={13} color="#fff" strokeWidth={3} />
+            done && (
+              <Check
+                size={13}
+                color="var(--color-static-white)"
+                strokeWidth={3}
+              />
+            )
           )}
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -599,7 +606,7 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
                   style={{
                     width: `${(done / total) * 100}%`,
                     height: "100%",
-                    background: "var(--color-primary)",
+                    background: "var(--color-bg-brand-solid)",
                     borderRadius: 999,
                   }}
                 />
@@ -745,21 +752,19 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 데스크톱 ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("pageTitle")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button size="sm" onClick={() => setEditing({ _new: true })}>
-            <Plus size={14} /> {t("newTodo")}
-          </Button>
-        </div>
-      </div>
-      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+      <PageHead
+        title={t("pageTitle")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button size="sm" onClick={() => setEditing({ _new: true })}>
+              <Plus size={14} /> {t("newTodo")}
+            </Button>
+          </>
+        }
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
+      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",
@@ -1343,21 +1348,19 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
   return (
     <div style={{ padding: 0 }}>
       {/* 정적 페이지 헤더 — 실제 렌더 */}
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("pageTitle")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button size="sm" disabled>
-            <Plus size={14} /> {t("newTodo")}
-          </Button>
-        </div>
-      </div>
-      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+      <PageHead
+        title={t("pageTitle")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button size="sm" disabled>
+              <Plus size={14} /> {t("newTodo")}
+            </Button>
+          </>
+        }
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
+      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",

@@ -328,7 +328,7 @@ export function AssetTradeDialog({
             style={{
               color:
                 viaCash && (cashAfter ?? 0) < 0
-                  ? "var(--color-error)"
+                  ? "var(--color-fg-critical)"
                   : "var(--fg-primary)",
             }}
           >
@@ -368,7 +368,7 @@ export function AssetTradeDialog({
         {!isSell && viaCash && (cashAfter ?? 0) < 0 && (
           <div
             className="mt-1.5 text-[11.5px]"
-            style={{ color: "var(--color-error)" }}
+            style={{ color: "var(--color-fg-critical)" }}
           >
             {t("trade.insufficientCash")}
           </div>
@@ -376,7 +376,7 @@ export function AssetTradeDialog({
         {isSell && qty > heldQty && (
           <div
             className="mt-1.5 text-[11.5px]"
-            style={{ color: "var(--color-error)" }}
+            style={{ color: "var(--color-fg-critical)" }}
           >
             {t("trade.insufficientQty")}
           </div>

@@ -226,7 +226,7 @@ export function TodoMobileLedger({
 
   const numColor = (ds: string, dow: number): string => {
     if (ds > today) return "var(--fg-tertiary)";
-    if (dow === 0) return "var(--fg-expense)"; // 캘린더 일요일 정합(사용자 결정)
+    if (dow === 0) return "var(--color-fg-critical)"; // 캘린더 일요일 정합(사용자 결정)
     if (dow === 6) return "var(--fg-brand)";
     return "var(--fg-primary)";
   };
@@ -300,7 +300,7 @@ export function TodoMobileLedger({
         <Check
           size={10}
           strokeWidth={3}
-          style={{ color: "var(--color-cat-green)" }}
+          style={{ color: "var(--color-chart-green)" }}
         />
       );
     }
@@ -424,7 +424,7 @@ export function TodoMobileLedger({
             labels={dowLabels}
             colorFor={(i) =>
               i === 0
-                ? "var(--fg-expense)"
+                ? "var(--color-fg-critical)"
                 : i === 6
                   ? "var(--fg-brand)"
                   : undefined
@@ -500,7 +500,7 @@ export function TodoMobileLedger({
                   style={{
                     color:
                       doneN === items.length
-                        ? "var(--color-cat-green)"
+                        ? "var(--color-chart-green)"
                         : "var(--fg-tertiary)",
                   }}
                 >
@@ -569,7 +569,7 @@ export function TodoMobileLedger({
                                 ? "0"
                                 : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
                               background: done
-                                ? "var(--color-primary)"
+                                ? "var(--color-bg-brand-solid)"
                                 : "transparent",
                             }}
                           >
@@ -577,7 +577,11 @@ export function TodoMobileLedger({
                               <Spinner size="sm" />
                             ) : (
                               done && (
-                                <Check size={13} color="#fff" strokeWidth={3} />
+                                <Check
+                                  size={13}
+                                  color="var(--color-static-white)"
+                                  strokeWidth={3}
+                                />
                               )
                             )}
                           </button>

@@ -11,12 +11,12 @@ export const ALERT_OVERLAY = [
   "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:[--tw-animation-duration:var(--motion-duration-d2)] data-[state=closed]:ease-[var(--motion-ease-exit)]",
 ].join(" ");
 
-// 확인창 — 최대 272, 좌우 32 를 남긴다(화면이 336 보다 좁으면 화면 폭 − 64). 안쪽 20 · 모서리 20, 그림자 없음, z-alert-content 301.
+// 확인창 — 높이는 화면까지(max-height 100%), 넘치면 확인창 전체(버튼 포함)가 스크롤한다(03-F 1A — SEED alert-dialog.css). 최대 272, 좌우 32 를 남긴다(화면이 336 보다 좁으면 화면 폭 − 64). 안쪽 20 · 모서리 20, 그림자 없음, z-alert-content 301.
 // 열림 200ms enter-expressive 로 1.3 배에서 줄며 나타난다(모션 줄이기면 150ms 서서히). 닫힘 100ms exit 로 줄지 않고 사라진다.
 // 길이는 --tw-animation-duration 으로 준다 — duration-* 는 transition-duration 도 바꿔 테마를 바꿀 때 색까지 번지게 한다
 export const ALERT_CONTENT = [
   "fixed left-1/2 top-1/2 z-(--z-alert-content) flex w-[calc(100%-var(--spacing-x8)*2)] max-w-[272px] -translate-x-1/2 -translate-y-1/2 flex-col",
-  "rounded-r5 bg-bg-layer-floating p-x5 font-sans text-fg-neutral outline-none",
+  "max-h-full overflow-y-auto rounded-r5 bg-bg-layer-floating p-x5 font-sans text-fg-neutral outline-none",
   "data-[state=open]:animate-in data-[state=open]:fade-in-0",
   "motion-safe:data-[state=open]:zoom-in-130 motion-safe:data-[state=open]:[--tw-animation-duration:var(--motion-duration-d4)] motion-safe:data-[state=open]:ease-[var(--motion-ease-enter-expressive)]",
   "motion-reduce:data-[state=open]:[--tw-animation-duration:var(--motion-duration-d3)] motion-reduce:data-[state=open]:ease-[var(--motion-ease-enter)]",
@@ -32,5 +32,5 @@ export const ALERT_DESCRIPTION =
 
 // 바닥 — 위 16, 버튼 사이 8. 버튼마다 반 폭을 바탕으로(늘어나 채운다) 글 폭보다 줄지 않는다 — 한쪽 글이 반을 넘으면
 // 줄이 넘어가고 wrap-reverse 라 둘째(확정)가 위로 간다. 하나면 폭 전체
-export const ALERT_FOOTER =
-  "flex flex-wrap-reverse gap-x2 pt-x4 [&>*]:min-w-max [&>*]:grow [&>*]:basis-[calc(50%-var(--spacing-x2)/2)]";
+// 짝 버튼 판정은 ResponsivePair(button 폴더)가 맡는다 — 여기는 바닥 위 16 만(I-01 결정 6A)
+export const ALERT_FOOTER = "pt-x4";

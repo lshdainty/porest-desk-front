@@ -61,8 +61,8 @@ const RadioListItem = React.forwardRef<
           s.padding,
           s.gap,
           "hover:bg-surface-input transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-[-2px]",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
+          "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
+          "disabled:bg-bg-disabled disabled:text-fg-disabled disabled:cursor-not-allowed",
           className,
         )}
         {...props}
@@ -90,7 +90,7 @@ const RadioListItem = React.forwardRef<
             </span>
           )}
         </span>
-        <RadioGroupPrimitive.Indicator className="flex-shrink-0 text-primary">
+        <RadioGroupPrimitive.Indicator className="flex-shrink-0 text-fg-brand">
           <Check size={s.check} strokeWidth={2.2} />
         </RadioGroupPrimitive.Indicator>
       </RadioGroupPrimitive.Item>

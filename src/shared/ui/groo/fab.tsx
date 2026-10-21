@@ -19,7 +19,7 @@ export function Fab({
     <button
       type={type}
       className={cn(
-        "fixed bottom-6 right-[18px] z-20 w-[52px] h-[52px] rounded-full border-0",
+        "fixed bottom-6 right-[18px] z-(--z-sticky) w-[52px] h-[52px] rounded-full border-0",
         "bg-[var(--bg-brand)] text-[var(--fg-on-brand)] shadow-[var(--shadow-lg)]",
         "inline-flex items-center justify-center cursor-pointer",
         "transition-transform duration-[var(--motion-duration-fast)] active:scale-95",

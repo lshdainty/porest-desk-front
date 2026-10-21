@@ -44,6 +44,7 @@ import {
   type LineSize,
   type PlacedBar,
 } from "./tabs-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Tabs — 구조는 SEED Tabs(2026-10-02). 수치 원본은 groo-design specs/components/tabs.yaml(Line) · chip-tabs.yaml(Chip Tabs)
@@ -402,6 +403,7 @@ const TabsTrigger = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const { layout, size } = React.useContext(TabsListContext);
     const tabs = useTabsValue("TabsTrigger");
     const selected = tabs.value === value;
@@ -435,7 +437,9 @@ const TabsTrigger = React.forwardRef<
             />
           )}
         </span>
-        {notification && !selected && <span className="sr-only">새 소식</span>}
+        {notification && !selected && (
+          <span className="sr-only">{dsT("common.news")}</span>
+        )}
       </TabsPrimitive.Trigger>
     );
   },
@@ -514,6 +518,7 @@ const ChipTabsTrigger = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const { variant, size } = React.useContext(ChipTabsListContext);
     const tabs = useTabsValue("ChipTabsTrigger");
     const selected = tabs.value === value;
@@ -553,7 +558,9 @@ const ChipTabsTrigger = React.forwardRef<
             className={CHIP_TABS_NOTIFICATION}
           />
         )}
-        {notification && !selected && <span className="sr-only">새 소식</span>}
+        {notification && !selected && (
+          <span className="sr-only">{dsT("common.news")}</span>
+        )}
       </TabsPrimitive.Trigger>
     );
   },

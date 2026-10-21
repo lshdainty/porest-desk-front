@@ -73,12 +73,12 @@ const ROLE_BADGE_VARIANT: Record<
 // 멤버 아바타 — 권한 색 톤 (소유자 info / 편집 success / 읽기 neutral).
 const ROLE_AVATAR: Record<CalendarRole, { bg: string; fg: string }> = {
   OWNER: {
-    bg: "color-mix(in srgb, var(--color-info) 14%, transparent)",
-    fg: "var(--color-info)",
+    bg: "var(--color-bg-informative-weak)",
+    fg: "var(--color-fg-informative)",
   },
   EDIT: {
-    bg: "color-mix(in srgb, var(--color-success) 14%, transparent)",
-    fg: "var(--color-success)",
+    bg: "var(--color-bg-positive-weak)",
+    fg: "var(--color-fg-positive)",
   },
   READ: { bg: "var(--bg-sunken)", fg: "var(--fg-tertiary)" },
 };
@@ -839,7 +839,7 @@ function CalendarManageDialog({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="!text-[var(--fg-expense)]"
+                      className="!text-[var(--color-fg-critical)]"
                       aria-label={t("shareSection.removeMember")}
                       onClick={() => handleRemove(member)}
                       loading={removeMut.isPending}
@@ -941,7 +941,7 @@ function CalendarCreateDialog({
           <div
             style={{
               fontSize: "var(--text-badge)",
-              color: "var(--fg-expense)",
+              color: "var(--color-fg-critical)",
               marginTop: 4,
             }}
           >

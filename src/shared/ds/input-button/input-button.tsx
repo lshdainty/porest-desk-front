@@ -14,6 +14,7 @@ import {
   measurePress,
   swallowClick,
 } from "./input-button-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Input Button — 구조는 SEED Input Button(React 이름 Field Button, 2026-10-01). 수치 원본은 groo-design
@@ -96,7 +97,7 @@ const InputButton = React.forwardRef<HTMLButtonElement, InputButtonProps>(
       suffix,
       suffixIcon,
       onClear,
-      clearLabel = "지우기",
+      clearLabel: clearLabelProp,
       readOnly: readOnlyProp,
       rootClassName,
       rootRef,
@@ -116,6 +117,8 @@ const InputButton = React.forwardRef<HTMLButtonElement, InputButtonProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
+    const clearLabel = clearLabelProp ?? dsT("common.clear");
     const field = useField();
     const control = useFieldControl({
       id,
@@ -282,7 +285,7 @@ const InputButton = React.forwardRef<HTMLButtonElement, InputButtonProps>(
         </span>
         {required && (
           <span id={requiredId} className="sr-only">
-            필수
+            {dsT("common.required")}
           </span>
         )}
       </div>

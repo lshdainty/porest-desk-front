@@ -449,10 +449,10 @@ export function SavingGoalAddDialog({
             padding: "10px 12px",
             background: "oklch(0.96 0.04 20)",
             border:
-              "1px solid color-mix(in oklch, var(--fg-expense) 30%, transparent)",
+              "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
             borderRadius: "var(--radius-md)",
             fontSize: "var(--text-label-sm)",
-            color: "var(--fg-expense)",
+            color: "var(--color-fg-critical)",
             display: "flex",
             alignItems: "center",
             gap: 6,

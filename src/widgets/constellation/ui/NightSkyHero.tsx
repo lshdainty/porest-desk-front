@@ -53,8 +53,8 @@ export function NightSkyHero({
   const done = today.collected;
   const name = constellationName(today.constellation, i18n.language);
   const lineColor = done
-    ? "rgba(178, 197, 255, 0.85)"
-    : "rgba(148, 168, 235, 0.5)";
+    ? "color-mix(in srgb, var(--color-fg-neutral-inverted) 85%, transparent)"
+    : "color-mix(in srgb, var(--color-fg-neutral-inverted) 50%, transparent)";
 
   const caption = done
     ? t("hero.captionDone")
@@ -77,8 +77,7 @@ export function NightSkyHero({
         overflow: "hidden",
         borderRadius: "var(--radius-lg)",
         boxShadow: "var(--shadow-sm)",
-        background:
-          "linear-gradient(155deg, #0d1430 0%, #17224a 55%, #1f2c5e 100%)",
+        background: "var(--color-bg-neutral-inverted)",
         height: mobile ? 168 : 208,
       }}
     >
@@ -92,7 +91,7 @@ export function NightSkyHero({
           height: 180,
           borderRadius: 999,
           background:
-            "radial-gradient(circle, rgba(154,176,255,0.16) 0%, transparent 65%)",
+            "radial-gradient(circle, color-mix(in srgb, var(--color-fg-neutral-inverted) 16%, transparent) 0%, transparent 65%)",
         }}
       />
       <span
@@ -100,7 +99,8 @@ export function NightSkyHero({
           position: "absolute",
           top: 14,
           right: 16,
-          color: "rgba(210,220,255,0.55)",
+          color:
+            "color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent)",
           display: "inline-flex",
         }}
       >
@@ -120,7 +120,8 @@ export function NightSkyHero({
             fontSize: 11,
             fontWeight: 600,
             letterSpacing: "0.03em",
-            color: "rgba(205,216,255,0.62)",
+            color:
+              "color-mix(in srgb, var(--color-fg-neutral-inverted) 62%, transparent)",
           }}
         >
           {t("hero.todayTarget")}
@@ -130,7 +131,7 @@ export function NightSkyHero({
             fontSize: mobile ? 16 : 18,
             fontWeight: 800,
             letterSpacing: "-0.02em",
-            color: "#f2f5ff",
+            color: "var(--color-fg-neutral-inverted)",
             marginTop: 2,
           }}
         >
@@ -140,7 +141,8 @@ export function NightSkyHero({
             style={{
               fontSize: 12.5,
               fontWeight: 700,
-              color: "rgba(190,205,255,0.85)",
+              color:
+                "color-mix(in srgb, var(--color-fg-neutral-inverted) 85%, transparent)",
               marginLeft: 8,
             }}
           >
@@ -160,7 +162,8 @@ export function NightSkyHero({
             width: i % 3 === 0 ? 2.5 : 1.5,
             height: i % 3 === 0 ? 2.5 : 1.5,
             borderRadius: 999,
-            background: "rgba(200, 212, 255, 0.32)",
+            background:
+              "color-mix(in srgb, var(--color-fg-neutral-inverted) 32%, transparent)",
             transform: "translate(-50%, -50%)",
           }}
         />
@@ -226,10 +229,14 @@ export function NightSkyHero({
                 height: on ? onSize : offSize,
                 borderRadius: 999,
                 transform: "translate(-50%, -50%)",
-                background: on ? "#e8eeff" : "transparent",
-                border: on ? "none" : "1px solid rgba(190, 205, 255, 0.45)",
+                background: on
+                  ? "var(--color-fg-neutral-inverted)"
+                  : "transparent",
+                border: on
+                  ? "none"
+                  : "1px solid color-mix(in srgb, var(--color-fg-neutral-inverted) 45%, transparent)",
                 boxShadow: on
-                  ? `0 0 ${done ? 14 : 9}px 2px rgba(176, 196, 255, ${done ? 0.8 : 0.55})`
+                  ? `0 0 ${done ? 14 : 9}px 2px color-mix(in srgb, var(--color-fg-neutral-inverted) ${done ? 80 : 55}%, transparent)`
                   : "none",
                 transition:
                   "all var(--motion-duration-fast) var(--motion-ease-out)",
@@ -250,7 +257,8 @@ export function NightSkyHero({
         <div
           style={{
             fontSize: mobile ? 11 : 11.5,
-            color: "rgba(198,209,250,0.55)",
+            color:
+              "color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent)",
           }}
         >
           {caption}
@@ -274,10 +282,11 @@ export function NightSkyHero({
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            background: "rgba(255,255,255,0.09)",
+            background:
+              "color-mix(in srgb, var(--color-fg-neutral-inverted) 9%, transparent)",
             borderRadius: 999,
             padding: mobile ? "4px 10px" : "5px 12px",
-            color: "#e6ecff",
+            color: "var(--color-fg-neutral-inverted)",
             fontSize: mobile ? 11.5 : 12,
             fontWeight: 700,
           }}
@@ -292,7 +301,8 @@ export function NightSkyHero({
             gap: 4,
             fontSize: 10.5,
             fontWeight: 600,
-            color: "rgba(190,205,255,0.7)",
+            color:
+              "color-mix(in srgb, var(--color-fg-neutral-inverted) 70%, transparent)",
           }}
         >
           <Cloud size={11} /> {t("hero.guardInfo", { count: today.guardCount })}

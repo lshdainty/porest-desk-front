@@ -10,6 +10,7 @@ import {
   avatarInitial,
   type AvatarHue,
 } from "./avatar-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Avatar — 구조는 SEED Avatar · Avatar Stack(2026-10-03). 수치 원본은 groo-design
@@ -168,11 +169,13 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
       size: sizeProp = 48,
       decorative = true,
       uploadProgress,
-      uploadLabel = "프로필 사진 올리는 중",
+      uploadLabel: uploadLabelProp,
       ...props
     },
     ref,
   ) => {
+    const dsT = useDsText();
+    const uploadLabel = uploadLabelProp ?? dsT("avatar.uploading");
     const stack = React.useContext(AvatarStackContext);
     const size = stack?.size ?? sizeProp;
     const shown = avatarDisplayName(name);

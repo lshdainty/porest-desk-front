@@ -1,3 +1,4 @@
+import { dsText } from "@/shared/ds/i18n";
 /*
  * Groo Color Swatch — 카테고리 · 태그 · 라벨 · 저축 목표 · 캘린더에 붙일 색을 고르는 묶음(2026-10-09). 수치 원본은 groo-design specs/components/color-swatch.yaml(값은 src/shared/ds/spec/color-swatch.json).
  * groo-design recipes/shadcn/components/ui/color-swatch.tsx 를 첫 판으로 가져왔다 — 이 파일은 색 이름 · 차례 · 배정 · 칸 클래스 · 대비 셈, 컴포넌트는 color-swatch.tsx 다
@@ -61,19 +62,8 @@ export const COLOR_SWATCH_ORDER: readonly ChartColor[] = [
   "gray",
 ];
 
-/** 색 이름 — 칸의 이름(라디오) */
-export const COLOR_NAMES: Readonly<Record<ChartColor, string>> = {
-  red: "빨강",
-  orange: "주황",
-  yellow: "노랑",
-  green: "초록",
-  blue: "파랑",
-  indigo: "남색",
-  violet: "보라",
-  pink: "분홍",
-  brown: "갈색",
-  gray: "회색",
-};
+/** 색 이름 — 칸의 이름(라디오). 지금 언어대로 */
+export const colorName = (color: ChartColor) => dsText(`colorSwatch.${color}`);
 
 // v110 배정 순서 — chart.tsx 의 CHART_ORDER 와 같다(회색은 "기타" 전용이라 없다)
 export const ASSIGN_ORDER: readonly ChartColor[] = [

@@ -27,43 +27,43 @@ import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 const PARTICIPANT_PALETTE = [
   {
     color: "var(--color-chart-blue)",
-    bg: "color-mix(in oklch, var(--color-chart-blue) 18%, transparent)",
+    bg: "var(--color-chart-blue-weak)",
   },
   {
     color: "var(--color-chart-green)",
-    bg: "color-mix(in oklch, var(--color-chart-green) 18%, transparent)",
+    bg: "var(--color-chart-green-weak)",
   },
   {
     color: "var(--color-chart-orange)",
-    bg: "color-mix(in oklch, var(--color-chart-orange) 18%, transparent)",
+    bg: "var(--color-chart-orange-weak)",
   },
   {
     color: "var(--color-chart-violet)",
-    bg: "color-mix(in oklch, var(--color-chart-violet) 18%, transparent)",
+    bg: "var(--color-chart-violet-weak)",
   },
   {
     color: "var(--color-chart-pink)",
-    bg: "color-mix(in oklch, var(--color-chart-pink) 18%, transparent)",
+    bg: "var(--color-chart-pink-weak)",
   },
   {
     color: "var(--color-chart-indigo)",
-    bg: "color-mix(in oklch, var(--color-chart-indigo) 18%, transparent)",
+    bg: "var(--color-chart-indigo-weak)",
   },
   {
     color: "var(--color-chart-red)",
-    bg: "color-mix(in oklch, var(--color-chart-red) 18%, transparent)",
+    bg: "var(--color-chart-red-weak)",
   },
   {
     color: "var(--color-chart-yellow)",
-    bg: "color-mix(in oklch, var(--color-chart-yellow) 18%, transparent)",
+    bg: "var(--color-chart-yellow-weak)",
   },
   {
     color: "var(--color-chart-brown)",
-    bg: "color-mix(in oklch, var(--color-chart-brown) 18%, transparent)",
+    bg: "var(--color-chart-brown-weak)",
   },
   {
     color: "var(--color-chart-gray)",
-    bg: "color-mix(in oklch, var(--color-chart-gray) 18%, transparent)",
+    bg: "var(--color-chart-gray-weak)",
   },
 ];
 
@@ -692,7 +692,7 @@ export function DutchPayFromTxDialog({
         <p
           style={{
             fontSize: "var(--text-caption)",
-            color: "var(--fg-expense)",
+            color: "var(--color-fg-critical)",
             marginTop: 8,
           }}
         >

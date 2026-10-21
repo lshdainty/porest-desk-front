@@ -12,7 +12,10 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
-import { eventBadgeColor } from "@/widgets/calendar/lib/helpers";
+import {
+  eventBadgeColor,
+  eventBadgeTone,
+} from "@/widgets/calendar/lib/helpers";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
@@ -43,15 +46,17 @@ const AgendaEventCard = ({
   const endDate = parseISO(event.endDate);
 
   const badgeColor = eventBadgeColor(event);
+
+  const tone = eventBadgeTone(event);
   return (
     <div
       role="button"
       tabIndex={0}
-      className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
       style={{
-        backgroundColor: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        backgroundColor: tone.bg,
         borderColor: "transparent",
-        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+        color: tone.fg,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => {
@@ -251,9 +256,7 @@ const CalendarAgendaView = ({
           {!hasAnyEvents && (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
               <CalendarX2 className="size-10" />
-              <p className="text-sm min-[736px]:text-base">
-                {t("agenda.noEvents")}
-              </p>
+              <p className="text-sm md:text-base">{t("agenda.noEvents")}</p>
             </div>
           )}
         </div>

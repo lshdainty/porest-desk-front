@@ -7,9 +7,9 @@ import { cva } from "class-variance-authority";
 export const toggleVariants = cva(
   [
     "inline-flex items-center justify-center gap-[var(--spacing-xs)] rounded-md text-caption font-semibold",
-    "ring-offset-bg-page transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-    "disabled:pointer-events-none disabled:opacity-50",
+    "ring-offset-bg-page transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
+    "disabled:pointer-events-none disabled:bg-bg-disabled disabled:text-fg-disabled",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   ].join(" "),
   {

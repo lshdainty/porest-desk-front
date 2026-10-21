@@ -1,5 +1,4 @@
 import * as React from "react";
-import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/shared/lib/cn";
 
@@ -23,6 +22,7 @@ import {
   cardHeaderVariants,
   cardVariants,
 } from "./card-variants";
+import { dsText, useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Card — 면은 SEED Elevation · stroke.neutral-weak · Feedback(2026-10-08). 수치 원본은 groo-design
@@ -38,8 +38,8 @@ import {
  *                   열리고 안에 대등한 동작이 더 있다 — 카드 위에 깐 CardLink 가 누르는 자리, 색만 바뀐다). href · onClick 을 주면 "whole"
  *   CardHeader      머리 — 제목과 오른쪽 동작 한 줄, 아래 8(목록 · 아코디언 카드 4)
  *   CardTitle       제목 16 / 22 · 700 · fg-neutral — as(기본 h2)
- *   CardAction      머리 동작("전체 보기") — href · onClick. 14 · 500 · fg-neutral-subtle + chevron-right 16(사이 2), 보이는 상자 32 ·
- *                   왼쪽 8 · 오른쪽 4 · 모서리 8, 누르는 영역 44. 이름은 "{제목} {글}"(카드 제목 id 로 이은 aria-labelledby)
+ *   CardAction      머리 동작("전체 보기") — href · onClick. SEED Text Button(D2): 14 · 700 · fg-neutral-muted, 꺾쇠 · 아이콘 없음, 보이는 상자 36 ·
+ *                   좌우 14 · 모서리 8, 누르는 영역 44. 이름은 "{제목} {글}"(카드 제목 id 로 이은 aria-labelledby)
  *   CardContent     본문 — 여백 안, 요소 사이 12. 목록 카드는 CardContent 없이 List 를 바로 넣는다
  *   CardLink        peers 카드의 누르는 자리 — 카드 전체를 덮는 링크(href) · 버튼(onClick), 글은 제목 모양(이름은 카드 제목)
  *   CardStat        지표 — label(13 · 500) · value(700 · 고정폭 숫자 — large 24 / 32 · small 20 / 27) · delta
@@ -290,7 +290,6 @@ const CardAction = React.forwardRef<HTMLElement, CardActionProps>(
     const inner = (
       <>
         <span id={textId}>{children}</span>
-        <ChevronRight aria-hidden strokeWidth={2} />
       </>
     );
     const shared = {
@@ -419,15 +418,20 @@ function deltaSentence(
 ) {
   const base = plain(text);
   if (direction === "flat")
-    return [base, "변화가 없어요"].filter(Boolean).join(" ");
+    return [base, dsText("card.noChangeSentence")].filter(Boolean).join(" ");
   const amount = plain(unsigned(value));
-  return [base, amount, direction === "up" ? "늘었어요" : "줄었어요"]
+  return [
+    base,
+    amount,
+    direction === "up" ? dsText("card.increased") : dsText("card.decreased"),
+  ]
     .filter(Boolean)
     .join(" ");
 }
 
 const Delta = React.forwardRef<HTMLSpanElement, DeltaProps>(
   ({ direction, value, text, srText, className, ...props }, ref) => {
+    const dsT = useDsText();
     const hero = React.useContext(CardContext)?.variant === "hero";
     const arrow = ARROW[direction];
     return (
@@ -451,7 +455,7 @@ const Delta = React.forwardRef<HTMLSpanElement, DeltaProps>(
               {arrow} {unsigned(value)}
             </>
           ) : (
-            "변화 없음"
+            dsT("card.noChange")
           )}
         </span>
         {/* flat 은 "변화 없음" 만 — "변화 없음 지난달보다" 가 되지 않게 기준 글은 숨긴 문장에만 */}

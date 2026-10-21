@@ -13,7 +13,7 @@ import { cva } from "class-variance-authority";
  *   criticalSolid  빨강 채움 — 되돌릴 수 없는 작업의 확정(Alert Dialog)
  *   brandOutline   테두리 + 브랜드 글자 — neutralOutline 과 짝
  *   neutralOutline 테두리 + 본문 글자 — 가장 낮은 위계
- *   ghost          배경 없음 — ghostColor 로 글자색(neutral · neutralSubtle · brand · critical)
+ *   ghost          배경 없음 — ghostColor 로 글자색(neutral · neutralSubtle · neutralMuted · brand · critical). 글 버튼(D2)은 ghost small neutralMuted
  *
  * Sizes(4) × layout(withText · iconOnly)
  *   xsmall 32(알약) · small 36 · medium 40(기본) · large 48 — 크기는 이름이 아니라 높이로 고른다.
@@ -36,7 +36,7 @@ import { cva } from "class-variance-authority";
  */
 export const buttonVariants = cva(
   [
-    "relative inline-flex items-center justify-center whitespace-nowrap font-sans font-bold",
+    "relative inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-sans font-bold",
     // 누르는 영역 44 — 보이는 상자보다 작으면 ::before 가 넓힌다
     "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     // 색은 color-transition, 축소는 pressed-scale
@@ -83,6 +83,7 @@ export const buttonVariants = cva(
       ghostColor: {
         neutral: "",
         neutralSubtle: "",
+        neutralMuted: "",
         brand: "",
         critical: "",
       },
@@ -143,6 +144,12 @@ export const buttonVariants = cva(
         ghostColor: "neutralSubtle",
         className: "text-fg-neutral-subtle",
       },
+      // SEED Text Button(D2) = ghost small + neutralMuted — 14 · 700 · fg-neutral-muted · 36 · 좌우 14 · 누르는 44
+      {
+        variant: "ghost",
+        ghostColor: "neutralMuted",
+        className: "text-fg-neutral-muted",
+      },
       { variant: "ghost", ghostColor: "brand", className: "text-fg-brand" },
       {
         variant: "ghost",
@@ -165,3 +172,8 @@ export const buttonVariants = cva(
     },
   },
 );
+
+// 짝 버튼(ResponsivePair) — 한 라벨이 반 폭을 넘으면 세로로 쌓고 주 버튼이 위(button.md "긴 라벨", I-01 결정 6A).
+// 사이 8 · 버튼마다 반 폭 바탕 · 글 폭보다 줄지 않는다 — 넘치면 줄이 넘어가고 wrap-reverse 라 뒤(주) 버튼이 위로 간다
+export const RESPONSIVE_PAIR =
+  "flex flex-wrap-reverse gap-x2 [&>*]:min-w-max [&>*]:grow [&>*]:basis-[calc(50%-var(--spacing-x2)/2)]";

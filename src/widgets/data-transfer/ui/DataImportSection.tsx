@@ -352,14 +352,14 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 gap: 10,
                 padding: 14,
                 borderRadius: "var(--radius-tile)",
-                background: "var(--bg-danger-subtle, var(--bg-muted))",
-                border: "1px solid var(--border-danger, var(--border-subtle))",
+                background: "var(--color-bg-critical-weak)",
+                border: "1px solid var(--color-stroke-critical-solid)",
               }}
             >
               <TriangleAlert
                 size={17}
                 style={{
-                  color: "var(--fg-expense)",
+                  color: "var(--color-fg-critical)",
                   flexShrink: 0,
                   marginTop: 1,
                 }}
@@ -745,7 +745,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "var(--bg-success-subtle, var(--bg-brand-subtle))",
+                background: "var(--color-bg-positive-weak)",
                 color: "var(--color-fg-positive)",
               }}
             >

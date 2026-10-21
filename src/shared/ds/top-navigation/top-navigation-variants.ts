@@ -49,6 +49,15 @@ export const TITLE_TYPE: Record<
   standard: cn("ml-x1_5 first:ml-[50px]", TEXT_T6),
 };
 
+// ── 검색칸 ───────────────────────────────────────────────────
+// 높이 40(바 56 의 가운데 — 위아래 8)은 Input medium 이 정한다. standard — ← 다음 6 부터 남은 폭 · desktop — 머리 왼쪽 폭 360
+export const SEARCH = "min-w-0";
+export const SEARCH_TYPE: Record<TopNavigationType, string> = {
+  root: "ml-x2_5 flex-1",
+  standard: "ml-x1_5 first:ml-[50px] flex-1",
+  desktop: "w-[360px] max-w-full",
+};
+
 // ── 오른쪽 자리 ──────────────────────────────────────────────
 // 제목 끝 ↔ 첫 버튼 상자 8(SEED titleMinGap) — 제목이 없으면 오른쪽으로 민다. 버튼끼리는 붙는다
 export const ACTIONS = "ml-auto flex shrink-0 items-center pl-x2";

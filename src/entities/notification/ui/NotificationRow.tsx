@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Spinner } from "@/shared/ui/spinner";
 import { notificationVisual } from "../lib/notificationVisual";
 import { relativeTime } from "../lib/relativeTime";
 import type { Notification } from "../model/types";
 
 /**
- * 알림 행 — Popover·Page 공용 single source(SoT 정합).
- *
- * 슬롯: 아이콘(34x34 tone) / 텍스트(제목+unread dot, 설명 2줄) / 상대시간(우측 상단) /
- *       trailing(선택 — Page 삭제 버튼 등).
- * unread 시각(좌측 엣지바·배경·dot)은 .notif-row.unread CSS 로 처리.
+ * 알림 줄 — SEED List 줄(9-1 A): 타일 40 · 제목 16/400 · 설명 13 muted · 시각 13 subtle,
+ * 안 읽은 줄은 bg-brand-weak 바탕 + 제목 옆 점. 읽은 줄은 보기만 하는 줄(`ListItem`), 안 읽은 줄만 버튼
+ * (`ListButtonItem` — 9-2 A, 누르면 읽음)이다. `<List>` 안에 놓는다.
  */
 export function NotificationRow({
   notification,
@@ -27,37 +27,72 @@ export function NotificationRow({
    * 필수로 두면 새 호출부가 생겨도 컴파일이 먼저 붙잡는다.
    */
   now: number;
+  /** 안 읽은 줄을 눌렀을 때(읽음 처리) — 읽은 줄은 누르지 않는다 */
   onClick?: () => void;
-  /** 행 우측 끝 추가 액션(Page 삭제 버튼). 미지정 시 SoT(Popover) 3슬롯 그대로. */
+  /** 줄 오른쪽 끝 추가 액션(알림 화면 삭제 버튼). 시각 옆에 놓이고 따로 눌린다 */
   trailing?: ReactNode;
-  /** 읽음 처리 요청 진행 중 — 안 읽음 점 자리에 스피너, 클릭 잠금. */
+  /** 읽음 처리 요청 진행 중 — 점 자리에 스피너, 누르지 못한다. */
   pending?: boolean;
 }) {
+  const { t } = useTranslation("notification");
   const { Icon, bg, fg } = notificationVisual(notification.notificationType);
-  return (
-    <div
-      className={`notif-row ${notification.isRead ? "" : "unread"}`}
-      aria-busy={pending || undefined}
-      onClick={pending ? undefined : onClick}
-    >
-      <span className="notif-row__icon" style={{ background: bg, color: fg }}>
-        <Icon size={16} strokeWidth={1.9} />
+  const unread = !notification.isRead;
+
+  const common = {
+    prefix: (
+      <ListTile style={{ background: bg, color: fg }}>
+        <Icon size={20} strokeWidth={2} aria-hidden />
+      </ListTile>
+    ),
+    title: (
+      <span className="inline-flex items-center gap-x1_5">
+        {notification.title}
+        {pending ? (
+          <Spinner size="sm" />
+        ) : (
+          unread && (
+            <>
+              <span
+                aria-hidden
+                className="size-1.5 shrink-0 rounded-full bg-bg-brand-solid"
+              />
+              <span className="sr-only">{t("row.unread")}</span>
+            </>
+          )
+        )}
       </span>
-      <div className="notif-row__text">
-        <div className="notif-row__title">
-          {notification.title}
-          {pending ? (
-            <Spinner size="sm" />
-          ) : (
-            !notification.isRead && <span className="notif-row__dot" />
-          )}
-        </div>
-        <div className="notif-row__desc">{notification.message}</div>
-      </div>
-      <div className="notif-row__time">
-        {relativeTime(notification.createAt, now)}
-      </div>
-      {trailing}
-    </div>
+    ),
+    detail: (
+      <span className="line-clamp-2 text-fg-neutral-muted">
+        {notification.message}
+      </span>
+    ),
+    suffix: (
+      <span className="flex items-center gap-x2">
+        <span className="text-t3 text-fg-neutral-subtle">
+          {relativeTime(notification.createAt, now)}
+        </span>
+        {trailing}
+      </span>
+    ),
+    highlighted: unread,
+    align: "top" as const,
+  };
+
+  if (unread && onClick)
+    return (
+      <ListButtonItem
+        {...common}
+        rootProps={{ "data-notification-id": notification.rowId } as object}
+        disabled={pending}
+        aria-busy={pending || undefined}
+        onClick={onClick}
+      />
+    );
+  return (
+    <ListItem
+      {...common}
+      {...({ "data-notification-id": notification.rowId } as object)}
+    />
   );
 }

@@ -30,6 +30,7 @@ import type {
 } from "@/entities/card";
 import { getCardBrand } from "@/entities/card";
 import { CardBenefitDetailDialog } from "./CardBenefitDetailDialog";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
@@ -971,16 +972,12 @@ export const CardBenefitPage = () => {
         </>
       ) : (
         <div style={{ padding: 0 }}>
-          <div
-            className="page__head"
-            style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-          >
-            <div>
-              <h1>{t("benefit.headerTitle")}</h1>
-              <div className="sub">{t("benefit.headerSub")}</div>
-            </div>
-          </div>
-          <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+          <PageHead
+            title={t("benefit.headerTitle")}
+            description={t("benefit.headerSub")}
+            style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+          />
+          <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
             {Controls}
           </div>
         </div>

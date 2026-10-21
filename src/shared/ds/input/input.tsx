@@ -9,6 +9,7 @@ import {
 } from "@/shared/ds/field";
 
 import { AFFIX_EDGE, textInputVariants } from "./input-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Input(Text Input) — 구조는 SEED Text Input(2026-10-01). 수치 원본은 groo-design
@@ -83,6 +84,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const inputRef = React.useRef<HTMLInputElement>(null);
     const control = useFieldControl(props);
     const text = useTextControl(inputRef, { onChange, onCompositionEnd });
@@ -197,7 +199,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {showClear && (
           <button
             type="button"
-            aria-label="지우기"
+            aria-label={dsT("common.clear")}
             tabIndex={-1}
             data-slot="text-input-clear"
             onClick={clear}

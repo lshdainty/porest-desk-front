@@ -1,32 +1,32 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Calendar1, Home, Menu, ReceiptText } from "lucide-react";
 import {
-  Calendar1,
-  ChartPie,
-  FilePen,
-  Home,
-  Menu,
-  ReceiptText,
-  Wallet,
-} from "lucide-react";
+  BottomNavigation,
+  BottomNavigationAddButton,
+  BottomNavigationItem,
+} from "@/shared/ds/bottom-navigation";
+import { SnackbarAvoidOverlap } from "@/shared/ds/snackbar";
+import { useLinkClick } from "../lib/use-link-click";
+import { expectRestore, forget, recall, type TabId } from "../lib/tab-memory";
 import {
-  TabBar,
-  TabBarBack,
-  TabBarFab,
-  TabBarItem,
-} from "@/shared/ui/groo/tabbar";
+  isAllTab,
+  isCalendarTab,
+  isExpenseTab,
+  isHomeTab,
+} from "../model/shell";
 
 /**
- * 모바일 하단 네비 — default(홈·가계부·+·캘린더·전체) / money(←·가계부·자산·통계·예산)
- * 두 모드를 한 인스턴스로 렌더해 모드 전환 스태거 안무(공유 탭 = 가계부)를 살린다.
- * design chrome.jsx MTabBar 미러 — 모드 결정은 라우팅(AppLayout isMoney)이 담당.
+ * 모바일 하단 탭 바 — 홈 · 가계부 · + · 캘린더 · 전체. 다섯 칸이 어느 화면에서나 같다(옛 money 모드는 없다 —
+ * 가계부 · 자산 · 통계 · 예산은 모두 "가계부" 가 현재이고 화면 위 Line Tabs 가 넷을 나눈다).
+ *
+ * 칸은 `<a href>` 라 라우터로 옮기도록 onClick 을 넘기고(다른 탭에서 오면 그 탭의 마지막 화면 · 스크롤 — lib/tab-memory), 지금 탭을 다시 누르면(onReselect) 그 탭의 첫 화면으로
+ * replace 하며 맨 위로 스크롤한다(같은 주소를 쌓지 않는다).
  */
 export function AppTabBar({
-  mode,
   onAdd,
   addLabel,
 }: {
-  mode: "default" | "money";
   onAdd: () => void;
   /**
    * `+` 의 접근성 라벨 — **부모가 `onAdd` 와 짝지어 넘긴다**(`fabFor`).
@@ -37,73 +37,56 @@ export function AppTabBar({
   addLabel: string;
 }) {
   const { t } = useTranslation("layout");
-  const location = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+  const link = useLinkClick();
 
-  const isActive = (path: string) =>
-    path === "/desk"
-      ? location.pathname === path
-      : location.pathname.startsWith(path);
+  const tab = (
+    id: TabId,
+    href: string,
+    label: string,
+    icon: React.ReactNode,
+    current: boolean,
+  ) => (
+    <BottomNavigationItem
+      href={href}
+      label={label}
+      icon={icon}
+      current={current}
+      // 다른 탭에서 오면 그 탭의 마지막 화면 · 스크롤로(tab-memory)
+      onClick={link(href, {
+        to: recall(id)?.path ?? href,
+        before: () => expectRestore(id, recall(id)?.scroll ?? 0),
+      })}
+      onReselect={({ scrollToTop }) => {
+        forget(id, href);
+        navigate(href, { replace: true });
+        scrollToTop();
+      }}
+    />
+  );
 
   return (
-    <TabBar modeKey={mode}>
-      {mode === "money" ? (
-        <TabBarBack aria-label={t("back")} onClick={() => navigate("/desk")} />
-      ) : (
-        <TabBarItem
-          icon={Home}
-          label={t("home")}
-          active={isActive("/desk")}
-          onClick={() => navigate("/desk")}
-        />
-      )}
-      <TabBarItem
-        shared
-        icon={ReceiptText}
-        label={t("expense")}
-        active={isActive("/desk/expense")}
-        onClick={() => navigate("/desk/expense")}
-      />
-      {mode === "money" ? (
-        <TabBarItem
-          icon={Wallet}
-          label={t("asset")}
-          active={isActive("/desk/asset")}
-          onClick={() => navigate("/desk/asset")}
-        />
-      ) : (
-        <TabBarFab aria-label={addLabel} onClick={onAdd} />
-      )}
-      {mode === "money" ? (
-        <TabBarItem
-          icon={ChartPie}
-          label={t("stats")}
-          active={isActive("/desk/stats")}
-          onClick={() => navigate("/desk/stats")}
-        />
-      ) : (
-        <TabBarItem
-          icon={Calendar1}
-          label={t("calendar")}
-          active={isActive("/desk/calendar")}
-          onClick={() => navigate("/desk/calendar")}
-        />
-      )}
-      {mode === "money" ? (
-        <TabBarItem
-          icon={FilePen}
-          label={t("budget")}
-          active={isActive("/desk/budget")}
-          onClick={() => navigate("/desk/budget")}
-        />
-      ) : (
-        <TabBarItem
-          icon={Menu}
-          label={t("all")}
-          active={isActive("/desk/more")}
-          onClick={() => navigate("/desk/more")}
-        />
-      )}
-    </TabBar>
+    <SnackbarAvoidOverlap>
+      <BottomNavigation>
+        {tab("home", "/desk", t("home"), <Home />, isHomeTab(pathname))}
+        {tab(
+          "expense",
+          "/desk/expense",
+          t("expense"),
+          <ReceiptText />,
+          isExpenseTab(pathname),
+        )}
+        <BottomNavigationAddButton aria-label={addLabel} onClick={onAdd} />
+        {tab(
+          "calendar",
+          "/desk/calendar",
+          t("calendar"),
+          <Calendar1 />,
+          isCalendarTab(pathname),
+        )}
+        {tab("all", "/desk/more", t("all"), <Menu />, isAllTab(pathname))}
+      </BottomNavigation>
+    </SnackbarAvoidOverlap>
   );
 }

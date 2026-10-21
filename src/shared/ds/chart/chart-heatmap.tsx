@@ -15,6 +15,7 @@ import {
 } from "./chart-heatmap-variants";
 import { TOOLTIP_SURFACE, formatWon } from "./chart-variants";
 import { useEscapeFirst } from "./use-escape-first";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Chart 의 열지도 — 요일 × 시간 같은 두 축의 세기. 수치 원본은 groo-design specs/components/chart.yaml 의 heatmapCell · heatmapValue.
@@ -90,7 +91,7 @@ const ChartHeatmap = React.forwardRef<HTMLDivElement, ChartHeatmapProps>(
       columns,
       values,
       formatValue = formatWon,
-      valueLabel = "지출",
+      valueLabel: valueLabelProp,
       textMinCellWidth = HEAT_TEXT_MIN_CELL_WIDTH,
       tooltipLabel,
       className,
@@ -100,6 +101,8 @@ const ChartHeatmap = React.forwardRef<HTMLDivElement, ChartHeatmapProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
+    const valueLabel = valueLabelProp ?? dsT("chartHeatmap.value");
     const rootRef = React.useRef<HTMLDivElement>(null);
     const firstCellRef = React.useRef<HTMLSpanElement>(null);
     const tipRef = React.useRef<HTMLDivElement>(null);
@@ -398,7 +401,9 @@ const ChartHeatmap = React.forwardRef<HTMLDivElement, ChartHeatmapProps>(
                 }
                 name={valueLabel}
                 value={
-                  activeStep < 0 ? "없음" : formatValue(activeValue as number)
+                  activeStep < 0
+                    ? dsT("common.none")
+                    : formatValue(activeValue as number)
                 }
               />
             </div>,

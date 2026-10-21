@@ -17,6 +17,7 @@ import {
   POPOVER_POSITION,
   POPOVER_TITLE,
 } from "./popover-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Popover — 구조는 SEED Popover(2026-10-02). 수치 원본은 groo-design specs/components/popover.yaml
@@ -283,6 +284,7 @@ const PopoverContent = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const ctx = React.useContext(PopoverContext);
     const own = React.useRef<HTMLDivElement>(null);
     const titleId = React.useId();
@@ -392,7 +394,7 @@ const PopoverContent = React.forwardRef<
           )}
           {hasHeader && (
             <PopoverPrimitive.Close
-              aria-label="닫기"
+              aria-label={dsT("common.close")}
               data-slot="popover-close"
               className={POPOVER_CLOSE}
             >

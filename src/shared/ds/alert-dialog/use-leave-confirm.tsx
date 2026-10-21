@@ -9,6 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "./alert-dialog";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * 작성 중 나가기 — 바뀐 값이 있으면 닫기 전에 "작성한 내용이 사라져요" 를 묻는다(Field 의 이탈 시 안내). Dialog · Bottom Sheet 가 쓴다.
@@ -40,6 +41,7 @@ export function useLeaveConfirm({
   container,
   modal,
 }: LeaveConfirmOptions) {
+  const dsT = useDsText();
   const [asking, setAsking] = React.useState(false);
   const dirtyRef = React.useRef(dirty);
   const leaveRef = React.useRef(leave);
@@ -82,12 +84,12 @@ export function useLeaveConfirm({
           back?.focus({ preventScroll: true });
         }}
       >
-        <AlertDialogTitle>작성한 내용이 사라져요</AlertDialogTitle>
+        <AlertDialogTitle>{dsT("leaveConfirm.title")}</AlertDialogTitle>
         <AlertDialogDescription>
-          나가면 입력한 내용이 저장되지 않아요.
+          {dsT("leaveConfirm.description")}
         </AlertDialogDescription>
         <AlertDialogFooter>
-          <AlertDialogCancel>계속 작성</AlertDialogCancel>
+          <AlertDialogCancel>{dsT("leaveConfirm.stay")}</AlertDialogCancel>
           <AlertDialogAction
             variant="criticalSolid"
             onClick={() => {
@@ -95,7 +97,7 @@ export function useLeaveConfirm({
               leaveRef.current();
             }}
           >
-            나가기
+            {dsT("leaveConfirm.leave")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

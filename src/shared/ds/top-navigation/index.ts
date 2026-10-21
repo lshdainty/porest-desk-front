@@ -8,6 +8,7 @@ export {
   TopNavigationMenuButton,
   TopNavigationPrimaryButton,
   TopNavigationProvider,
+  TopNavigationSearch,
   TopNavigationTextButton,
   TopNavigationTitle,
   type TopNavigationBackButtonProps,
@@ -15,6 +16,7 @@ export {
   type TopNavigationIconButtonProps,
   type TopNavigationMenuButtonProps,
   type TopNavigationProps,
+  type TopNavigationSearchProps,
   type TopNavigationType,
 } from "./top-navigation";
 export { focusScreenTitle, useScreenTitle } from "./top-navigation-context";

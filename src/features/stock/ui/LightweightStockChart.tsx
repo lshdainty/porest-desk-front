@@ -79,12 +79,12 @@ interface Palette {
   text: string;
 }
 
-function cssVar(name: string, fallback: string): string {
-  if (typeof window === "undefined") return fallback;
+function cssVar(name: string): string {
+  if (typeof window === "undefined") return "";
   const v = getComputedStyle(document.documentElement)
     .getPropertyValue(name)
     .trim();
-  return v || fallback;
+  return v;
 }
 
 function toBar(c: BrokerCandle): Bar | null {
@@ -203,12 +203,12 @@ export function LightweightStockChart({
 
   function readPalette(): Palette {
     return {
-      up: cssVar("--status-danger-fg", "#e5484d"), // 상승=빨강(국내 관례)
-      down: cssVar("--fg-brand", "#3b82f6"), // 하락=파랑
-      ma5: cssVar("--status-warning-fg", "#d9930a"),
-      ma20: cssVar("--fg-tertiary", "#9ca3af"),
-      grid: cssVar("--border-subtle", "#e5e7eb"),
-      text: cssVar("--fg-tertiary", "#9ca3af"),
+      up: cssVar("--color-fg-critical"), // 상승=빨강(국내 관례)
+      down: cssVar("--color-fg-informative"), // 하락=파랑
+      ma5: cssVar("--color-fg-warning"),
+      ma20: cssVar("--color-fg-neutral-subtle"),
+      grid: cssVar("--color-stroke-neutral-subtle"),
+      text: cssVar("--color-fg-neutral-subtle"),
     };
   }
 

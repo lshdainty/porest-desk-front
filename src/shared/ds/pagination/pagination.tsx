@@ -21,6 +21,7 @@ import {
   type PaginationItem,
 } from "./pagination-variants";
 import { usePaginationSlots } from "./use-pagination-slots";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Pagination — 구조는 SEED Pagination(2026-10-04). 수치 원본은 groo-design specs/components/pagination.yaml(값은
@@ -107,12 +108,14 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
       getHref,
       scrollTarget,
       disabled = false,
-      "aria-label": ariaLabel = "페이지 탐색",
+      "aria-label": ariaLabelProp,
       className,
       ...props
     },
     ref,
   ) => {
+    const dsT = useDsText();
+    const ariaLabel = ariaLabelProp ?? dsT("pagination.label");
     const slots = usePaginationSlots();
     const [inner, setInner] = React.useState(defaultPage);
     const controlled = pageProp !== undefined;
@@ -149,7 +152,10 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
     if (seenPage !== current) {
       setSeenPage(current);
       setMessage(
-        `${formatNumber(current)}페이지, 전체 ${formatNumber(total)}페이지`,
+        dsT("pagination.status", {
+          current: formatNumber(current),
+          total: formatNumber(total),
+        }),
       );
     }
 
@@ -206,10 +212,10 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
       const isCurrent = item.type === "page" && item.page === current;
       const label =
         item.type === "previous"
-          ? "이전 페이지"
+          ? dsT("pagination.previous")
           : item.type === "next"
-            ? "다음 페이지"
-            : `${formatNumber(item.page)}페이지`;
+            ? dsT("pagination.next")
+            : dsT("pagination.page", { page: formatNumber(item.page) });
       const reason: PaginationChangeReason =
         item.type === "page" ? "page-item" : item.type;
       const focus: FocusIntent =

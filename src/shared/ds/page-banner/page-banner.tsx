@@ -11,6 +11,7 @@ import {
 import { cn } from "@/shared/lib/cn";
 
 import { pageBannerVariants } from "./page-banner-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Page Banner — 구조는 SEED Page Banner(2026-10-02). 수치 원본은 groo-design
@@ -227,6 +228,7 @@ type PageBannerInternalProps = PageBannerCommon & {
 
 const PageBanner = React.forwardRef<HTMLElement, PageBannerProps>(
   (props, ref) => {
+    const dsT = useDsText();
     const {
       tone = "neutral",
       variant = "weak",
@@ -298,7 +300,7 @@ const PageBanner = React.forwardRef<HTMLElement, PageBannerProps>(
           <button
             type="button"
             data-slot="page-banner-close"
-            aria-label="닫기"
+            aria-label={dsT("common.close")}
             className={cn(CLOSE, RING[variant])}
             onClick={() => {
               focusAfterDismiss(own.current);

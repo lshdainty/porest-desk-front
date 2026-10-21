@@ -26,6 +26,7 @@ import {
 } from "./menu-sheet-variants";
 import { isPressKey, measurePress } from "./press";
 import { usePendingSelect } from "./use-pending-select";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Menu Sheet — 구조는 SEED Swipeable Menu Sheet(2026-10-02). 수치 원본은 groo-design specs/components/menu-sheet.yaml
@@ -190,6 +191,7 @@ const MenuSheetContent = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const ctx = useMenuSheet("MenuSheetContent");
     const { open, triggerRef, flushSelect } = ctx;
     const hasTitle = title != null;
@@ -266,7 +268,7 @@ const MenuSheetContent = React.forwardRef<
             className={MENU_SHEET_CLOSE}
             onClick={() => ctx.setOpen(false)}
           >
-            닫기
+            {dsT("common.close")}
           </button>
         </BottomSheetSurface>
       </LayoutContext.Provider>

@@ -214,20 +214,20 @@ describe("Card — 머리 동작", () => {
     expect(button.getAttribute("aria-labelledby")).toBeNull();
   });
 
-  it("보이는 상자 32 · 누르는 영역 44 · chevron 16 은 장식이다", () => {
+  it("글 버튼(SEED Text Button) — 보이는 상자 36 · 좌우 14 · 700 · muted · 누르는 영역 44 · 꺾쇠 없음", () => {
     render(
       <Card>
         <CardAction onClick={() => {}}>전체 보기</CardAction>
       </Card>,
     );
     const action = slot("card-action")!;
-    expect(action.className).toContain("h-8");
+    expect(action.className).toContain("h-9");
+    expect(action.className).toContain("px-x3_5");
+    expect(action.className).toContain("font-bold");
+    expect(action.className).toContain("text-fg-neutral-muted");
     expect(action.className).toContain("before:h-11");
     expect(action.className).toContain("before:min-w-11");
-    expect(action.className).toContain("[&_svg]:size-4");
-    expect(action.querySelector("svg")!.getAttribute("aria-hidden")).toBe(
-      "true",
-    );
+    expect(action.querySelector("svg")).toBeNull();
   });
 
   it("누르는 순간 --press-basis 를 잰다 · 모션 줄이기면 축소하지 않는다", () => {

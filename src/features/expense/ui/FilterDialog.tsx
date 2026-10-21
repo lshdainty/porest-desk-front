@@ -255,7 +255,7 @@ export function FilterDialog({
           <div
             style={{
               fontSize: "var(--text-caption)",
-              color: "var(--fg-expense)",
+              color: "var(--color-fg-critical)",
               marginTop: 6,
             }}
           >
@@ -341,7 +341,7 @@ export function FilterDialog({
                       ? {
                           borderColor: "var(--color-stroke-critical-solid)",
                           background: "var(--status-danger-subtle)",
-                          color: "var(--fg-expense)",
+                          color: "var(--color-fg-critical)",
                           textDecoration: "line-through",
                         }
                       : undefined
@@ -459,7 +459,7 @@ function ChipLabel({
       {picked.exclude.length > 0 && (
         <span
           style={{
-            color: "var(--fg-expense)",
+            color: "var(--color-fg-critical)",
             fontWeight: "600",
             marginLeft: 4,
           }}

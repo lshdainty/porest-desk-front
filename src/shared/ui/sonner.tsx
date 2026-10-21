@@ -65,27 +65,27 @@ const iconBaseProps = {
 };
 
 const SuccessIcon = () => (
-  <svg {...iconBaseProps} stroke="var(--color-success)">
+  <svg {...iconBaseProps} stroke="var(--color-fg-positive)">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
 const ErrorIcon = () => (
-  <svg {...iconBaseProps} stroke="var(--color-error)">
+  <svg {...iconBaseProps} stroke="var(--color-fg-critical)">
     <circle cx="12" cy="12" r="10" />
     <line x1="15" y1="9" x2="9" y2="15" />
     <line x1="9" y1="9" x2="15" y2="15" />
   </svg>
 );
 const WarningIcon = () => (
-  <svg {...iconBaseProps} stroke="var(--color-warning)">
+  <svg {...iconBaseProps} stroke="var(--color-fg-warning)">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
     <line x1="12" y1="9" x2="12" y2="13" />
     <line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 const InfoIcon = () => (
-  <svg {...iconBaseProps} stroke="var(--color-info)">
+  <svg {...iconBaseProps} stroke="var(--color-fg-informative)">
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="16" x2="12" y2="12" />
     <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -160,9 +160,9 @@ export const Toaster = ({ style: styleProp, ...rest }: ToasterProps) => {
           description:
             "!text-body-sm !font-normal !text-[var(--color-text-secondary)]",
           actionButton:
-            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !bg-bg-brand-solid !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
+            "!ml-auto !inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] !bg-bg-brand-solid !text-text-on-accent ![box-shadow:var(--shadow-sm)] hover:brightness-105 !h-8 !px-[var(--spacing-sm)] !text-caption",
           cancelButton:
-            "!inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] !border !border-[var(--color-border-default)] !bg-[var(--color-surface-default)] !text-[var(--color-text-primary)] !h-8 !px-[var(--spacing-sm)] !text-caption",
+            "!inline-flex !items-center !justify-center !gap-[var(--spacing-sm)] !whitespace-nowrap !rounded-sm !font-sans !font-medium transition-[box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] !border !border-[var(--color-border-default)] !bg-[var(--color-surface-default)] !text-[var(--color-text-primary)] !h-8 !px-[var(--spacing-sm)] !text-caption",
         },
       }}
       {...rest}

@@ -42,7 +42,7 @@ const DialogOverlay = React.forwardRef<
     <DialogPrimitive.Overlay
       ref={ref}
       className={cn(
-        "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+        "fixed inset-0 z-(--z-modal) bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
         "duration-200",
@@ -56,7 +56,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const dialogContentVariants = cva(
   [
-    "fixed left-1/2 top-1/2 z-[101] -translate-x-1/2 -translate-y-1/2",
+    "fixed left-1/2 top-1/2 z-(--z-modal-content) -translate-x-1/2 -translate-y-1/2",
     "max-h-[86vh] max-w-[calc(100%-40px)]",
     // 여백은 컨테이너가 아니라 헤더·본문·footer 가 각자 갖는다 — 본문만 스크롤해야 해서
     // 셋을 한 덩어리로 묶을 수 없다(dialog.md Layout). 컨테이너는 padding 0.
@@ -101,12 +101,18 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(dialogContentVariants({ size }), className)}
         style={{ boxShadow: "var(--shadow-xl)", ...style }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        // 열면 초점이 표면(대화상자 자체)으로 — 첫 칸이 아니다. Tab 은 안을 돈다(Radix 가 가둔다), 닫으면 연 자리로(03F-006)
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          (e.target as HTMLElement | null)?.focus({
+            preventScroll: true,
+          });
+        }}
         {...props}
       >
         {children}
         {!hideClose && (
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none">
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring disabled:pointer-events-none">
             <X className="h-4 w-4" />
             <span className="sr-only">{t("close")}</span>
           </DialogPrimitive.Close>
@@ -156,7 +162,7 @@ const DialogFooter = ({
       // 데스크탑(≥640px)은 우측 정렬. 모바일에서 우측 정렬 compact 로 두면
       // 화면 구석의 작은 알약이 돼 한 손으로 누를 폭이 안 나온다.
       "flex shrink-0 items-center gap-2 px-[22px] py-[18px]",
-      "[&>button]:flex-1 min-[640px]:justify-end min-[640px]:[&>button]:flex-none",
+      "[&>button]:flex-1 sm:justify-end sm:[&>button]:flex-none",
       className,
     )}
     {...props}

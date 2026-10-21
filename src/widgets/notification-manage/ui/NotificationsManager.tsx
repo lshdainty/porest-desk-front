@@ -48,7 +48,7 @@ const TONE_STYLE: Record<Tone, { bg: string; fg: string }> = {
   // brand-subtle 은 다크에서 surface 와 거의 같아 박스가 묻힘 —
   // fg-brand(다크=primary-light 자동 swap) 15% 틴트로 양 모드 가시성 확보.
   brand: {
-    bg: "color-mix(in srgb, var(--fg-brand) 15%, transparent)",
+    bg: "var(--color-bg-brand-weak)",
     fg: "var(--fg-brand)",
   },
   success: {
@@ -295,8 +295,8 @@ function NotifSection({
       <CardHeader
         className={
           action != null
-            ? "flex-row items-center justify-between p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-lg)] pb-[2px] min-[736px]:pb-[2px]"
-            : "gap-[2px] p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-lg)] pb-[8px] min-[736px]:pb-[8px]"
+            ? "flex-row items-center justify-between p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[2px] md:pb-[2px]"
+            : "gap-[2px] p-[var(--spacing-lg)] md:p-[var(--spacing-lg)] pb-[8px] md:pb-[8px]"
         }
       >
         <CardTitle
@@ -314,8 +314,8 @@ function NotifSection({
       <CardContent
         className={
           contentPad
-            ? "p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-lg)]"
-            : "p-0 min-[736px]:p-0"
+            ? "p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]"
+            : "p-0 md:p-0"
         }
       >
         {children}
@@ -396,7 +396,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         }}
       >
         {/* 앱 _MasterCard 패딩 EdgeInsets.all(lg=16) 고정 — 데스크톱에서도 24 아님. */}
-        <CardContent className="p-[var(--spacing-lg)] min-[736px]:p-[var(--spacing-lg)]">
+        <CardContent className="p-[var(--spacing-lg)] md:p-[var(--spacing-lg)]">
           <SettingRow
             icon={<Bell size={18} strokeWidth={1.9} />}
             tone="brand"
@@ -777,7 +777,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           style={{
             // 앱 에러 메시지 타이포 bodySm(13) 정합.
             fontSize: "var(--text-body-sm)",
-            color: "var(--fg-expense)",
+            color: "var(--color-fg-critical)",
           }}
         >
           {t("saveError")}

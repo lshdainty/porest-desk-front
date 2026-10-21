@@ -115,6 +115,7 @@ import { countableTx, expenseSum, incomeSum } from "@/entities/expense";
 import { AddTxSheet } from "@/widgets/add-tx";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { TxDetailDialog } from "@/widgets/expense-detail/ui/TxDetailDialog";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 type Filter = "all" | "income" | "expense";
@@ -291,7 +292,7 @@ function ExpenseDayGroupSkeleton({ rows }: { rows: number }) {
 function ExpenseCalendarSkeleton() {
   return (
     <Card
-      className="max-w-[430px] min-[834px]:max-w-none h-full min-h-0"
+      className="max-w-[430px] md:max-w-none h-full min-h-0"
       style={{ overflow: "hidden" }}
     >
       <div className="flex flex-col h-full">
@@ -308,7 +309,7 @@ function ExpenseCalendarSkeleton() {
           {Array.from({ length: 42 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col items-start gap-1 p-1 min-[834px]:p-2 min-[834px]:border-l min-[834px]:border-t border-[var(--border-subtle)]"
+              className="flex flex-col items-start gap-1 p-1 md:p-2 md:border-l md:border-t border-[var(--border-subtle)]"
             >
               <SkeletonBase className="size-6 rounded-full" />
               <SkeletonBase className="h-2 w-8 mt-auto" />
@@ -380,7 +381,7 @@ function ExpensePageSkeleton({
               labels={dowLabels}
               colorFor={(i) =>
                 i === 0
-                  ? "var(--fg-expense)"
+                  ? "var(--color-fg-critical)"
                   : i === 6
                     ? "var(--fg-brand)"
                     : undefined
@@ -427,12 +428,7 @@ function ExpensePageSkeleton({
       className="page flex flex-col flex-1 min-h-0"
       style={{ paddingBottom: 24 }}
     >
-      <div className="page__head">
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-      </div>
+      <PageHead title={t("title")} description={t("subtitle")} />
       <ExpenseSummarySkeleton mobile={false} />
       <div className="flex-1 min-h-0 flex flex-col">
         <ExpenseCalendarSkeleton />
@@ -671,7 +667,7 @@ function ExpenseCalendar({
         </div>
       ) : (
         <Card
-          className="min-[834px]:max-w-none h-full min-h-0"
+          className="md:max-w-none h-full min-h-0"
           style={{ overflow: "hidden" }}
         >
           {calInner}
@@ -1554,25 +1550,25 @@ function ExpenseDesktop() {
       className={isCalendarMode ? "page flex flex-col flex-1 min-h-0" : "page"}
       style={isCalendarMode ? { paddingBottom: 24 } : undefined}
     >
-      <div className="page__head">
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setFilterOpen(true)}
-          >
-            <Filter size={13} /> {t("filter.title")}
-            {activeCount > 0 && ` · ${activeCount}`}
-          </Button>
-          <Button variant="secondary" size="sm" onClick={notifyComing}>
-            <Download size={13} /> {t("export")}
-          </Button>
-        </div>
-      </div>
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFilterOpen(true)}
+            >
+              <Filter size={13} /> {t("filter.title")}
+              {activeCount > 0 && ` · ${activeCount}`}
+            </Button>
+            <Button variant="outline" size="sm" onClick={notifyComing}>
+              <Download size={13} /> {t("export")}
+            </Button>
+          </>
+        }
+      />
       {asset && (
         <AssetFilterBadge
           name={t("assetFilterBadge", { name: asset.assetName })}
@@ -1770,7 +1766,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 className={
                   diff > 0
                     ? "font-bold text-[var(--fg-brand)]"
-                    : "font-bold text-[var(--fg-expense)]"
+                    : "font-bold text-[var(--color-fg-critical)]"
                 }
               />
             ),
@@ -1853,7 +1849,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
 
   const numColor = (ds: string, dow: number): string => {
     if (ds > todayStr) return "var(--fg-tertiary)";
-    if (dow === 0) return "var(--fg-expense)"; // 캘린더 일요일 정합(사용자 결정)
+    if (dow === 0) return "var(--color-fg-critical)"; // 캘린더 일요일 정합(사용자 결정)
     if (dow === 6) return "var(--fg-brand)";
     return "var(--fg-primary)";
   };
@@ -2023,10 +2019,10 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
             <LedgerDow
               labels={dowLabels}
               // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
-              // 카테고리 팔레트의 빨강(--color-cat-red)을 쓰고 있어 헤더만 톤이 달랐다.
+              // 카테고리 팔레트의 빨강(--color-chart-red)을 쓰고 있어 헤더만 톤이 달랐다.
               colorFor={(i) =>
                 i === 0
-                  ? "var(--fg-expense)"
+                  ? "var(--color-fg-critical)"
                   : i === 6
                     ? "var(--fg-brand)"
                     : undefined
@@ -2128,7 +2124,7 @@ function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 rows={[
                   {
                     label: t("expense"),
-                    color: "var(--fg-expense)",
+                    color: "var(--color-fg-critical)",
                     value: (
                       <>
                         <MaskAmount card="ledger.txList" kind="expense">

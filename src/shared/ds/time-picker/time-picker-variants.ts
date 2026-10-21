@@ -4,8 +4,10 @@
  *
  *   roundToStep       시각 · Date 를 분 간격에 맞춰 반올림한다(시각 전체 기준 — 9시 58분 → 10시 00분). 빈 칸을 열 때 지금을 짚는 데 쓴다
  *   formatTimeValue   칸에 넣는 글 — "오후 3:00"(International Design v106, 초 없음)
- *   TIME_PICKER_LABELS  글 한 벌(한국어) — 다른 언어는 같은 꼴로 labels 에 넘긴다
+ *   timePickerLabels()  글 한 벌(지금 언어) — 다른 글은 같은 꼴로 labels 에 넘긴다
  */
+
+import { dsLanguage, dsText } from "@/shared/ds/i18n";
 
 export interface TimeValue {
   /** 24시간의 시 — 0 ~ 23 */
@@ -28,15 +30,17 @@ export interface TimePickerLabels {
   pm: string;
 }
 
-/** 한국어 글 한 벌 — 다른 언어는 같은 꼴로 labels 에 넘긴다 */
-export const TIME_PICKER_LABELS: TimePickerLabels = {
-  root: "시간 선택",
-  period: "오전/오후",
-  hour: "시",
-  minute: "분",
-  am: "오전",
-  pm: "오후",
-};
+/** 글 한 벌 — 지금 언어(한국어 · 영어)대로. 호출부가 labels 로 준 것이 이긴다 */
+export function timePickerLabels(): TimePickerLabels {
+  return {
+    root: dsText("timePicker.root"),
+    period: dsText("timePicker.period"),
+    hour: dsText("timePicker.hour"),
+    minute: dsText("timePicker.minute"),
+    am: dsText("timePicker.am"),
+    pm: dsText("timePicker.pm"),
+  };
+}
 
 const MINUTES_IN_DAY = 24 * 60;
 export const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -74,10 +78,15 @@ export function roundToStep(
 /** 칸에 넣는 글 — "오후 3:00"(오전 · 오후 12시간, 초 없음). 비었으면 "" */
 export function formatTimeValue(
   value: TimeValue | Date | undefined | null,
-  labels: Pick<TimePickerLabels, "am" | "pm"> = TIME_PICKER_LABELS,
+  labels: Pick<TimePickerLabels, "am" | "pm"> = timePickerLabels(),
 ): string {
   if (!value) return "";
   const hour = value instanceof Date ? value.getHours() : value.hour;
   const minute = value instanceof Date ? value.getMinutes() : value.minute;
-  return `${hour < 12 ? labels.am : labels.pm} ${hour % 12 === 0 ? 12 : hour % 12}:${pad2(minute)}`;
+  const period = hour < 12 ? labels.am : labels.pm;
+  const clock = `${hour % 12 === 0 ? 12 : hour % 12}:${pad2(minute)}`;
+  // 한국어 "오후 3:00" · 영어 "3:00 PM"(International Design v106)
+  return dsLanguage().startsWith("en")
+    ? `${clock} ${period}`
+    : `${period} ${clock}`;
 }

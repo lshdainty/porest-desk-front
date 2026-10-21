@@ -13,7 +13,7 @@ import { cn } from "@/shared/lib/index";
  */
 
 const labelVariants = cva(
-  "text-label-md font-medium text-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+  "text-label-md font-medium text-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:text-fg-disabled",
 );
 
 const Label = React.forwardRef<

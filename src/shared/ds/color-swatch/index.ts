@@ -4,7 +4,7 @@ export {
   type ColorSwatchValue,
 } from "./color-swatch";
 export {
-  COLOR_NAMES,
+  colorName,
   COLOR_SWATCH_ORDER,
   firstUnusedColor,
   type ChartColor,

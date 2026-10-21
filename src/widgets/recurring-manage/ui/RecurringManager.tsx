@@ -391,10 +391,10 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                       padding: "10px 12px",
                       borderRadius: "var(--radius-sm)",
                       background: isToday
-                        ? "color-mix(in oklch, var(--fg-expense) 8%, transparent)"
+                        ? "color-mix(in oklch, var(--color-fg-critical) 8%, transparent)"
                         : "var(--bg-sunken)",
                       border: isToday
-                        ? "1px solid color-mix(in oklch, var(--fg-expense) 25%, transparent)"
+                        ? "1px solid color-mix(in oklch, var(--color-fg-critical) 25%, transparent)"
                         : "1px solid transparent",
                     }}
                   >
@@ -408,7 +408,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
                         padding: "4px 8px",
                         borderRadius: "var(--radius-sm)",
                         background: isToday
-                          ? "var(--fg-expense)"
+                          ? "var(--color-fg-critical)"
                           : "var(--bg-surface)",
                         color: isToday
                           ? "var(--fg-on-danger)"
@@ -944,7 +944,7 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
       {openMenuId !== null && (
         <div
           onClick={() => setOpenMenuId(null)}
-          style={{ position: "fixed", inset: 0, zIndex: 50 }}
+          style={{ position: "fixed", inset: 0, zIndex: "var(--z-sticky)" }}
         />
       )}
 
@@ -1173,7 +1173,7 @@ function RecStat({
 }) {
   const color =
     tone === "expense"
-      ? "var(--fg-expense)"
+      ? "var(--color-fg-critical)"
       : tone === "income"
         ? "var(--fg-income)"
         : tone === "muted"
@@ -1239,7 +1239,9 @@ function RecAction({
       onClick={onClick}
       loading={loading}
       disabled={disabled}
-      className={tone === "danger" ? "!text-[var(--fg-expense)]" : undefined}
+      className={
+        tone === "danger" ? "!text-[var(--color-fg-critical)]" : undefined
+      }
     >
       {!loading && <Icon size={16} strokeWidth={1.9} />}
     </Button>

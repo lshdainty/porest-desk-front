@@ -378,8 +378,8 @@
   --color-fg-neutral-subtle-dark: var(--color-gray-700-dark);
   --color-fg-neutral-inverted: var(--color-gray-00);
   --color-fg-neutral-inverted-dark: var(--color-gray-100-dark);
-  --color-fg-placeholder: var(--color-gray-700);
-  --color-fg-placeholder-dark: var(--color-gray-700-dark);
+  --color-fg-placeholder: var(--color-gray-600);
+  --color-fg-placeholder-dark: var(--color-gray-600-dark);
   --color-fg-disabled: var(--color-gray-500);
   --color-fg-disabled-dark: var(--color-gray-600-dark);
   --color-static-white: #ffffff;
@@ -417,6 +417,10 @@
   --color-bg-neutral-weak-dark: var(--color-gray-300-dark);
   --color-bg-neutral-weak-pressed: var(--color-gray-300);
   --color-bg-neutral-weak-pressed-dark: var(--color-gray-400-dark);
+  --color-bg-neutral-weak-alpha: #0000000c;
+  --color-bg-neutral-weak-alpha-dark: #ffffff20;
+  --color-bg-neutral-weak-alpha-pressed: #00000010;
+  --color-bg-neutral-weak-alpha-pressed-dark: #ffffff2e;
   --color-bg-neutral-inverted: var(--color-gray-1000);
   --color-bg-neutral-inverted-dark: var(--color-gray-1000-dark);
   --color-bg-neutral-inverted-pressed: var(--color-gray-800);
@@ -738,14 +742,10 @@
   --spacing-screen-bottom: 56px;
 
   /* Shadow (from prose-token table — DESIGN*.md '## Elevation & Depth') */
-  --shadow-s1: 0 1px 2px 0 rgba(15, 18, 28, 0.05);
-  --shadow-s2:
-    0 2px 8px -1px rgba(15, 18, 28, 0.08), 0 1px 3px -1px rgba(15, 18, 28, 0.04);
-  --shadow-s3:
-    0 8px 24px -4px rgba(15, 18, 28, 0.1), 0 2px 6px -2px rgba(15, 18, 28, 0.05);
-  --shadow-s4:
-    0 24px 48px -8px rgba(15, 18, 28, 0.16),
-    0 8px 16px -4px rgba(15, 18, 28, 0.08);
+  --shadow-s1: var(--groo-shadow-s1);
+  --shadow-s2: var(--groo-shadow-s2);
+  --shadow-s3: var(--groo-shadow-s3);
+  --shadow-s4: var(--groo-shadow-s4);
   --shadow-s1-dark:
     0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   --shadow-s2-dark:
@@ -757,25 +757,14 @@
   --shadow-s4-dark:
     0 24px 48px -8px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-  --shadow-sm: 0 1px 2px 0 rgba(15, 18, 28, 0.05);
-  --shadow-md:
-    0 2px 8px -1px rgba(15, 18, 28, 0.08), 0 1px 3px -1px rgba(15, 18, 28, 0.04);
-  --shadow-lg:
-    0 8px 24px -4px rgba(15, 18, 28, 0.1), 0 2px 6px -2px rgba(15, 18, 28, 0.05);
-  --shadow-xl:
-    0 24px 48px -8px rgba(15, 18, 28, 0.16),
-    0 8px 16px -4px rgba(15, 18, 28, 0.08);
-  --shadow-sm-dark:
-    0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  --shadow-md-dark:
-    0 2px 8px -1px rgba(0, 0, 0, 0.4), 0 1px 3px -1px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-  --shadow-lg-dark:
-    0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  --shadow-xl-dark:
-    0 24px 48px -8px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  --shadow-sm: var(--shadow-s1);
+  --shadow-md: var(--shadow-s2);
+  --shadow-lg: var(--shadow-s3);
+  --shadow-xl: var(--shadow-s4);
+  --shadow-sm-dark: var(--shadow-s1-dark);
+  --shadow-md-dark: var(--shadow-s2-dark);
+  --shadow-lg-dark: var(--shadow-s3-dark);
+  --shadow-xl-dark: var(--shadow-s4-dark);
 
   /* Motion (from prose-token table — DESIGN*.md '## Motion') */
   --motion-duration-d1: 50ms;
@@ -860,8 +849,6 @@
   --touch-min: 44px;
   --touch-pill-w: 100px;
   --touch-circular: 44px;
-  --touch-nav-h: 32px;
-  --touch-nav-w: 80px;
 
   /* Z-index (from prose-token table — v116 층 이름, specs/z-index.md L0 ~ L9). Tailwind: z-(--z-modal) */
   --z-base: auto;
@@ -874,6 +861,18 @@
   --z-alert-content: 301;
   --z-snackbar: 400;
   --z-dev: 9999;
+}
+
+/* Shadow values — --shadow-s1 ~ s4 가 var() 로 가리킨다(Tailwind 클래스도 다크를 따라가게). 다크는 아래 다크 블록 */
+:root {
+  --groo-shadow-s1: 0 1px 2px 0 rgba(15, 18, 28, 0.05);
+  --groo-shadow-s2:
+    0 2px 8px -1px rgba(15, 18, 28, 0.08), 0 1px 3px -1px rgba(15, 18, 28, 0.04);
+  --groo-shadow-s3:
+    0 8px 24px -4px rgba(15, 18, 28, 0.1), 0 2px 6px -2px rgba(15, 18, 28, 0.05);
+  --groo-shadow-s4:
+    0 24px 48px -8px rgba(15, 18, 28, 0.16),
+    0 8px 16px -4px rgba(15, 18, 28, 0.08);
 }
 
 /* Dark — 다크 값이 따로 있는 토큰(색 · 그림자 · 그라디언트)을 다크 값으로. <html data-theme="dark"> 또는 <html class="dark"> */
@@ -1053,7 +1052,7 @@
   --color-fg-neutral-muted: #b7bdcc;
   --color-fg-neutral-subtle: #a2a8b7;
   --color-fg-neutral-inverted: #242938;
-  --color-fg-placeholder: #a2a8b7;
+  --color-fg-placeholder: #838997;
   --color-fg-disabled: #838997;
   --color-fg-critical: #ff8477;
   --color-fg-positive: #25c062;
@@ -1072,6 +1071,8 @@
   --color-bg-layer-floating-pressed: #353b4d;
   --color-bg-neutral-weak: #353b4d;
   --color-bg-neutral-weak-pressed: #404757;
+  --color-bg-neutral-weak-alpha: #ffffff20;
+  --color-bg-neutral-weak-alpha-pressed: #ffffff2e;
   --color-bg-neutral-inverted: #f5f6fa;
   --color-bg-neutral-inverted-pressed: #b7bdcc;
   --color-bg-disabled: #353b4d;
@@ -1104,26 +1105,15 @@
   --color-stroke-positive-weak: #1a582f;
   --color-stroke-warning-weak: #833615;
   --color-stroke-informative-weak: #1c4e8a;
-  --shadow-s1:
+  --groo-shadow-s1:
     0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  --shadow-s2:
+  --groo-shadow-s2:
     0 2px 8px -1px rgba(0, 0, 0, 0.4), 0 1px 3px -1px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-  --shadow-s3:
+  --groo-shadow-s3:
     0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  --shadow-s4:
-    0 24px 48px -8px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-  --shadow-sm:
-    0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  --shadow-md:
-    0 2px 8px -1px rgba(0, 0, 0, 0.4), 0 1px 3px -1px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-  --shadow-lg:
-    0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  --shadow-xl:
+  --groo-shadow-s4:
     0 24px 48px -8px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   --gradient-shimmer-neutral: linear-gradient(

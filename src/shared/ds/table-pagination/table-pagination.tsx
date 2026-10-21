@@ -20,6 +20,7 @@ import {
   rangeOf,
   rangePages,
 } from "./table-pagination-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Table Pagination — 구조는 SEED Table Pagination(2026-10-04). 수치 원본은 groo-design
@@ -109,6 +110,7 @@ const DEFAULT_VALUE: TablePaginationValue = { page: 1, pageSize: 10 };
 
 const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
   (props, ref) => {
+    const dsT = useDsText();
     const {
       totalItems,
       hasPreviousPage: hasPreviousProp,
@@ -197,7 +199,10 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
     // 넘겼다 — 범위를 한 번 알린다. 이전에 본 쪽 · 줄 수와 다르면 렌더 중에 글을 바꾼다
     const statusText =
       total !== undefined
-        ? `${formatRange(range.start, range.end)}, 총 ${formatNumber(total)}개`
+        ? dsT("tablePagination.summary", {
+            range: formatRange(range.start, range.end),
+            total: formatNumber(total),
+          })
         : formatRange(range.start, range.end);
     const key = `${page}:${pageSize}`;
     const [seenKey, setSeenKey] = React.useState(key);
@@ -220,7 +225,9 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
       return (
         <button
           type="button"
-          aria-label={which === "previous" ? "이전 페이지" : "다음 페이지"}
+          aria-label={dsT(
+            which === "previous" ? "pagination.previous" : "pagination.next",
+          )}
           aria-disabled={blocked || undefined}
           data-slot={`table-pagination-${which}`}
           className={cn(
@@ -247,7 +254,7 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
       <div
         ref={ref}
         role="group"
-        aria-label="표 페이지 탐색"
+        aria-label={dsT("tablePagination.label")}
         aria-disabled={disabled || undefined}
         data-slot="table-pagination"
         className={cn(TABLE_PAGINATION_ROOT, className)}
@@ -260,7 +267,7 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
           <div className={TABLE_PAGINATION_SELECT_BOX}>
             <Select
               size="medium"
-              aria-label="페이지당 표시 개수"
+              aria-label={dsT("tablePagination.pageSize")}
               value={String(pageSize)}
               disabled={disabled}
               onValueChange={(v) => {
@@ -278,7 +285,9 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
                 <SelectItem
                   key={n}
                   value={String(n)}
-                  label={`${formatNumber(n)}개`}
+                  label={dsT("tablePagination.sizeOption", {
+                    count: formatNumber(n),
+                  })}
                 />
               ))}
             </Select>
@@ -287,7 +296,7 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
             data-slot="table-pagination-suffix"
             className={TABLE_PAGINATION_TEXT}
           >
-            씩 보기
+            {dsT("tablePagination.perPage")}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-x4">
@@ -299,7 +308,7 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
               <div className={TABLE_PAGINATION_SELECT_BOX}>
                 <Select
                   size="medium"
-                  aria-label="표시 범위"
+                  aria-label={dsT("tablePagination.range")}
                   value={String(page)}
                   disabled={rangeSelectDisabled}
                   listMaxHeight={RANGE_LIST_MAX_HEIGHT}
@@ -321,7 +330,7 @@ const TablePagination = React.forwardRef<HTMLDivElement, TablePaginationProps>(
                 data-slot="table-pagination-total"
                 className={TABLE_PAGINATION_TEXT}
               >
-                / 총 {formatNumber(total)}개
+                {dsT("tablePagination.of", { total: formatNumber(total) })}
               </span>
             </div>
           ) : (

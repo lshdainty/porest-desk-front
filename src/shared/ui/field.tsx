@@ -115,9 +115,9 @@ function FieldLabel({
       className={cn(
         // 그루 .p-field__label spec: 12px / 600 / secondary / -0.005em
         "text-xs font-semibold tracking-[-0.005em] text-[var(--fg-secondary)]",
-        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
+        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:text-fg-disabled",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>[data-slot=field]]:p-4",
-        "has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
+        "has-data-[state=checked]:bg-bg-brand-weak has-data-[state=checked]:border-stroke-brand-solid dark:has-data-[state=checked]:bg-bg-brand-weak",
         className,
       )}
       {...props}
@@ -130,7 +130,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-label"
       className={cn(
-        "flex w-fit items-center gap-2 text-sm font-medium leading-snug group-data-[disabled=true]/field:opacity-50",
+        "flex w-fit items-center gap-2 text-sm font-medium leading-snug group-data-[disabled=true]/field:text-fg-disabled",
         className,
       )}
       {...props}
@@ -145,7 +145,7 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
       className={cn(
         "text-text-secondary text-sm font-normal leading-normal group-has-[[data-orientation=horizontal]]/field:text-balance",
         "nth-last-2:-mt-1 last:mt-0 [[data-variant=legend]+&]:-mt-1.5",
-        "[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
+        "[&>a:hover]:text-fg-brand [&>a]:underline [&>a]:underline-offset-4",
         className,
       )}
       {...props}

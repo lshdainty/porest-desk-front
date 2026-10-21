@@ -111,7 +111,7 @@ export function ModalShell({
           </DrawerHeader>
           <DrawerBody onKeyDown={onBodyKeyDown}>{children}</DrawerBody>
           {footer && (
-            // 모바일 footer 는 버튼을 가로 균등 분배한다(spec drawer.min-[736px]:35 — 한 손 조작 폭).
+            // 모바일 footer 는 버튼을 가로 균등 분배한다(spec drawer.md:35 — 한 손 조작 폭).
             // 우측 정렬 compact 로 두면 화면 구석의 작은 알약이 되어 누르기 어렵다.
             // 삭제처럼 marginRight:auto 로 좌측에 붙는 보조 액션은 균등분배에서 빠진다.
             <div className="flex items-center gap-2 px-xl py-3 [&>button]:flex-1">
@@ -196,10 +196,8 @@ export function ConfirmDialog({
     >
       <AlertDialogContent
         size="sm"
-        // 파괴적 확정은 **버튼으로만** 닫는다(spec alert-dialog.md Behavior) — overlay 클릭은
-        // Radix 가 이미 무시하고, ESC 는 여기서 막는다. 빠져나갈 길은 취소 버튼이고,
-        // 취소가 없는 통지형은 확인이 그 자리다(WCAG 2.1.2).
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        // 바깥(딤) 누르기는 Radix 가 이미 무시하고, Esc 는 취소와 같다 — 닫는다(spec alert-dialog.md Behavior · 03F-009).
+        // onOpenChange(false) → onCancel. 취소가 없는 통지형도 Esc 로 닫힌다(WCAG 2.1.2).
         onOpenAutoFocus={
           singleAction
             ? (e) => {

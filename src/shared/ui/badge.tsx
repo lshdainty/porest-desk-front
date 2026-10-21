@@ -19,8 +19,8 @@ const badgeVariants = cva(
     "inline-flex items-center gap-1 rounded-full border",
     // spec badge.md: text-badge(11/600/1.2) — text-xs(12/1.4)는 spec 일탈이었음 (앱 PBadge 정합)
     "px-[var(--spacing-sm)] py-0.5 text-[length:var(--text-badge)] font-semibold leading-[1.2] tracking-normal",
-    "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
   ].join(" "),
   {
     variants: {
@@ -33,24 +33,24 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-bg-critical-solid text-text-on-accent hover:brightness-105",
         // soft (semantic, color-mix 16% bg) — 텍스트는 status-*-fg (다크에서 light variant, 앱 statusXxxFg 정합)
-        info: "border-transparent bg-[color-mix(in_srgb,var(--color-info)_16%,transparent)] text-[color:var(--status-info-fg)] hover:bg-[color-mix(in_srgb,var(--color-info)_24%,transparent)]",
+        info: "border-transparent bg-bg-informative-weak text-[color:var(--status-info-fg)] hover:bg-bg-informative-weak-pressed",
         success:
-          "border-transparent bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-[color:var(--status-success-fg)] hover:bg-[color-mix(in_srgb,var(--color-success)_24%,transparent)]",
+          "border-transparent bg-bg-positive-weak text-[color:var(--status-success-fg)] hover:bg-bg-positive-weak-pressed",
         warning:
-          "border-transparent bg-[color-mix(in_srgb,var(--color-warning)_16%,transparent)] text-[color:var(--status-warning-fg)] hover:bg-[color-mix(in_srgb,var(--color-warning)_24%,transparent)]",
+          "border-transparent bg-bg-warning-weak text-[color:var(--status-warning-fg)] hover:bg-bg-warning-weak-pressed",
         error:
-          "border-transparent bg-[color-mix(in_srgb,var(--color-error)_16%,transparent)] text-[color:var(--status-danger-fg)] hover:bg-[color-mix(in_srgb,var(--color-error)_24%,transparent)]",
+          "border-transparent bg-bg-critical-weak text-[color:var(--status-danger-fg)] hover:bg-bg-critical-weak-pressed",
         // outline (neutral + semantic) — 텍스트 status-*-fg / 테두리 base (앱 outline 정합)
         outline:
           "border-border-default bg-transparent text-text-primary hover:bg-surface-input",
         "outline-info":
-          "border-info text-[color:var(--status-info-fg)] bg-transparent hover:bg-[color-mix(in_srgb,var(--color-info)_8%,transparent)]",
+          "border-stroke-informative-solid text-[color:var(--status-info-fg)] bg-transparent hover:bg-bg-informative-weak",
         "outline-success":
-          "border-success text-[color:var(--status-success-fg)] bg-transparent hover:bg-[color-mix(in_srgb,var(--color-success)_8%,transparent)]",
+          "border-stroke-positive-solid text-[color:var(--status-success-fg)] bg-transparent hover:bg-bg-positive-weak",
         "outline-warning":
-          "border-warning text-[color:var(--status-warning-fg)] bg-transparent hover:bg-[color-mix(in_srgb,var(--color-warning)_8%,transparent)]",
+          "border-stroke-warning-solid text-[color:var(--status-warning-fg)] bg-transparent hover:bg-bg-warning-weak",
         "outline-error":
-          "border-error text-[color:var(--status-danger-fg)] bg-transparent hover:bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)]",
+          "border-stroke-critical-solid text-[color:var(--status-danger-fg)] bg-transparent hover:bg-bg-critical-weak",
       },
     },
     defaultVariants: {

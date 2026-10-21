@@ -134,7 +134,7 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
       onClick={() => toggleCalendarVisibility(calendar.rowId)}
       className={cn(
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-        "hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
         !calendar.isVisible && "opacity-50",
       )}
     >
@@ -165,7 +165,7 @@ const BuiltinSourceItem = ({ source }: { source: IBuiltinSource }) => {
         onClick={() => toggleBuiltinSource(source.id)}
         className={cn(
           "flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-          "hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+          "hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
           !source.enabled && "opacity-50",
         )}
       >
@@ -236,7 +236,7 @@ const CalendarSourceContent = ({ onManage }: { onManage: () => void }) => {
       <button
         type="button"
         onClick={onManage}
-        className="flex w-full items-center gap-2 p-3 text-sm font-semibold text-[var(--fg-brand)] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="flex w-full items-center gap-2 p-3 text-sm font-semibold text-[var(--fg-brand)] transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
       >
         <Settings2 size={15} />
         {t("manageShare")}
@@ -314,7 +314,7 @@ const CalendarSourceToggle = () => {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-1.5">
-              <span className="size-2 rounded-full bg-primary" />
+              <span className="size-2 rounded-full bg-bg-brand-solid" />
               {t("title")}
             </Button>
           </PopoverTrigger>

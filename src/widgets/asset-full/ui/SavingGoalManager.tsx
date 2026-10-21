@@ -206,6 +206,7 @@ function GoalCard({
                 style={{ flexShrink: 0 }}
               >
                 <Button
+                  aria-label={tc("edit")}
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(goal)}
@@ -213,6 +214,7 @@ function GoalCard({
                   <Pencil size={13} />
                 </Button>
                 <Button
+                  aria-label={tc("delete")}
                   variant="ghost"
                   size="icon"
                   className={MANAGE_ROW.delClassName}

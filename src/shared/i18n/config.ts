@@ -29,6 +29,7 @@ import koRecurring from "@/locales/ko/recurring.json";
 import koSubscription from "@/locales/ko/subscription.json";
 import koDate from "@/locales/ko/date.json";
 import koConstellation from "@/locales/ko/constellation.json";
+import koDs from "@/locales/ko/ds.json";
 
 import enCommon from "@/locales/en/common.json";
 import enLayout from "@/locales/en/layout.json";
@@ -56,6 +57,7 @@ import enRecurring from "@/locales/en/recurring.json";
 import enSubscription from "@/locales/en/subscription.json";
 import enDate from "@/locales/en/date.json";
 import enConstellation from "@/locales/en/constellation.json";
+import enDs from "@/locales/en/ds.json";
 
 // 지원하는 언어 목록
 export const SUPPORTED_LANGUAGES = ["ko", "en"] as const;
@@ -89,6 +91,7 @@ export const NAMESPACES = [
   "date",
   "constellation",
   "download",
+  "ds",
 ] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
@@ -121,6 +124,7 @@ const resources = {
     subscription: koSubscription,
     date: koDate,
     constellation: koConstellation,
+    ds: koDs,
   },
   en: {
     common: enCommon,
@@ -149,6 +153,7 @@ const resources = {
     subscription: enSubscription,
     date: enDate,
     constellation: enConstellation,
+    ds: enDs,
   },
 };
 
@@ -169,5 +174,14 @@ i18n
       caches: ["localStorage"],
     },
   });
+
+// 문서 언어를 화면 언어에 맞춘다 — 영어로 바꿨는데 lang 이 ko 로 남으면 낭독기가 영어 글을 한국어 발음으로
+// 읽는다(WCAG 3.1.1, I-01 결과 확인 고치기 W1). "en-US" 같은 지역 꼬리는 그대로 둔다.
+export function syncDocumentLang(lng: string | undefined) {
+  if (typeof document === "undefined" || !lng) return;
+  document.documentElement.lang = lng;
+}
+syncDocumentLang(i18n.resolvedLanguage ?? i18n.language);
+i18n.on("languageChanged", syncDocumentLang);
 
 export { i18n };

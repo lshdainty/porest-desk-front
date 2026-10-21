@@ -9,7 +9,7 @@ import { WheelPicker, WheelPickerColumn } from "@/shared/ds/wheel-picker";
 
 import { DayCell, OutsideCell, type DayState } from "./date-picker-day";
 import {
-  DATE_PICKER_LABELS,
+  datePickerLabels,
   addDays,
   addMonths,
   clampDay,
@@ -63,6 +63,7 @@ import {
   WHEEL_MONTH,
   WHEEL_YEAR,
 } from "./date-picker-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Date Picker — 구조는 SEED Date Picker(2026-10-03). 수치 원본은 groo-design specs/components/date-picker.yaml(값은
@@ -216,7 +217,8 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
       "aria-labelledby": ariaLabelledBy,
       ...rest
     } = props as AnyProps;
-    const labels = { ...DATE_PICKER_LABELS, ...labelsProp };
+    useDsText();
+    const labels = { ...datePickerLabels(), ...labelsProp };
     const twoMonths = visibleRange === "twoMonths";
     const continuous = visibleRange === "continuous";
 

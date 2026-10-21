@@ -92,6 +92,7 @@ import {
   nextMessage,
   validate,
 } from "./attachment-input-variants";
+import { dsText, useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Attachment Input — 구조는 SEED Attachment Input(2026-10-15, rootage attachment-input · -trigger · -item · -item-action-button ·
@@ -340,11 +341,13 @@ const describe = (
   if (status === "uploading") {
     parts.push(
       typeof entry.progress === "number"
-        ? `올리는 중 ${Math.round(Math.min(Math.max(entry.progress, 0), 1) * 100)}%`
-        : "올리는 중",
+        ? dsText("attachment.uploadingPercent", {
+            percent: Math.round(Math.min(Math.max(entry.progress, 0), 1) * 100),
+          })
+        : dsText("attachment.uploading"),
     );
   }
-  if (status === "error") parts.push("올리지 못했어요");
+  if (status === "error") parts.push(dsText("attachment.failed"));
   return parts.join(", ");
 };
 
@@ -436,15 +439,13 @@ type ItemMenu = {
   blocked: AttachmentItemMenuAction[];
   onAction: (action: AttachmentItemMenuAction) => void;
 };
-const MENU_LABEL: Record<
-  Exclude<AttachmentItemMenuAction, "preview">,
-  string
-> = {
-  badge: "대표로 정하기",
-  forward: "앞으로 옮기기",
-  backward: "뒤로 옮기기",
-  remove: "지우기",
-};
+const menuLabel = (action: Exclude<AttachmentItemMenuAction, "preview">) =>
+  ({
+    badge: dsText("attachment.menuBadge"),
+    forward: dsText("attachment.menuForward"),
+    backward: dsText("attachment.menuBackward"),
+    remove: dsText("attachment.menuRemove"),
+  })[action];
 
 type ItemProps = {
   entry: AttachmentEntry;
@@ -488,6 +489,7 @@ function Item({
   onPress,
   drag,
 }: ItemProps & { drag?: DragBits }) {
+  const dsT = useDsText();
   const kind: Kind = isImage(entry.type, entry.name) ? "image" : "file";
   const [menuOpen, setMenuOpen] = React.useState(false);
   // 메뉴의 이름 — 1280 이상 Menu 는 aria-label(머리가 없다), 미만 Menu Sheet 는 머리(title). 둘 다 전체 파일 이름
@@ -587,9 +589,9 @@ function Item({
                       label={
                         a === "preview"
                           ? kind === "image"
-                            ? "크게 보기"
-                            : "열기"
-                          : MENU_LABEL[a]
+                            ? dsT("attachment.previewImage")
+                            : dsT("attachment.previewFile")
+                          : menuLabel(a)
                       }
                       disabled={menu.blocked.includes(a)}
                       onSelect={() => menu.onAction(a)}
@@ -600,7 +602,7 @@ function Item({
             {menu.actions.includes("remove") && (
               <ResponsiveMenuGroup>
                 <ResponsiveMenuItem
-                  label={MENU_LABEL.remove}
+                  label={menuLabel("remove")}
                   tone="critical"
                   onSelect={() => menu.onAction("remove")}
                 />
@@ -615,19 +617,19 @@ function Item({
         <button
           type="button"
           data-slot="attachment-input-retry"
-          aria-label={`${entry.name} 다시 시도`}
+          aria-label={dsT("attachment.retryFor", { name: entry.name })}
           disabled={retryDisabled}
           className={cn(ACTION, ACTION_KIND[kind])}
           onClick={() => onRetry?.(entry.id)}
         >
           <RotateCw aria-hidden />
-          다시 시도
+          {dsT("common.retry")}
         </button>
       )}
       <button
         type="button"
         data-slot="attachment-input-remove"
-        aria-label={`${entry.name} 지우기`}
+        aria-label={dsT("attachment.removeFor", { name: entry.name })}
         aria-disabled={removeBlock === "readOnly" || undefined}
         disabled={removeBlock === "disabled"}
         className={REMOVE}
@@ -648,6 +650,7 @@ function SortableItem({
   reducedMotion,
   ...props
 }: ItemProps & { reducedMotion: boolean }) {
+  const dsT = useDsText();
   const {
     attributes,
     listeners,
@@ -658,7 +661,7 @@ function SortableItem({
     isDragging,
   } = useSortable({
     id: props.entry.id,
-    attributes: { roleDescription: "순서를 바꿀 수 있는 항목" },
+    attributes: { roleDescription: dsT("attachment.sortableRole") },
     transition: reducedMotion ? null : undefined,
   });
   const style: React.CSSProperties = {
@@ -767,6 +770,7 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const field = useField();
     const fieldState = useFieldGroupState();
     const disabled = disabledProp ?? fieldState.disabled;
@@ -859,14 +863,18 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
       const parts: string[] = [];
       if (added.length > 0) {
         const images = added.filter((e) => isImage(e.type, e.name)).length;
-        if (images === added.length) parts.push(`사진 ${images}장을 붙였어요.`);
-        else if (images === 0) parts.push(`파일 ${added.length}개를 붙였어요.`);
-        else parts.push(`${added.length}개를 붙였어요.`);
+        if (images === added.length)
+          parts.push(dsT("attachment.addedPhotos", { count: images }));
+        else if (images === 0)
+          parts.push(dsT("attachment.addedFiles", { count: added.length }));
+        else parts.push(dsT("attachment.addedItems", { count: added.length }));
       }
-      if (succeeded > 0) parts.push(`${succeeded}개를 올렸어요.`);
-      if (failed > 0) parts.push(`${failed}개는 올리지 못했어요.`);
+      if (succeeded > 0)
+        parts.push(dsT("attachment.uploaded", { count: succeeded }));
+      if (failed > 0)
+        parts.push(dsT("attachment.failedCount", { count: failed }));
       if (parts.length > 0) setMessage((m) => nextMessage(m, parts.join(" ")));
-    }, [entries, stalled]);
+    }, [entries, stalled, dsT]);
 
     // ── 폼에 내는 값 — entries 의 file 을 숨은 입력에
     React.useEffect(() => {
@@ -1058,18 +1066,18 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
     const announcements: Announcements = {
       onDragStart: ({ active }) => {
         lastOver.current = active.id;
-        return `${position(active.id)}번째 항목을 들었어요.`;
+        return dsT("attachment.dragLifted", { position: position(active.id) });
       },
       onDragOver: ({ over }) => {
         if (!over || over.id === lastOver.current) return undefined;
         lastOver.current = over.id;
-        return `${position(over.id)}번째 자리예요.`;
+        return dsT("attachment.dragOver", { position: position(over.id) });
       },
       onDragEnd: ({ over }) =>
         over
-          ? `${position(over.id)}번째 자리에 놓았어요.`
-          : "옮기기를 그만뒀어요. 처음 자리예요.",
-      onDragCancel: () => "옮기기를 그만뒀어요. 처음 자리예요.",
+          ? dsT("attachment.dragDropped", { position: position(over.id) })
+          : dsT("attachment.dragCancelled"),
+      onDragCancel: () => dsT("attachment.dragCancelled"),
     };
     const onDragEnd = ({ active, over }: DragEndEvent) => {
       if (!over || active.id === over.id || !onReorder) return;
@@ -1128,7 +1136,7 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
       )
         return;
       pendingFocus.current = { kind: "moved", id };
-      announce(`${to + 1}번째 자리로 옮겼어요.`);
+      announce(dsT("attachment.moved", { position: to + 1 }));
       onReorder(arrayMove(entries, from, to));
     };
     const runMenuAction = (id: string, action: AttachmentItemMenuAction) => {
@@ -1185,8 +1193,7 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
         accessibility={{
           announcements,
           screenReaderInstructions: {
-            draggable:
-              "Space 로 들고 ← → 로 옮긴 뒤 Space 로 놓아요. Esc 는 그만두기예요.",
+            draggable: dsT("attachment.dragInstructions"),
           },
         }}
       >
@@ -1203,12 +1210,14 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
 
     // 타일 이름 — "{칸 이름} 첨부, 3/10". 칸 이름은 triggerLabel → Field 라벨
     const countText = limited ? `${entries.length}/${maxFiles}` : "";
-    const suffix = countText ? `첨부, ${countText}` : "첨부";
+    const suffix = countText
+      ? dsT("attachment.suffixCount", { count: countText })
+      : dsT("attachment.suffix");
     const triggerNaming = triggerLabel
       ? { "aria-label": `${triggerLabel} ${suffix}` }
       : field
         ? { "aria-labelledby": `${field.labelId} ${triggerSuffixId}` }
-        : { "aria-label": `파일 ${suffix}` };
+        : { "aria-label": dsT("attachment.defaultName", { suffix }) };
 
     const trigger = (
       <button
@@ -1270,7 +1279,7 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
                 data-slot="attachment-input-dropzone-label"
                 className={DROPZONE_LABEL}
               >
-                파일을 여기로 끌어다 놓으세요
+                {dsT("attachment.dropHere")}
               </p>
               <Button
                 type="button"
@@ -1280,7 +1289,7 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
                 disabled={blocked}
                 onClick={openPicker}
               >
-                파일 선택
+                {dsT("attachment.pick")}
               </Button>
             </div>
             <Button
@@ -1293,7 +1302,7 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
               onClick={openPicker}
             >
               <Upload aria-hidden />
-              파일 선택
+              {dsT("attachment.pick")}
             </Button>
           </>
         )}
@@ -1342,7 +1351,9 @@ const AttachmentInput = React.forwardRef<HTMLDivElement, AttachmentInputProps>(
           />
         )}
         <span id={failureId} hidden>
-          {failures > 0 ? `${failures}개는 올리지 못했어요.` : ""}
+          {failures > 0
+            ? dsT("attachment.failedCount", { count: failures })
+            : ""}
         </span>
         <span
           aria-live="polite"

@@ -45,22 +45,23 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { KRW, isEn } from "@/shared/lib/groo/format";
 import { MaskAmount, HideUnit, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
 // ── 아바타 팔레트 ────────────────────────────────────────────────────────────
 // 이름 기반 chart 10색 순환(앱 _participantPaletteOklch 정합). alias var = 다크 자동 swap.
 const AVATAR_VARS = [
-  "--color-cat-blue",
-  "--color-cat-green",
-  "--color-cat-orange",
-  "--color-cat-violet",
-  "--color-cat-pink",
-  "--color-cat-indigo",
-  "--color-cat-red",
-  "--color-cat-brown",
-  "--color-cat-yellow",
-  "--color-cat-gray",
+  "--color-chart-blue",
+  "--color-chart-green",
+  "--color-chart-orange",
+  "--color-chart-violet",
+  "--color-chart-pink",
+  "--color-chart-indigo",
+  "--color-chart-red",
+  "--color-chart-brown",
+  "--color-chart-yellow",
+  "--color-chart-gray",
 ] as const;
 
 /** 이름 → 안정적 팔레트 인덱스(문자 코드 합 mod 10). */
@@ -582,21 +583,19 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
   // ── 데스크톱 ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <h1>{t("title")}</h1>
-          <div className="sub">{t("subtitle")}</div>
-        </div>
-        <div className="right">
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus size={14} /> {t("fromTx.createSettlement")}
-          </Button>
-        </div>
-      </div>
-      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus size={14} /> {t("fromTx.createSettlement")}
+            </Button>
+          </>
+        }
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
+      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",
@@ -642,7 +641,7 @@ function Avatar({
         height: size,
         borderRadius: 999,
         background: avatarColor(name),
-        color: "#fff",
+        color: "var(--color-static-white)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -695,7 +694,7 @@ function SummaryCard({
             width: 28,
             height: 28,
             borderRadius: "var(--radius-sm)",
-            background: `color-mix(in oklab, var(${chipVar}) 18%, var(--bg-surface))`,
+            background: `var(${chipVar}-weak)`,
             color: fg,
             display: "inline-flex",
             alignItems: "center",
@@ -983,8 +982,7 @@ function PastRow({
           width: 36,
           height: 36,
           borderRadius: "var(--radius-md)",
-          background:
-            "color-mix(in oklab, var(--color-chart-green) 14%, var(--bg-surface))",
+          background: "var(--color-chart-green-weak)",
           color: "var(--status-success-fg)",
           display: "inline-flex",
           alignItems: "center",
@@ -1589,9 +1587,7 @@ function ParticipantPick({
         gap: 12,
         padding: "8px 10px",
         borderRadius: "var(--radius-md)",
-        background: checked
-          ? "color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))"
-          : "transparent",
+        background: checked ? "var(--color-bg-brand-weak)" : "transparent",
         cursor: locked ? "default" : "pointer",
         transition:
           "background var(--motion-duration-fast) var(--motion-ease-out)",
@@ -1603,14 +1599,16 @@ function ParticipantPick({
           height: 18,
           borderRadius: "var(--radius-sm)",
           border: checked ? "0" : "2px solid var(--border-strong)",
-          background: checked ? "var(--color-primary)" : "transparent",
+          background: checked ? "var(--color-bg-brand-solid)" : "transparent",
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
         }}
       >
-        {checked && <Check size={12} color="#fff" strokeWidth={3} />}
+        {checked && (
+          <Check size={12} color="var(--color-static-white)" strokeWidth={3} />
+        )}
       </span>
       <Avatar name={name} size={32} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1722,8 +1720,7 @@ function DutchDetailDialog({
       {/* hero */}
       <div
         style={{
-          background:
-            "color-mix(in oklab, var(--color-primary) 6%, var(--bg-surface))",
+          background: "var(--color-bg-brand-weak)",
           borderRadius: "var(--radius-md)",
           padding: "18px 20px",
           marginBottom: 16,
@@ -1753,7 +1750,7 @@ function DutchDetailDialog({
                 fontSize: 28,
                 fontWeight: "800",
                 letterSpacing: "-0.03em",
-                color: "var(--color-primary)",
+                color: "var(--color-fg-brand)",
               }}
             >
               {wonPre()}
@@ -1766,7 +1763,7 @@ function DutchDetailDialog({
                 style={{
                   fontSize: 15,
                   fontWeight: "700",
-                  color: "var(--color-primary)",
+                  color: "var(--color-fg-brand)",
                 }}
               >
                 원
@@ -2037,19 +2034,14 @@ function DutchPayPageSkeleton({ mobile }: { mobile: boolean }) {
   }
   return (
     <div style={{ padding: 0 }}>
-      <div
-        className="page__head"
-        style={{ padding: "24px 28px 12px", margin: 0, maxWidth: 1320 }}
-      >
-        <div>
-          <SkeletonBase className="h-8 w-24 mb-2" />
-          <SkeletonBase className="h-4 w-40" />
-        </div>
-        <div className="right">
-          <SkeletonBase className="h-8 w-28 rounded-md" />
-        </div>
-      </div>
-      <div style={{ padding: "0 28px 24px", maxWidth: 1320 }}>
+      {/* 제목은 정해진 글이라 로딩 중에도 그린다 — 모든 화면에 h1 하나 */}
+      <PageHead
+        title={t("title")}
+        description={t("subtitle")}
+        actions={<SkeletonBase className="h-8 w-28 rounded-md" />}
+        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+      />
+      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",

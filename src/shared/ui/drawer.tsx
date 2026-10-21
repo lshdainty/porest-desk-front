@@ -48,7 +48,7 @@ const DrawerOverlay = React.forwardRef<
     <DrawerPrimitive.Overlay
       ref={ref}
       className={cn(
-        "fixed inset-0 z-[100] bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
+        "fixed inset-0 z-(--z-modal) bg-[var(--overlay-dim-light)] dark:bg-[var(--overlay-dim-dark)]",
         className,
       )}
       {...props}
@@ -128,10 +128,15 @@ const DrawerContent = React.forwardRef<
           else if (ref) ref.current = node;
         }}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-[100] flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-2xl)] bg-[var(--bg-surface)] outline-none",
+          "fixed inset-x-0 bottom-0 z-(--z-modal-content) flex h-auto max-h-[88%] flex-col rounded-t-[var(--radius-2xl)] bg-[var(--bg-surface)] outline-none",
           className,
         )}
         style={{ boxShadow: "var(--shadow-xl)", ...style }}
+        // 열면 초점이 시트 표면으로(03F-008a) — vaul 기본은 열기 버튼에 남는다
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          (e.target as HTMLElement | null)?.focus({ preventScroll: true });
+        }}
         {...props}
       >
         {/* handle — preview `.drw-handle` SoT (40×4 + surface-input + rounded-full) */}

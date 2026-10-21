@@ -114,9 +114,17 @@ function ActionButton({
   size: "medium" | "small";
   className?: string;
 }) {
+  // 둘째 버튼 = 글 버튼(D2) — ghost small, 글자색 fg-neutral-muted
+  const ghostColor = variant === "ghost" ? "neutralMuted" : undefined;
   if (action.href != null) {
     return (
-      <Button asChild variant={variant} size={size} className={className}>
+      <Button
+        asChild
+        variant={variant}
+        size={size}
+        ghostColor={ghostColor}
+        className={className}
+      >
         <a href={action.href} onClick={action.onClick}>
           {action.label}
         </a>
@@ -128,6 +136,7 @@ function ActionButton({
       type="button"
       variant={variant}
       size={size}
+      ghostColor={ghostColor}
       className={className}
       loading={action.loading}
       onClick={action.onClick}

@@ -12,12 +12,12 @@ const CalendarWeekViewSkeleton = () => {
   return (
     <div className="w-full h-full">
       {/* Mobile message */}
-      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground min-[640px]:hidden">
-        <div className="h-4 w-48 bg-muted animate-pulse rounded" />
-        <div className="h-4 w-32 mt-1 bg-muted animate-pulse rounded" />
+      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground sm:hidden">
+        <div className="h-4 w-48 bg-muted animate-pulse motion-reduce:animate-none rounded" />
+        <div className="h-4 w-32 mt-1 bg-muted animate-pulse motion-reduce:animate-none rounded" />
       </div>
 
-      <div className="hidden h-full flex-col min-[640px]:flex">
+      <div className="hidden h-full flex-col sm:flex">
         {/* Multi-day events row skeleton */}
         <div className="border-b">
           <div className="flex">
@@ -26,7 +26,7 @@ const CalendarWeekViewSkeleton = () => {
               {weekDays.map((_, index) => (
                 <div key={index} className="p-1">
                   {index % 3 === 0 && (
-                    <div className="h-5 w-full rounded bg-muted animate-pulse" />
+                    <div className="h-5 w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
                   )}
                 </div>
               ))}
@@ -50,7 +50,7 @@ const CalendarWeekViewSkeleton = () => {
                   <span
                     style={{
                       color: isSunday
-                        ? "var(--fg-expense)"
+                        ? "var(--color-fg-critical)"
                         : isSaturday
                           ? "var(--fg-brand)"
                           : undefined,
@@ -58,7 +58,7 @@ const CalendarWeekViewSkeleton = () => {
                   >
                     {day}
                   </span>
-                  <div className="h-4 w-4 mx-auto mt-1 rounded bg-muted animate-pulse" />
+                  <div className="h-4 w-4 mx-auto mt-1 rounded bg-muted animate-pulse motion-reduce:animate-none" />
                 </div>
               );
             })}
@@ -73,7 +73,7 @@ const CalendarWeekViewSkeleton = () => {
                 <div key={hour} className="relative" style={{ height: "96px" }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
                     {index !== 0 && (
-                      <div className="h-3 w-10 bg-muted animate-pulse rounded" />
+                      <div className="h-3 w-10 bg-muted animate-pulse motion-reduce:animate-none rounded" />
                     )}
                   </div>
                 </div>
@@ -99,12 +99,12 @@ const CalendarWeekViewSkeleton = () => {
 
                     {dayIndex % 2 === 0 && (
                       <div className="absolute top-[192px] left-1 right-1 h-[96px] p-0.5">
-                        <div className="h-full w-full rounded bg-muted animate-pulse" />
+                        <div className="h-full w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
                       </div>
                     )}
                     {dayIndex % 3 === 1 && (
                       <div className="absolute top-[384px] left-1 right-1 h-[144px] p-0.5">
-                        <div className="h-full w-full rounded bg-muted animate-pulse" />
+                        <div className="h-full w-full rounded bg-muted animate-pulse motion-reduce:animate-none" />
                       </div>
                     )}
                   </div>

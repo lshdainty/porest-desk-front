@@ -20,13 +20,13 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
   const companyName = decodeHtml(s.company?.name ?? "");
 
   const body = (
-    <div className="flex flex-col gap-5 min-[640px]:flex-row">
+    <div className="flex flex-col gap-5 sm:flex-row">
       {s.imgUrl && (
-        <div className="relative shrink-0 self-center min-[640px]:self-start">
+        <div className="relative shrink-0 self-center sm:self-start">
           <img
             src={s.imgUrl}
             alt={cardName}
-            className="h-32 w-52 rounded-lg object-cover shadow-md ring-1 ring-black/5"
+            className="h-32 w-52 rounded-lg object-cover shadow-md ring-1 ring-stroke-neutral-overlay"
           />
         </div>
       )}
@@ -49,7 +49,7 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
               </Badge>
             )}
           </div>
-          <h2 className="truncate text-xl font-semibold leading-tight min-[640px]:text-2xl">
+          <h2 className="truncate text-xl font-semibold leading-tight sm:text-2xl">
             {cardName}
           </h2>
           <div className="flex flex-wrap gap-1.5">
@@ -103,7 +103,7 @@ export function CardInfoHeader({ detail, mobile = false }: Props) {
               href={s.detailUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              className="mt-3 inline-flex items-center gap-1 text-xs text-fg-brand hover:underline"
             >
               {t("detail.sourceLink")}
               <ExternalLink className="h-3 w-3" />

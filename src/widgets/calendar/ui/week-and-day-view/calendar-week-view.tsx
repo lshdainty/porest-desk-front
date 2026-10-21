@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import {
-  eventBadgeColor,
+  eventBadgeTone,
   getEventBlockStyle,
   getVisibleHours,
   groupEvents,
@@ -114,7 +114,7 @@ const WeekViewMultiDayEventsRow = ({
   if (!hasEventsInWeek) return null;
 
   return (
-    <div className="hidden overflow-hidden min-[640px]:flex">
+    <div className="hidden overflow-hidden sm:flex">
       <div className="w-18 border-b" />
       <div className="grid flex-1 grid-cols-7 divide-x border-b border-l">
         {weekDays.map((day, dayIndex) => (
@@ -157,7 +157,7 @@ const WeekViewMultiDayEventsRow = ({
               };
 
               const showText = ["first", "none"].includes(position);
-              const badgeColor = eventBadgeColor(event);
+              const tone = eventBadgeTone(event);
 
               return (
                 <div
@@ -165,13 +165,13 @@ const WeekViewMultiDayEventsRow = ({
                   role="button"
                   tabIndex={0}
                   className={cn(
-                    "mx-1 flex size-auto h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    "mx-1 flex size-auto h-6.5 cursor-pointer select-none items-center gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
                     positionClasses[position],
                   )}
                   style={{
-                    background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+                    background: tone.bg,
                     borderColor: "transparent",
-                    color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+                    color: tone.fg,
                   }}
                   onClick={(e) => onEventClick?.(event, e.currentTarget)}
                   onKeyDown={(e) => {
@@ -222,11 +222,11 @@ const CalendarTimeline = ({
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-50 border-t border-primary"
+      className="pointer-events-none absolute inset-x-0 z-50 border-t border-stroke-brand-solid"
       style={{ top: `${position}%` }}
     >
-      <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
-      <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-primary">
+      <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bg-brand-solid" />
+      <div className="absolute -left-18 flex w-16 -translate-y-1/2 justify-end bg-background pr-1 text-xs font-medium text-fg-brand">
         {format(now, timeFormat, { locale })}
       </div>
     </div>
@@ -250,21 +250,21 @@ const EventBlock = ({
   const end = parseISO(event.endDate);
   const durationInMinutes = differenceInMinutes(end, start);
   const heightInPixels = (durationInMinutes / 60) * 96 - 8;
-  const badgeColor = eventBadgeColor(event);
+  const tone = eventBadgeTone(event);
 
   return (
     <div
       role="button"
       tabIndex={0}
       className={cn(
-        "flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "flex cursor-pointer select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
         durationInMinutes < 35 && "py-0 justify-center",
       )}
       style={{
         height: `${heightInPixels}px`,
-        background: `color-mix(in oklab, ${badgeColor} 17%, var(--bg-surface))`,
+        background: tone.bg,
         borderColor: "transparent",
-        color: `color-mix(in oklab, ${badgeColor} 70%, var(--fg-primary))`,
+        color: tone.fg,
       }}
       onClick={(e) => onEventClick?.(event, e.currentTarget)}
       onKeyDown={(e) => {
@@ -276,7 +276,7 @@ const EventBlock = ({
     >
       <div className="flex items-center gap-1.5 truncate">
         <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
-          <circle cx="4" cy="4" r="4" fill={badgeColor} />
+          <circle cx="4" cy="4" r="4" fill={tone.color} />
         </svg>
         <p className="truncate font-semibold">{event.title}</p>
       </div>
@@ -313,12 +313,12 @@ const CalendarWeekView = ({
 
   return (
     <div className="w-full h-full">
-      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground min-[640px]:hidden">
+      <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground sm:hidden">
         <p>{t("calendar:weekView.notAvailable")}</p>
         <p>{t("calendar:weekView.switchView")}</p>
       </div>
 
-      <div className="hidden h-full flex-col min-[640px]:flex">
+      <div className="hidden h-full flex-col sm:flex">
         <div>
           <WeekViewMultiDayEventsRow
             selectedDate={selectedDate}
@@ -335,7 +335,7 @@ const CalendarWeekView = ({
                 const isSunday = dayOfWeek === 0;
                 const isSaturday = dayOfWeek === 6;
                 const textColor = isSunday
-                  ? "var(--fg-expense)"
+                  ? "var(--color-fg-critical)"
                   : isSaturday
                     ? "var(--fg-brand)"
                     : undefined;

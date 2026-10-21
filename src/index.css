@@ -41,10 +41,10 @@
   /* 커스텀(비팔레트) 색 스와치 다크 lift — 라이트 0% / 다크에서 흰색 혼합 비율(가독성) */
   --swatch-lift: 0%;
   /* 색 스와치 체크박스의 체크 표시 색 — fill 대비(라이트: 진한 fill→흰 체크) */
-  --swatch-check: #ffffff;
+  --swatch-check: var(--color-static-white);
   --bg-section-warm: var(--color-surface-input);
   --fg-on-warm: var(--color-text-primary);
-  --fg-link-hover: var(--color-primary);
+  --fg-link-hover: var(--color-fg-brand);
   --border-warm: var(--color-border-default);
 
   /* Interaction tints */
@@ -54,13 +54,9 @@
 
   /* Brand-tinted interaction surfaces */
   /* 예산 카드(디자인 p-card--brand): 라이트 = mossy-50 솔리드(#eaf2fb) */
-  --bg-brand-tint: #eaf2fb;
-  --bg-brand-tint-strong: color-mix(
-    in srgb,
-    var(--color-primary) 14%,
-    transparent
-  );
-  --border-brand-mid: var(--color-primary);
+  --bg-brand-tint: var(--color-bg-brand-weak);
+  --bg-brand-tint-strong: var(--color-bg-brand-weak-pressed);
+  --border-brand-mid: var(--color-stroke-brand-solid);
 
   /* Warm (Bark) tinted surfaces — Groo엔 warm 톤 없음, surface-input으로 통합 */
   --bg-warm-tint: var(--color-surface-input);
@@ -133,39 +129,28 @@
   --secondary-foreground: var(--fg-primary);
   --muted: var(--color-surface-input);
   --muted-foreground: var(--fg-tertiary);
-  --accent: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --accent: var(--color-bg-brand-weak);
   --accent-foreground: var(--fg-brand-strong);
   --destructive: var(--status-danger);
-  --destructive-foreground: #fff;
+  --destructive-foreground: var(--color-static-white);
   --border: var(--border-subtle);
   --input: var(--border-default);
   --ring: var(--border-focus);
   /* chart palette — Groo 10색 의미 기반(blue→red→orange→green→violet 등) */
-  --chart-1: var(--color-primary);
+  --chart-1: var(--color-fg-brand);
   --chart-2: var(--color-chart-red);
   --chart-3: var(--color-chart-orange);
   --chart-4: var(--color-chart-green);
   --chart-5: var(--color-chart-violet);
-  /* 카테고리 색 alias — DB 가 chart palette base hex 만 저장. 다크모드에서 light variant 로 자동 swap. */
-  --color-cat-red: var(--color-chart-red);
-  --color-cat-orange: var(--color-chart-orange);
-  --color-cat-yellow: var(--color-chart-yellow);
-  --color-cat-green: var(--color-chart-green);
-  --color-cat-blue: var(--color-chart-blue);
-  --color-cat-indigo: var(--color-chart-indigo);
-  --color-cat-violet: var(--color-chart-violet);
-  --color-cat-pink: var(--color-chart-pink);
-  --color-cat-brown: var(--color-chart-brown);
-  --color-cat-gray: var(--color-chart-gray);
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--fg-primary);
-  --sidebar-primary: var(--color-primary);
+  --sidebar-primary: var(--color-fg-brand);
   --sidebar-primary-foreground: var(--fg-on-brand);
-  --sidebar-accent: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --sidebar-accent: var(--color-bg-brand-weak);
   --sidebar-accent-foreground: var(--fg-brand-strong);
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: var(--border-focus);
-  --surface-hero: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --surface-hero: var(--color-bg-brand-weak);
   --radius: var(--radius-lg);
 }
 
@@ -196,7 +181,7 @@
   --swatch-check: #1a1f2e; /* 다크: fill 이 light variant → 어두운 체크로 대비 */
   --bg-section-warm: var(--color-surface-input);
   --fg-on-warm: var(--color-text-primary);
-  --fg-link-hover: var(--color-primary-light);
+  --fg-link-hover: var(--color-fg-brand);
   --border-warm: var(--color-border-default);
 
   /* Interaction tints */
@@ -206,17 +191,9 @@
 
   /* 예산 카드(디자인 p-card--brand 정합): 다크 = cobalt(primary-light) @12% 알파.
      카드가 page(#1a1f2e) 위에 합성 → 디자인 렌더값 #222E44 와 동일. */
-  --bg-brand-tint: color-mix(
-    in srgb,
-    var(--color-primary-light) 12%,
-    transparent
-  );
-  --bg-brand-tint-strong: color-mix(
-    in srgb,
-    var(--color-primary-light) 22%,
-    transparent
-  );
-  --border-brand-mid: var(--color-primary-light);
+  --bg-brand-tint: var(--color-bg-brand-weak);
+  --bg-brand-tint-strong: var(--color-bg-brand-weak-pressed);
+  --border-brand-mid: var(--color-stroke-brand-solid);
 
   --bg-warm-tint: var(--color-surface-input);
   --bg-warm-tint-strong: var(--color-surface-input);
@@ -238,29 +215,19 @@
   --accent: var(--bg-brand-subtle);
   --accent-foreground: var(--fg-brand);
   --destructive: var(--status-danger);
-  --destructive-foreground: #fff;
+  --destructive-foreground: var(--color-static-white);
   --border: var(--border-subtle);
   --input: var(--border-default);
   --ring: var(--border-focus);
-  --chart-1: var(--color-primary-light);
+  --chart-1: var(--color-fg-brand);
   --chart-2: var(--color-chart-red-light);
   --chart-3: var(--color-chart-orange-light);
   --chart-4: var(--color-chart-green-light);
   --chart-5: var(--color-chart-violet-light);
   /* 카테고리 색 alias — light variant 로 swap */
-  --color-cat-red: var(--color-chart-red-light);
-  --color-cat-orange: var(--color-chart-orange-light);
-  --color-cat-yellow: var(--color-chart-yellow-light);
-  --color-cat-green: var(--color-chart-green-light);
-  --color-cat-blue: var(--color-chart-blue-light);
-  --color-cat-indigo: var(--color-chart-indigo-light);
-  --color-cat-violet: var(--color-chart-violet-light);
-  --color-cat-pink: var(--color-chart-pink-light);
-  --color-cat-brown: var(--color-chart-brown-light);
-  --color-cat-gray: var(--color-chart-gray-light);
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--fg-primary);
-  --sidebar-primary: var(--color-primary-light);
+  --sidebar-primary: var(--color-fg-brand);
   --sidebar-primary-foreground: var(--fg-on-brand);
   --sidebar-accent: var(--bg-brand-subtle);
   --sidebar-accent-foreground: var(--fg-brand);
@@ -289,11 +256,11 @@
   --fg-link: var(--color-fg-brand);
   --fg-brand-strong: var(--color-fg-brand-contrast);
   --status-danger-fg: var(--color-fg-critical);
-  --fg-expense: var(--color-fg-critical);
+  --fg-expense: var(--color-fg-neutral);
   --status-success-fg: var(--color-fg-positive);
   --status-warning-fg: var(--color-fg-warning);
   --status-info-fg: var(--color-fg-informative);
-  --fg-transfer: var(--color-fg-informative);
+  --fg-transfer: var(--color-fg-neutral);
   /* 배경 */
   --bg-canvas: var(--color-bg-layer-basement);
   --bg-table-head: var(--color-bg-layer-basement);
@@ -382,35 +349,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-surface-hero: var(--surface-hero);
-
-  --color-mist-0: var(--mist-0);
-  --color-mist-50: var(--mist-50);
-  --color-mist-100: var(--mist-100);
-  --color-mist-200: var(--mist-200);
-  --color-mist-300: var(--mist-300);
-  --color-mist-400: var(--mist-400);
-  --color-mist-500: var(--mist-500);
-  --color-mist-600: var(--mist-600);
-  --color-mist-700: var(--mist-700);
-  --color-mist-800: var(--mist-800);
-  --color-mist-900: var(--mist-900);
-  --color-mist-950: var(--mist-950);
-  --color-berry-100: var(--berry-100);
-  --color-berry-300: var(--berry-300);
-  --color-berry-500: var(--berry-500);
-  --color-berry-700: var(--berry-700);
-  --color-sunlit-100: var(--sunlit-100);
-  --color-sunlit-300: var(--sunlit-300);
-  --color-sunlit-500: var(--sunlit-500);
-  --color-sunlit-700: var(--sunlit-700);
-  --color-sky-100: var(--sky-100);
-  --color-sky-300: var(--sky-300);
-  --color-sky-500: var(--sky-500);
-  --color-sky-700: var(--sky-700);
-  --color-sprout-100: var(--sprout-100);
-  --color-sprout-300: var(--sprout-300);
-  --color-sprout-500: var(--sprout-500);
-  --color-sprout-700: var(--sprout-700);
 }
 
 @layer base {
@@ -495,7 +433,6 @@
   :focus-visible {
     outline: 2px solid var(--border-focus);
     outline-offset: 2px;
-    border-radius: var(--radius-xs);
   }
 }
 

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export type DeviceSize = "mobile" | "tablet" | "desktop";
 
 const TABLET_QUERY = "(min-width: 768px)";
-const DESKTOP_QUERY = "(min-width: 1100px)";
+const DESKTOP_QUERY = "(min-width: 1280px)";
 
 function detect(): DeviceSize {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function")

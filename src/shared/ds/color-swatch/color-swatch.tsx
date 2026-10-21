@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ds/tooltip";
 import {
   CHECK,
   CHECK_COLOR,
-  COLOR_NAMES,
+  colorName,
   COLOR_SWATCH_ORDER,
   COLUMNS,
   contrastOf,
@@ -24,6 +24,7 @@ import {
   type ChartColor,
   type CheckTone,
 } from "./color-swatch-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 // 칸 · 고름 · 지금 색 · 키보드의 규칙은 color-swatch-variants.ts 머리 주석과 groo-design specs/components/color-swatch.md 가 정한다.
 
@@ -118,6 +119,7 @@ const ColorSwatchGroup = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const field = useFieldGroupState();
     const labelling = useFieldGroup(props);
     const disabled = disabledProp ?? field.disabled;
@@ -206,9 +208,9 @@ const ColorSwatchGroup = React.forwardRef<
       const isCurrent = v === "current";
       const name = isCurrent
         ? current === "custom"
-          ? "지금 색"
-          : "자동"
-        : COLOR_NAMES[v];
+          ? dsT("colorSwatch.currentCustom")
+          : dsT("colorSwatch.auto")
+        : colorName(v);
       const look = isCurrent
         ? current === "custom"
           ? ""
@@ -296,9 +298,11 @@ const ColorSwatchGroup = React.forwardRef<
                 <span
                   aria-hidden
                   data-slot="color-swatch-current-label"
-                  className="mt-x1_5 whitespace-nowrap font-sans text-t2 text-fg-neutral-muted"
+                  className="mt-x1_5 whitespace-nowrap font-sans text-t2 text-fg-neutral-subtle"
                 >
-                  {current === "custom" ? "지금 색" : "자동"}
+                  {current === "custom"
+                    ? dsT("colorSwatch.currentCustom")
+                    : dsT("colorSwatch.auto")}
                 </span>
               </div>
               <span

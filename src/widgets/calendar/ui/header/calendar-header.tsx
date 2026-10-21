@@ -67,6 +67,7 @@ const MonthYearPickerContent = ({
       {/* Year navigation */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <Button
+          aria-label={t("common:prev")}
           variant="ghost"
           size="icon"
           className="h-7 w-7"
@@ -76,6 +77,7 @@ const MonthYearPickerContent = ({
         </Button>
         <span className="text-sm font-semibold">{formatYear(pickerYear)}</span>
         <Button
+          aria-label={t("common:next")}
           variant="ghost"
           size="icon"
           className="h-7 w-7"
@@ -101,7 +103,7 @@ const MonthYearPickerContent = ({
               className={cn(
                 "rounded py-2 text-sm font-medium transition-colors",
                 isSelected
-                  ? "bg-bg-brand-solid text-primary-foreground hover:bg-bg-brand-solid-pressed"
+                  ? "bg-bg-brand-solid text-static-white hover:bg-bg-brand-solid-pressed"
                   : "hover:bg-accent text-foreground",
               )}
             >
@@ -175,6 +177,7 @@ const CalendarHeader = ({ events }: IProps) => {
       <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-1">
           <Button
+            aria-label={t("common:prev")}
             variant="ghost"
             size="icon"
             className="h-8 w-8"
@@ -218,6 +221,7 @@ const CalendarHeader = ({ events }: IProps) => {
           </Drawer>
 
           <Button
+            aria-label={t("common:next")}
             variant="ghost"
             size="icon"
             className="h-8 w-8"
@@ -233,14 +237,14 @@ const CalendarHeader = ({ events }: IProps) => {
 
   // ── 데스크톱/태블릿: 기존 헤더 + 날짜 텍스트 → Popover picker ──
   return (
-    <div className="flex flex-col gap-4 border-b p-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="flex flex-col gap-4 border-b p-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
         {/* Today 날짜 버튼 */}
         <button
-          className="flex size-14 flex-col items-start overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex size-14 flex-col items-start overflow-hidden rounded-lg border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
           onClick={handleTodayClick}
         >
-          <p className="flex h-6 w-full items-center justify-center bg-bg-brand-solid text-center text-xs font-semibold text-primary-foreground">
+          <p className="flex h-6 w-full items-center justify-center bg-bg-brand-solid text-center text-xs font-semibold text-static-white">
             {format(
               new Date(),
               i18n.language.startsWith("ko") ? "M월" : "MMM",
@@ -279,6 +283,7 @@ const CalendarHeader = ({ events }: IProps) => {
 
           <div className="flex items-center gap-2">
             <Button
+              aria-label={t("common:prev")}
               variant="outline"
               size="icon"
               className="size-6.5 px-0 [&_svg]:size-4.5"
@@ -290,6 +295,7 @@ const CalendarHeader = ({ events }: IProps) => {
               {rangeText(view, selectedDate, locale)}
             </p>
             <Button
+              aria-label={t("common:next")}
               variant="outline"
               size="icon"
               className="size-6.5 px-0 [&_svg]:size-4.5"
@@ -301,9 +307,9 @@ const CalendarHeader = ({ events }: IProps) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 min-[834px]:gap-3">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3">
         <CalendarSourceToggle />
-        <div className="hidden h-6 w-px bg-border min-[834px]:block" />
+        <div className="hidden h-6 w-px bg-border md:block" />
 
         <div className="inline-flex">
           <Button

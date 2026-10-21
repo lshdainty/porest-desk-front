@@ -41,14 +41,14 @@ export function PctBadge({ pct, size = 13 }: { pct: number; size?: number }) {
 // ---- 종목 심볼 배지 — 국가별 색 (다크 자동 light swap) -----------------------
 
 const COUNTRY_TONE: Record<string, string> = {
-  KR: "var(--color-cat-blue)",
-  US: "var(--color-cat-violet)",
-  CN: "var(--color-cat-orange)",
-  JP: "var(--color-cat-pink)",
-  HK: "var(--color-cat-green)",
-  VN: "var(--color-cat-indigo)",
+  KR: "var(--color-chart-blue)",
+  US: "var(--color-chart-violet)",
+  CN: "var(--color-chart-orange)",
+  JP: "var(--color-chart-pink)",
+  HK: "var(--color-chart-green)",
+  VN: "var(--color-chart-indigo)",
   // 국가가 아니라 '전체 포트폴리오' 행 — 종목 뱃지들과 한눈에 구분되게 다른 색을 준다.
-  ALL: "var(--color-cat-green)",
+  ALL: "var(--color-chart-green)",
 };
 
 export function StockBadge({
@@ -62,7 +62,7 @@ export function StockBadge({
   countryCode: string;
   size?: number;
 }) {
-  const tone = COUNTRY_TONE[countryCode] ?? "var(--color-cat-blue)";
+  const tone = COUNTRY_TONE[countryCode] ?? "var(--color-chart-blue)";
   // 한글명은 첫 글자, 알파벳 심볼은 앞 2글자.
   const initial = /^[A-Za-z]/.test(symbol)
     ? symbol.slice(0, 2)
@@ -328,11 +328,11 @@ export function WatchStar({
         alignItems: "center",
         justifyContent: "center",
         background: watched
-          ? "color-mix(in oklab, var(--color-cat-yellow) 18%, var(--bg-surface))"
+          ? "var(--color-chart-yellow-weak)"
           : "var(--bg-sunken)",
         border: "1px solid var(--border-subtle)",
         color: watched
-          ? "color-mix(in oklab, var(--color-cat-yellow) 62%, var(--fg-primary))"
+          ? "var(--color-chart-yellow-contrast)"
           : "var(--fg-tertiary)",
       }}
     >

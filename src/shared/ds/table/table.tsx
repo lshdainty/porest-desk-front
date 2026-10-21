@@ -22,6 +22,7 @@ import {
   TABLE_SORT_BUTTON,
   TABLE_STATUS_CELL,
 } from "./table-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Table — 구조는 SEED 문서 사이트의 표(TableRoot)와 디자인 그림의 데이터 표(2026-10-08). 수치 원본은 groo-design
@@ -302,6 +303,7 @@ const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
     },
     ref,
   ) => {
+    const dsT = useDsText();
     const ctx = React.useContext(TableContext);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const sortable = sort !== undefined;
@@ -347,7 +349,12 @@ const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
               const name = buttonRef.current?.textContent?.trim();
               if (name)
                 ctx.announce(
-                  `${name} ${next === "ascending" ? "오름차순" : "내림차순"}으로 정렬했어요.`,
+                  dsT(
+                    next === "ascending"
+                      ? "table.sortAscending"
+                      : "table.sortDescending",
+                    { name },
+                  ),
                 );
             }}
           >
@@ -507,6 +514,7 @@ const TableSelectHead = React.forwardRef<
   HTMLTableCellElement,
   TableSelectHeadProps
 >(({ checked, onCheckedChange, disabled, className, ...props }, ref) => {
+  const dsT = useDsText();
   const ctx = React.useContext(TableContext);
   return (
     <th
@@ -525,7 +533,7 @@ const TableSelectHead = React.forwardRef<
       <div className="flex items-center">
         <Checkmark
           size="large"
-          aria-label="모두 선택"
+          aria-label={dsT("table.selectAll")}
           checked={checked}
           disabled={disabled}
           onCheckedChange={() => onCheckedChange(checked !== true)}
@@ -553,6 +561,7 @@ const TableSelectCell = React.forwardRef<
   HTMLTableCellElement,
   TableSelectCellProps
 >(({ label, checked, onCheckedChange, disabled, className, ...props }, ref) => {
+  const dsT = useDsText();
   const ctx = React.useContext(TableContext);
   return (
     <td
@@ -570,7 +579,7 @@ const TableSelectCell = React.forwardRef<
       <div className="flex items-center">
         <Checkmark
           size="large"
-          aria-label={`${label} 선택`}
+          aria-label={dsT("table.selectRow", { label })}
           checked={checked}
           disabled={disabled}
           onCheckedChange={(v) => onCheckedChange(v === true)}
@@ -588,6 +597,7 @@ const TableMoreHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => {
+  const dsT = useDsText();
   const ctx = React.useContext(TableContext);
   return (
     <th
@@ -603,7 +613,7 @@ const TableMoreHead = React.forwardRef<
       )}
       {...props}
     >
-      <span className="sr-only">동작</span>
+      <span className="sr-only">{dsT("table.actions")}</span>
     </th>
   );
 });
@@ -624,6 +634,7 @@ const TableMoreCell = React.forwardRef<
   HTMLTableCellElement,
   TableMoreCellProps
 >(({ label, open, onOpenChange, className, children, ...props }, ref) => {
+  const dsT = useDsText();
   const ctx = React.useContext(TableContext);
   return (
     <td
@@ -645,7 +656,7 @@ const TableMoreCell = React.forwardRef<
               variant="ghost"
               layout="iconOnly"
               size="medium"
-              aria-label={`${label} 더보기`}
+              aria-label={dsT("common.moreFor", { label })}
               data-slot="table-more-button"
               className="focus-visible:-outline-offset-2"
             >
@@ -688,8 +699,9 @@ function selectAllAfter(bar: HTMLElement | null): HTMLElement | null {
 
 const TableBulkBar = React.forwardRef<HTMLDivElement, TableBulkBarProps>(
   ({ count, onClear, className, children, ...props }, ref) => {
+    const dsT = useDsText();
     const own = React.useRef<HTMLDivElement>(null);
-    const message = count > 0 ? `${count}개 선택됨` : "";
+    const message = count > 0 ? dsT("table.selectedCount", { count }) : "";
     const clear = () => {
       // 바가 사라지기 전에 초점을 머리 체크로 옮긴다 — ✕ 가 사라지며 초점을 잃지 않게
       selectAllAfter(own.current)?.focus({ preventScroll: true });
@@ -701,7 +713,7 @@ const TableBulkBar = React.forwardRef<HTMLDivElement, TableBulkBarProps>(
           <div
             ref={mergeRefs(ref, own)}
             role="region"
-            aria-label="선택한 항목"
+            aria-label={dsT("table.bulkBar")}
             data-slot="table-bulk-bar"
             className={cn(TABLE_BULK_BAR, className)}
             {...props}
@@ -720,7 +732,7 @@ const TableBulkBar = React.forwardRef<HTMLDivElement, TableBulkBarProps>(
                 variant="ghost"
                 size="small"
                 layout="iconOnly"
-                aria-label="선택 해제"
+                aria-label={dsT("table.clearSelection")}
                 data-slot="table-bulk-clear"
                 onClick={clear}
               >

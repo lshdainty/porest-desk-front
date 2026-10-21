@@ -31,7 +31,7 @@ export const HEADER = [
 ].join(" ");
 // 로고 — 마크 24 + 이름 t5 · 700, 화면 끝에서 16. 접기 버튼 자리(40 + 12 = 52)를 비운다
 export const LOGO =
-  "ml-x2 mr-[52px] flex min-w-0 items-center gap-x2 overflow-hidden whitespace-nowrap text-t5 font-bold text-fg-neutral [&>img]:size-6 [&>img]:shrink-0 [&>svg]:size-6 [&>svg]:shrink-0";
+  "ml-x2 mr-[52px] flex min-w-0 items-center gap-x2 overflow-hidden whitespace-nowrap text-t5-static font-bold text-fg-neutral [&>img]:size-6 [&>img]:shrink-0 [&>svg]:size-6 [&>svg]:shrink-0";
 // 접기 버튼 — 40 · 아이콘 18 · 모서리 8 · 누르는 영역 44, 위 12 · 오른쪽 12(접히면 8)
 export const TRIGGER = [
   "absolute top-x3 flex size-10 cursor-pointer items-center justify-center rounded-r2 border-0 bg-transparent p-0 text-fg-neutral-subtle [&>svg]:size-[18px]",

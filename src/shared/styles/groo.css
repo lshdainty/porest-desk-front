@@ -13,260 +13,6 @@
  * Layout chrome
  * ========================================================================== */
 
-/* Sidebar */
-.side {
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-.side__head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.side__head .wordmark {
-  font-size: var(--text-body-lg);
-  font-weight: 800;
-  letter-spacing: -0.022em;
-  color: var(--fg-brand-strong);
-}
-.side__head .mark-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--bg-brand), var(--fg-brand-strong));
-  color: var(--fg-on-brand);
-  font-size: var(--text-body-sm);
-  font-weight: 800;
-  letter-spacing: -0.022em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.side__collapse {
-  width: 28px;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  color: var(--fg-tertiary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--motion-duration-fast) var(--motion-ease-out);
-  margin-left: 4px;
-  flex-shrink: 0;
-}
-.side__collapse:hover {
-  background: var(--bg-muted);
-  color: var(--fg-primary);
-}
-.side__scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px 10px 20px;
-}
-.side__glabel {
-  font-size: var(--text-badge);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--fg-tertiary);
-  padding: 14px 10px 6px;
-}
-.side__item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  font-size: var(--text-body-sm);
-  font-weight: 500;
-  color: var(--fg-secondary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  border: 0;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  position: relative;
-  transition:
-    background var(--motion-duration-fast),
-    color var(--motion-duration-fast);
-}
-.side__item svg {
-  color: var(--fg-tertiary);
-  flex-shrink: 0;
-}
-.side__item:hover {
-  background: var(--bg-muted);
-  color: var(--fg-primary);
-}
-.side__item:hover svg {
-  color: var(--fg-primary);
-}
-.side__item.active {
-  background: var(--bg-brand-subtle);
-  color: var(--fg-brand-strong);
-  font-weight: 600;
-}
-.side__item.active svg {
-  color: var(--fg-brand-strong);
-}
-.side__item .count {
-  margin-left: auto;
-  font-size: var(--text-badge);
-  color: var(--fg-tertiary);
-  font-weight: 500;
-}
-.side__item.active .count {
-  color: var(--fg-brand);
-}
-.side__foot {
-  padding: 12px;
-  border-top: 1px solid var(--border-subtle);
-}
-.side__user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 8px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-.side__user:hover {
-  background: var(--bg-muted);
-}
-.side__user .info {
-  flex: 1;
-  min-width: 0;
-}
-.side__user .name {
-  font-size: var(--text-body-sm);
-  font-weight: 600;
-  color: var(--fg-primary);
-}
-.side__user .sub {
-  font-size: var(--text-caption);
-  color: var(--fg-tertiary);
-}
-
-.side--collapsed .side__head {
-  padding: 14px 8px;
-  justify-content: center;
-  gap: 4px;
-  flex-direction: column;
-}
-.side--collapsed .side__collapse {
-  margin-left: 0;
-}
-.side--collapsed .side__scroll {
-  padding: 14px 8px 20px;
-}
-.side--collapsed .side__glabel {
-  font-size: 0;
-  padding: 10px 0 4px;
-  text-align: center;
-}
-.side--collapsed .side__glabel::before {
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 1px;
-  background: var(--border-subtle);
-}
-.side--collapsed .side__item {
-  justify-content: center;
-  padding: 10px 0;
-}
-.side--collapsed .side__item-label {
-  display: none;
-}
-.side--collapsed .side__item .count {
-  position: absolute;
-  top: 2px;
-  right: 6px;
-  background: var(--bg-brand);
-  color: var(--fg-on-brand);
-  font-size: var(--text-badge);
-  padding: 1px 5px;
-  border-radius: var(--radius-pill);
-  font-weight: 700;
-  line-height: 1.3;
-}
-.side--collapsed .side__foot {
-  padding: 8px;
-}
-.side--collapsed .side__user {
-  justify-content: center;
-  padding: 6px;
-}
-.side--collapsed .side__user > svg:last-child {
-  display: none;
-}
-
-/* Topbar */
-.top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px var(--spacing-md);
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
-  flex-shrink: 0;
-  height: 56px;
-}
-.top__title {
-  font-size: var(--text-body-lg);
-  font-weight: 600;
-  color: var(--fg-primary);
-  letter-spacing: -0.012em;
-  white-space: nowrap;
-}
-.top__search {
-  max-width: 420px;
-  flex: 1;
-  position: relative;
-}
-.top__search input {
-  width: 100%;
-  padding: 7px 12px 7px 34px;
-  font-size: var(--text-label-sm);
-  background: var(--bg-muted);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--fg-primary);
-  transition: all var(--motion-duration-fast);
-  font-family: inherit;
-}
-.top__search input:focus {
-  outline: 2px solid var(--border-focus);
-  outline-offset: -1px;
-  background: var(--bg-surface);
-  border-color: var(--border-focus);
-}
-.top__search input::placeholder {
-  color: var(--fg-placeholder);
-}
-.top__search svg {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--fg-tertiary);
-}
-.top__actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
 .scroll {
   flex: 1;
   overflow-y: auto;
@@ -305,19 +51,10 @@
   position: relative;
   overflow: hidden;
 }
-.m-header {
-  padding: 8px 20px 12px;
-  background: var(--bg-surface);
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-shrink: 0;
-}
-.m-header h1 {
-  font-size: var(--text-display-sm);
-  font-weight: 700;
-  letter-spacing: -0.022em;
-  flex: 1;
+/* 탭 셸의 본문 바닥 = 페이지 바탕(bg-page = layer-basement). 머리 · 탭 바는 스스로 흰 면이다.
+   풀스크린 화면(옛 ← 머리)은 옛 모양대로 surface 를 그대로 둔다. */
+.m-app--page {
+  background: var(--bg-canvas);
 }
 .m-scroll {
   flex: 1;
@@ -328,28 +65,43 @@
 .m-scroll::-webkit-scrollbar {
   width: 0;
 }
-/* 모바일 하단 네비 — shared/ui/groo/tabbar.tsx 로 컴포넌트화(tailwind, iOS 27
-   Liquid Glass 플로팅 필). 여기엔 전환 keyframes 와 플로팅 보상 여백만 남긴다. */
-@keyframes mtabIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.88);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-/* 플로팅 탭바가 스크롤 콘텐츠 하단을 덮지 않도록 보상 (탭바 있는 셸만) */
-.m-app--tabbar .m-scroll > :last-child {
-  padding-bottom: calc(
-    90px + max(14px, env(safe-area-inset-bottom) - 6px)
-  ) !important;
-}
-
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card
  * ========================================================================== */
+/* 폰 구역 화면 — 구역(직계 자식)마다 화면 폭 흰 띠, 사이 · 맨 위 8 은 바닥이 보이는 틈(DESIGN Layout "화면 바탕",
+   2026-10-21 I-01 결정 3). 띠 안은 카드 안과 같은 사방 24. 순자산은 모서리 없는 띠(screen-bands.tsx) */
+.screen-bands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-x2);
+  padding-top: var(--spacing-x2);
+}
+.screen-bands > :not(.contents),
+.screen-bands > .contents > * {
+  padding: var(--spacing-x6);
+}
+.screen-bands > :not(.contents, .balance-hero),
+.screen-bands > .contents > * {
+  background: var(--color-surface-default);
+}
+.screen-bands > .balance-hero {
+  border-radius: 0;
+}
+/* 묶음 목록 띠(설정 · 전체) — 띠 안 위 4 · 좌우 24 · 아래 8, 머리 · 줄이 제 위아래 여백을 갖는다(앱 PScreenBand) */
+.screen-bands--list > :not(.contents),
+.screen-bands--list > .contents > * {
+  padding: var(--spacing-x1) var(--spacing-x6) var(--spacing-x2);
+}
+.screen-bands > :empty {
+  display: none;
+}
+/* 풀스크린 띠 화면 — 바닥 basement 위, ← 머리 다음 본문은 8 틈 아래 화면 폭 흰 띠 한 장(I-01 결정 4B).
+   본문이 묶음마다 띠를 그리면(.screen-bands) 셸은 띠를 깔지 않는다 */
+.m-fullscreen > .m-back-header + :not(.screen-bands) {
+  margin-top: var(--spacing-x2);
+  background: var(--color-surface-default);
+}
+
 .balance-hero {
   background: linear-gradient(
     135deg,
@@ -371,7 +123,7 @@
 .dark .balance-hero {
   background: linear-gradient(
     135deg,
-    var(--color-primary-light) 0%,
+    var(--color-fg-brand) 0%,
     var(--color-bg-brand-solid) 100%
   );
 }
@@ -430,19 +182,10 @@
   opacity: 1;
   font-weight: 600;
 }
-/* hero gradient(코발트) 위 등락 — success/error 80% + white 20% (60%는 옅고 100%는 진해 안 보임) */
-.balance-hero__sub .chg.up {
-  color: color-mix(in srgb, var(--color-success) 80%, white);
-}
+/* hero gradient(코발트) 위 등락 — 흰 글자 + ▲ · ▼ (D1: 방향은 화살표가 말한다, 색은 두 모드 같다) */
+.balance-hero__sub .chg.up,
 .balance-hero__sub .chg.down {
-  color: color-mix(in srgb, var(--color-error) 80%, white);
-}
-/* 다크모드 — 그라데이션 상단이 밝은 cobalt400 이라 50% 혼합으로 더 옅게 */
-.dark .balance-hero__sub .chg.up {
-  color: color-mix(in srgb, var(--color-success) 50%, white);
-}
-.dark .balance-hero__sub .chg.down {
-  color: color-mix(in srgb, var(--color-error) 50%, white);
+  color: var(--color-static-white);
 }
 .balance-hero__split {
   display: grid;
@@ -627,7 +370,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
-  padding: 24px 28px;
+  padding: 24px var(--layout-margin);
 }
 .dash-grid__left {
   display: flex;
@@ -640,7 +383,7 @@
   gap: 20px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1279px) {
   .dash-grid {
     grid-template-columns: 1fr;
   }
@@ -648,7 +391,7 @@
 
 /* Page container — 홈(.dash-grid)과 동일 사이드 여백, max-width 제한 없음 */
 .page {
-  padding: 24px 28px 48px;
+  padding: var(--spacing-nav-to-title) var(--layout-margin) 48px;
   width: 100%;
 }
 .page__head {
@@ -657,15 +400,13 @@
   gap: 16px;
   margin-bottom: 20px;
 }
-.page__head h1 {
-  font-size: var(--text-display-sm);
-  font-weight: 700;
-  letter-spacing: -0.022em;
-}
+/* 화면 머리 한 줄(PageHead) — 제목은 ScreenTitle(26/35 · 700), 설명 16/22 · 400 · muted(D6) */
 .page__head .sub {
-  font-size: var(--text-label-sm);
-  color: var(--fg-tertiary);
-  margin-top: 2px;
+  margin: var(--spacing-x1) 0 0;
+  font-size: var(--text-t5);
+  line-height: var(--text-t5--line-height);
+  font-weight: 400;
+  color: var(--color-fg-neutral-muted);
 }
 .page__head .right {
   margin-left: auto;
@@ -748,16 +489,8 @@
   opacity: 0.5;
 }
 
-/* ---------- Notifications popover ---------- */
-.notif-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-base);
-  background: transparent;
-}
-/* .notif-pop, .notif-pop__head/__title/__sub/__read-all/__body
- *   → NotificationsPopover (@/widgets/notification-manage/ui/NotificationsPopover.tsx) inline 으로 이동.
- *     .notif-backdrop, .notif-row* 는 모바일/공용에서 계속 사용되어 보존. */
+/* ---------- Notifications ---------- */
+/* 데스크톱 알림은 DS Popover · Bottom Sheet(NotificationsMenu), 줄은 DS List(NotificationRow). */
 
 /* 모바일 알림 페이지 — 가운데 목록만 스크롤하고 '알림 설정' 은 바닥에 고정한다.
    바깥을 m-scroll 로 두면 footer 가 같이 흘러간다(NotificationsPage 주석 참고). */
@@ -770,94 +503,7 @@
 .notif-mobile__body {
   min-height: 0;
 }
-/* 모바일 행은 좌우 24. 데스크탑 popover 의 .notif-row 는 좁아서 18 그대로 둔다. */
-.notif-mobile .notif-row {
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
-.notif-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  border-left: 3px solid transparent;
-}
-.notif-row:hover {
-  background: var(--bg-muted);
-}
-/* 클로드 디자인 원본(dialogs.css + tokens.css 다크 오버라이드) 정합:
-   라이트 = brand-subtle 플랫, 다크 = primary-light 15% 플랫(rgba(95,160,229,.15)).
-   그라데이션 아님 — 플랫 틴트. */
-.notif-row.unread {
-  border-left-color: var(--border-brand);
-  background: var(--bg-brand-subtle);
-}
-.notif-row.unread:hover {
-  background: var(--bg-brand-muted);
-}
-.dark .notif-row.unread,
-[data-theme="dark"] .notif-row.unread {
-  background: color-mix(in srgb, var(--color-primary-light) 15%, transparent);
-}
-.dark .notif-row.unread:hover,
-[data-theme="dark"] .notif-row.unread:hover {
-  background: color-mix(in srgb, var(--color-primary-light) 22%, transparent);
-}
-.notif-row__icon {
-  width: 34px;
-  height: 34px;
-  /* 앱 notification_screen 아이콘 박스(PRadius.brMd=8px) 정합 */
-  border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.notif-row__text {
-  flex: 1;
-  min-width: 0;
-}
-.notif-row__title {
-  font: 600 13px/1.35 var(--font-sans);
-  color: var(--fg-primary);
-  letter-spacing: -0.012em;
-  margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.notif-row__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-pill);
-  /* 라이트=primary, 다크=primary-light 자동 swap (bg-brand 는 다크도 primary 고정이라 fg-brand 사용) */
-  background: var(--fg-brand);
-  display: inline-block;
-  flex-shrink: 0;
-}
-.notif-row__desc {
-  font-size: var(--text-caption);
-  color: var(--fg-secondary);
-  line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.notif-row__time {
-  font-size: var(--text-badge);
-  color: var(--fg-tertiary);
-  font-weight: 500;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-/* .notif-pop__foot, .notif-pop__all
- *   → NotificationsPopover inline 으로 이동.
- *
- * ---------- Category / Asset / Budget Manager (settings) ----------
+/* ---------- Category / Asset / Budget Manager (settings) ----------
  *
  * .cat-mgr, .cat-mgr__head/__title/__sub/__toolbar/__tabs/__search
  *   → ManagerShell / ManagerHead / ManagerTabs / MANAGER_LAYOUT
@@ -1021,7 +667,7 @@
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 8px 24px -6px oklch(0.15 0.015 200 / 0.3);
+  box-shadow: var(--shadow-s3);
   z-index: 300;
   animation: starToastIn 220ms var(--motion-ease-out);
 }
@@ -1060,8 +706,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #0d1430, #1f2c5e);
-  color: #dfe7ff;
+  background: var(--color-bg-neutral-inverted);
+  color: var(--color-fg-neutral-inverted);
 }
 .fstrip__meter {
   display: inline-flex;
@@ -1124,8 +770,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #0d1430, #1f2c5e);
-  color: #dfe7ff;
+  background: var(--color-bg-neutral-inverted);
+  color: var(--color-fg-neutral-inverted);
 }
 .frp-entry__dots {
   display: flex;
@@ -1193,7 +839,7 @@
 }
 .frp-strip__day:disabled {
   cursor: default;
-  opacity: 0.4;
+  color: var(--color-fg-disabled);
 }
 .frp-strip__dow {
   font-size: 11.5px;
@@ -1278,7 +924,7 @@
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  background: color-mix(in oklab, var(--color-chart-red) 4%, transparent);
+  background: var(--color-chart-red-subtle);
 }
 .frp-stamp span {
   font-size: 12px;
@@ -1443,9 +1089,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #0d1430, #1f2c5e);
-  filter: drop-shadow(0 0 6px rgba(176, 196, 255, 0.25));
-  color: #dfe7ff;
+  background: var(--color-bg-neutral-inverted);
+  filter: drop-shadow(
+    0 0 6px
+      color-mix(in srgb, var(--color-fg-neutral-inverted) 25%, transparent)
+  );
+  color: var(--color-fg-neutral-inverted);
 }
 .fcol-art--locked {
   background: var(--bg-sunken);

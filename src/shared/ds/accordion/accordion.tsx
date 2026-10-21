@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/cn";
@@ -25,6 +25,7 @@ import {
 } from "./accordion-variants";
 import { useControllable } from "./use-controllable";
 import { useExpandMotion } from "./use-expand-motion";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Accordion — 구조는 SEED Accordion(rootage accordion.json · accordion-item.json, 2026-10-10). 수치 원본은 groo-design
@@ -506,8 +507,8 @@ const AccordionExpandAll = React.forwardRef<
       values,
       expandable,
       onValuesChange,
-      expandLabel = "모두 펼치기",
-      collapseLabel = "모두 접기",
+      expandLabel: expandLabelProp,
+      collapseLabel: collapseLabelProp,
       className,
       onClick,
       onPointerDown,
@@ -516,6 +517,9 @@ const AccordionExpandAll = React.forwardRef<
     },
     ref,
   ) => {
+    const dsT = useDsText();
+    const expandLabel = expandLabelProp ?? dsT("accordion.expandAll");
+    const collapseLabel = collapseLabelProp ?? dsT("accordion.collapseAll");
     // 상세가 있는 항목이 모두 펼쳐져 있으면 "모두 접기" — 하나라도 접혀 있으면 "모두 펼치기"
     const allOpen =
       expandable.length > 0 && expandable.every((v) => values.includes(v));
@@ -546,12 +550,7 @@ const AccordionExpandAll = React.forwardRef<
         }}
         {...props}
       >
-        <span>{allOpen ? collapseLabel : expandLabel}</span>
-        {allOpen ? (
-          <ChevronsDownUp aria-hidden strokeWidth={2} />
-        ) : (
-          <ChevronsUpDown aria-hidden strokeWidth={2} />
-        )}
+        {allOpen ? collapseLabel : expandLabel}
       </button>
     );
   },

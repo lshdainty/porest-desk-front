@@ -18,12 +18,15 @@ import {
   ROOT,
   ROOT_LEFT,
   ROW,
+  SEARCH,
+  SEARCH_TYPE,
   SCREEN_TITLE,
   TEXT_BUTTON,
   TITLE,
   TITLE_TYPE,
   type TopNavigationType,
 } from "./top-navigation-variants";
+import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Top Navigation — 구조는 SEED Top Navigation(Root · Standard, 2026-10-04). 수치 원본은 groo-design
@@ -114,6 +117,41 @@ const TopNavigationTitle = React.forwardRef<
   );
 });
 TopNavigationTitle.displayName = "TopNavigationTitle";
+
+// ── 검색칸 ───────────────────────────────────────────────────
+export interface TopNavigationSearchProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** 보이지 않는 h1 — 화면 이름 대신 칸이 서므로 머리말은 보조 기술에만. 기본 "검색". desktop 에서는 두지 않는다(본문 h1) */
+  title?: string;
+}
+
+/**
+ * 검색칸 자리 — 자식은 Input 하나(size="medium" · prefixIcon 돋보기 · clearable).
+ * standard 에서는 제목 자리(← 다음 6 ~ 오른쪽 자리 앞 8), desktop 에서는 머리 왼쪽 폭 360.
+ */
+const TopNavigationSearch = React.forwardRef<
+  HTMLDivElement,
+  TopNavigationSearchProps
+>(({ title, className, children, ...props }, ref) => {
+  const type = React.useContext(TypeContext);
+  const dsT = useDsText();
+  return (
+    <div
+      ref={ref}
+      role="search"
+      data-slot="top-navigation-search"
+      className={cn(SEARCH, SEARCH_TYPE[type], className)}
+      {...props}
+    >
+      {type !== "desktop" && (
+        <h1 tabIndex={-1} data-screen-title="" className="sr-only">
+          {title ?? dsT("topNavigation.searchTitle")}
+        </h1>
+      )}
+      {children}
+    </div>
+  );
+});
+TopNavigationSearch.displayName = "TopNavigationSearch";
 
 // ── 오른쪽 자리 ──────────────────────────────────────────────
 const TopNavigationActions = React.forwardRef<
@@ -211,11 +249,10 @@ export interface TopNavigationBackButtonProps extends Omit<
 const TopNavigationBackButton = React.forwardRef<
   HTMLButtonElement,
   TopNavigationBackButtonProps
->(
-  (
-    { fallbackHref, onClick, "aria-label": ariaLabel = "뒤로", ...props },
-    ref,
-  ) => (
+>(({ fallbackHref, onClick, "aria-label": ariaLabelProp, ...props }, ref) => {
+  const dsT = useDsText();
+  const ariaLabel = ariaLabelProp ?? dsT("topNavigation.back");
+  return (
     <TopNavigationIconButton
       ref={ref}
       aria-label={ariaLabel}
@@ -233,8 +270,8 @@ const TopNavigationBackButton = React.forwardRef<
     >
       <ChevronLeft />
     </TopNavigationIconButton>
-  ),
-);
+  );
+});
 TopNavigationBackButton.displayName = "TopNavigationBackButton";
 
 export interface TopNavigationCloseButtonProps extends Omit<
@@ -252,33 +289,30 @@ export interface TopNavigationCloseButtonProps extends Omit<
 const TopNavigationCloseButton = React.forwardRef<
   HTMLButtonElement,
   TopNavigationCloseButtonProps
->(
-  (
-    { onClick, dirty = false, "aria-label": ariaLabel = "닫기", ...props },
-    ref,
-  ) => {
-    const own = React.useRef<HTMLButtonElement | null>(null);
-    const leave = useLeaveConfirm({ dirty, leave: onClick, contentRef: own });
-    return (
-      <>
-        <TopNavigationIconButton
-          ref={(node) => {
-            own.current = node;
-            if (typeof ref === "function") ref(node);
-            else if (ref) ref.current = node;
-          }}
-          aria-label={ariaLabel}
-          data-slot="top-navigation-close-button"
-          onClick={() => leave.request()}
-          {...props}
-        >
-          <X />
-        </TopNavigationIconButton>
-        {leave.node}
-      </>
-    );
-  },
-);
+>(({ onClick, dirty = false, "aria-label": ariaLabelProp, ...props }, ref) => {
+  const dsT = useDsText();
+  const ariaLabel = ariaLabelProp ?? dsT("common.close");
+  const own = React.useRef<HTMLButtonElement | null>(null);
+  const leave = useLeaveConfirm({ dirty, leave: onClick, contentRef: own });
+  return (
+    <>
+      <TopNavigationIconButton
+        ref={(node) => {
+          own.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
+        aria-label={ariaLabel}
+        data-slot="top-navigation-close-button"
+        onClick={() => leave.request()}
+        {...props}
+      >
+        <X />
+      </TopNavigationIconButton>
+      {leave.node}
+    </>
+  );
+});
 TopNavigationCloseButton.displayName = "TopNavigationCloseButton";
 
 export interface TopNavigationMenuButtonProps extends Omit<
@@ -293,17 +327,20 @@ export interface TopNavigationMenuButtonProps extends Omit<
 const TopNavigationMenuButton = React.forwardRef<
   HTMLButtonElement,
   TopNavigationMenuButtonProps
->(({ "aria-label": ariaLabel = "주 메뉴", ...props }, ref) => (
-  <TopNavigationIconButton
-    ref={ref}
-    aria-label={ariaLabel}
-    aria-haspopup="dialog"
-    data-slot="top-navigation-menu-button"
-    {...props}
-  >
-    <Menu />
-  </TopNavigationIconButton>
-));
+>(({ "aria-label": ariaLabelProp, ...props }, ref) => {
+  const dsT = useDsText();
+  return (
+    <TopNavigationIconButton
+      ref={ref}
+      aria-label={ariaLabelProp ?? dsT("sideNavigation.label")}
+      aria-haspopup="dialog"
+      data-slot="top-navigation-menu-button"
+      {...props}
+    >
+      <Menu />
+    </TopNavigationIconButton>
+  );
+});
 TopNavigationMenuButton.displayName = "TopNavigationMenuButton";
 
 // ── 데스크톱 본문 제목 ───────────────────────────────────────
@@ -345,6 +382,7 @@ export {
   TopNavigationCloseButton,
   TopNavigationMenuButton,
   TopNavigationTitle,
+  TopNavigationSearch,
   TopNavigationActions,
   TopNavigationIconButton,
   TopNavigationTextButton,

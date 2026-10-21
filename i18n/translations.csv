@@ -16,8 +16,6 @@ common,close,닫기,Close
 common,add,추가,Add
 common,next,다음,Next
 common,prev,이전,Previous
-common,searchComingSoon,검색 기능 준비 중,Search coming soon
-common,searchComingSoonDesc,v0.7 에 추가 예정,Coming in v0.7
 common,searchPlaceholder,검색...,Search...
 common,searchEmpty,검색 결과가 없어요,No results found
 common,totalCount,총 {{count}}건,{{count}} total
@@ -2833,3 +2831,165 @@ stats,fixed.bulk.doneFixed,{{count}}건을 고정으로 바꿨어요,Marked {{co
 stats,fixed.bulk.doneVariable,{{count}}건을 변동으로 되돌렸어요,Changed {{count}} back to variable
 settings,hideAmounts.card.stats.fixed,고정·변동 탭,Fixed vs. variable tab
 stats,fixed.insight.tail,이에요.,.
+layout,notificationsUnread,"알림, 새 알림 있음","Notifications, new notifications"
+notification,row.unread,안 읽음,Unread
+notification,popover.unreadPlain,읽지 않은 알림 {{count}}개,{{count}} unread
+layout,skipToMain,본문 바로가기,Skip to main content
+ds,common.close,닫기,Close
+ds,common.news,새 소식,New activity
+ds,common.clear,지우기,Clear
+ds,bottomNavigation.label,주 메뉴,Main menu
+ds,sideNavigation.label,주 메뉴,Main menu
+ds,sideNavigation.toggle,사이드바,Sidebar
+ds,snackbar.region,알림,Notifications
+ds,topNavigation.back,뒤로,Back
+ds,accordion.expandAll,모두 펼치기,Expand all
+ds,accordion.collapseAll,모두 접기,Collapse all
+ds,leaveConfirm.title,작성한 내용이 사라져요,Your changes will be lost
+ds,leaveConfirm.description,나가면 입력한 내용이 저장되지 않아요.,"If you leave, what you entered won't be saved."
+ds,leaveConfirm.stay,계속 작성,Keep editing
+ds,leaveConfirm.leave,나가기,Leave
+ds,common.none,없음,None
+ds,common.required,필수,Required
+ds,common.loading,불러오는 중,Loading
+ds,common.moreFor,{{label}} 더보기,More options for {{label}}
+ds,avatar.uploading,프로필 사진 올리는 중,Uploading profile photo
+ds,chartHeatmap.value,지출,Spending
+ds,chart.legend,범례,Legend
+ds,inputOtp.placeholder,{{count}}자리 숫자,{{count}} digits
+ds,inputOtp.send,코드 받기,Get code
+ds,inputOtp.resendIn,다시 받기({{seconds}}초),Resend ({{seconds}}s)
+ds,inputOtp.resend,다시 받기,Resend
+ds,pagination.label,페이지 탐색,Pagination
+ds,pagination.status,"{{current}}페이지, 전체 {{total}}페이지",Page {{current}} of {{total}}
+ds,pagination.previous,이전 페이지,Previous page
+ds,pagination.next,다음 페이지,Next page
+ds,pagination.page,{{page}}페이지,Page {{page}}
+ds,quantityPicker.decrease,줄이기,Decrease
+ds,quantityPicker.increase,늘리기,Increase
+ds,searchableList.label,검색,Search
+ds,searchableList.emptyFor,'{{query}}'에 대한 검색 결과가 없어요,No results for '{{query}}'
+ds,searchableList.empty,검색 결과가 없어요,No results
+ds,searchableList.error,검색 결과를 불러오지 못했어요,Couldn't load the results
+ds,common.retry,다시 시도,Try again
+ds,select.more,{{label}} 외 {{count}}개,{{label}} +{{count}}
+ds,slider.min,최소,Minimum
+ds,slider.max,최대,Maximum
+ds,datePicker.root,날짜 선택,Select date
+ds,datePicker.previousMonth,이전 달,Previous month
+ds,datePicker.nextMonth,다음 달,Next month
+ds,datePicker.yearWheel,연도,Year
+ds,datePicker.monthWheel,월,Month
+ds,datePicker.readOnlyRangeStart,읽기 전용 시작일,read-only start date
+ds,datePicker.presets,빠른 기간,Quick ranges
+ds,datePicker.thisWeek,이번 주,This week
+ds,datePicker.thisMonth,이번 달,This month
+ds,datePicker.lastMonth,지난 달,Last month
+ds,datePicker.last7Days,최근 7일,Last 7 days
+ds,datePicker.last30Days,최근 30일,Last 30 days
+ds,datePicker.last3Months,최근 3개월,Last 3 months
+ds,datePicker.last6Months,최근 6개월,Last 6 months
+ds,datePicker.last1Year,최근 1년,Last year
+ds,datePicker.thisYear,올해,This year
+ds,timePicker.root,시간 선택,Select time
+ds,timePicker.period,오전/오후,AM/PM
+ds,timePicker.hour,시,Hour
+ds,timePicker.minute,분,Minute
+ds,timePicker.am,오전,AM
+ds,timePicker.pm,오후,PM
+ds,table.sortAscending,{{name}} 오름차순으로 정렬했어요.,Sorted {{name}} in ascending order.
+ds,table.sortDescending,{{name}} 내림차순으로 정렬했어요.,Sorted {{name}} in descending order.
+ds,table.selectAll,모두 선택,Select all
+ds,table.selectRow,{{label}} 선택,Select {{label}}
+ds,table.actions,동작,Actions
+ds,table.selectedCount,{{count}}개 선택됨,{{count}} selected
+ds,table.bulkBar,선택한 항목,Selected items
+ds,table.clearSelection,선택 해제,Clear selection
+ds,tablePagination.summary,"{{range}}, 총 {{total}}개",{{range}} of {{total}}
+ds,tablePagination.label,표 페이지 탐색,Table pagination
+ds,tablePagination.pageSize,페이지당 표시 개수,Rows per page
+ds,tablePagination.sizeOption,{{count}}개,{{count}}
+ds,tablePagination.perPage,씩 보기,per page
+ds,tablePagination.range,표시 범위,Visible range
+ds,tablePagination.of,/ 총 {{total}}개,of {{total}}
+ds,card.noChangeSentence,변화가 없어요,No change
+ds,card.increased,늘었어요,increased
+ds,card.decreased,줄었어요,decreased
+ds,card.noChange,변화 없음,No change
+ds,colorSwatch.red,빨강,Red
+ds,colorSwatch.orange,주황,Orange
+ds,colorSwatch.yellow,노랑,Yellow
+ds,colorSwatch.green,초록,Green
+ds,colorSwatch.blue,파랑,Blue
+ds,colorSwatch.indigo,남색,Indigo
+ds,colorSwatch.violet,보라,Violet
+ds,colorSwatch.pink,분홍,Pink
+ds,colorSwatch.brown,갈색,Brown
+ds,colorSwatch.gray,회색,Gray
+ds,colorSwatch.currentCustom,지금 색,Current color
+ds,colorSwatch.auto,자동,Auto
+ds,progress.over,{{value}} 초과,{{value}} over
+ds,progress.reached,달성,Reached
+ds,progress.label,{{label}} {{max}} 중 {{current}},{{label}}: {{current}} of {{max}}
+ds,skeleton.waiting,불러오는 중…,Loading…
+ds,skeleton.slow,평소보다 오래 걸리고 있어요.,This is taking longer than usual.
+ds,iconPicker.results,검색 결과 {{count}}개,{{count}} results
+ds,iconPicker.searchPlaceholder,아이콘 이름 검색,Search icon name
+ds,iconPicker.searchLabel,아이콘 검색,Search icons
+ds,iconPicker.emptyTitle,'{{query}}'에 대한 아이콘이 없어요,No icons for '{{query}}'
+ds,iconPicker.emptyDescription,다른 말로 찾거나 묶음에서 골라주세요.,Try other words or browse the groups.
+ds,iconPicker.label,아이콘,Icon
+ds,iconPicker.current,지금 아이콘,Current icon
+ds,iconPicker.tag,태그,Tag
+ds,attachment.uploadingPercent,올리는 중 {{percent}}%,Uploading {{percent}}%
+ds,attachment.uploading,올리는 중,Uploading
+ds,attachment.failed,올리지 못했어요,Upload failed
+ds,attachment.menuBadge,대표로 정하기,Set as cover
+ds,attachment.menuForward,앞으로 옮기기,Move earlier
+ds,attachment.menuBackward,뒤로 옮기기,Move later
+ds,attachment.menuRemove,지우기,Remove
+ds,attachment.previewImage,크게 보기,View larger
+ds,attachment.previewFile,열기,Open
+ds,attachment.retryFor,{{name}} 다시 시도,Retry {{name}}
+ds,attachment.removeFor,{{name}} 지우기,Remove {{name}}
+ds,attachment.sortableRole,순서를 바꿀 수 있는 항목,reorderable item
+ds,attachment.addedPhotos,사진 {{count}}장을 붙였어요.,Added {{count}} photos.
+ds,attachment.addedFiles,파일 {{count}}개를 붙였어요.,Added {{count}} files.
+ds,attachment.addedItems,{{count}}개를 붙였어요.,Added {{count}} items.
+ds,attachment.uploaded,{{count}}개를 올렸어요.,{{count}} uploaded.
+ds,attachment.failedCount,{{count}}개는 올리지 못했어요.,{{count}} failed to upload.
+ds,attachment.dragLifted,{{position}}번째 항목을 들었어요.,Picked up item {{position}}.
+ds,attachment.dragOver,{{position}}번째 자리예요.,Over position {{position}}.
+ds,attachment.dragDropped,{{position}}번째 자리에 놓았어요.,Dropped at position {{position}}.
+ds,attachment.dragCancelled,옮기기를 그만뒀어요. 처음 자리예요.,Move cancelled. Back at the starting position.
+ds,attachment.moved,{{position}}번째 자리로 옮겼어요.,Moved to position {{position}}.
+ds,attachment.dragInstructions,Space 로 들고 ← → 로 옮긴 뒤 Space 로 놓아요. Esc 는 그만두기예요.,"Press Space to pick up, ← → to move, Space to drop. Esc cancels."
+ds,attachment.suffix,첨부,attachments
+ds,attachment.suffixCount,"첨부, {{count}}","attachments, {{count}}"
+ds,attachment.defaultName,파일 {{suffix}},"Files, {{suffix}}"
+ds,attachment.dropHere,파일을 여기로 끌어다 놓으세요,Drag files here
+ds,attachment.pick,파일 선택,Choose files
+ds,topNavigation.searchTitle,검색,Search
+common,searchField,거래 검색,Search transactions
+common,searchTypeGroup,거래 종류,Transaction type
+common,searchTypeAll,전체,All
+common,searchTypeExpense,지출,Expenses
+common,searchTypeIncome,수입,Income
+common,searchAdvanced,고급 필터,Advanced filter
+common,searchAdvancedOn,"고급 필터, 적용 중","Advanced filter, applied"
+common,searchAmountRange,금액 범위,Amount range
+common,searchMin,최소,Min
+common,searchMax,최대,Max
+common,searchWon,원,KRW
+common,searchPeriod,기간,Period
+common,searchStart,시작,Start
+common,searchEnd,종료,End
+common,searchPeriodPick,기간 선택,Select period
+common,searchDone,완료,Done
+common,searchReset,초기화,Reset
+common,searchApply,적용,Apply
+common,searchBadAmount,최소 금액을 최대 금액보다 작게 해 주세요,Make the minimum smaller than the maximum
+common,searchBadPeriod,시작일을 종료일보다 앞으로 해 주세요,Make the start date earlier than the end date
+common,searchFailed,검색하지 못했어요,Search failed
+common,searchEmptyHint,"키워드, 가맹점, 메모로 검색해 보세요","Search by keyword, merchant, or memo"
+common,searchNoResults,결과가 없어요,No results

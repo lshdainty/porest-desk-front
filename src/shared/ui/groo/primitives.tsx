@@ -6,8 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   LocateFixed,
-  TrendingDown,
-  TrendingUp,
   X,
 } from "lucide-react";
 import { useDeviceSize } from "@/shared/lib/groo/responsive";
@@ -103,7 +101,7 @@ const CAT_ICO_PALETTE: Record<string, { bg: string; color: string }> = {
   medical: { bg: "oklch(0.96 0.03 25)", color: "oklch(0.52 0.13 25)" },
   leisure: { bg: "oklch(0.96 0.035 290)", color: "oklch(0.48 0.12 290)" },
   bill: {
-    bg: "color-mix(in srgb, var(--color-chart-gray) 18%, transparent)",
+    bg: "var(--color-chart-gray-weak)",
     color: "var(--color-chart-gray)",
   },
   edu: { bg: "oklch(0.96 0.03 210)", color: "oklch(0.5 0.1 215)" },
@@ -198,7 +196,7 @@ export function Delta({
   small?: boolean;
 }) {
   const up = pct > 0;
-  const color = up ? "var(--fg-income)" : "var(--fg-expense)";
+  const color = up ? "var(--color-fg-critical)" : "var(--color-fg-informative)";
   return (
     <span
       style={{
@@ -212,13 +210,7 @@ export function Delta({
         letterSpacing: "-0.012em",
       }}
     >
-      {up ? (
-        <TrendingUp size={small ? 12 : 14} strokeWidth={2.2} />
-      ) : (
-        <TrendingDown size={small ? 12 : 14} strokeWidth={2.2} />
-      )}
-      {up ? "+" : ""}
-      {pct.toFixed(1)}%
+      {up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
       {amt != null && (
         <span
           style={{
@@ -227,8 +219,7 @@ export function Delta({
             fontWeight: "500",
           }}
         >
-          ({up ? "+" : "−"}
-          {money(amt, { abs: true })})
+          ({money(amt, { abs: true })})
         </span>
       )}
     </span>

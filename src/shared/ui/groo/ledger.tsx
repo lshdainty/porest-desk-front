@@ -75,7 +75,7 @@ export function LedgerCollapse({
       data-ledger-collapse
       className={cn(
         "overflow-hidden max-h-[340px] opacity-100",
-        "transition-[max-height,opacity] duration-[220ms] ease-[var(--motion-ease-out)]",
+        "transition-[max-height,opacity] duration-[220ms] ease-[var(--motion-ease-easing)]",
         "group-data-[compact=true]/pin:max-h-0 group-data-[compact=true]/pin:opacity-0 group-data-[compact=true]/pin:pointer-events-none",
         className,
       )}
@@ -133,7 +133,7 @@ export function LedgerNavBtn({
       className={cn(
         "w-9 h-9 inline-flex items-center justify-center border-0 bg-transparent",
         "text-[var(--fg-secondary)] cursor-pointer rounded-[10px]",
-        "disabled:opacity-30 disabled:cursor-default",
+        "disabled:text-fg-disabled disabled:cursor-default",
         active && "bg-[var(--bg-brand-subtle)] text-[var(--fg-brand-strong)]",
         className,
       )}
@@ -212,7 +212,7 @@ export function LedgerSumBtn({
         "ml-auto shrink-0 inline-flex items-center whitespace-nowrap border border-[var(--border-default)] bg-transparent",
         "text-[var(--fg-primary)] text-[length:var(--text-label-sm)] font-semibold",
         "px-3.5 py-[9px] rounded-xl cursor-pointer",
-        "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)]",
         "active:bg-[var(--bg-brand-subtle)] active:border-[var(--border-brand)] active:text-[var(--fg-brand-strong)]",
         active &&
           "bg-[var(--bg-brand-subtle)] border-[var(--border-brand)] text-[var(--fg-brand-strong)]",
@@ -241,7 +241,7 @@ export function LedgerSummary({
     <Card
       variant="raised"
       className={cn(
-        "mt-[14px] mb-[28px] px-4 py-1 animate-[txmDrop_0.18s_var(--motion-ease-out)]",
+        "mt-[14px] mb-[28px] px-4 py-1 animate-[txmDrop_0.18s_var(--motion-ease-easing)]",
         className,
       )}
       {...props}
@@ -277,7 +277,7 @@ export function LedgerDrop({
   return (
     <div
       className={cn(
-        "mt-[14px] animate-[txmDrop_0.18s_var(--motion-ease-out)]",
+        "mt-[14px] animate-[txmDrop_0.18s_var(--motion-ease-easing)]",
         className,
       )}
       {...props}
