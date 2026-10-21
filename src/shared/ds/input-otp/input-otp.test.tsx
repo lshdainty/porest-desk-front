@@ -64,6 +64,16 @@ describe("digitsOf", () => {
 });
 
 describe("InputOTP", () => {
+  it("막혀도 자리 글은 fg-placeholder — Input 의 막힌 글(fg-disabled)을 덮는다(01T-013)", () => {
+    render(<InputOTP aria-label="인증 코드" disabled />);
+    expect(input().disabled).toBe(true);
+    // 막힌 입력의 ::placeholder 는 jsdom 이 못 읽는다 — 클래스로 본다(computed 값은 i02-measure 가 크로미움에서 잰다)
+    expect(input().className).toContain("placeholder:text-fg-disabled");
+    expect(input().className).toContain(
+      "disabled:placeholder:text-fg-placeholder",
+    );
+  });
+
   it("한 칸이다 — 숫자 키보드 · one-time-code · 안내 글 · maxLength 없음", () => {
     render(<InputOTP aria-label="인증 코드" />);
     expect(container.querySelectorAll("input")).toHaveLength(1);
