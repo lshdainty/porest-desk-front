@@ -2865,6 +2865,8 @@ ds,pagination.status,"{{current}}페이지, 전체 {{total}}페이지",Page {{cu
 ds,pagination.previous,이전 페이지,Previous page
 ds,pagination.next,다음 페이지,Next page
 ds,pagination.page,{{page}}페이지,Page {{page}}
+ds,infiniteList.error,더 불러오지 못했어요.,Couldn't load more.
+ds,infiniteList.end,모두 봤어요.,You've reached the end.
 ds,quantityPicker.decrease,줄이기,Decrease
 ds,quantityPicker.increase,늘리기,Increase
 ds,searchableList.label,검색,Search
