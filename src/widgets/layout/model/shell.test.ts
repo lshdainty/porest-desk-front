@@ -12,7 +12,7 @@ describe("screenFloor", () => {
     ["/desk/card/12", "bands"],
     ["/desk/expense", "white"],
     ["/desk/calendar", "strip"],
-    ["/desk/more", "strip"],
+    ["/desk/more", "bands"],
     ["/desk/search", "strip"],
   ])("%s → %s", (path, floor) => {
     expect(screenFloor(path)).toBe(floor);

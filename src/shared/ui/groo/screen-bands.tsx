@@ -11,15 +11,26 @@ type CardProps = ComponentProps<typeof Card>;
  * 띠 사이 · 맨 위 8 은 회색 바닥이 보이는 틈이고(SEED Divider "강함"), 띠는 모서리 · 테두리 · 그림자가 없다.
  * 띠 안은 카드 안과 같은 값 — 사방 24(띠 안 위 4 · 아래 8 은 이 안에 든다). 순자산(.balance-hero)은
  * 모서리 없는 화면 폭 띠다. 한 화면에 카드와 띠를 섞지 않는다. 데스크톱(768 이상)은 이 부품을 쓰지 않고 카드다.
+ *
+ * `list` — 묶음 목록 띠 화면(설정 · 전체). 띠 안은 위 4 · 좌우 24 · 아래 8 이고 머리 · 줄이 제 위아래 여백을 갖는다
+ * (DESIGN "띠 화면" — 앱 PScreenBand 와 같은 값).
  */
 export function ScreenBands({
   children,
   className,
+  list = false,
 }: {
   children: ReactNode;
   className?: string;
+  list?: boolean;
 }) {
-  return <div className={cn("screen-bands", className)}>{children}</div>;
+  return (
+    <div
+      className={cn("screen-bands", list && "screen-bands--list", className)}
+    >
+      {children}
+    </div>
+  );
 }
 
 /**

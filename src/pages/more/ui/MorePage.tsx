@@ -1,3 +1,4 @@
+import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useState } from "react";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { useNavigate, useOutletContext } from "react-router-dom";
@@ -159,11 +160,17 @@ export const MorePage = () => {
         .filter((g) => g.items.length > 0)
     : visibleGroups;
 
+  // 폰은 검색칸 · 묶음마다 화면 폭 흰 띠(I-01 결정 4B — 묶음 사이 8 은 바닥이 보이는 틈), 데스크톱은 한 면
+  const Root = mobile ? ScreenBands : "div";
   return (
-    <div
-      style={{
-        padding: "var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)",
-      }}
+    <Root
+      {...(mobile
+        ? { list: true }
+        : {
+            style: {
+              padding: "var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)",
+            },
+          })}
     >
       {/* 폰은 상단 바의 제목이 화면 제목이다 — 데스크톱만 본문 맨 위 h1 */}
       {!mobile && <PageHead title={tLayout("all")} />}
@@ -174,7 +181,13 @@ export const MorePage = () => {
           top: 0,
           zIndex: 5,
           background: "var(--bg-surface)",
-          paddingBottom: "var(--spacing-sm)",
+          // 폰은 띠 안 — 앱 검색 띠와 같이 위 8 · 아래 12
+          ...(mobile
+            ? {
+                padding:
+                  "var(--spacing-x2) var(--spacing-x6) var(--spacing-x3)",
+              }
+            : { paddingBottom: "var(--spacing-sm)" }),
         }}
       >
         {/* 아이콘 세로 중앙 기준은 input 높이 — sticky wrapper의 paddingBottom에 안 끌리도록 분리 */}
@@ -223,8 +236,8 @@ export const MorePage = () => {
       ) : (
         filtered.map((group, gi) => (
           <div key={group.labelKey}>
-            {/* 그룹 사이 헤어라인 (design .flat-div) */}
-            {gi > 0 && (
+            {/* 그룹 사이 헤어라인(데스크톱) — 폰은 띠 사이 틈이 가른다 */}
+            {gi > 0 && !mobile && (
               <div
                 style={{
                   height: 1,
@@ -239,7 +252,7 @@ export const MorePage = () => {
                 fontWeight: 700,
                 color: "var(--fg-primary)",
                 letterSpacing: "-0.01em",
-                padding: "14px 0 2px",
+                padding: mobile ? "10px 0 2px" : "14px 0 2px",
               }}
             >
               {t(group.labelKey)}
@@ -295,6 +308,6 @@ export const MorePage = () => {
           </div>
         ))
       )}
-    </div>
+    </Root>
   );
 };

@@ -29,7 +29,9 @@ export function MobileBackHeader({
   const navigate = useNavigate();
   const { t } = useTranslation("common");
   return (
+    // m-back-header — 셸이 이 머리 다음 본문을 8 틈 + 흰 띠로 깐다(groo.css .m-fullscreen, I-01 결정 4B)
     <div
+      className="m-back-header"
       style={{
         position: "sticky",
         top: 0,

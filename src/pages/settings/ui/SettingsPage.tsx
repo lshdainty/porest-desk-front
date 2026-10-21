@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useTranslation } from "react-i18next";
 import { isEn } from "@/shared/lib/groo/format";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
@@ -672,98 +673,84 @@ function MobileMenuView({
     <>
       {/* 풀스크린 페이지 — 앱처럼 ← 설정 헤더, 뒤로가면 '전체' */}
       <MobileBackHeader title={t("page.title")} />
-      <div style={{ padding: "var(--spacing-xl)" }}>
-        {/* 내 정보 — K뱅크 톤: 카드 없이 이름 헤더 행 (design MobileSettingsList) */}
-        <button
-          onClick={() => changeSection("account")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            width: "100%",
-            padding: "14px 0 18px",
-            background: "transparent",
-            border: 0,
-            cursor: "pointer",
-            textAlign: "left",
-            fontFamily: "inherit",
-          }}
-        >
-          <div
+      <ScreenBands list>
+        {/* 내 정보 — 이름 헤더 행 하나가 첫 띠(design MobileSettingsList). 버튼의 인라인 바탕 · 여백이 띠 규칙을 덮지 않게 한 겹 감싼다 */}
+        <div>
+          <button
+            onClick={() => changeSection("account")}
             style={{
-              width: 46,
-              height: 46,
-              borderRadius: "50%",
-              background: "var(--bg-brand)",
-              color: "var(--fg-on-brand)",
-              display: "inline-flex",
+              display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              fontSize: 17,
-              fontWeight: 700,
-              flexShrink: 0,
+              gap: 14,
+              width: "100%",
+              padding: "10px 0",
+              background: "transparent",
+              border: 0,
+              cursor: "pointer",
+              textAlign: "left",
+              fontFamily: "inherit",
             }}
           >
-            {user?.userName ? user.userName.charAt(0) : "?"}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
+                width: 46,
+                height: 46,
+                borderRadius: "50%",
+                background: "var(--bg-brand)",
+                color: "var(--fg-on-brand)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
                 fontSize: 17,
-                fontWeight: 800,
-                color: "var(--fg-primary)",
-                letterSpacing: "-0.015em",
+                fontWeight: 700,
+                flexShrink: 0,
               }}
             >
-              {user?.userName ?? t("account.defaultName")}
+              {user?.userName ? user.userName.charAt(0) : "?"}
             </div>
-            <div
-              style={{
-                fontSize: "var(--text-label-sm)",
-                color: "var(--fg-tertiary)",
-                marginTop: 2,
-              }}
-            >
-              {t("account.profileMeta")}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 17,
+                  fontWeight: 800,
+                  color: "var(--fg-primary)",
+                  letterSpacing: "-0.015em",
+                }}
+              >
+                {user?.userName ?? t("account.defaultName")}
+              </div>
+              <div
+                style={{
+                  fontSize: "var(--text-label-sm)",
+                  color: "var(--fg-tertiary)",
+                  marginTop: 2,
+                }}
+              >
+                {t("account.profileMeta")}
+              </div>
             </div>
-          </div>
-          <ChevronRight
-            size={18}
-            style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
-          />
-        </button>
-        <div
-          style={{
-            height: 1,
-            background: "var(--border-subtle)",
-            margin: "0 0 4px",
-          }}
-        />
+            <ChevronRight
+              size={18}
+              style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
+            />
+          </button>
+        </div>
 
-        {/* 그룹 — 카드 없이 라벨 + 텍스트 행 (터치 dim), 그룹 사이 헤어라인 */}
-        {MENU_GROUPS.map((group, gi) => {
+        {/* 그룹 — 묶음마다 화면 폭 흰 띠(I-01 결정 4B), 라벨 + 텍스트 행(터치 dim) */}
+        {MENU_GROUPS.map((group) => {
           const groupSections = group.sectionIds
             .map((id) => SECTIONS.find((s) => s.id === id))
             .filter((s): s is SectionDef => s !== undefined);
 
           return (
             <div key={group.labelKey}>
-              {gi > 0 && (
-                <div
-                  style={{
-                    height: 1,
-                    background: "var(--border-subtle)",
-                    margin: "12px 0",
-                  }}
-                />
-              )}
               <div
                 style={{
                   fontSize: "var(--text-body-lg)",
                   fontWeight: 700,
                   color: "var(--fg-primary)",
                   letterSpacing: "-0.01em",
-                  padding: "14px 0 4px",
+                  padding: "10px 0 4px",
                 }}
               >
                 {t(group.labelKey)}
@@ -819,7 +806,7 @@ function MobileMenuView({
             </div>
           );
         })}
-      </div>
+      </ScreenBands>
     </>
   );
 }

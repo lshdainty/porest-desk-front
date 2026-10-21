@@ -65,6 +65,8 @@ export function screenFloor(pathname: string): ScreenFloor {
     under(pathname, "/desk/budget")
   )
     return "bands";
+  // 묶음마다 띠 — 화면이 ScreenBands 로 그린다(I-01 결정 4B)
+  if (pathname === "/desk/more") return "bands";
   if (under(pathname, "/desk/expense")) return "white";
   return "strip";
 }

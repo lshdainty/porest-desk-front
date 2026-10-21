@@ -112,10 +112,11 @@ const Shell = () => {
       return (
         <div className="m-app" data-screen-label="Mobile">
           <SkipLink />
+          {/* 풀스크린도 띠 화면이다 — 바닥은 basement, 머리 다음 본문은 8 틈 아래 흰 띠(I-01 결정 4B · groo.css .m-fullscreen) */}
           <main
             id="main"
             tabIndex={-1}
-            className="m-scroll flex flex-col outline-none"
+            className="m-scroll m-fullscreen flex flex-col bg-bg-page outline-none"
           >
             <SwipeActionsProvider>
               <Outlet
