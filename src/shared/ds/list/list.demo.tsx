@@ -1262,7 +1262,7 @@ const WorstDemo = () => (
 // 폭 300(좌우 24 → 줄 안 252)이 문턱(256) 아래라 보통 글자에서도 좁은 줄이다. 부모 줄은 왼쪽 4 라 문턱이 304 − 20 = 284 쪽으로 내려오고, 하위 줄은 104 라 더 일찍 좁아진다.
 const NarrowDemo = () => (
   <DemoBlock title="좁은 줄 — 줄 안 폭이 제목 글자 16개(16em)보다 좁으면 값이 본문 아래로(폭 300 = 줄 안 252). 앞 붙이개는 위에 맞추고, 화살표 · 스위치 · 체크 · 작은 버튼은 줄 끝 그대로">
-    <DemoRow label="글 값 · 금액 300">
+    <DemoRow label="글 값 · 금액 300 · 오른쪽은 줄 끝에 남는 것(견본이 아니다 — 첫 뒤 붙이개가 화살표라 값의 여백을 못 잰다, i02-measure 가 잰다)">
       <Cell width={300}>
         <Specimen spec="list" combo={{ width: "narrow" }}>
           <List aria-label="좁은 줄 · 글 값 · 금액">
@@ -1294,7 +1294,7 @@ const NarrowDemo = () => (
         </Specimen>
       </Cell>
       <Cell width={300}>
-        <Specimen spec="list" combo={{ width: "narrow" }}>
+        <div>
           <List aria-label="좁은 줄 · 줄 끝에 남는 것">
             <ListButtonItem
               prefix={<User />}
@@ -1309,7 +1309,7 @@ const NarrowDemo = () => (
               defaultChecked
             />
           </List>
-        </Specimen>
+        </div>
       </Cell>
     </DemoRow>
     <DemoRow label="부모 · 하위 줄 360 — 문턱이 단계마다 다르다(부모 284 · 하위 384). 하위 줄만 좁다 — 견본이 아니라 i02-measure 가 잰다">
