@@ -2667,6 +2667,7 @@ function WidgetHead({
   onAll: () => void;
   extra?: React.ReactNode;
 }) {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="sec-head" style={{ marginBottom: 8 }}>
       <h2 style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
@@ -2674,7 +2675,13 @@ function WidgetHead({
         {title}
         {extra}
       </h2>
-      <button className="all" onClick={onAll} type="button">
+      {/* 꺾쇠만 있는 단추 — 이름은 "{구역 제목} 전체 보기"(01-042) */}
+      <button
+        className="all"
+        onClick={onAll}
+        type="button"
+        aria-label={`${title} ${t("viewAll")}`}
+      >
         <ChevronRight size={16} />
       </button>
     </div>
