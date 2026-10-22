@@ -5,7 +5,7 @@ import type { VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/cn";
 import { useFieldGroup, useFieldGroupState } from "@/shared/ds/field";
 
-import { submitOnRadioEnter } from "./radio-group-keys";
+import { ignoreRadioJumpKeys, submitOnRadioEnter } from "./radio-group-keys";
 import {
   radioLabelVariants,
   radiomarkDotVariants,
@@ -80,7 +80,7 @@ Radio.displayName = "Radio";
 const RadioGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
->(({ className, disabled, onKeyDown, ...props }, ref) => {
+>(({ className, disabled, onKeyDown, onKeyDownCapture, ...props }, ref) => {
   const field = useFieldGroupState();
   const off = disabled ?? field.disabled;
   return (
@@ -93,6 +93,7 @@ const RadioGroup = React.forwardRef<
       {...(field.required ? { "aria-required": true } : {})}
       {...useFieldGroup(props)}
       onKeyDown={submitOnRadioEnter(onKeyDown)}
+      onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
     />
   );
 });

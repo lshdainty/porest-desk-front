@@ -10,7 +10,11 @@ import {
   useFieldGroupState,
 } from "@/shared/ds/field";
 import { Checkmark, CheckboxGroupContext } from "@/shared/ds/checkbox";
-import { Radiomark, submitOnRadioEnter } from "@/shared/ds/radio-group";
+import {
+  Radiomark,
+  ignoreRadioJumpKeys,
+  submitOnRadioEnter,
+} from "@/shared/ds/radio-group";
 
 import {
   SELECT_BOX_GHOST_NO_BG,
@@ -196,25 +200,31 @@ export interface RadioSelectBoxGroupProps
 const RadioSelectBoxGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
   RadioSelectBoxGroupProps
->(({ className, columns = 1, disabled, onKeyDown, ...props }, ref) => {
-  const field = useFieldGroupState();
-  const off = disabled ?? field.disabled;
-  return (
-    <SelectBoxGroupContext.Provider value={{ columns: columns ?? 1 }}>
-      <RadioGroupPrimitive.Root
-        ref={ref}
-        data-slot="select-box-group"
-        className={cn(selectBoxGroupVariants({ columns }), className)}
-        disabled={off}
-        {...(off ? { "aria-disabled": true } : {})}
-        {...(field.invalid ? { "aria-invalid": true } : {})}
-        {...(field.required ? { "aria-required": true } : {})}
-        {...useFieldGroup(props)}
-        onKeyDown={submitOnRadioEnter(onKeyDown)}
-      />
-    </SelectBoxGroupContext.Provider>
-  );
-});
+>(
+  (
+    { className, columns = 1, disabled, onKeyDown, onKeyDownCapture, ...props },
+    ref,
+  ) => {
+    const field = useFieldGroupState();
+    const off = disabled ?? field.disabled;
+    return (
+      <SelectBoxGroupContext.Provider value={{ columns: columns ?? 1 }}>
+        <RadioGroupPrimitive.Root
+          ref={ref}
+          data-slot="select-box-group"
+          className={cn(selectBoxGroupVariants({ columns }), className)}
+          disabled={off}
+          {...(off ? { "aria-disabled": true } : {})}
+          {...(field.invalid ? { "aria-invalid": true } : {})}
+          {...(field.required ? { "aria-required": true } : {})}
+          {...useFieldGroup(props)}
+          onKeyDown={submitOnRadioEnter(onKeyDown)}
+          onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
+        />
+      </SelectBoxGroupContext.Provider>
+    );
+  },
+);
 RadioSelectBoxGroup.displayName = "RadioSelectBoxGroup";
 
 export interface RadioSelectBoxProps

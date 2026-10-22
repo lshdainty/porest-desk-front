@@ -25,6 +25,7 @@ import {
   type CheckTone,
 } from "./color-swatch-variants";
 import { useDsText } from "@/shared/ds/i18n";
+import { ignoreRadioJumpKeys } from "@/shared/ds/radio-group";
 
 // 칸 · 고름 · 지금 색 · 키보드의 규칙은 color-swatch-variants.ts 머리 주석과 groo-design specs/components/color-swatch.md 가 정한다.
 
@@ -115,6 +116,7 @@ const ColorSwatchGroup = React.forwardRef<
       disabled: disabledProp,
       className,
       onKeyDown,
+      onKeyDownCapture,
       ...props
     },
     ref,
@@ -182,12 +184,6 @@ const ColorSwatchGroup = React.forwardRef<
             );
           break;
         }
-        case "Home":
-          j = 0;
-          break;
-        case "End":
-          j = n - 1;
-          break;
         case "Enter":
           // 진짜 radio 처럼 폼을 제출한다 — 고르지 않는다(button 의 Enter 누르기를 막는다)
           e.preventDefault();
@@ -280,6 +276,7 @@ const ColorSwatchGroup = React.forwardRef<
         {...(field.required ? { "aria-required": true } : {})}
         {...labelling}
         onKeyDown={handleKeyDown}
+        onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
       >
         <div
           data-slot="color-swatch-layout"
@@ -314,7 +311,7 @@ const ColorSwatchGroup = React.forwardRef<
           )}
           <div
             data-slot="color-swatch-grid"
-            className="grid w-[248px] shrink-0 grid-cols-[repeat(5,40px)] gap-x3"
+            className="grid w-[248px] shrink-0 grid-cols-[repeat(5,40px)] gap-[12px]"
           >
             {COLOR_SWATCH_ORDER.map((color, k) => item(color, k + offset))}
           </div>

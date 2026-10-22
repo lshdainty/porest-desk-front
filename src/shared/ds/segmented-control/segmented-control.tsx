@@ -11,6 +11,7 @@ import {
   segmentedControlVariants,
 } from "./segmented-control-variants";
 import { useDsText } from "@/shared/ds/i18n";
+import { ignoreRadioJumpKeys } from "@/shared/ds/radio-group";
 
 /*
  * Groo Segmented Control — 구조는 SEED Segmented Control(2026-10-02). 수치 원본은 groo-design
@@ -96,6 +97,7 @@ const SegmentedControl = React.forwardRef<
       value: valueProp,
       defaultValue,
       onValueChange,
+      onKeyDownCapture,
       ...props
     },
     ref,
@@ -168,6 +170,7 @@ const SegmentedControl = React.forwardRef<
           data-slot="segmented-control"
           className={cn(segmentedControlVariants(), className)}
           {...props}
+          onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
           value={value}
           onValueChange={setValue}
         >

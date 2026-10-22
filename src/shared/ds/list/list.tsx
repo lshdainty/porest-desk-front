@@ -9,6 +9,7 @@ import { useExpandMotion } from "@/shared/ds/accordion";
 import { Checkmark, type CheckmarkProps } from "@/shared/ds/checkbox";
 import {
   Radiomark,
+  ignoreRadioJumpKeys,
   submitOnRadioEnter,
   type RadiomarkProps,
 } from "@/shared/ds/radio-group";
@@ -769,18 +770,24 @@ export type ListRadioGroupProps = Omit<
 const ListRadioGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
   ListRadioGroupProps
->(({ className, itemRadius, style, onKeyDown, ...props }, ref) => (
-  <ListRowTag.Provider value="div">
-    <RadioGroupPrimitive.Root
-      ref={ref}
-      data-slot="list"
-      className={cn(listVariants(), className)}
-      style={radiusStyle(itemRadius, style)}
-      {...props}
-      onKeyDown={submitOnRadioEnter(onKeyDown)}
-    />
-  </ListRowTag.Provider>
-));
+>(
+  (
+    { className, itemRadius, style, onKeyDown, onKeyDownCapture, ...props },
+    ref,
+  ) => (
+    <ListRowTag.Provider value="div">
+      <RadioGroupPrimitive.Root
+        ref={ref}
+        data-slot="list"
+        className={cn(listVariants(), className)}
+        style={radiusStyle(itemRadius, style)}
+        {...props}
+        onKeyDown={submitOnRadioEnter(onKeyDown)}
+        onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
+      />
+    </ListRowTag.Provider>
+  ),
+);
 ListRadioGroup.displayName = "ListRadioGroup";
 
 export type ListCheckGroupProps = Omit<
