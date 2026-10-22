@@ -131,10 +131,10 @@ describe("월 격자의 이웃 달 칸", () => {
       (b) => b.style.color === "var(--color-fg-disabled)",
     );
     expect(neighbors.length).toBeGreaterThanOrEqual(4);
-    expect(neighbors[0].textContent).toBe("27");
+    expect(neighbors[0]!.textContent).toBe("27");
     // 이번 달 숫자는 fg-disabled 가 아니다
     expect(
-      numbers.filter((b) => b.textContent === "15")[0].style.color,
+      numbers.filter((b) => b.textContent === "15")[0]!.style.color,
     ).not.toBe("var(--color-fg-disabled)");
     // 불투명도 클래스가 한 곳에도 없다
     expect(container.querySelectorAll("[class*='opacity-']")).toHaveLength(0);

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreditCard, EyeOff, Plus, Search, Trash2, Wallet } from "lucide-react";
 import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
@@ -222,6 +222,7 @@ export function AssetEditDialog({
   mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
+  const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
   const { t, i18n } = useTranslation("asset");
   const { t: tCommon } = useTranslation("common");
   const isNew = !item;
@@ -1650,7 +1651,10 @@ export function AssetEditDialog({
             />
           </div>
           <div>
-            <Label className="text-[13px] font-medium mb-2 block">
+            <Label
+              id={`${uid}payday-label`}
+              className="text-[13px] font-medium mb-2 block"
+            >
               {t("editDialog.paymentDay")}
             </Label>
             <Select
@@ -1661,7 +1665,10 @@ export function AssetEditDialog({
                 setPaymentDay(v);
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id={`${uid}payday`}
+                aria-labelledby={`${uid}payday-label ${uid}payday`}
+              >
                 <SelectValue
                   placeholder={t("editDialog.paymentDayPlaceholder")}
                 />
@@ -1866,11 +1873,17 @@ export function AssetEditDialog({
       <div>
         <div className="flex gap-3">
           <div className="flex-1">
-            <Label className="text-[13px] font-medium mb-2 block">
+            <Label
+              id={`${uid}currency-label`}
+              className="text-[13px] font-medium mb-2 block"
+            >
               {t("form.currency")}
             </Label>
             <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger id="asset-edit-currency">
+              <SelectTrigger
+                id="asset-edit-currency"
+                aria-labelledby={`${uid}currency-label asset-edit-currency`}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1915,7 +1928,10 @@ export function AssetEditDialog({
       {/* 신용카드는 결제일에 여기서 한 번에 빠지고, 체크카드는 긁는 즉시 빠진다 — 의미가 달라 라벨을 나눈다. */}
       {editingGroup === "card" && (
         <div>
-          <Label className="text-[13px] font-medium mb-2 block">
+          <Label
+            id={`${uid}payacct-label`}
+            className="text-[13px] font-medium mb-2 block"
+          >
             {cardType === "CHECK"
               ? t("editDialog.linkedAccount")
               : t("editDialog.paymentAccount")}
@@ -1927,7 +1943,10 @@ export function AssetEditDialog({
             onValueChange={(v) => setPaymentAssetRowId(v ? Number(v) : null)}
             disabled={bankAccounts.length === 0}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id={`${uid}payacct`}
+              aria-labelledby={`${uid}payacct-label ${uid}payacct`}
+            >
               <SelectValue
                 placeholder={
                   bankAccounts.length === 0

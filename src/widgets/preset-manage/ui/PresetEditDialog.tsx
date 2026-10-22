@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   MAX_AMOUNT,
   blockNonDigitKey,
@@ -67,6 +67,7 @@ export function PresetEditDialog({
   mobile: boolean;
   onClose: () => void;
 }) {
+  const uid = useId(); // 선택 칸 이름 잇기
   const { t } = useTranslation("expense");
   const { t: tCommon } = useTranslation("common");
   const isNew = !preset;
@@ -304,7 +305,7 @@ export function PresetEditDialog({
       ) : (
         <>
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t("category")}</FieldLabel>
+            <FieldLabel id={`${uid}cat-label`}>{t("category")}</FieldLabel>
             {categoriesQ.isLoading ? (
               <CategoryGrid>
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -337,7 +338,10 @@ export function PresetEditDialog({
                     value={categoryRowId != null ? String(categoryRowId) : ""}
                     onValueChange={(v) => setCategoryRowId(Number(v))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger
+                      id={`${uid}cat`}
+                      aria-labelledby={`${uid}cat-label ${uid}cat`}
+                    >
                       <SelectValue
                         placeholder={t("addTx.subCategoryPlaceholder")}
                       />
@@ -377,12 +381,17 @@ export function PresetEditDialog({
           </Field>
 
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t("paymentMethodLabel")}</FieldLabel>
+            <FieldLabel id={`${uid}pm-label`}>
+              {t("paymentMethodLabel")}
+            </FieldLabel>
             <Select
               value={paymentMethod || "__none__"}
               onValueChange={(v) => setPaymentMethod(v === "__none__" ? "" : v)}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id={`${uid}pm`}
+                aria-labelledby={`${uid}pm-label ${uid}pm`}
+              >
                 <SelectValue placeholder={t("selectNone")} />
               </SelectTrigger>
               <SelectContent>
@@ -397,7 +406,7 @@ export function PresetEditDialog({
           </Field>
 
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>{t("accountCard")}</FieldLabel>
+            <FieldLabel id={`${uid}asset-label`}>{t("accountCard")}</FieldLabel>
             {assetsQ.isLoading ? (
               <SkeletonBase className="h-9 w-full rounded-md" />
             ) : (
@@ -407,7 +416,10 @@ export function PresetEditDialog({
                   setAssetRowId(v === "__none__" ? null : Number(v))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  id={`${uid}asset`}
+                  aria-labelledby={`${uid}asset-label ${uid}asset`}
+                >
                   <SelectValue placeholder={t("selectNone")} />
                 </SelectTrigger>
                 <SelectContent>

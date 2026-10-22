@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { RadioList, RadioListItem } from "@/shared/ui/radio-list";
@@ -54,6 +55,7 @@ const CURRENCY_OPTIONS: { k: CurrencyKey; labelKey: string; symbol: string }[] =
 
 // 모바일 카드 다이어트 — 설정 행 셸: 모바일은 플랫 행, 데스크톱은 Card (.m-subpage 정합).
 export function AppearanceSection({ mobile }: { mobile: boolean }) {
+  const uid = useId(); // 지역 칸 이름 잇기
   const { t, i18n } = useTranslation("settings");
   const { theme, setTheme } = useTheme();
 
@@ -137,13 +139,18 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
           gap: "var(--spacing-sm)",
         }}
       >
-        <SectionLabel>{t("region.label")}</SectionLabel>
+        <SectionLabel id={`${uid}region-label`}>
+          {t("region.label")}
+        </SectionLabel>
         <Select
           value={prefs?.timezone ?? ""}
           onValueChange={handleRegionChange}
           disabled={!prefs || updatePrefs.isPending}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id={`${uid}region`}
+            aria-labelledby={`${uid}region-label ${uid}region`}
+          >
             <SelectValue placeholder={t("region.placeholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -228,9 +235,16 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({
+  children,
+  id,
+}: {
+  children: React.ReactNode;
+  id?: string;
+}) {
   return (
     <div
+      id={id}
       style={{
         fontSize: "var(--text-label-sm)",
         fontWeight: "600",

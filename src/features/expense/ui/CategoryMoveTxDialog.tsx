@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
@@ -36,6 +36,7 @@ export function CategoryMoveTxDialog({
   mobile: boolean;
   onClose: () => void;
 }) {
+  const uid = useId(); // 옮길 카테고리 칸 이름 잇기
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
   const [targetRowId, setTargetRowId] = useState<number | null>(null);
@@ -173,13 +174,18 @@ export function CategoryMoveTxDialog({
         </Field>
       ) : (
         <Field>
-          <FieldLabel>{t("moveTx.target")}</FieldLabel>
+          <FieldLabel id={`${uid}target-label`}>
+            {t("moveTx.target")}
+          </FieldLabel>
           <Select
             value={targetRowId != null ? String(targetRowId) : ""}
             onValueChange={(v) => setTargetRowId(v ? Number(v) : null)}
             disabled={options.length === 0}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id={`${uid}target`}
+              aria-labelledby={`${uid}target-label ${uid}target`}
+            >
               <SelectValue placeholder={t("moveTx.targetPlaceholder")} />
             </SelectTrigger>
             <SelectContent>

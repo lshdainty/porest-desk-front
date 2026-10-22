@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Calendar,
@@ -560,6 +560,7 @@ function CalendarManageDialog({
   onRequestDelete: (cal: UserCalendar) => void;
   mobile: boolean;
 }) {
+  const uid = useId(); // 멤버 권한 칸 이름 잇기
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
   const { data: currentUser } = useCurrentUser();
@@ -784,6 +785,7 @@ function CalendarManageDialog({
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
+                    id={`${uid}member-${member.rowId}`}
                     style={{
                       fontSize: "var(--text-body-sm)",
                       fontWeight: "600",
@@ -828,7 +830,11 @@ function CalendarManageDialog({
                       }
                       disabled={roleMut.isPending}
                     >
-                      <SelectTrigger className="h-8 w-28 text-xs">
+                      <SelectTrigger
+                        id={`${uid}role-${member.rowId}`}
+                        aria-labelledby={`${uid}member-${member.rowId} ${uid}role-${member.rowId}`}
+                        className="h-8 w-28 text-xs"
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
