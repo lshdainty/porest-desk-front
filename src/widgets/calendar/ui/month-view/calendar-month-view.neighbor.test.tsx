@@ -80,8 +80,9 @@ afterEach(() => {
 
 const event = (over: Partial<IEvent>): IEvent => ({
   id: 1,
-  startDate: "2026-09-30T00:00:00.000Z",
-  endDate: "2026-09-30T23:59:59.000Z",
+  // 시간대에 안 기대도록 오프셋 없는 로컬 시각 — 9/30 → 10/1 이틀 걸친 일정이라 이번 달 위치를 받아 이웃 달(9/30) 칸에도 그려진다
+  startDate: "2026-09-30T10:00:00",
+  endDate: "2026-10-01T10:00:00",
   title: "팀 점검",
   description: "",
   color: "#2563eb",
