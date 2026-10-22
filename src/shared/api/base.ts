@@ -8,7 +8,7 @@ import type {
 import { toast } from "sonner";
 import { rememberCurrentPath } from "@/shared/lib/groo/login-redirect";
 import { userFacingMessage } from "./error-message";
-import { beginAttempt, endChain, markFailed } from "./request-budget";
+import { beginAttempt, endChain } from "./request-budget";
 
 const AUTH_FLAG_KEY = "authenticated";
 
@@ -119,7 +119,6 @@ apiClient.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    markFailed(error.config);
     if (error.response?.status === 401) {
       if (!isRedirectingToLogin) {
         isRedirectingToLogin = true;

@@ -9,7 +9,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   beginAttempt,
   endChain,
-  markFailed,
   resetBudget,
   retryDelay,
 } from "./request-budget";
@@ -55,7 +54,6 @@ describe("읽기 요청 제한 10초", () => {
     const first = config();
     beginAttempt(first);
     vi.advanceTimersByTime(1_000);
-    markFailed(first); // 1초에 실패
     expect(retryOnlyServerErrors(0, failure(first, 503))).toBe(true);
     expect(retryDelay(0)).toBe(1_000);
     vi.advanceTimersByTime(1_000); // 1초 기다린 뒤 두 번째 시도
@@ -63,7 +61,6 @@ describe("읽기 요청 제한 10초", () => {
     beginAttempt(second);
     expect(second.timeout).toBe(8_000);
     // 두 번째도 실패 → 2초 뒤 세 번째(마지막)
-    markFailed(second);
     expect(retryOnlyServerErrors(1, failure(second, 503))).toBe(true);
     expect(retryDelay(1)).toBe(2_000);
     vi.advanceTimersByTime(2_000);
@@ -71,7 +68,6 @@ describe("읽기 요청 제한 10초", () => {
     beginAttempt(third);
     expect(third.timeout).toBe(6_000);
     // 다시 시도는 2번까지
-    markFailed(third);
     expect(retryOnlyServerErrors(2, failure(third, 503))).toBe(false);
   });
 
@@ -79,7 +75,6 @@ describe("읽기 요청 제한 10초", () => {
     const cfg = config();
     beginAttempt(cfg);
     vi.advanceTimersByTime(8_500);
-    markFailed(cfg);
     // 8.5초 + 1초 간격 = 9.5초 → 한 번 더 할 수 있다
     expect(retryOnlyServerErrors(0, failure(cfg))).toBe(true);
     vi.advanceTimersByTime(500);
@@ -91,7 +86,6 @@ describe("읽기 요청 제한 10초", () => {
     const cfg = config();
     beginAttempt(cfg);
     vi.advanceTimersByTime(10_000);
-    markFailed(cfg);
     expect(retryOnlyServerErrors(0, failure(cfg))).toBe(false);
   });
 
@@ -135,7 +129,6 @@ describe("읽기 요청 제한 10초", () => {
     const first = config();
     beginAttempt(first);
     vi.advanceTimersByTime(4_000);
-    markFailed(first);
     vi.advanceTimersByTime(60_000);
     const again = config();
     beginAttempt(again);
@@ -178,8 +171,10 @@ describe("실제 경로(apiClient + 가짜 adapter) — axios 가 합쳐 넘기�
     };
     try {
       // 기본값이 합쳐진 config 의 timeout 은 0 — 그래도 10000 이 걸린다
-      await expect(apiClient.get("/v1/real")).rejects.toBeTruthy();
+      const firstError = await apiClient.get("/v1/real").catch((e) => e);
       expect(seen[0]).toBe(10_000);
+      // 전역 retry 가 "다시 한다" 고 답한 다음 시도만 이어 센다
+      expect(retryOnlyServerErrors(0, firstError)).toBe(true);
       // 1.5초 뒤 다시 시도 — 남은 시간
       vi.advanceTimersByTime(1_500);
       await expect(apiClient.get("/v1/real")).rejects.toBeTruthy();
@@ -212,6 +207,57 @@ describe("실제 경로(apiClient + 가짜 adapter) — axios 가 합쳐 넘기�
       expect(seen[seen.length - 1]).toBe(10_000);
     } finally {
       apiClient.defaults.adapter = original;
+    }
+  });
+});
+
+describe("이어 세기는 다시 시도하는 시도에만(실제 경로)", () => {
+  const install = async () => {
+    const { apiClient } = await import("./base");
+    const seen: number[] = [];
+    const original = apiClient.defaults.adapter;
+    apiClient.defaults.adapter = async (cfg) => {
+      seen.push(cfg.timeout ?? 0);
+      // 요청이 한도만큼 걸린 뒤 실패한다
+      vi.advanceTimersByTime(cfg.timeout ?? 0);
+      const response = {
+        status: 503,
+        statusText: "",
+        data: {},
+        headers: {},
+        config: cfg,
+      };
+      throw new AxiosError("http", "503", cfg, {}, response);
+    };
+    return {
+      apiClient,
+      seen,
+      restore: () => (apiClient.defaults.adapter = original),
+    };
+  };
+
+  it("retry:false 쿼리(증권 폴링 등)가 실패하고 곧바로 다시 불러와도 새로 10초", async () => {
+    const { apiClient, seen, restore } = await install();
+    try {
+      await apiClient.get("/v1/securities/quote").catch(() => {}); // 전역 retry 를 거치지 않는다
+      // 10초 timeout 으로 끝난 직후(2.5초 안) 같은 요청이 다시 온다
+      await apiClient.get("/v1/securities/quote").catch(() => {});
+      expect(seen).toEqual([10_000, 10_000]);
+    } finally {
+      restore();
+    }
+  });
+
+  it("사용자가 '다시 시도' 를 눌러 다시 부르면 처음부터 센다", async () => {
+    const { apiClient, seen, restore } = await install();
+    try {
+      const err = await apiClient.get("/v1/real").catch((e) => e);
+      // 10초가 지났으니 자동 다시 시도는 포기한다
+      expect(retryOnlyServerErrors(0, err)).toBe(false);
+      await apiClient.get("/v1/real").catch(() => {});
+      expect(seen).toEqual([10_000, 10_000]);
+    } finally {
+      restore();
     }
   });
 });

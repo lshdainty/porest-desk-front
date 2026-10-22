@@ -58,13 +58,6 @@ export function endChain(config: Config | undefined): void {
   if (config) chains.delete(keyOf(config));
 }
 
-/** 시도가 실패했다 — 다시 시도가 오면 이어 세도록 때를 적는다 */
-export function markFailed(config: Config | undefined): void {
-  if (!config) return;
-  const chain = chains.get(keyOf(config));
-  if (chain) chain.lastFailedAt = Date.now();
-}
-
 /**
  * 이 실패 뒤에 다시 시도해도 되나 — 제한이 걸린 읽기는 2번까지, 다시 시도 간격까지 더해 10초를 넘기게 되면 하지 않는다.
  * 제한이 걸리지 않은 요청(파일 받기 등)은 chain 이 없다 → undefined(호출한 쪽이 기본 규칙으로).
@@ -79,6 +72,9 @@ export function mayRetryWithinBudget(
   const delay = RETRY_DELAYS[failureCount];
   const ok = delay !== undefined && Date.now() - chain.start + delay < BUDGET;
   if (!ok) chains.delete(keyOf(config));
+  // 다시 한다고 답한 때만 이어 세기 표식을 남긴다 — 다시 시도하지 않는 요청(retry:false · 쿼리 밖 GET)이나
+  // 사용자가 누른 "다시 시도" 는 새로 센다(skeleton.md "다시 시도를 누르면 처음부터")
+  else chain.lastFailedAt = Date.now();
   return ok;
 }
 
