@@ -31,7 +31,7 @@ import { dsText } from "@/shared/ds/i18n";
  *   가르므로(@container) 묶음은 그 폭을 다 쓴다 — 폭을 내용으로 정하는 자리(팝오버)에서는 321 로 잰다.
  * 키보드(radiogroup): 묶음에 Tab 하나(고른 칸, 없으면 첫 칸). ← → 는 차례대로 옮기며 고른다(줄 끝에서 다음 줄로, 끝에서 처음으로 —
  *   지금 색 칸은 차례의 맨 앞, RTL 은 반대), ↑ ↓ 는 위아래 줄의 같은 칸(두 줄이라 오간다 — 지금 색 칸에서는 위 줄에 있어도 그대로),
- *   Home · End 는 첫 칸 · 마지막 칸. Space 는 초점의 칸을 고르고, Enter 는 폼을 제출한다(진짜 radio 와 같다 — Radio 묶음과 같은 규칙).
+ *   Home · End · PageUp · PageDown 은 받지 않는다(ignoreRadioJumpKeys — 하나 고르기는 화살표만, 2026-10-17 03-E 결정 3 후속). Space 는 초점의 칸을 고르고, Enter 는 폼을 제출한다(진짜 radio 와 같다 — Radio 묶음과 같은 규칙).
  * 막힘: 색은 그대로 두고 누르기만 막는다(진짜 disabled — Tab 에서 빠진다). 고른 칸의 고리는 stroke-neutral-solid 로 남긴다.
  */
 
@@ -104,7 +104,7 @@ export const COLUMNS = 5;
 
 // 칸 — 원 40 · 누르는 44. 고른 고리는 바깥 2 띄운 2px outline, 키보드 포커스 링은 그 바깥 6 에 ::after 로(고리와 겹치지 않게)
 export const SWATCH = [
-  "relative block size-10 shrink-0 cursor-pointer rounded-full border-0 p-0",
+  "relative block size-[40px] shrink-0 cursor-pointer rounded-full border-0 p-0",
   "before:absolute before:-inset-0.5 before:rounded-full before:content-['']",
   "outline-offset-2 aria-checked:outline-2 aria-checked:outline-solid aria-checked:outline-stroke-neutral-contrast",
   "disabled:aria-checked:outline-stroke-neutral-solid not-aria-checked:focus-visible:outline-none",
