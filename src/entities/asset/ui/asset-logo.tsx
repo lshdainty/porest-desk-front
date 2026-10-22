@@ -17,8 +17,8 @@ type AssetLogoInput = Pick<Asset, "assetName" | "institution" | "color"> &
  * 자산 목록·관리·상세·생성/수정 미리보기에서 동일하게 사용하는 단일 표현.
  *
  * 카드 이미지는 카탈로그(외부 URL)라 깨질 수 있어, 로드에 실패하면 모노그램으로 되돌린다.
- * 색 우선순위: asset.color(생성 시 저장한 회사 primary) → bank-colors 매칭색 → 자산명 해시색.
- * 글자색은 bank-colors 의 fg(밝은 배경 전용) → 기본 흰색.
+ * 색 우선순위: asset.color(생성 시 저장한 회사 primary) → 기관 색 표(기관 이름으로만 — 자산 이름으로 찾지 않는다) → 자산명 해시색.
+ * 글자색은 기관 색 표의 글자색(밝은 면은 짙은 글자) → 기본 흰색.
  */
 export function AssetLogo({
   asset,
@@ -52,7 +52,7 @@ export function AssetLogo({
 
   const label =
     (asset.institution ?? asset.assetName ?? "?").trim().charAt(0) || "?";
-  const brand = getBrandColor(asset.institution, asset.assetName);
+  const brand = getBrandColor(asset.institution);
   const bg =
     asset.color ??
     brand?.bg ??

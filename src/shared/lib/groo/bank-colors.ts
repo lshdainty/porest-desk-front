@@ -1,8 +1,25 @@
-// 한국 은행/증권사 브랜드 색. AssetAddDialog 등에서 institution 선택·로고 색 매칭에 사용.
+// 한국 은행/증권사 목록(이름 · 묶음 · 코드 · 별칭). AssetAddDialog 등에서 institution 선택에 쓴다.
+// 기관의 색 · 글자색은 이 파일에 두지 않는다 — 기관 색 표 하나(ds institution-colors, groo-design institution-colors.yaml)가 원본이다.
+// 표가 둘이면 같은 회사가 다른 색이 되고 흰 글자 대비가 4.5:1 에 못 미치는 곳이 생긴다(03E-010).
+import { institutionColor } from "@/shared/ds/institution-colors";
 
 export interface BrandColor {
   bg: string;
-  fg?: string; // 노랑 등 밝은 배경일 때만 지정. 기본은 #fff.
+  fg?: string; // 짙은 글자가 필요한 밝은 배경일 때만 지정. 기본은 #fff.
+}
+
+/** 기관 색 표의 dark 글자색 — 라이트 fg-neutral(#1A1F2E) · 다크 fg-neutral-inverted(#242938), 면이 모드를 따르지 않으므로 짙은 글자 하나 */
+export const INSTITUTION_INK = "#1A1F2E";
+
+/** 기관 색 표의 한 줄 → 면 색 · 글자색(white 면 fg 생략 = 흰색) */
+export function brandOfInstitution(
+  name: string | null | undefined,
+): BrandColor | null {
+  const hit = institutionColor(name);
+  if (!hit) return null;
+  return hit.text === "dark"
+    ? { bg: hit.color, fg: INSTITUTION_INK }
+    : { bg: hit.color };
 }
 
 export type BankCategory =
@@ -39,6 +56,7 @@ export const CATEGORY_HOLDING_TYPE: Partial<
 export interface BankEntry {
   name: string;
   category: BankCategory;
+  /** 면 색 · 글자색 — 기관 색 표에서 이름(없으면 별칭)으로 찾는다 */
   color: BrandColor;
   /** 은행: 한국은행 표준 금융기관 코드(3자리), 증권사: 금투협 표준 코드(2~3자리),
    *  가상자산: FIU VASP 신고번호(제YYYY-NNN호 형식). */
@@ -49,62 +67,54 @@ export interface BankEntry {
 
 // 국내 은행/증권사 정리 — 브랜드 색상은 공개 CI 가이드·언론 자료 기준(근사치 포함),
 // code 는 한국은행 표준 금융기관 코드(은행 3자리) / 금투협 증권사 코드(2~3자리) 기준
-export const BANK_ENTRIES: BankEntry[] = [
+const BANK_LIST: Omit<BankEntry, "color">[] = [
   // 시중은행
   {
     name: "신한",
     category: "시중은행",
     code: "088",
-    color: { bg: "#0046FF" },
     aliases: ["신한은행"],
   },
   {
     name: "KB국민",
     category: "시중은행",
     code: "004",
-    color: { bg: "#FFBC00", fg: "#191919" },
     aliases: ["KB", "국민", "KB국민은행"],
   },
   {
     name: "우리",
     category: "시중은행",
     code: "020",
-    color: { bg: "#0067AC" },
     aliases: ["우리은행"],
   },
   {
     name: "하나",
     category: "시중은행",
     code: "081",
-    color: { bg: "#008485" },
     aliases: ["KEB하나", "하나은행"],
   },
   {
     name: "NH농협",
     category: "시중은행",
     code: "011",
-    color: { bg: "#00A651" },
     aliases: ["농협", "NH농협은행"],
   },
   {
     name: "IBK기업",
     category: "시중은행",
     code: "003",
-    color: { bg: "#004098" },
     aliases: ["기업", "IBK", "기업은행"],
   },
   {
     name: "SC제일",
     category: "시중은행",
     code: "023",
-    color: { bg: "#009A44" },
     aliases: ["제일", "SC", "SC제일은행"],
   },
   {
     name: "씨티",
     category: "시중은행",
     code: "027",
-    color: { bg: "#056DAE" },
     aliases: ["시티", "씨티은행", "한국씨티"],
   },
 
@@ -113,21 +123,18 @@ export const BANK_ENTRIES: BankEntry[] = [
     name: "카카오뱅크",
     category: "인터넷은행",
     code: "090",
-    color: { bg: "#FEE500", fg: "#191919" },
     aliases: ["카뱅"],
   },
   {
     name: "토스뱅크",
     category: "인터넷은행",
     code: "092",
-    color: { bg: "#0064FF" },
     aliases: ["토스"],
   },
   {
     name: "케이뱅크",
     category: "인터넷은행",
     code: "089",
-    color: { bg: "#0214A1" },
     aliases: ["K뱅크", "K Bank"],
   },
 
@@ -136,42 +143,36 @@ export const BANK_ENTRIES: BankEntry[] = [
     name: "부산",
     category: "지방은행",
     code: "032",
-    color: { bg: "#0033A0" },
     aliases: ["부산은행", "BNK부산"],
   },
   {
     name: "대구",
     category: "지방은행",
     code: "031",
-    color: { bg: "#1464AC" },
     aliases: ["대구은행", "iM뱅크", "DGB대구"],
   },
   {
     name: "경남",
     category: "지방은행",
     code: "039",
-    color: { bg: "#0E4C92" },
     aliases: ["경남은행", "BNK경남"],
   },
   {
     name: "광주",
     category: "지방은행",
     code: "034",
-    color: { bg: "#00428A" },
     aliases: ["광주은행", "JB광주"],
   },
   {
     name: "전북",
     category: "지방은행",
     code: "037",
-    color: { bg: "#0F3E8C" },
     aliases: ["전북은행", "JB전북"],
   },
   {
     name: "제주",
     category: "지방은행",
     code: "035",
-    color: { bg: "#F47216" },
     aliases: ["제주은행"],
   },
 
@@ -180,21 +181,18 @@ export const BANK_ENTRIES: BankEntry[] = [
     name: "KDB산업",
     category: "특수은행",
     code: "002",
-    color: { bg: "#004098" },
     aliases: ["산업", "산업은행", "KDB"],
   },
   {
     name: "수출입",
     category: "특수은행",
     code: "008",
-    color: { bg: "#003A6C" },
     aliases: ["수출입은행", "EXIM"],
   },
   {
     name: "수협",
     category: "특수은행",
     code: "007",
-    color: { bg: "#003DA5" },
     aliases: ["수협은행", "Sh수협"],
   },
 
@@ -203,53 +201,45 @@ export const BANK_ENTRIES: BankEntry[] = [
     name: "우체국",
     category: "저축기관",
     code: "071",
-    color: { bg: "#E4002B" },
     aliases: ["우체국예금", "우체국금융"],
   },
   {
     name: "새마을금고",
     category: "저축기관",
     code: "045",
-    color: { bg: "#D61E29" },
     aliases: ["새마을", "MG"],
   },
   {
     name: "신협",
     category: "저축기관",
     code: "048",
-    color: { bg: "#003A70" },
     aliases: ["신용협동조합"],
   },
   {
     name: "산림조합",
     category: "저축기관",
     code: "064",
-    color: { bg: "#2E7D32" },
     aliases: ["산림조합중앙회"],
   },
   {
     name: "SBI저축",
     category: "저축기관",
     code: "103",
-    color: { bg: "#0E3E85" },
     aliases: ["SBI저축은행", "SBI"],
   },
   {
     name: "OK저축",
     category: "저축기관",
-    color: { bg: "#FECC00", fg: "#191919" },
     aliases: ["OK저축은행"],
   },
   {
     name: "웰컴저축",
     category: "저축기관",
-    color: { bg: "#E30613" },
     aliases: ["웰컴저축은행"],
   },
   {
     name: "페퍼저축",
     category: "저축기관",
-    color: { bg: "#B3002D" },
     aliases: ["페퍼저축은행", "Pepper"],
   },
 
@@ -257,31 +247,26 @@ export const BANK_ENTRIES: BankEntry[] = [
   {
     name: "HSBC",
     category: "외국계",
-    color: { bg: "#DB0011" },
     aliases: ["홍콩상하이", "에이치에스비씨"],
   },
   {
     name: "ICBC",
     category: "외국계",
-    color: { bg: "#D6001C" },
     aliases: ["공상은행", "중국공상은행"],
   },
   {
     name: "BoA",
     category: "외국계",
-    color: { bg: "#012169" },
     aliases: ["뱅크오브아메리카", "Bank of America"],
   },
   {
     name: "도이치",
     category: "외국계",
-    color: { bg: "#004A8F" },
     aliases: ["도이치뱅크", "Deutsche"],
   },
   {
     name: "JP모건",
     category: "외국계",
-    color: { bg: "#006CB7" },
     aliases: ["JPMorgan", "JP모건체이스"],
   },
 
@@ -289,7 +274,6 @@ export const BANK_ENTRIES: BankEntry[] = [
   {
     name: "현금",
     category: "기타",
-    color: { bg: "#64748B" },
     aliases: ["지갑", "Cash"],
   },
 
@@ -298,180 +282,154 @@ export const BANK_ENTRIES: BankEntry[] = [
     name: "삼성증권",
     category: "증권사",
     code: "240",
-    color: { bg: "#1428A0" },
     aliases: ["삼성"],
   },
   {
     name: "미래에셋",
     category: "증권사",
     code: "230",
-    color: { bg: "#2C3E50" },
     aliases: ["미래에셋증권"],
   },
   {
     name: "NH투자",
     category: "증권사",
     code: "247",
-    color: { bg: "#00A651" },
     aliases: ["NH투자증권"],
   },
   {
     name: "한국투자",
     category: "증권사",
     code: "243",
-    color: { bg: "#00529B" },
     aliases: ["한투", "한국투자증권"],
   },
   {
     name: "KB증권",
     category: "증권사",
     code: "218",
-    color: { bg: "#FFBC00", fg: "#191919" },
   },
   {
     name: "신한투자",
     category: "증권사",
     code: "278",
-    color: { bg: "#0046FF" },
     aliases: ["신한금융투자", "신한투자증권"],
   },
   {
     name: "하나증권",
     category: "증권사",
     code: "270",
-    color: { bg: "#008485" },
   },
   {
     name: "키움증권",
     category: "증권사",
     code: "264",
-    color: { bg: "#FF0033" },
     aliases: ["키움"],
   },
   {
     name: "메리츠증권",
     category: "증권사",
     code: "287",
-    color: { bg: "#E60012" },
     aliases: ["메리츠", "메리츠종합금융증권"],
   },
   {
     name: "대신증권",
     category: "증권사",
     code: "267",
-    color: { bg: "#F58220" },
     aliases: ["대신"],
   },
   {
     name: "유안타증권",
     category: "증권사",
     code: "209",
-    color: { bg: "#10B981" },
     aliases: ["유안타", "동양"],
   },
   {
     name: "유진투자",
     category: "증권사",
     code: "280",
-    color: { bg: "#003595" },
     aliases: ["유진투자증권"],
   },
   {
     name: "교보증권",
     category: "증권사",
     code: "200",
-    color: { bg: "#004A8F" },
     aliases: ["교보"],
   },
   {
     name: "IBK투자",
     category: "증권사",
     code: "225",
-    color: { bg: "#004098" },
     aliases: ["IBK투자증권"],
   },
   {
     name: "DB금융투자",
     category: "증권사",
     code: "279",
-    color: { bg: "#008456" },
     aliases: ["DB", "DB금투"],
   },
   {
     name: "SK증권",
     category: "증권사",
     code: "266",
-    color: { bg: "#EA002C" },
     aliases: ["SK"],
   },
   {
     name: "현대차증권",
     category: "증권사",
     code: "263",
-    color: { bg: "#002C5F" },
     aliases: ["현대차", "HMC투자"],
   },
   {
     name: "하이투자",
     category: "증권사",
     code: "262",
-    color: { bg: "#004098" },
     aliases: ["하이투자증권"],
   },
   {
     name: "한화투자",
     category: "증권사",
     code: "269",
-    color: { bg: "#FF7900" },
     aliases: ["한화투자증권", "한화"],
   },
   {
     name: "BNK투자",
     category: "증권사",
     code: "223",
-    color: { bg: "#0033A0" },
     aliases: ["BNK투자증권"],
   },
   {
     name: "한양증권",
     category: "증권사",
     code: "220",
-    color: { bg: "#004098" },
     aliases: ["한양"],
   },
   {
     name: "LS증권",
     category: "증권사",
     code: "265",
-    color: { bg: "#005EB8" },
     aliases: ["이베스트", "이베스트투자", "E-best"],
   },
   {
     name: "부국증권",
     category: "증권사",
     code: "290",
-    color: { bg: "#003366" },
     aliases: ["부국"],
   },
   {
     name: "신영증권",
     category: "증권사",
     code: "291",
-    color: { bg: "#005EB8" },
     aliases: ["신영"],
   },
   {
     name: "카카오페이증권",
     category: "증권사",
     code: "288",
-    color: { bg: "#FEE500", fg: "#191919" },
     aliases: ["카카오페이"],
   },
   {
     name: "토스증권",
     category: "증권사",
     code: "298",
-    color: { bg: "#0064FF" },
   },
 
   // 상품거래소 (실물 금). 금은방 체인은 표준 기관코드 체계가 없어 code 생략.
@@ -479,37 +437,31 @@ export const BANK_ENTRIES: BankEntry[] = [
   {
     name: "KRX 금시장",
     category: "상품거래소",
-    color: { bg: "#C9A227", fg: "#191919" },
     aliases: ["한국거래소", "KRX", "금시장"],
   },
   {
     name: "한국금거래소",
     category: "상품거래소",
-    color: { bg: "#B8232F" },
     aliases: ["koreagoldx", "금거래소"],
   },
   {
     name: "한국표준금거래소",
     category: "상품거래소",
-    color: { bg: "#8C6A1F" },
     aliases: ["표준금거래소"],
   },
   {
     name: "삼성금거래소",
     category: "상품거래소",
-    color: { bg: "#1428A0" },
     aliases: ["삼성금"],
   },
   {
     name: "한국조폐공사",
     category: "상품거래소",
-    color: { bg: "#00594F" },
     aliases: ["조폐공사", "오롯", "KOMSCO"],
   },
   {
     name: "기타 금은방",
     category: "상품거래소",
-    color: { bg: "#A78246", fg: "#191919" },
     aliases: ["금은방", "직접보관", "실물"],
   },
 
@@ -518,54 +470,43 @@ export const BANK_ENTRIES: BankEntry[] = [
   {
     name: "업비트",
     category: "가상자산",
-    color: { bg: "#1F55F4" },
     aliases: ["Upbit", "UPBIT", "두나무"],
   },
   {
     name: "빗썸",
     category: "가상자산",
-    color: { bg: "#F2811D" },
     aliases: ["Bithumb", "BITHUMB"],
   },
   {
     name: "코인원",
     category: "가상자산",
-    color: { bg: "#F55826" },
     aliases: ["Coinone", "COINONE"],
   },
   {
     name: "코빗",
     category: "가상자산",
-    color: { bg: "#1D3FFF" },
     aliases: ["Korbit", "KORBIT"],
   },
 ];
 
-// 빠른 조회용 맵
-const BRAND_MAP: Record<string, BrandColor> = {};
-for (const e of BANK_ENTRIES) {
-  BRAND_MAP[e.name] = e.color;
-  for (const a of e.aliases ?? []) BRAND_MAP[a] = e.color;
-}
+/** 기관 색 표에 없는 이름의 면 — 중립색(표에 없는 기관을 목록에 넣으면 시험이 알린다) */
+const UNKNOWN_BRAND: BrandColor = { bg: "var(--color-chart-gray)" };
 
-function normalize(s: string): string {
-  return s.replace(/\s+/g, "").trim();
-}
+export const BANK_ENTRIES: BankEntry[] = BANK_LIST.map((entry) => ({
+  ...entry,
+  color:
+    [entry.name, ...(entry.aliases ?? [])]
+      .map((name) => brandOfInstitution(name))
+      .find((brand) => brand !== null) ?? UNKNOWN_BRAND,
+}));
 
-/** 은행/증권사 이름에서 브랜드 색을 찾는다. 정확 매칭 → 포함 매칭(가장 긴 키 우선). */
+/** 기관 이름에서 브랜드 색을 찾는다 — 기관 색 표(institutionColor)로. 후보 가운데 먼저 맞는 것 */
 export function getBrandColor(
   ...candidates: (string | null | undefined)[]
 ): BrandColor | null {
-  const keys = Object.keys(BRAND_MAP).sort((a, b) => b.length - a.length);
-  for (const c of candidates) {
-    if (!c) continue;
-    const n = normalize(c);
-    const exact = BRAND_MAP[n];
-    if (exact) return exact;
-    for (const k of keys) {
-      const hit = BRAND_MAP[k];
-      if (hit && n.includes(k)) return hit;
-    }
+  for (const candidate of candidates) {
+    const brand = brandOfInstitution(candidate);
+    if (brand) return brand;
   }
   return null;
 }

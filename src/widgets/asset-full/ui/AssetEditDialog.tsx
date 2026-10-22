@@ -491,8 +491,8 @@ export function AssetEditDialog({
   const cardCompanyName =
     selectedCard?.company?.name ?? item?.institution ?? "";
   const cardBrandColor = useMemo(
-    () => getBrandColor(cardCompanyName, selectedCard?.cardName),
-    [cardCompanyName, selectedCard?.cardName],
+    () => getBrandColor(cardCompanyName),
+    [cardCompanyName],
   );
   // 기관이 보유 유형을 정한다 — 증권사에서 코인을, 금거래소에서 주식을 담을 일은 없다.
   // 모르는 기관(직접 입력·구버전 데이터)이면 셋 다 열어 둔다.
