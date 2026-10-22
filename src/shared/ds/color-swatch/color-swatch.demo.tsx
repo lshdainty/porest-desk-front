@@ -141,7 +141,7 @@ export const ColorSwatchDemo = () => (
   <div className="flex flex-col gap-x8">
     <DemoBlock title="색 10 — 라이트 700 · 다크 800-dark, 고르면 고리(띄움 2) + 체크(라이트 흰 · 다크 짙은 글자)">
       <DemoRow label="고름">
-        <div className="flex flex-wrap gap-x4">
+        <div className="flex flex-wrap gap-x4" data-scene="swatch-colors">
           {COLOR_SWATCH_ORDER.map((color) => (
             <Sample key={color} color={color} />
           ))}
