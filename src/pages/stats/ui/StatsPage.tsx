@@ -218,7 +218,7 @@ const HEAT_PALETTE: { bg: string; fg: string }[] = [
     fg: "var(--fg-on-brand)",
   }, // 3
   {
-    bg: "color-mix(in oklch, var(--border-brand) 75%, transparent)",
+    bg: "color-mix(in oklch, var(--border-brand) 76%, transparent)",
     fg: "var(--fg-on-brand)",
   }, // 4
   { bg: "var(--border-brand)", fg: "var(--fg-on-brand)" }, // 5 peak
