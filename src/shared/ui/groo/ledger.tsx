@@ -46,39 +46,66 @@ export const LedgerShell = React.forwardRef<
 ));
 LedgerShell.displayName = "LedgerShell";
 
+// 접힘 여부를 Collapse 에 알린다 — 접힌 동안 초점이 안으로 오면 스스로 펼치기 위해서다(03G-014a)
+const LedgerPinContext = React.createContext(false);
+
 /** 상단 고정 영역 — sticky + surface 배경(풀블리드), compact 시 Collapse 접힘. */
 export const LedgerPin = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & { compact?: boolean; top?: number }
 >(({ className, compact = false, top, style, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-compact={compact}
-    className={cn(
-      "group/pin sticky z-[5] bg-[var(--bg-surface)] pt-[10px]",
-      "-mx-[var(--spacing-xl)] px-[var(--spacing-xl)]",
-      className,
-    )}
-    style={{ top: top ?? 0, ...style }}
-    {...props}
-  />
+  <LedgerPinContext.Provider value={compact}>
+    <div
+      ref={ref}
+      data-compact={compact}
+      className={cn(
+        "group/pin sticky z-[5] bg-[var(--bg-surface)] pt-[10px]",
+        "-mx-[var(--spacing-xl)] px-[var(--spacing-xl)]",
+        className,
+      )}
+      style={{ top: top ?? 0, ...style }}
+      {...props}
+    />
+  </LedgerPinContext.Provider>
 ));
 LedgerPin.displayName = "LedgerPin";
 
-/** compact 시 접히는 영역 (총액/인사이트/요약 등). */
+/**
+ * compact 시 접히는 영역 (총액/인사이트/요약 등).
+ *
+ * - 모션 줄이기를 켜면 접지 않는다(scroll-auto-hide.md "모션 줄이기면 자동 숨김을 끈다" · 03G-014a).
+ * - 접힌 동안 안의 단추에 초점이 오면(focusin — Tab) 펼친다. 접힌 머리가 안 보이는 채 초점만 남지 않게 한다.
+ *   펼친 채 두다가 compact 가 풀리면(맨 위로 돌아오면) 다음 접힘부터 다시 접힌다.
+ */
 export function LedgerCollapse({
   className,
+  onFocusCapture,
   ...props
 }: React.ComponentProps<"div">) {
+  const compact = React.useContext(LedgerPinContext);
+  const [revealed, setRevealed] = React.useState(false);
+  const [wasCompact, setWasCompact] = React.useState(compact);
+  if (wasCompact !== compact) {
+    setWasCompact(compact);
+    if (!compact) setRevealed(false);
+  }
+  const collapsed = compact && !revealed;
   return (
     <div
       data-ledger-collapse
+      data-collapsed={collapsed || undefined}
       className={cn(
-        "overflow-hidden max-h-[340px] opacity-100",
+        "overflow-hidden",
         "transition-[max-height,opacity] duration-[220ms] ease-[var(--motion-ease-easing)]",
-        "group-data-[compact=true]/pin:max-h-0 group-data-[compact=true]/pin:opacity-0 group-data-[compact=true]/pin:pointer-events-none",
+        collapsed
+          ? "max-h-0 opacity-0 pointer-events-none motion-reduce:max-h-[340px] motion-reduce:opacity-100 motion-reduce:pointer-events-auto"
+          : "max-h-[340px] opacity-100",
         className,
       )}
+      onFocusCapture={(e) => {
+        onFocusCapture?.(e);
+        if (collapsed) setRevealed(true);
+      }}
       {...props}
     />
   );
