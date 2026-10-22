@@ -782,8 +782,13 @@ const HeaderDividerDemo = () => (
         </Cell>
         <Cell>
           <Specimen spec="list-header" combo={{ variant: "mediumWeak" }}>
-            <ListHeader as="h4">
-              <span id="demo-header-budget">카테고리별 예산</span>
+            <ListHeader as="div">
+              <h4
+                id="demo-header-budget"
+                className="m-0 tracking-normal [font:inherit]"
+              >
+                카테고리별 예산
+              </h4>
               <Button
                 variant="ghost"
                 ghostColor="neutralMuted"
@@ -813,8 +818,8 @@ const HeaderDividerDemo = () => (
         </Cell>
         <Cell>
           <Specimen spec="list-header" combo={{ variant: "boldSolid" }}>
-            <ListHeader as="h4" variant="boldSolid">
-              <span>자산 · 4개</span>
+            <ListHeader as="div" variant="boldSolid">
+              <h4 className="m-0 tracking-normal [font:inherit]">자산 · 4개</h4>
               <Button
                 variant="ghost"
                 ghostColor="neutralSubtle"
