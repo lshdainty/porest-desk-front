@@ -1217,6 +1217,8 @@ describe("ListDivider · ListHeader · ListTile", () => {
     expect(h2!.tagName).toBe("H2");
     expect(h3!.tagName).toBe("H3");
     expect(classes(h2!)).toContain("m-0");
+    // 전역 h2 의 글자 사이 −0.012em 을 물려받지 않는다(스펙 t4 는 0)
+    expect(classes(h2!)).toContain("tracking-normal");
   });
 
   it("목록 제목이 있으면 목록에 aria-labelledby 로 잇는다 — 오른쪽 버튼은 제목 글 밖이라 목록 이름에 섞이지 않는다", () => {

@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { Slider } from "@/shared/ui/slider";
+import { ThresholdSlider } from "./ThresholdSlider";
 import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
@@ -515,17 +515,15 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         {/* 앱 Flutter Slider 는 위젯 높이 44 — 트랙 위아래 ~20px 내재 여백.
               웹 슬라이더(16px)에 동일한 실효 간격을 padding 으로 재현. */}
         <div style={{ padding: "20px 0" }}>
-          <Slider
-            min={50}
-            max={100}
-            step={5}
-            // 5단위 눈금 점 — 앱 divisions(10) 틱 마커 정합 (10구간 + 1 = 11).
-            ticks={11}
-            value={[warnThreshold]}
-            onValueChange={([v]) =>
-              updateMut.mutate({ budgetAlertThreshold: v })
+          <ThresholdSlider
+            value={warnThreshold}
+            disabled={isLoading}
+            onCommit={(v, settled) =>
+              updateMut.mutate(
+                { budgetAlertThreshold: v },
+                { onSettled: settled },
+              )
             }
-            disabled={calmDisabled}
           />
         </div>
         <div

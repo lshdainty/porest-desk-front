@@ -771,7 +771,9 @@ const HeaderDividerDemo = () => (
       <DemoRow label="mediumWeak">
         <Cell>
           <Specimen spec="list-header" combo={{ variant: "mediumWeak" }}>
-            <ListHeader id="demo-header-general">일반</ListHeader>
+            <ListHeader as="h4" id="demo-header-general">
+              일반
+            </ListHeader>
           </Specimen>
           <List aria-labelledby="demo-header-general">
             <ListButtonItem prefix={<User />} title="계정" />
@@ -780,7 +782,7 @@ const HeaderDividerDemo = () => (
         </Cell>
         <Cell>
           <Specimen spec="list-header" combo={{ variant: "mediumWeak" }}>
-            <ListHeader>
+            <ListHeader as="h4">
               <span id="demo-header-budget">카테고리별 예산</span>
               <Button
                 variant="ghost"
@@ -801,7 +803,7 @@ const HeaderDividerDemo = () => (
       <DemoRow label="boldSolid">
         <Cell>
           <Specimen spec="list-header" combo={{ variant: "boldSolid" }}>
-            <ListHeader variant="boldSolid" id="demo-header-bold">
+            <ListHeader as="h4" variant="boldSolid" id="demo-header-bold">
               이번 달 지출
             </ListHeader>
           </Specimen>
@@ -811,7 +813,7 @@ const HeaderDividerDemo = () => (
         </Cell>
         <Cell>
           <Specimen spec="list-header" combo={{ variant: "boldSolid" }}>
-            <ListHeader variant="boldSolid">
+            <ListHeader as="h4" variant="boldSolid">
               <span>자산 · 4개</span>
               <Button
                 variant="ghost"
@@ -1399,7 +1401,9 @@ const LiveDemo = () => {
     <DemoBlock title="직접 눌러 보기 — Tab 으로 포커스, Space 로 바꾼다. 줄 어디를 눌러도 끼운 컨트롤이 바뀌고, 줄이 줄 때 컨트롤은 따로 줄지 않는다">
       <DemoRow label="누르는 줄 · 컨트롤">
         <Cell>
-          <ListHeader id="live-header">설정</ListHeader>
+          <ListHeader as="h4" id="live-header">
+            설정
+          </ListHeader>
           <List aria-labelledby="live-header">
             <ListButtonItem
               prefix={<User />}
@@ -1418,7 +1422,9 @@ const LiveDemo = () => {
           </List>
         </Cell>
         <Cell>
-          <ListHeader id="live-check">내보낼 항목</ListHeader>
+          <ListHeader as="h4" id="live-check">
+            내보낼 항목
+          </ListHeader>
           <ListCheckGroup aria-labelledby="live-check">
             {["거래 내역", "예산", "메모"].map((name) => (
               <ListCheckItem
@@ -1437,7 +1443,9 @@ const LiveDemo = () => {
           </ListCheckGroup>
         </Cell>
         <Cell>
-          <ListHeader id="live-currency">기본 통화</ListHeader>
+          <ListHeader as="h4" id="live-currency">
+            기본 통화
+          </ListHeader>
           <ListRadioGroup
             aria-labelledby="live-currency"
             value={currency}

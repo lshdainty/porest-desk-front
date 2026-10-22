@@ -81,7 +81,8 @@ export const cardHeaderVariants = cva(
   },
 );
 
-export const CARD_TITLE = "min-w-0 font-sans text-t5 font-bold text-fg-neutral";
+export const CARD_TITLE =
+  "min-w-0 font-sans tracking-normal text-t5 font-bold text-fg-neutral";
 
 // 머리 동작 = SEED Text Button(D2) — 보이는 상자 36 · 좌우 14 · 모서리 8, 글 t4 · 700 · fg-neutral-muted, 꺾쇠 · 아이콘 없음.
 // 누르는 영역 44(::before), 누르면 바탕 + 2px 거리 축소

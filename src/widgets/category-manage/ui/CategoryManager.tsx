@@ -822,7 +822,7 @@ function SortableRow({
       ) : reorderMode ? null : (
         <button
           type="button"
-          aria-label={`${cat.categoryName} ${t("common:edit")}`}
+          aria-label={t("editOf", { name: cat.categoryName })}
           style={MANAGE_ROW.moreStyle}
           onClick={onEdit}
         >

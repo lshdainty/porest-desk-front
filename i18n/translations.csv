@@ -1435,6 +1435,7 @@ card,detail.credit,신용,Credit
 card,detail.check,체크,Check
 card,detail.discontinued,단종,Discontinued
 category,add,추가,Add
+category,editOf,{{name}} 수정,Edit {{name}}
 category,manager.description,"지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요.","Manage categories to classify your spending and income. Drag to reorder, and nest detailed categories under a parent row."
 category,searchPlaceholder,카테고리 검색,Search categories
 category,empty,카테고리가 없어요,No categories yet
