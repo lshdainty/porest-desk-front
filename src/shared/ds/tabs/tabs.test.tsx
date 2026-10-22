@@ -324,15 +324,15 @@ describe("Tabs (Line)", () => {
   it("크기 — small 40 · 글 14, medium 44 · 글 16, 탭의 위아래 · 좌우 10 · 글은 아래로 · 700", () => {
     render(<Stats defaultValue="trend" />);
     expect(container.querySelector("[role=tablist]")!.className).toContain(
-      "min-h-10",
+      "min-h-[40px]",
     );
-    expect(tab("추이").className).toContain("min-h-10");
+    expect(tab("추이").className).toContain("min-h-[40px]");
     expect(tab("추이").className).toContain("text-t4");
     act(() => root.render(<Stats defaultValue="trend" size="medium" />));
     expect(container.querySelector("[role=tablist]")!.className).toContain(
-      "min-h-11",
+      "min-h-[44px]",
     );
-    expect(tab("추이").className).toContain("min-h-11");
+    expect(tab("추이").className).toContain("min-h-[44px]");
     expect(tab("추이").className).toContain("text-t5");
     for (const cls of ["p-x2_5", "items-end", "font-bold"]) {
       expect(tab("추이").className).toContain(cls);

@@ -272,8 +272,8 @@ describe("머리 · 접기 버튼", () => {
 
   it("누르는 영역은 상자 40 + 보이지 않는 여백 2 씩 = 44", () => {
     render(<Nav />);
-    expect(trigger()?.className).toContain("size-10");
-    expect(trigger()?.className).toContain("before:size-11");
+    expect(trigger()?.className).toContain("size-[40px]");
+    expect(trigger()?.className).toContain("before:size-[44px]");
   });
 });
 
@@ -335,7 +335,7 @@ describe("묶음 · 항목", () => {
     render(<Nav collapsed />);
     expect(labelOf(item(0))?.className).toContain("sr-only");
     expect(labelOf(item(0))?.textContent).toBe("홈");
-    expect(item(0).className).toContain("w-10");
+    expect(item(0).className).toContain("w-[40px]");
     expect(item(0).className).toContain("px-x2_5");
   });
 
@@ -517,7 +517,7 @@ describe("접힌 사이드바 — 말풍선 · 펼침 메뉴", () => {
         ?.textContent,
     ).toBe("증권");
     expect(rows().map((r) => r.textContent)).toEqual(["나무증권", "토스증권"]);
-    expect(rows()[0]?.className).toContain("min-h-11");
+    expect(rows()[0]?.className).toContain("min-h-[44px]");
     // Menu 표면 — 폭 200 · 모서리 20 · 떠 있는 바탕 + s3 · z-floating
     expect(menu.className).toContain("w-[200px]");
     expect(menu.className).toContain("rounded-r5");

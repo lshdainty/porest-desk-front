@@ -33,7 +33,7 @@ export const ROOT_REGULAR = [
   "bottom-[max(14px,calc(env(safe-area-inset-bottom)-6px))]",
 ].join(" ");
 export const ROOT_COMPACT = [
-  "h-12 cursor-pointer px-x2 py-0",
+  "h-[48px] cursor-pointer px-x2 py-0",
   "left-[calc(var(--spacing-x9)+env(safe-area-inset-left))] right-[calc(var(--spacing-x9)+env(safe-area-inset-right))]",
   "bottom-[max(12px,calc(env(safe-area-inset-bottom)-8px))]",
 ].join(" ");
@@ -42,7 +42,7 @@ export const ROOT_COMPACT = [
 // 칸 — 아이콘 위 · 라벨 아래(사이 2), 칸 전체가 누르는 자리. 누르면 칸만 2px 거리 축소(색은 그대로), 키보드 포커스에 안쪽 2px 링
 export const ITEM = [
   "relative flex h-full min-w-0 cursor-pointer flex-col items-center justify-center gap-[2px] rounded-r3 no-underline",
-  "[&_svg]:size-6 [&_svg]:shrink-0",
+  "[&_svg]:size-[24px] [&_svg]:shrink-0",
   "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "active:[scale:calc(1-2/var(--press-basis,54))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -65,5 +65,7 @@ export const ADD_CIRCLE = [
   "group-active/bottom-navigation-add:bg-bg-brand-solid-pressed group-active/bottom-navigation-add:[scale:calc(1-2/var(--add-basis))] motion-reduce:group-active/bottom-navigation-add:[scale:1]",
   "group-focus-visible/bottom-navigation-add:outline-2 group-focus-visible/bottom-navigation-add:outline-offset-2 group-focus-visible/bottom-navigation-add:outline-stroke-focus-ring",
 ].join(" ");
-export const ADD_CIRCLE_REGULAR = "size-11 [--add-basis:44] [&_svg]:size-6";
-export const ADD_CIRCLE_COMPACT = "size-9 [--add-basis:36] [&_svg]:size-5";
+export const ADD_CIRCLE_REGULAR =
+  "size-[44px] [--add-basis:44] [&_svg]:size-[24px]";
+export const ADD_CIRCLE_COMPACT =
+  "size-[36px] [--add-basis:36] [&_svg]:size-[20px]";

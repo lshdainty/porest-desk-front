@@ -165,7 +165,7 @@ describe("BottomNavigation — 바", () => {
     expect(nav()?.className).toContain("env(safe-area-inset-left)");
     expect(nav()?.className).toContain("env(safe-area-inset-right)");
     render(<Bar compact />);
-    expect(nav()?.className).toContain("h-12");
+    expect(nav()?.className).toContain("h-[48px]");
     expect(nav()?.className).toContain(
       "bottom-[max(12px,calc(env(safe-area-inset-bottom)-8px))]",
     );
@@ -395,8 +395,8 @@ describe("가운데 +", () => {
       "[data-slot=bottom-navigation-add-circle]",
     );
     expect(circle?.getAttribute("aria-hidden")).toBe("true");
-    expect(circle?.className).toContain("size-11");
-    expect(circle?.className).toContain("[&_svg]:size-6");
+    expect(circle?.className).toContain("size-[44px]");
+    expect(circle?.className).toContain("[&_svg]:size-[24px]");
     expect(circle?.className).toContain("bg-bg-brand-solid");
     expect(circle?.className).toContain(
       "group-active/bottom-navigation-add:bg-bg-brand-solid-pressed",
@@ -416,8 +416,8 @@ describe("가운데 +", () => {
     const small = container.querySelector<HTMLElement>(
       "[data-slot=bottom-navigation-add-circle]",
     );
-    expect(small?.className).toContain("size-9");
-    expect(small?.className).toContain("[&_svg]:size-5");
+    expect(small?.className).toContain("size-[36px]");
+    expect(small?.className).toContain("[&_svg]:size-[20px]");
   });
 });
 
