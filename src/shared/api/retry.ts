@@ -1,6 +1,6 @@
 import { isAxiosError } from "axios";
 
-import { mayRetryWithinBudget } from "./request-budget";
+import { endChain, mayRetryWithinBudget } from "./request-budget";
 
 /**
  * React Query 전역 재시도 판정.
@@ -22,7 +22,11 @@ export function retryOnlyServerErrors(
   error: unknown,
 ): boolean {
   const status = isAxiosError(error) ? error.response?.status : undefined;
-  if (status != null && status >= 400 && status < 500) return false;
+  if (status != null && status >= 400 && status < 500) {
+    // 다시 하지 않고 끝난 불러오기 — 기억을 지운다(곧 다시 불러오면 새로 10초)
+    endChain(isAxiosError(error) ? error.config : undefined);
+    return false;
+  }
   const bounded = mayRetryWithinBudget(
     failureCount,
     isAxiosError(error) ? error.config : undefined,

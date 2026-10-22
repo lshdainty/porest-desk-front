@@ -102,14 +102,12 @@ describe("읽기 요청 제한 10초", () => {
     expect(retryOnlyServerErrors(0, failure(cfg, 500))).toBe(true);
   });
 
-  it("쓰기 · 파일 받기 · 직접 준 timeout · 증권 시세는 제한을 걸지 않는다", () => {
+  it("쓰기 · 파일 받기 · 직접 준 timeout 은 제한을 걸지 않는다", () => {
     for (const extra of [
       { method: "post" },
       { method: "delete" },
       { responseType: "blob" as const },
       { timeout: 60_000 },
-      { url: "/v1/securities/quote" },
-      { url: "/v1/toss/accounts" },
     ]) {
       const cfg = config(extra);
       const before = cfg.timeout;
@@ -142,5 +140,78 @@ describe("읽기 요청 제한 10초", () => {
     const again = config();
     beginAttempt(again);
     expect(again.timeout).toBe(10_000);
+  });
+});
+
+describe("증권 읽기도 10초 한도를 받는다(앱과 같다)", () => {
+  it("/v1/securities · toss · namu GET 도 첫 시도 10초", () => {
+    for (const url of [
+      "/v1/securities/quote",
+      "/v1/toss/accounts",
+      "/v1/namu/x",
+    ]) {
+      const cfg = config({ url });
+      beginAttempt(cfg);
+      expect(cfg.timeout, url).toBe(10_000);
+    }
+  });
+});
+
+describe("실제 경로(apiClient + 가짜 adapter) — axios 가 합쳐 넘기는 기본 timeout 0 에서도 걸린다", () => {
+  it("GET 은 10000 을 받고, 4xx 로 끝나면 기억을 지운다", async () => {
+    const { apiClient } = await import("./base");
+    const seen: (number | undefined)[] = [];
+    let status = 503;
+    const original = apiClient.defaults.adapter;
+    apiClient.defaults.adapter = async (cfg) => {
+      seen.push(cfg.timeout);
+      const response = {
+        status,
+        statusText: "",
+        data: {},
+        headers: {},
+        config: cfg,
+      };
+      if (status >= 400)
+        throw new AxiosError("http", String(status), cfg, {}, response);
+      return response;
+    };
+    try {
+      // 기본값이 합쳐진 config 의 timeout 은 0 — 그래도 10000 이 걸린다
+      await expect(apiClient.get("/v1/real")).rejects.toBeTruthy();
+      expect(seen[0]).toBe(10_000);
+      // 1.5초 뒤 다시 시도 — 남은 시간
+      vi.advanceTimersByTime(1_500);
+      await expect(apiClient.get("/v1/real")).rejects.toBeTruthy();
+      expect(seen[1]).toBe(8_500);
+      // 쓰기 · 파일 받기는 제한 없음(기본값 0 그대로)
+      status = 200;
+      await apiClient.post("/v1/real", {});
+      await apiClient.get("/v1/file", { responseType: "blob" });
+      expect(seen[2]).toBeFalsy();
+      expect(seen[3]).toBeFalsy();
+      // 4xx 로 끝난 요청은 잊는다 — 곧 다시 불러와도 새로 10초
+      status = 404;
+      await expect(apiClient.get("/v1/gone")).rejects.toBeTruthy();
+      const err = new AxiosError(
+        "http",
+        "404",
+        { ...config({ url: "/v1/gone" }), baseURL: apiClient.defaults.baseURL },
+        {},
+        {
+          status: 404,
+          statusText: "",
+          data: {},
+          headers: {},
+          config: config({ url: "/v1/gone" }),
+        },
+      );
+      expect(retryOnlyServerErrors(0, err)).toBe(false);
+      status = 200;
+      await apiClient.get("/v1/gone");
+      expect(seen[seen.length - 1]).toBe(10_000);
+    } finally {
+      apiClient.defaults.adapter = original;
+    }
   });
 });

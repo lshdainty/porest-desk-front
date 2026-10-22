@@ -9,8 +9,9 @@ import { LOADING_TIMING } from "@/shared/ds/skeleton";
  * 4xx 는 다시 하지 않고, 쓰기(POST · PUT · PATCH · DELETE)는 저절로 다시 보내지 않으며 제한도 걸지 않는다.
  *
  * 한 번의 불러오기(첫 시도 + 다시 시도)를 같은 요청 주소(getUri)로 묶어 처음 시간을 기억한다. 시도마다 axios timeout 을
- * 남은 시간으로 준다. 제한을 걸지 않는 읽기: 파일 받기(responseType blob · arraybuffer · stream), timeout 을 직접 준 요청,
- * 증권 시세 폴링(조용한 접두사 — 업스트림이 느릴 수 있고 화면에 '—' 폴백이 있다).
+ * 남은 시간으로 준다. 제한을 걸지 않는 읽기: 파일 받기(responseType blob · arraybuffer · stream), timeout 을 직접 준 요청.
+ * 받기는 "진행이 10초 멈추면 실패" 규칙이라 따로다(내보내기 이관 때).
+ * 증권 읽기도 10초 한도는 건다(앱과 같다) — 다시 시도는 각 쿼리의 retry: false 가 막는다.
  */
 
 const BUDGET = LOADING_TIMING.timeout;
@@ -18,9 +19,6 @@ const RETRY_DELAYS = LOADING_TIMING.retryDelays;
 // 실패한 시도 뒤 이만큼 안에 같은 요청이 오면 다시 시도로 보고 이어 센다(가장 긴 다시 시도 간격 + 여유)
 const LAST_DELAY = RETRY_DELAYS[RETRY_DELAYS.length - 1] ?? 2000;
 const RETRY_WINDOW = LAST_DELAY + 500;
-
-// 시간 제한을 걸지 않는 읽기의 접두사 — base.ts 의 조용한 접두사와 같다
-const UNBOUNDED_PREFIXES = ["/v1/toss/", "/v1/namu/", "/v1/securities/"];
 
 type Chain = { start: number; lastFailedAt?: number };
 const chains = new Map<string, Chain>();
@@ -32,11 +30,11 @@ type Config = Pick<
 
 const isBounded = (config: Config): boolean =>
   (config.method ?? "get").toLowerCase() === "get" &&
-  config.timeout === undefined &&
+  // axios 는 인터셉터에 인스턴스 기본값을 합친 config 를 넘기고 기본 timeout 은 0 이다 — "안 줌" 은 0
+  !config.timeout &&
   config.responseType !== "blob" &&
   config.responseType !== "arraybuffer" &&
-  config.responseType !== "stream" &&
-  !UNBOUNDED_PREFIXES.some((prefix) => config.url?.startsWith(prefix));
+  config.responseType !== "stream";
 
 const keyOf = (config: Config): string =>
   `${config.baseURL ?? ""}${config.url ?? ""}?${JSON.stringify(config.params ?? null)}`;
