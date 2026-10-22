@@ -46,6 +46,7 @@ import {
   MONTH_LABEL_HEIGHT,
   NAV,
   NAV_END,
+  NAV_PX,
   NAV_START,
   PRESETS,
   ROOT,
@@ -772,7 +773,7 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
         aria-label={labels.previousMonth}
         data-slot="date-picker-previous"
         disabled={!canPrev}
-        className={extra}
+        className={cn(NAV_PX, extra)}
         onClick={() => step(-1)}
       >
         <ChevronLeft aria-hidden />
@@ -786,7 +787,7 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
         aria-label={labels.nextMonth}
         data-slot="date-picker-next"
         disabled={!canNext}
-        className={extra}
+        className={cn(NAV_PX, extra)}
         onClick={() => step(1)}
       >
         <ChevronRight aria-hidden />

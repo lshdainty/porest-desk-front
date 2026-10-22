@@ -223,7 +223,10 @@ describe("WheelPicker", () => {
     expect(onValueChange).not.toHaveBeenCalled();
     settle();
     expect(onValueChange).toHaveBeenCalledTimes(1);
-    expect(onValueChange).toHaveBeenCalledWith("2027", { stepDelta: 1 });
+    expect(onValueChange).toHaveBeenCalledWith("2027", {
+      stepDelta: 1,
+      jump: false,
+    });
     expect(year.getAttribute("aria-valuenow")).toBe("6");
     expect(year.getAttribute("aria-valuetext")).toBe("2027년");
   });
@@ -234,13 +237,22 @@ describe("WheelPicker", () => {
     const year = column("연도");
     key(year, "ArrowUp");
     settle();
-    expect(onValueChange).toHaveBeenLastCalledWith("2025", { stepDelta: -1 });
+    expect(onValueChange).toHaveBeenLastCalledWith("2025", {
+      stepDelta: -1,
+      jump: false,
+    });
     key(year, "End");
     settle();
-    expect(onValueChange).toHaveBeenLastCalledWith("2031", { stepDelta: 6 });
+    expect(onValueChange).toHaveBeenLastCalledWith("2031", {
+      stepDelta: 6,
+      jump: true,
+    });
     key(year, "Home");
     settle();
-    expect(onValueChange).toHaveBeenLastCalledWith("2021", { stepDelta: -10 });
+    expect(onValueChange).toHaveBeenLastCalledWith("2021", {
+      stepDelta: -10,
+      jump: true,
+    });
     expect(year.getAttribute("aria-valuenow")).toBe("0");
     onValueChange.mockClear();
     key(year, "ArrowUp");
@@ -258,7 +270,10 @@ describe("WheelPicker", () => {
     key(year, "ArrowDown");
     settle();
     expect(onValueChange).toHaveBeenCalledTimes(1);
-    expect(onValueChange).toHaveBeenCalledWith("2029", { stepDelta: 3 });
+    expect(onValueChange).toHaveBeenCalledWith("2029", {
+      stepDelta: 3,
+      jump: false,
+    });
   });
 
   it("반복 칼럼 — 12월 다음은 1월, stepDelta 로 넘어간 것을 안다", () => {
@@ -277,11 +292,17 @@ describe("WheelPicker", () => {
     const month = column("월");
     key(month, "ArrowDown");
     settle();
-    expect(onValueChange).toHaveBeenCalledWith("1", { stepDelta: 1 });
+    expect(onValueChange).toHaveBeenCalledWith("1", {
+      stepDelta: 1,
+      jump: false,
+    });
     expect(month.getAttribute("aria-valuetext")).toBe("1월");
     key(month, "ArrowUp");
     settle();
-    expect(onValueChange).toHaveBeenLastCalledWith("12", { stepDelta: -1 });
+    expect(onValueChange).toHaveBeenLastCalledWith("12", {
+      stepDelta: -1,
+      jump: false,
+    });
   });
 
   it("굴리는 동안 띠를 지나는 항목마다 onIndexChange — 값은 아직 정하지 않는다", () => {
@@ -304,7 +325,10 @@ describe("WheelPicker", () => {
     ]);
     expect(onValueChange).not.toHaveBeenCalled();
     settle();
-    expect(onValueChange).toHaveBeenCalledWith("2031", { stepDelta: 5 });
+    expect(onValueChange).toHaveBeenCalledWith("2031", {
+      stepDelta: 5,
+      jump: true,
+    });
   });
 
   it("굴리는 동안 쓰는 쪽이 다시 그려도(onIndexChange 로 상태를 바꿔도) 멈춘 뒤 값이 정해진다", () => {
@@ -331,7 +355,10 @@ describe("WheelPicker", () => {
       "1",
     );
     settle();
-    expect(onValueChange).toHaveBeenCalledWith("2027", { stepDelta: 1 });
+    expect(onValueChange).toHaveBeenCalledWith("2027", {
+      stepDelta: 1,
+      jump: false,
+    });
   });
 
   it("보이는 항목을 누르면 그 항목을 가운데로 — 멈춘 뒤 값을 정한다", () => {
@@ -356,7 +383,10 @@ describe("WheelPicker", () => {
     });
     expect(year.scrollTop).toBe(7 * 44);
     settle();
-    expect(onValueChange).toHaveBeenCalledWith("2028", { stepDelta: 2 });
+    expect(onValueChange).toHaveBeenCalledWith("2028", {
+      stepDelta: 2,
+      jump: false,
+    });
   });
 
   it("제어하는 value — 바깥에서 바꾸면 그 자리로 옮긴다", () => {
@@ -376,7 +406,10 @@ describe("WheelPicker", () => {
     const year = column("연도");
     key(year, "ArrowDown");
     settle();
-    expect(onValueChange).toHaveBeenCalledWith("2027", { stepDelta: 1 });
+    expect(onValueChange).toHaveBeenCalledWith("2027", {
+      stepDelta: 1,
+      jump: false,
+    });
     expect(year.getAttribute("aria-valuenow")).toBe("5");
   });
 

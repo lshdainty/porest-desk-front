@@ -1342,3 +1342,61 @@ describe("DatePicker — 이어지는 달(continuous)", () => {
     ]);
   });
 });
+
+describe("DatePicker — 큰 글자 · 눌림 색 (I-04 03-C 결정 1B · 2B)", () => {
+  const cls = (el: Element | null) => el?.getAttribute("class") ?? "";
+
+  it("머리 · 제목 · 요일 줄 · 칸은 높이 48 고정이 아니라 최소 48 이다 — 글이 크면 그만큼만 늘어난다", () => {
+    render(<Single today={TODAY} />);
+    const header = container.querySelector("[data-slot=date-picker-header]");
+    expect(cls(header)).toContain("min-h-[48px]");
+    expect(cls(header)).not.toContain("h-12");
+    expect(cls(title())).toContain("min-h-[48px]");
+    expect(cls(title())).not.toContain("h-12");
+    const cell = container.querySelector("[data-slot=date-picker-cell]");
+    expect(cls(cell)).toContain("min-h-[48px]");
+    expect(cls(cell)).not.toContain("h-12");
+    const weekdayRow = container.querySelector(
+      "[data-slot=date-picker-weekday]",
+    )!.parentElement;
+    expect(cls(weekdayRow)).toContain("min-h-[48px]");
+  });
+
+  it("제목 셰브론은 20 px, 이전 · 다음은 40 px 다 — 글자 배율을 따르지 않는다", () => {
+    render(<Single today={TODAY} />);
+    expect(
+      cls(container.querySelector("[data-slot=date-picker-title-icon]")),
+    ).toContain("size-[20px]");
+    for (const slot of ["previous", "next"]) {
+      const b = container.querySelector(`[data-slot=date-picker-${slot}]`);
+      expect(cls(b)).toContain("h-[40px]");
+      expect(cls(b)).toContain("w-[40px]");
+    }
+  });
+
+  it("두 달 · 이어지는 달의 달 이름 줄과 요일 줄도 최소 48 이다", () => {
+    render(<Range visibleRange="twoMonths" today={TODAY} />);
+    expect(
+      cls(container.querySelector("[data-slot=date-picker-month-label]")),
+    ).toContain("min-h-[48px]");
+    render(<Range visibleRange="continuous" today={TODAY} />);
+    expect(
+      cls(container.querySelector("[data-slot=date-picker-weekdays]")),
+    ).toContain("min-h-[48px]");
+  });
+
+  it("보통 날의 호버 · 누름 원은 투명 짝 bg-neutral-weak-alpha-pressed, 오늘 · 기간 사이 날은 불투명 bg-neutral-weak-pressed", () => {
+    render(<Single today={TODAY} />);
+    const visual = (b: Element) =>
+      cls(b.querySelector("[data-slot=date-picker-day-visual]"));
+    const plain = visual(day(2026, 10, 20));
+    expect(plain).toContain(
+      "group-active/day:bg-bg-neutral-weak-alpha-pressed",
+    );
+    expect(plain).toContain("group-hover/day:bg-bg-neutral-weak-alpha-pressed");
+    expect(plain).not.toContain("layer-floating-pressed");
+    const today = visual(day(2026, 10, 15));
+    expect(today).toContain("group-active/day:bg-bg-neutral-weak-pressed");
+    expect(today).not.toContain("weak-alpha-pressed");
+  });
+});

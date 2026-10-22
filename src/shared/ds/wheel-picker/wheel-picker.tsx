@@ -76,6 +76,8 @@ export interface WheelPickerOption {
 export interface WheelPickerValueChangeDetails {
   /** 지난번 멈춘 자리에서 움직인 칸 수 — 아래로 +, 위로 − */
   stepDelta: number;
+  /** Home · End 로 처음 · 끝 항목에 뛴 것 — 지나간 칸을 세지 않는다(Time Picker 의 시 칼럼은 오전 · 오후를 그대로 둔다, 03-C 3A) */
+  jump?: boolean;
 }
 
 // ── 휠 문맥 ──────────────────────────────────────────────────
@@ -396,6 +398,8 @@ const WheelPickerColumn = React.forwardRef<
     const lastVisualRef = React.useRef(central);
     const lastSettledRef = React.useRef(central);
     const keyboardTargetRef = React.useRef<number | null>(null);
+    // Home · End 로 뛰었는지 — 멈춘 뒤 onValueChange 에 한 번 싣고 지운다
+    const jumpRef = React.useRef(false);
     const initializedRef = React.useRef(false);
     const touchingRef = React.useRef(false);
     const dragRef = React.useRef<DragState | null>(null);
@@ -537,9 +541,11 @@ const WheelPickerColumn = React.forwardRef<
         lastSettledRef.current = settled;
         keyboardTargetRef.current = settled;
         notifyRef.current = false;
+        const jumped = jumpRef.current;
+        jumpRef.current = false;
         if (nextValue !== undefined && nextValue !== L.current) {
           if (!L.controlled) setInner(nextValue);
-          L.onValueChange?.(nextValue, { stepDelta });
+          L.onValueChange?.(nextValue, { stepDelta, jump: jumped });
         }
       };
 
@@ -855,18 +861,22 @@ const WheelPickerColumn = React.forwardRef<
       switch (e.key) {
         case "ArrowUp":
           e.preventDefault();
+          jumpRef.current = false;
           moveTo(index - 1, behavior);
           break;
         case "ArrowDown":
           e.preventDefault();
+          jumpRef.current = false;
           moveTo(index + 1, behavior);
           break;
         case "Home":
           e.preventDefault();
+          jumpRef.current = true;
           moveTo(0, behavior);
           break;
         case "End":
           e.preventDefault();
+          jumpRef.current = true;
           moveTo(L.count - 1, behavior);
           break;
       }

@@ -182,10 +182,18 @@ const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
           loop
           align="right"
           onValueChange={(
-            _next: string,
+            next: string,
             details: WheelPickerValueChangeDetails,
           ) => {
             const cur = valueRef.current;
+            // Home · End(처음 · 끝 = 1 · 12)는 오전 · 오후를 그대로 두고 그 시로 간다 — 지나간 칸을 세지 않는다(03-C 3A)
+            if (details.jump) {
+              commit({
+                hour: (Number(next) % 12) + (cur.hour >= 12 ? 12 : 0),
+                minute: cur.minute,
+              });
+              return;
+            }
             commit({
               hour: (((cur.hour + details.stepDelta) % 24) + 24) % 24,
               minute: cur.minute,
