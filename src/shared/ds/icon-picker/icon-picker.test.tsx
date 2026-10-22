@@ -540,23 +540,27 @@ describe("IconPicker — 트리거 · 여는 자리", () => {
           <Controlled initial="coffee" />
         </TooltipProvider>,
       );
-      act(() => trigger().click());
       const bubbleCount = () =>
         document.querySelectorAll("[data-slot=tooltip-content]").length;
+      // 키보드로 연 것처럼 — 열기 전에 :focus-visible 이 참이게 한다. 피커는 열 때 고른 칸에 초점을 주므로 그 초점이 툴팁 경로를 탄다
+      const realMatches = Element.prototype.matches;
+      const spy = vi
+        .spyOn(Element.prototype, "matches")
+        .mockImplementation(function (this: Element, selector: string) {
+          return (
+            selector === ":focus-visible" || realMatches.call(this, selector)
+          );
+        });
+      act(() => trigger().click());
       const selected = cells().find(
         (c) => c.getAttribute("aria-selected") === "true",
       )!;
-      // 키보드 초점(focus-visible) — 툴팁이 뜨지 않는다
-      vi.spyOn(selected, "matches").mockImplementation(
-        (selector: string) =>
-          selector === ":focus-visible" ||
-          Element.prototype.matches.call(selected, selector),
-      );
-      act(() => selected.focus());
+      expect(document.activeElement).toBe(selected);
       act(() => {
         vi.advanceTimersByTime(1000);
       });
       expect(bubbleCount()).toBe(0);
+      spy.mockRestore();
       // 첫 Esc 에 닫힌다
       act(() => {
         document.dispatchEvent(
