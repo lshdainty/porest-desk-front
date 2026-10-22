@@ -233,7 +233,7 @@ export const TabsDemo = () => {
         </div>
       </DemoBlock>
 
-      <DemoBlock title="가장 나쁜 값 — 탭 8개(Hug · 넘치면 가로 스크롤, 고른 탭이 밖이면 16 여유를 두고 드러낸다) · 폰 360 · 긴 글 · Chip Tabs 12개">
+      <DemoBlock title="가장 나쁜 값 — 탭 8개(Hug · 넘치면 가로 스크롤, 고른 탭이 밖이면 16 여유를 두고 드러낸다) · 넘치는 Fill(영어 긴 탭 넷 · 폰 360 — 칸을 나누지 않고 같은 모양으로 가로 스크롤) · 폰 360 · 긴 글 · Chip Tabs 12개">
         <div className="w-[360px]">
           <Tabs value={many} onValueChange={setMany}>
             <TabsList layout="hug" aria-label="통계 8개">
@@ -252,6 +252,16 @@ export const TabsDemo = () => {
               <TabsTrigger value="b" notification>
                 월 구독료와 정기 결제 모음
               </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        <div className="w-[360px]" data-demo="fill-overflow">
+          <Tabs defaultValue="d">
+            <TabsList aria-label="Brokerage accounts">
+              <TabsTrigger value="a">Brokerage account</TabsTrigger>
+              <TabsTrigger value="b">Retirement savings</TabsTrigger>
+              <TabsTrigger value="c">Emergency fund</TabsTrigger>
+              <TabsTrigger value="d">Education account</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

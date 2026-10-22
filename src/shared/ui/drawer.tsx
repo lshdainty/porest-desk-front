@@ -164,10 +164,7 @@ const DrawerBody = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   // 세로 스크롤바는 숨기지 않는다(scroll-area.md · 03G-016) — 전역 6px 알약이 그대로 그려진다
-  <div
-    className={cn("flex-1 overflow-y-auto px-xl", className)}
-    {...props}
-  />
+  <div className={cn("flex-1 overflow-y-auto px-xl", className)} {...props} />
 );
 DrawerBody.displayName = "DrawerBody";
 
