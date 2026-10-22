@@ -531,6 +531,63 @@ describe("IconPicker — 트리거 · 여는 자리", () => {
     expect(trigger().dataset.icon).toBe("a-arrow-down");
   });
 
+  it("칸 툴팁은 마우스를 올릴 때만 연다 — 키보드 초점으로 열지 않아 Esc 한 번에 닫힌다(03B-012)", () => {
+    vi.useFakeTimers();
+    try {
+      render(<Controlled initial="coffee" />);
+      act(() => trigger().click());
+      const bubbleCount = () =>
+        document.querySelectorAll("[data-slot=tooltip-content]").length;
+      const selected = cells().find(
+        (c) => c.getAttribute("aria-selected") === "true",
+      )!;
+      // 키보드 초점(focus-visible) — 툴팁이 뜨지 않는다
+      vi.spyOn(selected, "matches").mockImplementation(
+        (selector: string) =>
+          selector === ":focus-visible" ||
+          Element.prototype.matches.call(selected, selector),
+      );
+      act(() => selected.focus());
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(bubbleCount()).toBe(0);
+      // 첫 Esc 에 닫힌다
+      act(() => {
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        );
+      });
+      expect(sheetOpen()).toBe(false);
+
+      // 마우스를 올리면 200ms 뒤 같은 글의 툴팁이 뜬다
+      act(() => trigger().click());
+      const other = cells()[1]!;
+      act(() => {
+        other.dispatchEvent(
+          new PointerEvent("pointerover", {
+            bubbles: true,
+            pointerType: "mouse",
+          }),
+        );
+        other.dispatchEvent(
+          new PointerEvent("pointermove", {
+            bubbles: true,
+            pointerType: "mouse",
+          }),
+        );
+        vi.advanceTimersByTime(250);
+      });
+      expect(bubbleCount()).toBe(1);
+      expect(
+        document.querySelector("[data-slot=tooltip-content]")!.firstChild
+          ?.textContent,
+      ).toBe(other.getAttribute("aria-label"));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("막히면 열리지 않는다(Input Button)", () => {
     render(
       <Field label="아이콘" disabled>
