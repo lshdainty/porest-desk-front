@@ -3,8 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
-import { formatDay } from "@/shared/lib/groo/format";
-import type { Expense, ExpenseCategory } from "@/entities/expense";
+import type { ExpenseCategory } from "@/entities/expense";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -133,32 +132,6 @@ const card = {
   balance: -12_000,
   isIncludedInTotal: "Y",
   sortOrder: 0,
-};
-
-/** 8월 회차에 들어 9/12 에 결제된 거래 — 돈 칸이 잠겼다. */
-const locked: Expense = {
-  rowId: 501,
-  categoryRowId: 11,
-  assetRowId: 9,
-  assetName: "현대카드",
-  expenseType: "EXPENSE",
-  amount: 12_000,
-  description: "점심",
-  expenseDate: "2026-08-20T12:30:00",
-  merchant: "김밥천국",
-  paymentMethod: "CARD",
-  installmentMonths: null,
-  refundedAt: null,
-  refundTransferRowId: null,
-  originalAmount: null,
-  originalCurrency: null,
-  exchangeRate: null,
-  calendarEventRowId: null,
-  todoRowId: null,
-  autoSource: null,
-  moneyLocked: true,
-  createAt: "2026-08-20T12:30:00",
-  modifyAt: "2026-08-20T12:30:00",
 };
 
 const child: ExpenseCategory = {
