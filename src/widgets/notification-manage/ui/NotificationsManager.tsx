@@ -347,6 +347,8 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const calmDisabled = isLoading || updateMut.isPending;
   // 예산 경고 기준을 끄는 동안의 값 — 머리 값 · 슬라이더가 따라가고, 저장이 끝나면 서버 값으로 돌아온다
   const [drag, setDrag] = useState<number | null>(null);
+  // 기준 저장이 실패하면 값은 서버 값으로 되돌아가고(onSettled) 슬라이더 아래 Field 오류 글로 알린다(slider.yaml commit)
+  const [thresholdFailed, setThresholdFailed] = useState(false);
   const shownThreshold = drag ?? warnThreshold;
 
   if (isLoading) {
@@ -521,15 +523,35 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <ThresholdSlider
             value={shownThreshold}
             disabled={isLoading}
-            onDrag={setDrag}
+            onDrag={(v) => {
+              setThresholdFailed(false);
+              setDrag(v);
+            }}
             onCommit={(v) =>
               updateMut.mutate(
                 { budgetAlertThreshold: v },
-                { onSettled: () => setDrag(null) },
+                {
+                  onSuccess: () => setThresholdFailed(false),
+                  onError: () => setThresholdFailed(true),
+                  onSettled: () => setDrag(null),
+                },
               )
             }
           />
         </div>
+        {thresholdFailed && (
+          <div
+            role="alert"
+            data-slot="field-error"
+            style={{
+              fontSize: "var(--text-body-sm)",
+              color: "var(--color-fg-critical)",
+              marginBottom: 8,
+            }}
+          >
+            {t("saveError")}
+          </div>
+        )}
         <div
           style={{
             display: "flex",
@@ -774,7 +796,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         )}
       </NotifSection>
 
-      {updateMut.isError && (
+      {updateMut.isError && !thresholdFailed && (
         <div
           style={{
             // 앱 에러 메시지 타이포 bodySm(13) 정합.

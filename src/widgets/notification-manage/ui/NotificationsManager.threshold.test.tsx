@@ -14,9 +14,13 @@ vi.mock("react-i18next", () => ({
 }));
 
 let settle: (() => void) | null = null;
-const mutate = vi.fn((_v: unknown, opts?: { onSettled?: () => void }) => {
-  settle = opts?.onSettled ?? null;
-});
+let fail: (() => void) | null = null;
+const mutate = vi.fn(
+  (_v: unknown, opts?: { onSettled?: () => void; onError?: () => void }) => {
+    settle = opts?.onSettled ?? null;
+    fail = opts?.onError ?? null;
+  },
+);
 vi.mock("@/features/user", () => ({
   useUserPreferences: () => ({
     data: { budgetAlertThreshold: 85, pushEnabled: true },
@@ -76,5 +80,35 @@ describe("예산 경고 기준 슬라이더", () => {
     expect(thumb().hasAttribute("data-disabled")).toBe(false);
     act(() => settle?.());
     expect(head().textContent).toBe("85%");
+  });
+
+  it("저장이 실패하면 값을 되돌리고 슬라이더 아래 Field 오류 글로 알린다 — 다시 끌면 사라진다", () => {
+    act(() => root.render(<NotificationsManager mobile={false} />));
+    const press = () =>
+      act(() => {
+        thumb().focus();
+        thumb().dispatchEvent(
+          new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+        );
+      });
+    const error = () =>
+      container.querySelector<HTMLElement>("[data-slot=field-error]");
+    expect(error()).toBeNull();
+    press();
+    expect(head().textContent).toBe("90%");
+    // 실패 → 서버 값(85)으로 돌아오고 오류 글이 슬라이더 바로 아래에 뜬다
+    act(() => {
+      fail?.();
+      settle?.();
+    });
+    expect(head().textContent).toBe("85%");
+    expect(error()).not.toBeNull();
+    expect(error()!.getAttribute("role")).toBe("alert");
+    expect(error()!.textContent).toBe("saveError");
+    // 같은 글이 화면 맨 아래에 한 번 더 뜨지 않는다(mock 은 isError 를 주지 않아 여기서는 한 곳)
+    expect(container.textContent!.split("saveError").length - 1).toBe(1);
+    // 다시 끌면 오류 글이 걷힌다
+    press();
+    expect(error()).toBeNull();
   });
 });
