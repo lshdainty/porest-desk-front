@@ -42,25 +42,33 @@ const key = (k: string) =>
   });
 
 describe("ThresholdSlider", () => {
-  it("끄는 동안 화면이 값을 따라가고 저장은 손을 뗄 때 한 번, 저장이 끝나면 서버 값을 따른다", () => {
+  it("끄는 값을 부르는 쪽이 쥔다 — 키보드로 움직이면 onDrag · onCommit 이 한 번씩", () => {
+    const onDrag = vi.fn();
     const onCommit = vi.fn();
-    act(() => root.render(<ThresholdSlider value={85} onCommit={onCommit} />));
+    act(() =>
+      root.render(
+        <ThresholdSlider value={85} onDrag={onDrag} onCommit={onCommit} />,
+      ),
+    );
     expect(thumb().getAttribute("aria-valuenow")).toBe("85");
     key("ArrowRight");
-    // 키보드는 한 번 움직이고 바로 확정 — 화면은 90 을 따라가고 저장 요청은 한 번
-    expect(thumb().getAttribute("aria-valuenow")).toBe("90");
+    expect(onDrag).toHaveBeenCalledWith(90);
     expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onCommit.mock.calls[0]![0]).toBe(90);
     // 저장 중에도 막지 않는다
     expect(thumb().hasAttribute("data-disabled")).toBe(false);
-    // 저장이 끝나면 끄는 값을 비워 서버 값(여기서는 그대로 85)을 따른다
-    act(() => onCommit.mock.calls[0]![1]());
-    expect(thumb().getAttribute("aria-valuenow")).toBe("85");
   });
 
   it("막힘은 불러오는 동안(disabled)만이다", () => {
     act(() =>
-      root.render(<ThresholdSlider value={85} disabled onCommit={() => {}} />),
+      root.render(
+        <ThresholdSlider
+          value={85}
+          disabled
+          onDrag={() => {}}
+          onCommit={() => {}}
+        />,
+      ),
     );
     expect(thumb().hasAttribute("data-disabled")).toBe(true);
   });

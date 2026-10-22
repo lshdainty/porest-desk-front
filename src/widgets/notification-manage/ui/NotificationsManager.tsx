@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import {
   BarChart3,
@@ -345,6 +345,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const emailFrequency: EmailFrequency = pref?.emailFrequency ?? "WEEKLY";
 
   const calmDisabled = isLoading || updateMut.isPending;
+  // 예산 경고 기준을 끄는 동안의 값 — 머리 값 · 슬라이더가 따라가고, 저장이 끝나면 서버 값으로 돌아온다
+  const [drag, setDrag] = useState<number | null>(null);
+  const shownThreshold = drag ?? warnThreshold;
 
   if (isLoading) {
     return (
@@ -489,7 +492,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           >
             {t("threshold.current")}{" "}
             <strong style={{ color: "var(--fg-brand-strong)" }}>
-              {warnThreshold}%
+              {shownThreshold}%
             </strong>
           </span>
         }
@@ -516,12 +519,13 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               웹 슬라이더(16px)에 동일한 실효 간격을 padding 으로 재현. */}
         <div style={{ padding: "20px 0" }}>
           <ThresholdSlider
-            value={warnThreshold}
+            value={shownThreshold}
             disabled={isLoading}
-            onCommit={(v, settled) =>
+            onDrag={setDrag}
+            onCommit={(v) =>
               updateMut.mutate(
                 { budgetAlertThreshold: v },
-                { onSettled: settled },
+                { onSettled: () => setDrag(null) },
               )
             }
           />
