@@ -55,8 +55,10 @@ export const CONTINUOUS_MONTH = "pb-x4";
 export const FOG =
   "pointer-events-none sticky bottom-0 z-[3] -mt-24 h-24 [background:linear-gradient(to_bottom,transparent,var(--color-bg-layer-floating))]";
 
-// 연 · 월 휠 자리 — 요일 줄 + 6주(336 — 스펙 값)를 덮는다. 휠 308 은 가운데(위아래 14). 연 120 · 월 96
-export const WHEEL = "flex h-[336px] items-center bg-bg-layer-floating";
+// 연 · 월 휠 자리 — 요일 줄 + 6주를 덮는다: max(48, 요일 줄 높이) + 6 × max(48, 숫자 줄 높이 + 6) — 100% 336 · 200% 348.
+// 글이 크면 달력을 따라 늘어나 열고 닫을 때 높이가 그대로다(WEEKDAY_ROW · CELL · DAY 와 같은 셈). 휠 308 은 가운데(100% 위아래 14). 연 120 · 월 96
+export const WHEEL =
+  "flex h-[calc(max(48px,var(--text-t4--line-height))_+_6_*_max(48px,calc(var(--text-t5--line-height)_+_6px)))] items-center bg-bg-layer-floating";
 export const WHEEL_YEAR = "w-[120px]";
 export const WHEEL_MONTH = "w-[96px]";
 
@@ -67,7 +69,7 @@ export const WEEKDAY_ROW = "grid min-h-[48px] grid-cols-7";
 export const WEEKDAY =
   "flex items-center justify-center text-t4 font-medium text-fg-neutral-subtle";
 
-// 칸 — 높이 48 · 폭 = 달력 폭 ÷ 7. 기간 띠는 칸 안의 span(원 높이, 칸 세로 가운데)
+// 칸 — 높이 max(48, 숫자 줄 높이 + 6)(날짜 버튼 · 앞뒤 달 숫자의 위아래 3 이 키운다 — 100% 48 · 200% 50, 03-C 1B) · 폭 = 달력 폭 ÷ 7. 기간 띠는 칸 안의 span(원 높이, 칸 세로 가운데)
 export const CELL = "relative isolate min-h-[48px] min-w-0";
 export const BAND =
   "pointer-events-none absolute top-1/2 h-[var(--day)] -translate-y-1/2 bg-bg-neutral-weak";
@@ -79,7 +81,7 @@ export const BAND_SIDE = {
 
 // 날짜 버튼 — 칸 전체. 원(DAY_VISUAL)은 칸 가운데 --day(바탕만 color-transition), 키보드 초점 링(DAY_RING)은 원 둘레 안쪽 2px
 export const DAY =
-  "group/day relative isolate flex h-full w-full items-center justify-center border-0 bg-transparent p-0 font-sans text-t5 font-medium tabular-nums outline-none select-none [-webkit-tap-highlight-color:transparent]";
+  "group/day relative isolate flex h-full w-full items-center justify-center border-0 bg-transparent px-0 py-[3px] font-sans text-t5 font-medium tabular-nums outline-none select-none [-webkit-tap-highlight-color:transparent]";
 export const DAY_VISUAL =
   "pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[var(--day)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent [transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]";
 export const DAY_RING =
@@ -111,15 +113,22 @@ export const DAY_TODAY_WEIGHT = "font-bold";
 export const DAY_STRIKE = "line-through";
 // 앞뒤 달 — 숫자만(버튼 아님), 흐리게 · 누르지 못한다
 export const OUTSIDE =
-  "flex h-full w-full cursor-default select-none items-center justify-center text-t5 font-medium tabular-nums text-fg-disabled";
+  "flex h-full w-full cursor-default select-none items-center justify-center py-[3px] text-t5 font-medium tabular-nums text-fg-disabled";
 
 export const LIVE = "sr-only";
 
-// 이어지는 달의 높이 — 달 이름 48 + 48 × 주 + 아래 16
-export const MONTH_LABEL_HEIGHT = 48;
-export const ROW_HEIGHT = 48;
+// 이어지는 달의 높이 — 달 이름 줄 + 칸 × 주 + 아래 16. 이름 줄 · 칸 · 요일 줄은 글자가 크면 늘어나(200% 에서 칸 50)
+// 숨은 견본(PROBE)으로 잰다. 처음 값은 100% 의 48 · 48 · 48
 export const MONTH_GAP = 16;
-export const WEEKDAY_HEIGHT = 48;
+export type ContinuousMetrics = { label: number; row: number; weekday: number };
+export const METRICS_100: ContinuousMetrics = {
+  label: 48,
+  row: 48,
+  weekday: 48,
+};
+// 견본 — 보이지 않고 보조 기술에도 숨긴다. 달 이름 줄 · 칸 한 줄(앞뒤 달 숫자 — 날짜 버튼과 같은 높이) · 요일 줄 차례
+export const PROBE =
+  "pointer-events-none invisible absolute inset-x-0 top-0 -z-10";
 export const CONTINUOUS_FOG = 96;
 export const CONTINUOUS_OVERSCAN = 2;
 

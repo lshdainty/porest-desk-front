@@ -1399,4 +1399,33 @@ describe("DatePicker — 큰 글자 · 눌림 색 (I-04 03-C 결정 1B · 2B)", 
     expect(today).toContain("group-active/day:bg-bg-neutral-weak-pressed");
     expect(today).not.toContain("weak-alpha-pressed");
   });
+
+  it("날짜 버튼 · 앞뒤 달 숫자에 위아래 3 — 큰 글자에서 칸이 줄 높이 + 6 이 된다(스펙 #189)", () => {
+    render(<Single today={TODAY} />);
+    const btn = day(2026, 10, 20);
+    expect(cls(btn)).toContain("py-[3px]");
+    expect(cls(btn)).toContain("px-0");
+    expect(cls(btn)).not.toContain(" p-0");
+    expect(
+      cls(container.querySelector("[data-slot=date-picker-outside]")),
+    ).toContain("py-[3px]");
+  });
+
+  it("연 · 월 휠 자리는 요일 줄 + 6 × 칸을 셈한다 — 336 고정이 아니다", () => {
+    render(<Single today={TODAY} />);
+    act(() => title().click());
+    const wheel = container.querySelector("[data-slot=date-picker-wheel]");
+    expect(cls(wheel)).toContain(
+      "h-[calc(max(48px,var(--text-t4--line-height))",
+    );
+    expect(cls(wheel)).not.toContain("h-[336px]");
+  });
+
+  it("이어지는 달은 높이를 재는 숨은 견본(이름 줄 · 칸 · 요일 줄)을 가진다", () => {
+    render(<Range visibleRange="continuous" today={TODAY} />);
+    const probe = container.querySelector("[data-slot=date-picker-probe]")!;
+    expect(probe.getAttribute("aria-hidden")).toBe("true");
+    expect(probe.children).toHaveLength(3);
+    expect(cls(probe)).toContain("invisible");
+  });
 });
