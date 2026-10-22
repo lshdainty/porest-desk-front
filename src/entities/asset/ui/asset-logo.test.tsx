@@ -55,4 +55,25 @@ describe("AssetLogo 색 — 기관 색 표 → 없으면 이름 색", () => {
     expect(el.style.background).toMatch(/^var\(--color-chart-[a-z]+\)$/);
     expect(el.style.color).toBe("var(--color-fg-neutral-inverted)");
   });
+
+  it("이름 하나 — 표에 없는 기관이면 이름 색도 기관 이름에서(자산 이름이 아니다)", () => {
+    const a = logo({
+      assetName: "비상금",
+      institution: "모르는기관",
+      color: null,
+    });
+    const b = logo({
+      assetName: "전혀 다른 이름",
+      institution: "모르는기관",
+      color: null,
+    });
+    expect(a.style.background).toBe(b.style.background);
+    expect(a.textContent).toBe("모");
+  });
+
+  it("이름이 비면 글자 없이 회색", () => {
+    const el = logo({ assetName: "", institution: null, color: null });
+    expect(el.textContent).toBe("");
+    expect(el.style.background).toBe("var(--color-chart-gray)");
+  });
 });

@@ -44,13 +44,12 @@ export function AssetLogo({
     );
   }
 
-  const label =
-    avatarInitial(asset.institution ?? asset.assetName ?? "") || "?";
-  // 기관 색 표에서 기관 이름으로만 찾는다. 저장된 색(asset.color)은 읽지 않는다(값은 그대로 둔다) — logo-tile.md.
-  // 표에 없으면 Avatar 와 같은 이름 색(코드 포인트 합 % 10 → 차트 10색) + fg-neutral-inverted
-  const brand = getBrandColor(asset.institution);
-  const bg =
-    brand?.bg ?? `var(--color-chart-${avatarHue(asset.assetName ?? "")})`;
+  // 이름 하나 — 기관 이름(비면 자산 이름). 첫 글자 · 표 찾기 · 이름 색이 모두 이 이름에서 나온다(logo-tile.md).
+  // 저장된 색(asset.color)은 읽지 않는다(값은 그대로 둔다). 이름이 비면 글자 없이 회색(logo-tile.yaml initial)
+  const name = asset.institution?.trim() || asset.assetName?.trim() || "";
+  const label = avatarInitial(name);
+  const brand = getBrandColor(name);
+  const bg = brand?.bg ?? `var(--color-chart-${avatarHue(name)})`;
   const fg = brand
     ? (brand.fg ?? "var(--color-static-white)")
     : "var(--color-fg-neutral-inverted)";
