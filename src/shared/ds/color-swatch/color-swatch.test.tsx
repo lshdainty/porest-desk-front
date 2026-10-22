@@ -9,6 +9,8 @@ import { ColorSwatchGroup, type ColorSwatchValue } from "./color-swatch";
 import {
   colorName,
   COLOR_SWATCH_ORDER,
+  CHECK,
+  SWATCH,
   firstUnusedColor,
   parseRgb,
   contrastOf,
@@ -107,6 +109,17 @@ describe("firstUnusedColor", () => {
     ).toBe("blue");
     expect(firstUnusedColor([null, undefined])).toBe("blue");
     expect(firstUnusedColor(new Set(["blue"] as const))).toBe("green");
+  });
+});
+
+describe("글자 크기를 따르지 않는 px(color-swatch.yaml:71)", () => {
+  it("칸 40 · 누르는 44 · 체크 16 · 링 간격 6 · 간격 12 모두 px 클래스 — rem 이 아니다", () => {
+    const cls = SWATCH.split(" ");
+    expect(cls).toContain("size-[40px]");
+    expect(cls).toContain("before:-inset-[2px]");
+    expect(cls).toContain("after:-inset-[6px]");
+    expect(CHECK).toContain("[&_svg]:size-[16px]");
+    expect(SWATCH).not.toMatch(/-inset-(0\.5|1\.5)\b/);
   });
 });
 
