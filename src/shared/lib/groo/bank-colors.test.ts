@@ -31,10 +31,15 @@ describe("기관 색 — 표 하나(03E-010)", () => {
 
   it("글자색 — 흰 글자든 짙은 글자든 면 위 4.5:1 이상", () => {
     for (const entry of BANK_ENTRIES) {
-      const fg = entry.color.fg ?? "#ffffff";
-      expect(contrast(fg, entry.color.bg), entry.name).toBeGreaterThanOrEqual(
-        4.5,
-      );
+      // 짙은 글자는 모드마다 갈린다 — 라이트 #1A1F2E · 다크 #242938, 둘 다 면 위 4.5:1
+      const inks =
+        entry.color.fg === INSTITUTION_INK
+          ? ["#1A1F2E", "#242938"]
+          : [entry.color.fg ?? "#ffffff"];
+      for (const fg of inks)
+        expect(contrast(fg, entry.color.bg), entry.name).toBeGreaterThanOrEqual(
+          4.5,
+        );
     }
   });
 

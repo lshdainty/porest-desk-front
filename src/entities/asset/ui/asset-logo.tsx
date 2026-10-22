@@ -1,13 +1,7 @@
 import { useState, type CSSProperties } from "react";
+import { avatarHue, avatarInitial } from "@/shared/ds/avatar";
 import { getBrandColor } from "@/shared/lib/groo/bank-colors";
 import type { Asset } from "../model/types";
-
-function hashHue(text: string): number {
-  let h = 0;
-  for (let i = 0; i < text.length; i++)
-    h = (h * 31 + text.charCodeAt(i)) & 0xffffffff;
-  return Math.abs(h) % 360;
-}
 
 type AssetLogoInput = Pick<Asset, "assetName" | "institution" | "color"> &
   Partial<Pick<Asset, "cardCatalog">>;
@@ -17,7 +11,7 @@ type AssetLogoInput = Pick<Asset, "assetName" | "institution" | "color"> &
  * 자산 목록·관리·상세·생성/수정 미리보기에서 동일하게 사용하는 단일 표현.
  *
  * 카드 이미지는 카탈로그(외부 URL)라 깨질 수 있어, 로드에 실패하면 모노그램으로 되돌린다.
- * 색 우선순위: asset.color(생성 시 저장한 회사 primary) → 기관 색 표(기관 이름으로만 — 자산 이름으로 찾지 않는다) → 자산명 해시색.
+ * 색: 기관 색 표(기관 이름으로만 — 자산 이름 · 저장된 asset.color 로 찾지 않는다) → 없으면 자산 이름의 Avatar 이름 색.
  * 글자색은 기관 색 표의 글자색(밝은 면은 짙은 글자) → 기본 흰색.
  */
 export function AssetLogo({
@@ -51,13 +45,15 @@ export function AssetLogo({
   }
 
   const label =
-    (asset.institution ?? asset.assetName ?? "?").trim().charAt(0) || "?";
+    avatarInitial(asset.institution ?? asset.assetName ?? "") || "?";
+  // 기관 색 표에서 기관 이름으로만 찾는다. 저장된 색(asset.color)은 읽지 않는다(값은 그대로 둔다) — logo-tile.md.
+  // 표에 없으면 Avatar 와 같은 이름 색(코드 포인트 합 % 10 → 차트 10색) + fg-neutral-inverted
   const brand = getBrandColor(asset.institution);
   const bg =
-    asset.color ??
-    brand?.bg ??
-    `oklch(0.55 0.12 ${hashHue(asset.assetName ?? "asset")})`;
-  const fg = brand?.fg ?? "var(--color-static-white)";
+    brand?.bg ?? `var(--color-chart-${avatarHue(asset.assetName ?? "")})`;
+  const fg = brand
+    ? (brand.fg ?? "var(--color-static-white)")
+    : "var(--color-fg-neutral-inverted)";
   return (
     <span
       style={{

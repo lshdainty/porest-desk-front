@@ -8,8 +8,11 @@ export interface BrandColor {
   fg?: string; // 짙은 글자가 필요한 밝은 배경일 때만 지정. 기본은 #fff.
 }
 
-/** 기관 색 표의 dark 글자색 — 라이트 fg-neutral(#1A1F2E) · 다크 fg-neutral-inverted(#242938), 면이 모드를 따르지 않으므로 짙은 글자 하나 */
-export const INSTITUTION_INK = "#1A1F2E";
+/**
+ * 기관 색 표의 dark 글자색 — 라이트 fg-neutral(#1A1F2E) · 다크 fg-neutral-inverted(#242938). 면이 모드를 따르지 않으므로 두 모드 모두 짙은 글자이고,
+ * 값은 모드마다 갈린다(--institution-ink 는 groo.css 가 라이트 · 다크로 정한다)
+ */
+export const INSTITUTION_INK = "var(--institution-ink)";
 
 /** 기관 색 표의 한 줄 → 면 색 · 글자색(white 면 fg 생략 = 흰색) */
 export function brandOfInstitution(
