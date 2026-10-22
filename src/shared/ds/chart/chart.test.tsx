@@ -341,6 +341,24 @@ describe("차트 상자 — 접근성 · 키보드", () => {
     }
   });
 
+  it("도넛 조각 묶음(g.recharts-pie)의 이름 없는 tabindex 도 걷는다(03E-004a)", async () => {
+    await render(
+      <Chart label="카테고리" height={160}>
+        <PieChart>
+          <Pie
+            data={[{ v: 1 }, { v: 2 }]}
+            dataKey="v"
+            innerRadius={58}
+            outerRadius={80}
+          />
+        </PieChart>
+      </Chart>,
+    );
+    await layoutCharts(160, 160);
+    expect(qa("svg.recharts-surface").length).toBeGreaterThan(0);
+    expect(qa("svg.recharts-surface [tabindex]")).toHaveLength(0);
+  });
+
   it("데이터가 있으면 Tab 한 칸(tabindex 0), 비면 초점을 받지 않는다", async () => {
     await render(trend());
     expect(q("[data-slot=chart]")!.tabIndex).toBe(0);

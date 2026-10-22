@@ -27,7 +27,7 @@ import { cva } from "class-variance-authority";
  * 이름 — 점 · 숫자는 aria-hidden 이라 보조 기술이 읽지 않는다. 알림은 붙은 버튼 · 탭의 이름에 직접 넣는다:
  *   아이콘 버튼 · 점     aria-label={hasUnread ? "알림, 새 알림 있음" : "알림"}
  *   아이콘 버튼 · 숫자   aria-label={unread > 0 ? `알림, 새 알림 ${unread}개` : "알림"} — 줄이지 않은 수("새 알림 128개")
- *   탭 · 점              탭 글 뒤 숨은 글 "새 소식"(Tabs) · "새 내용"(Segmented Control)
+ *   탭 · 점              탭 글 뒤 숨은 글 "새 소식"(Tabs) · "새 소식"(Segmented Control — 둘 다 같은 글, tabs.md Q-010-4)
  * 수가 바뀌어도 소리로 알리지 않는다(라이브 영역 없음) — 버튼에 초점이 오면 새 이름을 읽는다. 꼭 바로 알려야 하면 Snackbar.
  * 보면(목록을 열면 · 그 탭을 고르면) 바로 지운다. 늘 있는 개수(걸린 필터 2개 · 거래 3건)는 알림 배지가 아니다.
  */

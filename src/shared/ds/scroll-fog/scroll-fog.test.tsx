@@ -155,8 +155,26 @@ describe("ScrollFog", () => {
     expect(ref.current).toBe(el);
     expect(el.tabIndex).toBe(0);
     expect(el.getAttribute("aria-label")).toBe("이용 약관");
-    // 흐림은 장식 — 역할이 없다
-    expect(el.hasAttribute("role")).toBe(false);
+    // 이름을 받으면 role="region" 을 스스로 붙인다 — 역할 없는 div 의 이름은 무시된다(03E-018)
+    expect(el.getAttribute("role")).toBe("region");
+  });
+
+  it("이름이 없으면 역할도 없다(흐림은 장식), 역할을 직접 주면 그것이 이긴다", () => {
+    expect(render(<ScrollFog>약관</ScrollFog>).hasAttribute("role")).toBe(
+      false,
+    );
+    expect(
+      render(
+        <ScrollFog aria-labelledby="h" role="group">
+          약관
+        </ScrollFog>,
+      ).getAttribute("role"),
+    ).toBe("group");
+    expect(
+      render(<ScrollFog aria-labelledby="h">약관</ScrollFog>).getAttribute(
+        "role",
+      ),
+    ).toBe("region");
   });
 
   it("토큰이 없으면 흐리지 않는다", () => {
