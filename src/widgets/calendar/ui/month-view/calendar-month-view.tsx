@@ -203,20 +203,23 @@ const MonthDayCell = ({
           onClick={handleClick}
           className={cn(
             "flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring flex-shrink-0",
-            !currentMonth && "opacity-20",
             // 오늘 — 가계부 월그리드 선택 원 정합(--bg-brand, 다크 primary 고정. 사용자 결정)
             isToday(date) &&
               "bg-[var(--bg-brand)] font-bold text-static-white hover:bg-[var(--bg-brand)]",
           )}
           style={{
             // 토요일 — 앱 fgBrand 정합(--color-info 아님). 일요일/공휴일 = fg-expense(빨강).
+            // 이웃 달 — 날짜 숫자만 fg-disabled(불투명도 없음 · 일정 · 금액 · 휴일은 이번 달과 같다, 03-C 결정 5A)
+            // (오늘의 채운 원은 이웃 달 칸에서도 흰 글자 그대로 — 원 위 대비)
             color: isToday(date)
               ? undefined
-              : isHoliday || isSunday
-                ? "var(--color-fg-critical)"
-                : isSaturday
-                  ? "var(--fg-brand)"
-                  : undefined,
+              : !currentMonth
+                ? "var(--color-fg-disabled)"
+                : isHoliday || isSunday
+                  ? "var(--color-fg-critical)"
+                  : isSaturday
+                    ? "var(--fg-brand)"
+                    : undefined,
           }}
         >
           {day}
@@ -230,7 +233,6 @@ const MonthDayCell = ({
               onClick={handleClick}
               className={cn(
                 "text-xs font-semibold text-muted-foreground flex-shrink-0 px-0.5 hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring rounded",
-                !currentMonth && "opacity-50",
               )}
             >
               <span className="sm:hidden">
@@ -246,12 +248,7 @@ const MonthDayCell = ({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "flex flex-col flex-1 min-h-0 gap-1",
-          !currentMonth && "opacity-50",
-        )}
-      >
+      <div className="flex flex-col flex-1 min-h-0 gap-1">
         {/* 셀 본문 상단에 수입/지출 합계 — 글자 수 따라 fontSize 동적 축소.
             셀 폭이 좁아 +3,500,000 같은 긴 숫자가 옆 셀 침범하던 버그 fix.
             step: <=6 11px / <=8 10px / <=10 9px / 그 외 8px (App 정합).
