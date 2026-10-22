@@ -31,7 +31,7 @@ import { dsText } from "@/shared/ds/i18n";
  *   가르므로(@container) 묶음은 그 폭을 다 쓴다 — 폭을 내용으로 정하는 자리(팝오버)에서는 321 로 잰다.
  * 키보드(radiogroup): 묶음에 Tab 하나(고른 칸, 없으면 첫 칸). ← → 는 차례대로 옮기며 고른다(줄 끝에서 다음 줄로, 끝에서 처음으로 —
  *   지금 색 칸은 차례의 맨 앞, RTL 은 반대), ↑ ↓ 는 위아래 줄의 같은 칸(두 줄이라 오간다 — 지금 색 칸에서는 위 줄에 있어도 그대로),
- *   Home · End 는 첫 칸 · 마지막 칸. Space 는 초점의 칸을 고르고, Enter 는 폼을 제출한다(진짜 radio 와 같다 — Radio 묶음과 같은 규칙).
+ *   Home · End · PageUp · PageDown 은 받지 않는다(ignoreRadioJumpKeys — 하나 고르기는 화살표만, 2026-10-17 03-E 결정 3 후속). Space 는 초점의 칸을 고르고, Enter 는 폼을 제출한다(진짜 radio 와 같다 — Radio 묶음과 같은 규칙).
  * 막힘: 색은 그대로 두고 누르기만 막는다(진짜 disabled — Tab 에서 빠진다). 고른 칸의 고리는 stroke-neutral-solid 로 남긴다.
  */
 
@@ -104,19 +104,19 @@ export const COLUMNS = 5;
 
 // 칸 — 원 40 · 누르는 44. 고른 고리는 바깥 2 띄운 2px outline, 키보드 포커스 링은 그 바깥 6 에 ::after 로(고리와 겹치지 않게)
 export const SWATCH = [
-  "relative block size-10 shrink-0 cursor-pointer rounded-full border-0 p-0",
-  "before:absolute before:-inset-0.5 before:rounded-full before:content-['']",
+  "relative block size-[40px] shrink-0 cursor-pointer rounded-full border-0 p-0",
+  "before:absolute before:-inset-[2px] before:rounded-full before:content-['']",
   "outline-offset-2 aria-checked:outline-2 aria-checked:outline-solid aria-checked:outline-stroke-neutral-contrast",
   "disabled:aria-checked:outline-stroke-neutral-solid not-aria-checked:focus-visible:outline-none",
-  "after:pointer-events-none after:absolute after:-inset-1.5 after:rounded-full after:content-['']",
+  "after:pointer-events-none after:absolute after:-inset-[6px] after:rounded-full after:content-['']",
   "focus-visible:after:outline-2 focus-visible:after:outline-solid focus-visible:after:outline-stroke-focus-ring",
   "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] [--press-basis:40] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "disabled:cursor-not-allowed disabled:[scale:1]",
 ].join(" ");
 
-// 체크 16 · 선 2.5 — 고른 칸 가운데
+// 체크 16 · 누르는 44 · 포커스 링 간격 6 도 px 그대로(color-swatch.yaml:71 — 글자 크기를 따르지 않는다). 체크는 고른 칸 가운데
 export const CHECK =
-  "pointer-events-none absolute inset-0 flex items-center justify-center [&_svg]:size-4";
+  "pointer-events-none absolute inset-0 flex items-center justify-center [&_svg]:size-[16px]";
 
 // 지금 색 칸이 있으면 묶음이 놓인 자리의 폭으로 가른다 — 321(칸 40 + 16 + 선 1 + 16 + 격자 248, color-swatch.yaml divider.stackBelow)
 // 보다 좁으면 지금 색 칸 · 선 · 격자를 세로로. 폭을 내용으로 정하는 자리(팝오버 · fit-content)에서는 321 로 잰다(contain-intrinsic)

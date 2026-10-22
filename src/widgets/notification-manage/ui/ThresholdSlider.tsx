@@ -10,6 +10,7 @@ export function ThresholdSlider({
   disabled,
   onDrag,
   onCommit,
+  describedBy,
 }: {
   /** 지금 보이는 값 — 끄는 동안은 끄는 값, 아니면 서버 값 */
   value: number;
@@ -18,6 +19,8 @@ export function ThresholdSlider({
   onDrag: (next: number) => void;
   /** 손을 뗄 때 한 번 */
   onCommit: (next: number) => void;
+  /** 오류 글의 id — 손잡이(role=slider)가 설명으로 읽는다 */
+  describedBy?: string;
 }) {
   return (
     <Slider
@@ -30,6 +33,7 @@ export function ThresholdSlider({
       onValueChange={([v]) => onDrag(v!)}
       onValueCommit={([v]) => onCommit(v!)}
       disabled={disabled}
+      aria-describedby={describedBy}
     />
   );
 }

@@ -10,7 +10,11 @@ import {
   useFieldGroupState,
 } from "@/shared/ds/field";
 import { Checkmark, CheckboxGroupContext } from "@/shared/ds/checkbox";
-import { Radiomark, submitOnRadioEnter } from "@/shared/ds/radio-group";
+import {
+  Radiomark,
+  ignoreRadioJumpKeys,
+  submitOnRadioEnter,
+} from "@/shared/ds/radio-group";
 
 import {
   SELECT_BOX_GHOST_NO_BG,
@@ -49,7 +53,11 @@ import {
  */
 
 type Layout = "horizontal" | "vertical";
-const SelectBoxGroupContext = React.createContext<{ columns: 1 | 2 | 3 }>({
+// disabled — 하나 고르기 묶음(또는 Field)의 막힘. 상자가 받아 모양(글 · 설명 fg-disabled · 커서 · 누름 바탕 없음)도 막힘으로 그린다(03B-004)
+const SelectBoxGroupContext = React.createContext<{
+  columns: 1 | 2 | 3;
+  disabled?: boolean;
+}>({
   columns: 1,
 });
 const useLayout = (layout?: Layout): Layout => {
@@ -196,25 +204,33 @@ export interface RadioSelectBoxGroupProps
 const RadioSelectBoxGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
   RadioSelectBoxGroupProps
->(({ className, columns = 1, disabled, onKeyDown, ...props }, ref) => {
-  const field = useFieldGroupState();
-  const off = disabled ?? field.disabled;
-  return (
-    <SelectBoxGroupContext.Provider value={{ columns: columns ?? 1 }}>
-      <RadioGroupPrimitive.Root
-        ref={ref}
-        data-slot="select-box-group"
-        className={cn(selectBoxGroupVariants({ columns }), className)}
-        disabled={off}
-        {...(off ? { "aria-disabled": true } : {})}
-        {...(field.invalid ? { "aria-invalid": true } : {})}
-        {...(field.required ? { "aria-required": true } : {})}
-        {...useFieldGroup(props)}
-        onKeyDown={submitOnRadioEnter(onKeyDown)}
-      />
-    </SelectBoxGroupContext.Provider>
-  );
-});
+>(
+  (
+    { className, columns = 1, disabled, onKeyDown, onKeyDownCapture, ...props },
+    ref,
+  ) => {
+    const field = useFieldGroupState();
+    const off = disabled ?? field.disabled;
+    return (
+      <SelectBoxGroupContext.Provider
+        value={{ columns: columns ?? 1, disabled: off }}
+      >
+        <RadioGroupPrimitive.Root
+          ref={ref}
+          data-slot="select-box-group"
+          className={cn(selectBoxGroupVariants({ columns }), className)}
+          disabled={off}
+          {...(off ? { "aria-disabled": true } : {})}
+          {...(field.invalid ? { "aria-invalid": true } : {})}
+          {...(field.required ? { "aria-required": true } : {})}
+          {...useFieldGroup(props)}
+          onKeyDown={submitOnRadioEnter(onKeyDown)}
+          onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
+        />
+      </SelectBoxGroupContext.Provider>
+    );
+  },
+);
 RadioSelectBoxGroup.displayName = "RadioSelectBoxGroup";
 
 export interface RadioSelectBoxProps
@@ -244,12 +260,15 @@ const RadioSelectBox = React.forwardRef<
       rootProps,
       control = "radio",
       id,
-      disabled,
+      disabled: disabledProp,
       className,
       ...props
     },
     ref,
   ) => {
+    // 묶음(또는 Field)의 막힘을 받는다 — 칸에 직접 준 값이 이긴다. 여럿 고르기(CheckSelectBox)와 같다
+    const groupDisabled = React.useContext(SelectBoxGroupContext).disabled;
+    const disabled = disabledProp ?? groupDisabled;
     const autoId = React.useId();
     const rid = id ?? autoId;
     const mark =

@@ -120,7 +120,7 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
     const inner = pie?.props.innerRadius;
     const hole = typeof inner === "number" ? inner * 2 : null;
 
-    // 라이브러리가 svg 에 다는 role="application" · tabindex 를 걷는다 — 차트 상자가 이름 있는 role="img" 하나다
+    // 라이브러리가 svg 에 다는 role="application" · tabindex(도넛 조각 g 포함)를 걷는다 — 차트 상자가 이름 있는 role="img" 하나다
     React.useLayoutEffect(() => {
       const root = rootRef.current;
       if (!root) return;
@@ -129,6 +129,10 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
           if (svg.hasAttribute("tabindex")) svg.removeAttribute("tabindex");
           if (svg.hasAttribute("role")) svg.removeAttribute("role");
         });
+        // 도넛 조각 묶음(g.recharts-pie)도 tabindex=0 을 달아 이름 없는 초점이 된다 — 안쪽 요소의 tabindex 도 걷는다(03E-004a)
+        root
+          .querySelectorAll("svg.recharts-surface [tabindex]")
+          .forEach((el) => el.removeAttribute("tabindex"));
       };
       strip();
       const observer = new MutationObserver(strip);

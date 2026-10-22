@@ -8,6 +8,7 @@ import type {
 import { toast } from "sonner";
 import { rememberCurrentPath } from "@/shared/lib/groo/login-redirect";
 import { userFacingMessage } from "./error-message";
+import { beginAttempt, endChain } from "./request-budget";
 
 const AUTH_FLAG_KEY = "authenticated";
 
@@ -79,6 +80,8 @@ apiClient.interceptors.request.use(
     ) {
       cfg.silent = true;
     }
+    // 불러오기는 처음 요청부터 다시 시도까지 합쳐 10초 안에 끝낸다(request-budget.ts)
+    beginAttempt(config);
     return config;
   },
   (error) => Promise.reject(error),
@@ -111,7 +114,10 @@ const showApiErrorToast = (message: string) => {
 };
 
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response.data,
+  (response: AxiosResponse) => {
+    endChain(response.config);
+    return response.data;
+  },
   (error) => {
     if (error.response?.status === 401) {
       if (!isRedirectingToLogin) {

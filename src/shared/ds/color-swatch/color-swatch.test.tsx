@@ -9,6 +9,8 @@ import { ColorSwatchGroup, type ColorSwatchValue } from "./color-swatch";
 import {
   colorName,
   COLOR_SWATCH_ORDER,
+  CHECK,
+  SWATCH,
   firstUnusedColor,
   parseRgb,
   contrastOf,
@@ -107,6 +109,17 @@ describe("firstUnusedColor", () => {
     ).toBe("blue");
     expect(firstUnusedColor([null, undefined])).toBe("blue");
     expect(firstUnusedColor(new Set(["blue"] as const))).toBe("green");
+  });
+});
+
+describe("글자 크기를 따르지 않는 px(color-swatch.yaml:71)", () => {
+  it("칸 40 · 누르는 44 · 체크 16 · 링 간격 6 · 간격 12 모두 px 클래스 — rem 이 아니다", () => {
+    const cls = SWATCH.split(" ");
+    expect(cls).toContain("size-[40px]");
+    expect(cls).toContain("before:-inset-[2px]");
+    expect(cls).toContain("after:-inset-[6px]");
+    expect(CHECK).toContain("[&_svg]:size-[16px]");
+    expect(SWATCH).not.toMatch(/-inset-(0\.5|1\.5)\b/);
   });
 });
 
@@ -312,13 +325,14 @@ describe("키보드 — radiogroup", () => {
     expect(checked()?.getAttribute("aria-label")).toBe("갈색");
   });
 
-  it("Home · End 는 첫 칸 · 마지막 칸", () => {
+  it("Home · End · PageUp · PageDown 은 받지 않는다 — 화살표만(03-E 결정 3 후속)", () => {
     setup("blue");
     act(() => radios()[4]!.focus());
-    key(radios()[4]!, "End");
-    expect(checked()?.getAttribute("aria-label")).toBe("회색");
-    key(radios()[9]!, "Home");
-    expect(checked()?.getAttribute("aria-label")).toBe("빨강");
+    for (const k of ["End", "Home", "PageUp", "PageDown"]) {
+      key(radios()[4]!, k);
+      expect(checked()?.getAttribute("aria-label")).toBe("파랑");
+      expect(document.activeElement).toBe(radios()[4]);
+    }
   });
 
   it("Enter 는 고르지 않고 폼을 제출한다", () => {
@@ -435,10 +449,6 @@ describe("지금 색 · 자동", () => {
     // 격자 안 ↓ 는 격자 줄 기준 — 빨강(첫 칸)의 아래 줄 첫 칸은 남색
     key(radios()[1]!, "ArrowDown");
     expect(checked()?.getAttribute("aria-label")).toBe("남색");
-    key(radios()[0]!, "Home");
-    expect(checked()?.getAttribute("aria-label")).toBe("지금 색");
-    key(radios()[0]!, "End");
-    expect(checked()?.getAttribute("aria-label")).toBe("회색");
   });
 
   it("지금 색 칸의 체크는 두 색 가운데 대비가 큰 쪽으로 정한다(셈)", () => {

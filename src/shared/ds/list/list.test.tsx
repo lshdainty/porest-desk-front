@@ -779,7 +779,7 @@ describe("ListSwitchItem", () => {
     );
     const toggle = container.querySelector<HTMLElement>("[role=switch]")!;
     expect(classes(toggle)).toEqual(
-      expect.arrayContaining(["h-8", "w-[52px]", "active:[scale:1]"]),
+      expect.arrayContaining(["h-8", "w-[3.25rem]", "active:[scale:1]"]),
     );
     expect(toggle.getAttribute("aria-checked")).toBe("true");
     expect(toggle.getAttribute("data-list-action")).toBe("");
@@ -1219,6 +1219,36 @@ describe("ListDivider · ListHeader · ListTile", () => {
     expect(classes(h2!)).toContain("m-0");
     // 전역 h2 의 글자 사이 −0.012em 을 물려받지 않는다(스펙 t4 는 0)
     expect(classes(h2!)).toContain("tracking-normal");
+  });
+
+  it('오른쪽 버튼이 있는 머리는 as="div" + 제목 글만 머리말 — 머리말 이름에 버튼 글이 섞이지 않는다(스펙 #186)', () => {
+    render(
+      <>
+        <ListHeader as="div">
+          <h2 id="budget2" className="m-0 tracking-normal [font:inherit]">
+            카테고리별 예산
+          </h2>
+          <button type="button">전체 보기</button>
+        </ListHeader>
+        <List aria-labelledby="budget2">
+          <ListItem title="식비" />
+        </List>
+      </>,
+    );
+    const header = slot("list-header");
+    expect(header.tagName).toBe("DIV");
+    const headings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    expect(headings).toHaveLength(1);
+    // 머리말 이름 = 제목 글만, 버튼은 제목 밖의 형제
+    expect(headings[0]!.textContent).toBe("카테고리별 예산");
+    expect(headings[0]!.parentElement).toBe(header);
+    expect(header.querySelector("button")!.parentElement).toBe(header);
+    expect(headings[0]!.contains(header.querySelector("button"))).toBe(false);
+    const list = container.querySelector("ul")!;
+    expect(
+      document.getElementById(list.getAttribute("aria-labelledby")!)
+        ?.textContent,
+    ).toBe("카테고리별 예산");
   });
 
   it("목록 제목이 있으면 목록에 aria-labelledby 로 잇는다 — 오른쪽 버튼은 제목 글 밖이라 목록 이름에 섞이지 않는다", () => {

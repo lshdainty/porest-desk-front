@@ -46,32 +46,16 @@ import { KRW, isEn } from "@/shared/lib/groo/format";
 import { MaskAmount, HideUnit, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 import { PageHead } from "@/shared/ui/groo/page-head";
+import { avatarHue, avatarInitial } from "@/shared/ds/avatar";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-// ── 아바타 팔레트 ────────────────────────────────────────────────────────────
-// 이름 기반 chart 10색 순환(앱 _participantPaletteOklch 정합). alias var = 다크 자동 swap.
-const AVATAR_VARS = [
-  "--color-chart-blue",
-  "--color-chart-green",
-  "--color-chart-orange",
-  "--color-chart-violet",
-  "--color-chart-pink",
-  "--color-chart-indigo",
-  "--color-chart-red",
-  "--color-chart-brown",
-  "--color-chart-yellow",
-  "--color-chart-gray",
-] as const;
-
-/** 이름 → 안정적 팔레트 인덱스(문자 코드 합 mod 10). */
-function avatarColor(name: string): string {
-  let sum = 0;
-  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
-  return `var(${AVATAR_VARS[sum % AVATAR_VARS.length]})`;
-}
-
-const initial = (name: string) => (name && name.length > 0 ? name[0]! : "?");
+// ── 아바타 ──────────────────────────────────────────────────────────────────
+// 이니셜 · 이름 색은 ds 규칙 함수(avatarInitial · avatarHue)를 부른다 — 웹 · 앱 같은 사람은 같은 색(03E-011).
+// 이름 색 = 표시 이름의 코드 포인트 합 % 10 → v110 차례, 글자 fg-neutral-inverted. 안 낸 사람을 흐리지 않는다(v106) —
+// 낸 · 안 낸 상태는 이름 옆 글 · 버튼이 알린다.
+const avatarColor = (name: string) => `var(--color-chart-${avatarHue(name)})`;
+const initial = (name: string) => avatarInitial(name) || "?";
 
 // ── 모델 헬퍼 ────────────────────────────────────────────────────────────────
 /**
@@ -626,12 +610,10 @@ const DutchPayPageInner = ({ mobile }: { mobile: boolean }) => {
 function Avatar({
   name,
   size = 28,
-  dim,
   ring,
 }: {
   name: string;
   size?: number;
-  dim?: boolean;
   ring?: boolean;
 }) {
   return (
@@ -641,14 +623,13 @@ function Avatar({
         height: size,
         borderRadius: 999,
         background: avatarColor(name),
-        color: "var(--color-static-white)",
+        color: "var(--color-fg-neutral-inverted)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         fontWeight: "700",
         fontSize: size <= 28 ? 12 : size <= 36 ? 14 : 16,
         flexShrink: 0,
-        opacity: dim ? 0.5 : 1,
         border: ring ? "2px solid var(--bg-surface)" : "none",
         boxSizing: "border-box",
       }}
@@ -884,12 +865,7 @@ function SessionCard({
             : d.participants.slice(0, 4)
           ).map((p, i) => (
             <span key={p.rowId} style={{ position: "absolute", left: i * 20 }}>
-              <Avatar
-                name={p.participantName}
-                size={28}
-                dim={!p.isPaid && !isPayer(d, p)}
-                ring
-              />
+              <Avatar name={p.participantName} size={28} ring />
             </span>
           ))}
           {d.participants.length > 4 && (
@@ -1834,11 +1810,7 @@ function DutchDetailDialog({
                 padding: "6px 0",
               }}
             >
-              <Avatar
-                name={p.participantName}
-                size={36}
-                dim={!p.isPaid && !payer}
-              />
+              <Avatar name={p.participantName} size={36} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span

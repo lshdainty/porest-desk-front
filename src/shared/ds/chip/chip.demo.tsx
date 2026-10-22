@@ -397,7 +397,7 @@ export const ChipDemo = () => {
         </DemoRow>
       </DemoBlock>
 
-      <DemoBlock title="묶음 — 줄바꿈(칩 사이 · 줄 사이 8), 가장 나쁜 값: 칩 20개 · 긴 칩 이름(줄바꿈 · 말줄임 없이 글만큼 넓어진다)">
+      <DemoBlock title="묶음 — 줄바꿈(칩 사이 · 줄 사이 8), 가장 나쁜 값: 칩 20개 · 긴 칩 이름(줄 폭에서 멈추고 글 끝을 말줄임, 짧은 칩은 글만큼 넓다)">
         <DemoRow label="줄바꿈 · 20개">
           <Specimen spec="chip" combo={{ variant: "outlineWeak" }}>
             <div className="w-full max-w-[360px]">
@@ -414,16 +414,71 @@ export const ChipDemo = () => {
         <DemoRow label="긴 이름">
           <div className="w-full max-w-[360px]">
             <ChipGroup aria-label="긴 이름">
-              <Chip>신한카드 마이 포인트 플러스 체크카드</Chip>
+              <Chip>숲길카드 새싹 포인트 플러스 체크카드</Chip>
               <Chip selected>월 구독료와 정기 결제 모음</Chip>
               <Chip>외식</Chip>
             </ChipGroup>
           </div>
         </DemoRow>
+        <DemoRow label="띠 폭 안쪽 312 · 342 — 긴 칩 · 입력값 칩 · 스크롤 줄(좌우 24 안)">
+          {[312, 342].map((width) => (
+            <div
+              key={width}
+              data-scene={`chip-strip-${width}`}
+              style={{ width }}
+              className="bg-bg-layer-default"
+            >
+              <ChipGroup aria-label={`띠 ${width}`}>
+                <Chip>숲길카드 새싹 포인트 플러스 체크카드 월 구독료</Chip>
+                <Chip selected>외식</Chip>
+                <InputChip onRemove={() => {}}>
+                  숲길카드 새싹 포인트 플러스 체크카드 월 구독료와 정기 결제
+                  모음
+                </InputChip>
+              </ChipGroup>
+              <div className="bg-bg-layer-default px-global-gutter">
+                <ChipGroup
+                  layout="scroll"
+                  bleed
+                  aria-label={`띠 스크롤 ${width}`}
+                >
+                  <Chip variant="solid">
+                    숲길카드 새싹 포인트 플러스 체크카드 월 구독료와 정기 결제
+                    모음
+                  </Chip>
+                  <Chip variant="solid">외식</Chip>
+                </ChipGroup>
+              </div>
+            </div>
+          ))}
+        </DemoRow>
+        <DemoRow label="입력값 칩 · 긴 이름 — 지우기 × 는 남는다">
+          <div className="w-full max-w-[360px]">
+            <ChipGroup aria-label="긴 입력값">
+              <InputChip onRemove={() => {}}>
+                숲길카드 새싹 포인트 플러스 체크카드 월 구독료와 정기 결제 모음
+              </InputChip>
+              <InputChip onRemove={() => {}}>외식</InputChip>
+            </ChipGroup>
+          </div>
+        </DemoRow>
+        <DemoRow label="막힌 Solid — 바탕은 그대로, 글 · 아이콘만 fg-disabled">
+          <div className="flex gap-x2 rounded-r2 bg-bg-layer-basement p-x3">
+            <Chip variant="solid" disabled>
+              안 고름
+            </Chip>
+            <Chip variant="solid" selected disabled>
+              고름
+            </Chip>
+            <Chip variant="outlineWeak" disabled>
+              윤곽
+            </Chip>
+          </div>
+        </DemoRow>
         <DemoRow label="긴 이름 · 스크롤">
           <div className="w-[360px] bg-bg-layer-default px-global-gutter">
             <ChipGroup layout="scroll" bleed aria-label="긴 이름 스크롤">
-              <Chip variant="solid">신한카드 마이 포인트 플러스 체크카드</Chip>
+              <Chip variant="solid">숲길카드 새싹 포인트 플러스 체크카드</Chip>
               <Chip variant="solid" selected>
                 월 구독료와 정기 결제 모음
               </Chip>

@@ -4,7 +4,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Avatar, AvatarPhotoEdit, AvatarStack } from "./avatar";
-import { avatarHue, avatarInitial } from "./avatar-variants";
+import {
+  avatarHue,
+  avatarInitial,
+  avatarStackVisible,
+} from "./avatar-variants";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -41,6 +45,14 @@ describe("avatarInitial", () => {
     expect(avatarInitial("Kim Minsu")).toBe("K");
     expect(avatarInitial("  kim  ")).toBe("K");
     expect(avatarInitial("1번 손님")).toBe("1");
+  });
+
+  it("대문자로 바꿔 글자가 늘면 원래 첫 글자 — 이니셜은 늘 한 글자, 앞뒤 공백은 앱 trim 과 같은 목록(03E-020)", () => {
+    expect(avatarInitial("ßeta")).toBe("ß");
+    expect(avatarInitial("ﬁsh")).toBe("ﬁ");
+    expect(avatarInitial("\u0085김민수")).toBe("김");
+    expect(avatarInitial("\u0085kim\u0085")).toBe("K");
+    expect(avatarHue("\u0085김민수")).toBe(avatarHue("김민수"));
   });
 
   it("사용자가 보는 글자 단위로 자른다 — 가족 그림 글자는 한 글자다", () => {
@@ -450,5 +462,78 @@ describe("AvatarStack", () => {
     expect(sheet.className).toContain(
       "[--avatar-stack-ring-color:var(--color-bg-layer-floating)]",
     );
+  });
+});
+
+describe("AvatarStack — 놓인 폭에 맞춰 보이는 사람 수(03-E 결정 4 B)", () => {
+  // 스펙 예: 108 · 6명 · W 312 → c = 1 + ⌊204 ÷ 81⌋ = 3 → 2명 + "+4"
+  it("보이는 사람 = min(4, c − 1), 가장 적어도 1명 — 셈", () => {
+    expect(avatarStackVisible(6, 4, 108, 312)).toBe(2);
+    // 폰 안쪽 폭 312 에서 64 까지는 늘 앞 4명(64 · 5원 256), 80 부터 줄어든다
+    expect(avatarStackVisible(6, 4, 64, 312)).toBe(4);
+    expect(avatarStackVisible(6, 4, 80, 312)).toBe(3);
+    expect(avatarStackVisible(6, 4, 96, 312)).toBe(3);
+    // 모두(4명 이하)가 들면 모두 — 4명 108 은 지름 + 3 × 81 = 351 > 312 라 줄어든다
+    expect(avatarStackVisible(4, 4, 24, 312)).toBe(4);
+    expect(avatarStackVisible(4, 4, 108, 312)).toBe(2);
+    expect(avatarStackVisible(4, 4, 108, 351)).toBe(4);
+    // 폭이 한 원도 안 들어가도 가장 적어도 1명
+    expect(avatarStackVisible(6, 4, 108, 100)).toBe(1);
+    // 폭을 모르면 max 대로 · 사람이 적으면 있는 만큼
+    expect(avatarStackVisible(6, 4, 108, null)).toBe(4);
+    expect(avatarStackVisible(2, 4, 108, null)).toBe(2);
+    expect(avatarStackVisible(0, 4, 24, 312)).toBe(0);
+  });
+
+  it('부모 폭이 바뀌면 다시 세고, 이름 함수의 "외 N명" 도 같이 바뀐다', () => {
+    let notify: () => void = () => {};
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(cb: () => void) {
+          notify = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    let width = 312;
+    const clientWidth = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(() => width);
+    const names = PEOPLE;
+    const stack = render(
+      <div>
+        <AvatarStack
+          size={108}
+          aria-label={({ shown, rest, total }) =>
+            `참여자 ${total}명: ${names.slice(0, shown).join(", ")}${rest > 0 ? ` 외 ${rest}명` : ""}`
+          }
+        >
+          {names.map((name) => (
+            <Avatar key={name} name={name} />
+          ))}
+        </AvatarStack>
+      </div>,
+    ).firstElementChild as HTMLElement;
+    const shown = () => stack.querySelectorAll("[data-slot=avatar]").length;
+    const plus = () =>
+      stack.querySelector("[data-slot=avatar-stack-overflow]")?.textContent;
+    expect(shown()).toBe(2);
+    expect(plus()).toBe(`+${names.length - 2}`);
+    expect(stack.getAttribute("aria-label")).toBe(
+      `참여자 ${names.length}명: ${names.slice(0, 2).join(", ")} 외 ${names.length - 2}명`,
+    );
+    // 화면이 넓어지면 보이는 사람이 늘고 "+N" · 이름이 같이 바뀐다
+    width = 600;
+    act(() => notify());
+    expect(shown()).toBe(4);
+    expect(plus()).toBe(`+${names.length - 4}`);
+    expect(stack.getAttribute("aria-label")).toContain(
+      `외 ${names.length - 4}명`,
+    );
+    expect(stack.dataset.shown).toBe("4");
+    clientWidth.mockRestore();
   });
 });

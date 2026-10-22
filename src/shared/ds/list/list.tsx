@@ -9,6 +9,7 @@ import { useExpandMotion } from "@/shared/ds/accordion";
 import { Checkmark, type CheckmarkProps } from "@/shared/ds/checkbox";
 import {
   Radiomark,
+  ignoreRadioJumpKeys,
   submitOnRadioEnter,
   type RadiomarkProps,
 } from "@/shared/ds/radio-group";
@@ -769,18 +770,24 @@ export type ListRadioGroupProps = Omit<
 const ListRadioGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
   ListRadioGroupProps
->(({ className, itemRadius, style, onKeyDown, ...props }, ref) => (
-  <ListRowTag.Provider value="div">
-    <RadioGroupPrimitive.Root
-      ref={ref}
-      data-slot="list"
-      className={cn(listVariants(), className)}
-      style={radiusStyle(itemRadius, style)}
-      {...props}
-      onKeyDown={submitOnRadioEnter(onKeyDown)}
-    />
-  </ListRowTag.Provider>
-));
+>(
+  (
+    { className, itemRadius, style, onKeyDown, onKeyDownCapture, ...props },
+    ref,
+  ) => (
+    <ListRowTag.Provider value="div">
+      <RadioGroupPrimitive.Root
+        ref={ref}
+        data-slot="list"
+        className={cn(listVariants(), className)}
+        style={radiusStyle(itemRadius, style)}
+        {...props}
+        onKeyDown={submitOnRadioEnter(onKeyDown)}
+        onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
+      />
+    </ListRowTag.Provider>
+  ),
+);
 ListRadioGroup.displayName = "ListRadioGroup";
 
 export type ListCheckGroupProps = Omit<
@@ -895,12 +902,16 @@ export interface ListHeaderProps
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof listHeaderVariants> {
   asChild?: boolean;
-  /** 제목 태그 — 기본 h2(화면 제목 아래 단계), 카드 안이면 h3(03D-007). asChild 면 자식이 태그다 */
+  /**
+   * 제목 태그 — 기본 h2(화면 제목 아래 단계), 카드 · 대화상자 · 시트 안이면 h3(03D-007). asChild 면 자식이 태그다.
+   * 오른쪽에 버튼을 두면 "div" 로 두고 제목 글만 h2 · h3 로 감싼다 — 줄 전체가 제목이면 머리말 이름이 "카테고리별 예산 전체 보기" 처럼 버튼 글과 섞인다
+   * (스펙 list.md "제목 태그", 2026-10-22 · 앱 PListHeader 와 같다)
+   */
   as?: "h2" | "h3" | "h4" | "div";
 }
 
-// 목록 제목 — 목록 밖, 바로 위. 오른쪽에 작은 버튼(도움말 · 전체 보기)을 둘 수 있다. 제목 글에 id 를 달고 목록의 aria-labelledby 로 잇는다
-// (버튼을 같이 두면 제목 글만 감싼 span 에 id 를 단다 — 버튼 이름이 목록 이름에 섞이지 않게)
+// 목록 제목 — 목록 밖, 바로 위. 오른쪽에 작은 버튼(도움말 · 전체 보기)을 둘 수 있다. 제목 글에 id 를 달고 목록의 aria-labelledby 로 잇는다.
+// 버튼을 같이 두면 머리는 as="div" 로 두고 제목 글만 h2 · h3 로 감싼다(그 제목에 id) — 버튼은 제목 밖의 형제라 머리말 이름도 목록 이름도 버튼 글과 섞이지 않는다
 const ListHeader = React.forwardRef<HTMLDivElement, ListHeaderProps>(
   ({ className, variant, asChild = false, as: Tag = "h2", ...props }, ref) => {
     const Comp = asChild ? Slot : Tag;

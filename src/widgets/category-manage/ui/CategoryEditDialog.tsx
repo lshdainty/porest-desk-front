@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "@/shared/ui/groo/primitives";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
@@ -66,6 +66,7 @@ export function CategoryEditDialog({
   const { t: tc } = useTranslation("common");
   const { t: te } = useTranslation("expense");
   const isNew = !cat;
+  const uid = useId();
   const [label, setLabel] = useState(cat?.categoryName || "");
   const [kind, setKind] = useState<ExpenseType>(
     cat?.expenseType || defaultKind,
@@ -220,7 +221,7 @@ export function CategoryEditDialog({
           - 최상위 편집: 강등 불가 → 필드 자체를 숨김. */}
       {(isNew || cat?.parentRowId != null) && (
         <Field style={{ marginBottom: 14 }}>
-          <FieldLabel>
+          <FieldLabel id={`${uid}parent-label`}>
             {t("parentCategory")}
             {isNew && (
               <span
@@ -241,7 +242,10 @@ export function CategoryEditDialog({
             }
             disabled={parentOptions.length === 0}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id={`${uid}parent`}
+              aria-labelledby={`${uid}parent-label ${uid}parent`}
+            >
               <SelectValue
                 placeholder={isNew ? t("rootOption") : t("selectParent")}
               />

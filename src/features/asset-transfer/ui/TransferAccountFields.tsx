@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
@@ -71,18 +72,24 @@ export function TransferAccountFields({
   const eligible = transferEligible(assets);
   const showInterest = interestEnabled && isLoanTarget(assets, toAssetRowId);
 
+  const uid = useId();
   const label = (a: Asset) =>
     a.institution ? `${a.institution} · ${a.assetName}` : a.assetName;
 
   return (
     <>
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("addTx.fromAccount")}</FieldLabel>
+        <FieldLabel id={`${uid}from-label`}>
+          {t("addTx.fromAccount")}
+        </FieldLabel>
         <Select
           value={fromAssetRowId != null ? String(fromAssetRowId) : ""}
           onValueChange={(v) => onFromChange(v ? Number(v) : null)}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id={`${uid}from`}
+            aria-labelledby={`${uid}from-label ${uid}from`}
+          >
             <SelectValue placeholder={t("addTx.selectPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -96,12 +103,17 @@ export function TransferAccountFields({
       </Field>
 
       <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("addTx.depositAccount")}</FieldLabel>
+        <FieldLabel id={`${uid}to-label`}>
+          {t("addTx.depositAccount")}
+        </FieldLabel>
         <Select
           value={toAssetRowId != null ? String(toAssetRowId) : ""}
           onValueChange={(v) => onToChange(v ? Number(v) : null)}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id={`${uid}to`}
+            aria-labelledby={`${uid}to-label ${uid}to`}
+          >
             <SelectValue placeholder={t("addTx.selectPlaceholder")} />
           </SelectTrigger>
           <SelectContent>

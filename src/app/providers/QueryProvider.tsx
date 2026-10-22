@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { ReactNode } from "react";
-import { retryOnlyServerErrors } from "@/shared/api/retry";
+import { retryDelay, retryOnlyServerErrors } from "@/shared/api/retry";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +20,9 @@ const queryClient = new QueryClient({
       // 사용자 환경설정은 바뀔 일이 드물다).
       refetchOnWindowFocus: true,
       // 4xx 는 재시도하지 않는다 — 없는 자산 조회가 두 번 나가던 자리(QA #4).
+      // 읽기는 처음 요청부터 합쳐 10초 안에서 2번까지, 1초 · 2초 뒤(skeleton.md "요청 제한 10초").
       retry: retryOnlyServerErrors,
+      retryDelay,
     },
   },
 });

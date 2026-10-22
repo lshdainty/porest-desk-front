@@ -1142,3 +1142,12 @@
 .fcol-cta:active {
   background: var(--bg-muted);
 }
+
+/* 기관 색 면 위 짙은 글자 — 라이트 fg-neutral · 다크 fg-neutral-inverted(institution-colors.yaml text dark) */
+:root {
+  --institution-ink: var(--color-fg-neutral);
+}
+[data-theme="dark"],
+.dark {
+  --institution-ink: var(--color-fg-neutral-inverted);
+}

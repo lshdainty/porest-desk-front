@@ -5,6 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { icons as lucideIcons } from "lucide-react";
 
+import { TooltipProvider } from "@/shared/ds/tooltip";
 import { Field } from "@/shared/ds/field";
 
 import { CATEGORY_ICON_GLYPHS } from "./category-icon-glyphs";
@@ -529,6 +530,71 @@ describe("IconPicker — 트리거 · 여는 자리", () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(sheetOpen()).toBe(false);
     expect(trigger().dataset.icon).toBe("a-arrow-down");
+  });
+
+  it("칸 툴팁은 마우스를 올릴 때만 연다 — 키보드 초점으로 열지 않아 Esc 한 번에 닫힌다(03B-012)", () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <TooltipProvider>
+          <Controlled initial="coffee" />
+        </TooltipProvider>,
+      );
+      const bubbleCount = () =>
+        document.querySelectorAll("[data-slot=tooltip-content]").length;
+      // 키보드로 연 것처럼 — 열기 전에 :focus-visible 이 참이게 한다. 피커는 열 때 고른 칸에 초점을 주므로 그 초점이 툴팁 경로를 탄다
+      const realMatches = Element.prototype.matches;
+      const spy = vi
+        .spyOn(Element.prototype, "matches")
+        .mockImplementation(function (this: Element, selector: string) {
+          return (
+            selector === ":focus-visible" || realMatches.call(this, selector)
+          );
+        });
+      act(() => trigger().click());
+      const selected = cells().find(
+        (c) => c.getAttribute("aria-selected") === "true",
+      )!;
+      expect(document.activeElement).toBe(selected);
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(bubbleCount()).toBe(0);
+      spy.mockRestore();
+      // 첫 Esc 에 닫힌다
+      act(() => {
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        );
+      });
+      expect(sheetOpen()).toBe(false);
+
+      // 마우스를 올리면 200ms 뒤 같은 글의 툴팁이 뜬다
+      act(() => trigger().click());
+      const other = cells()[1]!;
+      act(() => {
+        other.dispatchEvent(
+          new PointerEvent("pointerover", {
+            bubbles: true,
+            pointerType: "mouse",
+          }),
+        );
+        other.dispatchEvent(
+          new PointerEvent("pointermove", {
+            bubbles: true,
+            pointerType: "mouse",
+          }),
+        );
+        vi.advanceTimersByTime(250);
+      });
+      expect(bubbleCount()).toBe(1);
+      expect(
+        document.querySelector("[data-slot=tooltip-content]")!.firstChild
+          ?.textContent,
+      ).toBe(other.getAttribute("aria-label"));
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("막히면 열리지 않는다(Input Button)", () => {

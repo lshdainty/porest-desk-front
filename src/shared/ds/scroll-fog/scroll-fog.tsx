@@ -26,6 +26,7 @@ import { useScrollFog, type ScrollFogUse } from "./use-scroll-fog";
  * 깊이만큼 여백 — 흐린 쪽에 깊이 이상의 안쪽 여백을 둬 끝까지 스크롤하면 흐림이 빈 여백 위에 놓인다. 안쪽 여백은 안쪽 감싸개에 둔다
  *   (내용과 함께 스크롤된다 — 흐림 아래에 깔린다). 키보드로 옮긴 요소가 흐림 아래 멈추지 않게 스크롤 여유를 같은 만큼 둔다.
  * 흐림은 장식이다 — 역할 · 이름이 없다. 안에 초점 가는 요소가 없으면 상자에 tabIndex={0} 과 이름(aria-label)을 준다(키보드 스크롤).
+ * 이름을 받으면 role="region" 은 이 부품이 붙인다(역할 없는 div 에 단 이름은 보조 기술이 무시한다 — role 을 직접 주면 그것이 이긴다).
  * 부품이 제 안개를 가진 자리(Wheel Picker · Date Picker 이어지는 달)에는 겹쳐 걸지 않는다.
  */
 
@@ -60,7 +61,7 @@ export interface ScrollFogProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ScrollFog = React.forwardRef<HTMLDivElement, ScrollFogProps>(
-  ({ use = "box", className, children, ...props }, ref) => {
+  ({ use = "box", className, children, role, ...props }, ref) => {
     const own = React.useRef<HTMLDivElement>(null);
     useScrollFog(own, use, className);
     return (
@@ -68,6 +69,13 @@ const ScrollFog = React.forwardRef<HTMLDivElement, ScrollFogProps>(
         ref={mergeRefs(ref, own)}
         data-slot="scroll-fog"
         data-use={use}
+        // 이름(aria-label · aria-labelledby)을 받으면 role="region" 을 스스로 붙인다 — 역할 없는 div 의 이름은 무시된다(03E-018)
+        role={
+          role ??
+          (props["aria-label"] || props["aria-labelledby"]
+            ? "region"
+            : undefined)
+        }
         className={cn("group/scroll-fog relative", ROOT[use], className)}
         {...props}
       >

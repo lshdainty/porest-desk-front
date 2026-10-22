@@ -23,7 +23,7 @@ export const SEGMENTED_INDICATOR = [
 // 막힌 칸은 호버 · 누름이 없다(enabled 에서만 칠한다)
 export const segmentedControlItemVariants = cva(
   [
-    "group/segmented-item relative flex min-h-[34px] min-w-0 cursor-pointer select-none items-center justify-center rounded-full px-x3 py-x1_5 font-sans text-t5 font-bold text-fg-neutral-subtle dark:text-fg-neutral-muted [--press-basis:34]",
+    "group/segmented-item relative flex min-h-[34px] min-w-0 cursor-pointer select-none items-center justify-center rounded-full px-x3 py-x1_5 font-sans text-t5-static font-bold text-fg-neutral-subtle dark:text-fg-neutral-muted [--press-basis:34]",
     "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),color_var(--motion-duration-color-transition)_var(--motion-ease-easing),box-shadow_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
     // 안 고른 칸 — 올리거나 누르면 바탕 + 안쪽 1px + 한 단계 짙은 글

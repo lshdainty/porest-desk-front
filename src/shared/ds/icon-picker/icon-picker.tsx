@@ -142,8 +142,18 @@ function IconPickerCell({
   onSelect,
 }: IconPickerCellProps) {
   const Glyph = CATEGORY_ICON_GLYPHS[icon.id];
+  // 칸 툴팁은 마우스를 올렸을 때만 연다 — 키보드 초점(열면 고른 칸에 초점이 간다)으로 열지 않는다. 칸 이름은 낭독이 읽고,
+  // 초점으로 뜬 툴팁이 첫 Esc 를 먹어 두 번 눌러야 닫히던 문제를 막는다(icon-picker.md "마우스는 같은 글의 툴팁", 03B-012)
+  const [tipOpen, setTipOpen] = React.useState(false);
+  const mouseOver = React.useRef(false);
   return (
-    <Tooltip>
+    <Tooltip
+      open={tipOpen}
+      onOpenChange={(next) => {
+        if (next && !mouseOver.current) return;
+        setTipOpen(next);
+      }}
+    >
       <TooltipTrigger asChild>
         <div
           role="option"
@@ -153,6 +163,12 @@ function IconPickerCell({
           data-slot="icon-picker-cell"
           data-icon={icon.id}
           className={CELL}
+          onPointerEnter={(e) => {
+            mouseOver.current = e.pointerType === "mouse";
+          }}
+          onPointerLeave={() => {
+            mouseOver.current = false;
+          }}
           onFocus={() => onActivate?.(icon.id)}
           onClick={() => onSelect(icon.id)}
         >

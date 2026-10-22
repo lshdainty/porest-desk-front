@@ -1,6 +1,7 @@
 export {
   Chip,
   ChipGroup,
+  ChipLabel,
   ChipRadio,
   ChipRadioGroup,
   ChipToggle,

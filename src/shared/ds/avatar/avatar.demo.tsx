@@ -296,6 +296,27 @@ export const AvatarDemo = () => (
           ))}
         </AvatarStack>
       </DemoRow>
+      <DemoRow label="놓인 폭에 맞춰 — 108 · 6명, 폭 312(폰 안쪽) · 480. 보이는 사람이 줄고 +N · 이름의 외 N명이 같이 바뀐다(크기는 줄지 않는다)">
+        {[312, 342, 480].map((width) => (
+          <div
+            key={width}
+            data-scene={`avatar-${width}`}
+            style={{ width }}
+            className="bg-bg-layer-default"
+          >
+            <AvatarStack
+              size={108}
+              aria-label={({ shown, rest, total }) =>
+                `참여자 ${total}명: ${PEOPLE.slice(0, shown).join(", ")}${rest > 0 ? ` 외 ${rest}명` : ""}`
+              }
+            >
+              {PEOPLE.map((name) => (
+                <Avatar key={name} name={name} />
+              ))}
+            </AvatarStack>
+          </div>
+        ))}
+      </DemoRow>
       <DemoRow label="시트 안(floating) — 링이 bg-layer-floating(다크에서 화면 바탕과 다르다)">
         {[24, 36, 56].map((size) => (
           <div key={size} className="rounded-r2 bg-bg-layer-floating p-x3">

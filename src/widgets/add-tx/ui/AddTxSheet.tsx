@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useRef } from "react";
+import { useCallback, useId, useMemo, useState, useRef } from "react";
 import {
   MAX_AMOUNT,
   blockNonDigitKey,
@@ -230,6 +230,15 @@ export function AddTxSheet({
     [assetsQ.data],
   );
 
+  // 이름 없는 콤보박스를 없앤다 — 보이는 라벨(과 값)을 aria-labelledby 로 잇는다. 라벨 id · 트리거 id
+  const uid = useId();
+  const nameOf = (key: string) => ({
+    label: { id: `${uid}${key}-label` },
+    trigger: {
+      id: `${uid}${key}`,
+      "aria-labelledby": `${uid}${key}-label ${uid}${key}`,
+    },
+  });
   const [type, setType] = useState<TxType>(
     editTransfer ? "TRANSFER" : (seed?.expenseType ?? "EXPENSE"),
   );
@@ -1290,7 +1299,9 @@ export function AddTxSheet({
       {/* 해외 결제 — 원 통화·환율. 금액(원화)은 둘을 곱해 자동으로 채워진다. */}
       {type !== "TRANSFER" && (
         <Field style={{ marginBottom: 18 }}>
-          <FieldLabel>{t("addTx.currency")}</FieldLabel>
+          <FieldLabel {...nameOf("cur").label}>
+            {t("addTx.currency")}
+          </FieldLabel>
           <div style={{ display: "flex", gap: 8 }}>
             <div style={{ width: isForeignTx ? 110 : "100%" }}>
               <Select
@@ -1301,7 +1312,7 @@ export function AddTxSheet({
                   clearPresetMark();
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger {...nameOf("cur").trigger}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1438,6 +1449,7 @@ export function AddTxSheet({
           {topCategories.length > 0 && (
             <div style={{ marginBottom: "var(--spacing-md)" }}>
               <div
+                {...nameOf("cat").label}
                 style={{
                   fontSize: "var(--text-badge)",
                   color: "var(--fg-tertiary)",
@@ -1474,7 +1486,7 @@ export function AddTxSheet({
                       value={categoryRowId != null ? String(categoryRowId) : ""}
                       onValueChange={(v) => setCategoryRowId(Number(v))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger {...nameOf("cat").trigger}>
                         <SelectValue
                           placeholder={t("addTx.subCategoryPlaceholder")}
                         />
@@ -1522,7 +1534,7 @@ export function AddTxSheet({
 
           {/* 결제 수단 — 먼저 선택, 계좌·카드 목록을 필터링 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>
+            <FieldLabel {...nameOf("pm").label}>
               {type === "INCOME"
                 ? t("addTx.incomeMethod")
                 : t("paymentMethodLabel")}
@@ -1537,7 +1549,7 @@ export function AddTxSheet({
                 clearPresetMark();
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger {...nameOf("pm").trigger}>
                 <SelectValue placeholder={t("selectNone")} />
               </SelectTrigger>
               <SelectContent>
@@ -1553,7 +1565,7 @@ export function AddTxSheet({
 
           {/* 계좌·카드 — 결제 수단에 맞춰 필터 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>
+            <FieldLabel {...nameOf("asset").label}>
               {type === "INCOME" ? t("addTx.depositAccount") : t("accountCard")}
               {paymentMethod && filteredAssets.length !== assets.length && (
                 <span
@@ -1581,7 +1593,7 @@ export function AddTxSheet({
                 clearPresetMark();
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger {...nameOf("asset").trigger}>
                 <SelectValue placeholder={t("selectNone")} />
               </SelectTrigger>
               <SelectContent>
@@ -1636,7 +1648,9 @@ export function AddTxSheet({
           {/* 할부 — 신용카드 지출에만. 청구는 이 개월 수로 나뉘어 잡힌다. */}
           {showInstallment && (
             <Field style={{ marginBottom: 14 }}>
-              <FieldLabel>{t("addTx.installment")}</FieldLabel>
+              <FieldLabel {...nameOf("inst").label}>
+                {t("addTx.installment")}
+              </FieldLabel>
               <Select
                 value={installmentMonths || "__none__"}
                 disabled={moneyFieldsLocked}
@@ -1645,7 +1659,7 @@ export function AddTxSheet({
                   clearPresetMark();
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger {...nameOf("inst").trigger}>
                   <SelectValue placeholder={t("addTx.lumpSum")} />
                 </SelectTrigger>
                 <SelectContent>

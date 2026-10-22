@@ -185,6 +185,15 @@ describe("RadioSelectBox — 하나 고르기", () => {
         .getAttribute("aria-disabled"),
     ).toBe("true");
     expect(radios().every((r) => r.disabled)).toBe(true);
+    // 묶음 막힘은 상자 모양도 막힘으로 — data-disabled · 글 fg-disabled · 커서 not-allowed(03B-004)
+    for (const box of boxes()) {
+      const trigger = box.querySelector("[data-slot=select-box-trigger]")!;
+      expect(trigger.hasAttribute("data-disabled")).toBe(true);
+      expect(classes(trigger)).toContain("data-[disabled]:cursor-not-allowed");
+      expect(
+        classes(box.querySelector("[data-slot=select-box-label]")!),
+      ).toContain("text-fg-disabled");
+    }
   });
 
   it("상자 어디를 눌러도(제목 · 설명 · 빈 자리) 고른다 · onValueChange", () => {

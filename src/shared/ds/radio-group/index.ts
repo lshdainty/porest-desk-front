@@ -5,7 +5,7 @@ export {
   type RadioProps,
   type RadiomarkProps,
 } from "./radio-group";
-export { submitOnRadioEnter } from "./radio-group-keys";
+export { ignoreRadioJumpKeys, submitOnRadioEnter } from "./radio-group-keys";
 export {
   radioLabelVariants,
   radiomarkDotVariants,

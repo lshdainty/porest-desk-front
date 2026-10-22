@@ -12,6 +12,8 @@ import { cva } from "class-variance-authority";
  *   size  "16" 26 × 16(라벨 13) · "24" 38 × 24(라벨 14, 기본) · "32" 52 × 32(라벨 16) — 이름은 트랙 높이
  *   tone  neutral(짙은 회색, 기본) · brand(서비스 핵심 흐름에서만)
  *
+ * 글자 크기 설정을 따른다 — 폭 · 높이 · 엄지 · 안쪽 여백 · 엄지 이동을 모두 rem 으로 적어 200% 에서 함께 늘어난다(비율이 그대로라
+ * 세로 타원으로 찌그러지지 않는다. 폭만 px 이던 것을 고쳤다 — switch.yaml 의 치수는 한 단위, 2026-10-22).
  * 누르는 순간 적용되는 설정에만 쓴다 — 저장해야 적용되면 Checkbox(사용자 결정).
  * 끄면 엄지가 0.8 로 작아진다 — 색 말고도 자리 · 크기로 켬 · 끔이 갈린다(SEED). 그림자는 없다.
  * 꺼진 트랙은 stroke-neutral-solid(3:1 — v109). 누르면 색은 그대로, 스위치만 세로 2px 축소(v104) —
@@ -36,9 +38,9 @@ export const switchmarkVariants = cva(
   {
     variants: {
       size: {
-        "16": "h-4 w-[26px] p-0.5 [--press-basis:24]",
-        "24": "h-6 w-[38px] p-0.5 [--press-basis:24]",
-        "32": "h-8 w-[52px] p-[3px] [--press-basis:32]",
+        "16": "h-4 w-[1.625rem] p-0.5 [--press-basis:24]",
+        "24": "h-6 w-[2.375rem] p-0.5 [--press-basis:24]",
+        "32": "h-8 w-[3.25rem] p-[0.1875rem] [--press-basis:32]",
       },
       tone: {
         neutral: "data-[state=checked]:bg-bg-neutral-inverted",
@@ -64,9 +66,9 @@ export const switchmarkThumbVariants = cva(
   {
     variants: {
       size: {
-        "16": "size-3 data-[state=checked]:translate-x-[10px]",
-        "24": "size-5 data-[state=checked]:translate-x-[14px]",
-        "32": "size-[26px] data-[state=checked]:translate-x-5",
+        "16": "size-3 data-[state=checked]:translate-x-[0.625rem]",
+        "24": "size-5 data-[state=checked]:translate-x-[0.875rem]",
+        "32": "size-[1.625rem] data-[state=checked]:translate-x-5",
       },
       tone: {
         neutral: "bg-fg-neutral-inverted",

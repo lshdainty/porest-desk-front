@@ -8,7 +8,9 @@ import {
   avatarDisplayName,
   avatarHue,
   avatarInitial,
+  avatarStackVisible,
   type AvatarHue,
+  type AvatarSize,
 } from "./avatar-variants";
 import { useDsText } from "@/shared/ds/i18n";
 
@@ -19,7 +21,9 @@ import { useDsText } from "@/shared/ds/i18n";
  * (avatarInitial · avatarHue)은 avatar-variants.ts 에 있다(컴포넌트 파일은 컴포넌트만 내보낸다 — 빠른 새로 고침).
  *
  *   Avatar         사람 한 명을 보이는 원 — 사진(src)이 있으면 사진, 없거나 · 불러오는 동안 · 못 불러오면 이니셜 + 이름 색
- *   AvatarStack    여러 사람 — 겹친 묶음. 앞 max(기본 4)명 + 끝에 "+N" 원
+ *   AvatarStack    여러 사람 — 겹친 묶음. 앞 max(기본 4)명 + 끝에 "+N" 원. 놓인 폭(부모 안쪽 폭)이 모자라면 보이는 사람을 줄인다
+ *                  — 보이는 사람 = min(max, c − 1), c = 1 + ⌊(W − 지름) ÷ (지름 − 겹침)⌋, 가장 적어도 1명(03-E 결정 4 B). 크기는 줄이지 않는다.
+ *                  aria-label 에 함수를 주면 "외 N명" 이 보이는 "+N" 과 같이 바뀐다
  *
  * 크기 10단계 — 20 · 24 · 36 · 42 · 48(기본) · 56 · 64 · 80 · 96 · 108. 자리마다 대표 크기를 쓴다(한 줄 목록 36 · 두 줄 42 ·
  * 줄 안 묶음 24 · Desk 계정 머리 80 · HR 큰 사진 96 · 사진 수정 108). 이 밖의 크기를 만들지 않는다.
@@ -56,7 +60,7 @@ import { useDsText } from "@/shared/ds/i18n";
  * 실패를 Field 오류 글로 알리는 것 · 파일을 고르는 창 · 올리는 일은 부르는 쪽이 한다.
  */
 
-export type AvatarSize = 20 | 24 | 36 | 42 | 48 | 56 | 64 | 80 | 96 | 108;
+export type { AvatarSize };
 
 // ── 아바타 ───────────────────────────────────────────────────
 // 원 — 사진 · 이니셜을 원으로 자른다. ::after 가 1px 안쪽 투명 테두리(사진 · 이니셜 위) — 두께 · 색은 원의 변수
@@ -391,35 +395,94 @@ const OVERFLOW = cn(
   STACK_RING,
 );
 
-export interface AvatarStackProps extends React.HTMLAttributes<HTMLSpanElement> {
+/** 묶음 이름 함수가 받는 값 — 보이는 사람 · "+N" 의 N · 전체 */
+export interface AvatarStackNameInfo {
+  /** 지금 보이는 사람 수(놓인 폭에 따라 달라진다) */
+  shown: number;
+  /** 보이는 "+N" 의 N = 전체 − 보이는 사람(99 를 넘어도 실제 수 — 화면만 +99) */
+  rest: number;
+  total: number;
+}
+
+export interface AvatarStackProps extends Omit<
+  React.HTMLAttributes<HTMLSpanElement>,
+  "aria-label"
+> {
   /** 지름 — 기본 24. 안의 아바타가 모두 따른다 */
   size?: AvatarSize;
-  /** 보이는 사람 수 — 기본 4. 넘치면 앞 max 명 + "+N" */
+  /** 보이는 사람 수의 위쪽 한계 — 기본 4. 넘치면 앞 max 명 + "+N". 놓인 폭이 모자라면 더 줄인다(가장 적어도 1명) */
   max?: number;
   /** 링 색 = 놓인 바탕 — default(기본, bg-layer-default) · floating(시트 · 대화상자 · 팝오버 안) */
   surface?: keyof typeof STACK_SURFACE;
+  /**
+   * 묶음의 이름. 글이면 그대로, 함수면 보이는 사람 수가 바뀔 때마다 다시 불러 "외 N명" 이 화면의 "+N" 과 같게 한다
+   * (예: ({ shown, rest, total }) => `참여자 ${total}명: ${names.slice(0, shown).join(", ")}${rest ? ` 외 ${rest}명` : ""}`)
+   */
+  "aria-label"?: string | ((info: AvatarStackNameInfo) => string);
+}
+
+// 묶음이 놓인 폭 — 부모의 안쪽 폭(패딩 뺀 것). 창 크기 · 화면 돌림으로 바뀌면 다시 잰다. 모르는 동안(첫 그림 전 · ResizeObserver 없음)은 null
+function useAvailableWidth(ref: React.RefObject<HTMLElement | null>) {
+  const [width, setWidth] = React.useState<number | null>(null);
+  React.useLayoutEffect(() => {
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    const measure = () => {
+      const style = getComputedStyle(parent);
+      const inner =
+        parent.clientWidth -
+        (parseFloat(style.paddingLeft) || 0) -
+        (parseFloat(style.paddingRight) || 0);
+      setWidth(inner > 0 ? inner : null);
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, [ref]);
+  return width;
 }
 
 const AvatarStack = React.forwardRef<HTMLSpanElement, AvatarStackProps>(
   (
-    { className, size = 24, max = 4, surface = "default", children, ...props },
+    {
+      className,
+      size = 24,
+      max = 4,
+      surface = "default",
+      children,
+      "aria-label": ariaLabel,
+      ...props
+    },
     ref,
   ) => {
+    const own = React.useRef<HTMLSpanElement>(null);
+    const available = useAvailableWidth(own);
     const people = React.Children.toArray(children).filter(
       React.isValidElement,
     );
-    const limit = Math.max(1, Math.floor(max));
-    const shown = people.slice(0, limit);
+    const count = avatarStackVisible(people.length, max, size, available);
+    const shown = people.slice(0, count);
     const rest = people.length - shown.length;
-    const named =
-      props["aria-label"] != null || props["aria-labelledby"] != null;
+    const label =
+      typeof ariaLabel === "function"
+        ? ariaLabel({ shown: count, rest, total: people.length })
+        : ariaLabel;
+    const named = label != null || props["aria-labelledby"] != null;
     return (
       <AvatarStackContext.Provider value={{ size }}>
         <span
-          ref={ref}
+          ref={(node) => {
+            own.current = node;
+            if (typeof ref === "function") ref(node);
+            else if (ref) ref.current = node;
+          }}
           data-slot="avatar-stack"
+          data-shown={count}
           role={named ? "img" : undefined}
           aria-hidden={named ? undefined : true}
+          aria-label={label}
           className={cn(
             STACK,
             STACK_SIZES[size].root,

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useId, useState, type CSSProperties, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import {
   BarChart3,
@@ -7,6 +7,7 @@ import {
   CreditCard,
   FileBarChart,
   Mail,
+  CircleAlert,
   Moon,
   Target,
   Users,
@@ -347,6 +348,15 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const calmDisabled = isLoading || updateMut.isPending;
   // 예산 경고 기준을 끄는 동안의 값 — 머리 값 · 슬라이더가 따라가고, 저장이 끝나면 서버 값으로 돌아온다
   const [drag, setDrag] = useState<number | null>(null);
+  // 기준 저장이 실패하면 값은 서버 값으로 되돌아가고(onSettled) 슬라이더 아래 Field 오류 글로 알린다(slider.yaml commit)
+  const [thresholdFailed, setThresholdFailed] = useState(false);
+  const thresholdErrorId = useId();
+  // 기준 저장이 실패한 뒤 다른 설정이 실패하면 마지막 실패가 그쪽이므로 화면 아래 글이 맡는다(숨지 않게)
+  const otherFailedLast =
+    updateMut.isError &&
+    updateMut.variables != null &&
+    !("budgetAlertThreshold" in updateMut.variables);
+  const showThresholdError = thresholdFailed && !otherFailedLast;
   const shownThreshold = drag ?? warnThreshold;
 
   if (isLoading) {
@@ -521,11 +531,19 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <ThresholdSlider
             value={shownThreshold}
             disabled={isLoading}
-            onDrag={setDrag}
+            onDrag={(v) => {
+              setThresholdFailed(false);
+              setDrag(v);
+            }}
+            describedBy={showThresholdError ? thresholdErrorId : undefined}
             onCommit={(v) =>
               updateMut.mutate(
                 { budgetAlertThreshold: v },
-                { onSettled: () => setDrag(null) },
+                {
+                  onSuccess: () => setThresholdFailed(false),
+                  onError: () => setThresholdFailed(true),
+                  onSettled: () => setDrag(null),
+                },
               )
             }
           />
@@ -549,6 +567,35 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           <span>90</span>
           <span>100</span>
         </div>
+        {/* 오류 글 — 입력 자리(트랙 + 눈금 글) 전체 아래, Field 오류와 같은 꼴(circle-alert 16 · t4 · fg-critical, 보이는 글은 숨기고 polite 로 한 번 읽힌다) */}
+        {showThresholdError && (
+          <p
+            id={thresholdErrorId}
+            aria-hidden
+            data-slot="field-error"
+            style={{
+              display: "flex",
+              margin: "8px 0 0",
+              fontSize: "var(--text-t4)",
+              lineHeight: "var(--text-t4--line-height)",
+              color: "var(--color-fg-critical)",
+            }}
+          >
+            <CircleAlert
+              aria-hidden
+              size={16}
+              style={{
+                flexShrink: 0,
+                marginRight: 6,
+                marginTop: "calc((var(--text-t4--line-height) - 1rem) / 2)",
+              }}
+            />
+            <span style={{ minWidth: 0 }}>{t("saveError")}</span>
+          </p>
+        )}
+        <span className="sr-only" aria-live="polite">
+          {showThresholdError ? t("saveError") : null}
+        </span>
       </NotifSection>
 
       {/* 4) 방해 금지 시간 — 모바일 카드 다이어트: 셸 벗김(내부 16 패딩은 카드 기준이라 모바일 0). */}
@@ -774,7 +821,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         )}
       </NotifSection>
 
-      {updateMut.isError && (
+      {updateMut.isError && !showThresholdError && (
         <div
           style={{
             // 앱 에러 메시지 타이포 bodySm(13) 정합.

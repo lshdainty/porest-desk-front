@@ -2,7 +2,11 @@ import * as React from "react";
 
 import { cn } from "@/shared/lib/cn";
 
-import { tagGroupItemVariants, tagGroupVariants } from "./tag-group-variants";
+import {
+  tagGroupItemMinWidth,
+  tagGroupItemVariants,
+  tagGroupVariants,
+} from "./tag-group-variants";
 
 // 크기 · 톤 · 굵기 · 줄바꿈은 tag-group-variants.ts 머리 주석과 groo-design specs/components/tag-group.yaml 이 정한다.
 
@@ -249,7 +253,19 @@ const TagGroupItem = React.forwardRef<HTMLSpanElement, TagGroupItemProps>(
           }),
           className,
         )}
-        style={group.truncate ? { flexShrink: shrink, ...style } : style}
+        style={
+          group.truncate
+            ? {
+                flexShrink: shrink,
+                minWidth: tagGroupItemMinWidth(
+                  children,
+                  group.size,
+                  prefixIcon != null || suffixIcon != null,
+                ),
+                ...style,
+              }
+            : style
+        }
         {...props}
       >
         {prefixIcon != null && icon(prefixIcon, "prefix")}
