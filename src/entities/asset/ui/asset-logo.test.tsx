@@ -76,4 +76,14 @@ describe("AssetLogo 색 — 기관 색 표 → 없으면 이름 색", () => {
     expect(el.textContent).toBe("");
     expect(el.style.background).toBe("var(--color-chart-gray)");
   });
+
+  it("기관이 없으면 자산 이름이 기관 이름과 겹쳐도 표 색이 아니라 이름 색", () => {
+    const el = logo({
+      assetName: "우리 아이 적금",
+      institution: null,
+      color: null,
+    });
+    expect(el.style.background).toMatch(/^var\(--color-chart-[a-z]+\)$/);
+    expect(el.style.color).toBe("var(--color-fg-neutral-inverted)");
+  });
 });

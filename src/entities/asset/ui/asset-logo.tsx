@@ -48,7 +48,10 @@ export function AssetLogo({
   // 저장된 색(asset.color)은 읽지 않는다(값은 그대로 둔다). 이름이 비면 글자 없이 회색(logo-tile.yaml initial)
   const name = asset.institution?.trim() || asset.assetName?.trim() || "";
   const label = avatarInitial(name);
-  const brand = getBrandColor(name);
+  // 기관 색 표는 기관 이름으로만 찾는다 — 기관이 없으면 사용자가 지은 자산 이름은 표를 보지 않는다(logo-tile.md)
+  const brand = asset.institution?.trim()
+    ? getBrandColor(asset.institution)
+    : undefined;
   const bg = brand?.bg ?? `var(--color-chart-${avatarHue(name)})`;
   const fg = brand
     ? (brand.fg ?? "var(--color-static-white)")
