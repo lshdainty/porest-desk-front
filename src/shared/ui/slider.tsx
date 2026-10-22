@@ -21,7 +21,7 @@ type SliderProps = React.ComponentPropsWithoutRef<
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   SliderProps
->(({ className, ticks, ...props }, ref) => {
+>(({ className, ticks, "aria-describedby": describedBy, ...props }, ref) => {
   // 채움 비율 — 틱 점이 채움 구간 위에선 흰색, 바깥에선 중립색으로 보이게.
   const v = props.value?.[0] ?? props.defaultValue?.[0];
   const min = props.min ?? 0;
@@ -65,7 +65,10 @@ const Slider = React.forwardRef<
             );
           })}
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-stroke-brand-solid bg-text-on-accent shadow-sm transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring data-[disabled]:pointer-events-none data-[disabled]:border-fg-disabled data-[disabled]:bg-fg-disabled" />
+      <SliderPrimitive.Thumb
+        aria-describedby={describedBy}
+        className="block h-4 w-4 rounded-full border-2 border-stroke-brand-solid bg-text-on-accent shadow-sm transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-easing)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring data-[disabled]:pointer-events-none data-[disabled]:border-fg-disabled data-[disabled]:bg-fg-disabled"
+      />
     </SliderPrimitive.Root>
   );
 });

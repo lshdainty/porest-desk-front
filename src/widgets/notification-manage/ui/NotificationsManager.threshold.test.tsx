@@ -13,6 +13,10 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
+const mut = vi.hoisted(() => ({
+  isError: false,
+  variables: null as Record<string, unknown> | null,
+}));
 let settle: (() => void) | null = null;
 let fail: (() => void) | null = null;
 const mutate = vi.fn(
@@ -26,7 +30,12 @@ vi.mock("@/features/user", () => ({
     data: { budgetAlertThreshold: 85, pushEnabled: true },
     isLoading: false,
   }),
-  useUpdateUserPreferences: () => ({ mutate, isPending: false }),
+  useUpdateUserPreferences: () => ({
+    mutate,
+    isPending: false,
+    isError: mut.isError,
+    variables: mut.variables,
+  }),
   useCurrentUser: () => ({ data: { userEmail: "a@example.com" } }),
 }));
 
@@ -103,10 +112,37 @@ describe("예산 경고 기준 슬라이더", () => {
     });
     expect(head().textContent).toBe("85%");
     expect(error()).not.toBeNull();
-    expect(error()!.getAttribute("role")).toBe("alert");
+    // Field 오류 꼴 — 보이는 글은 숨기고 polite 로 한 번 읽힌다(alert 아님), circle-alert 16 이 앞에, 손잡이가 설명으로 이음
+    expect(error()!.getAttribute("role")).toBeNull();
+    expect(error()!.getAttribute("aria-hidden")).toBe("true");
     expect(error()!.textContent).toBe("saveError");
-    // 같은 글이 화면 맨 아래에 한 번 더 뜨지 않는다(mock 은 isError 를 주지 않아 여기서는 한 곳)
-    expect(container.textContent!.split("saveError").length - 1).toBe(1);
+    expect(error()!.querySelector("svg")?.getAttribute("width")).toBe("16");
+    expect(thumb().getAttribute("aria-describedby")).toBe(error()!.id);
+    expect(container.querySelector("[aria-live=polite]")?.textContent).toBe(
+      "saveError",
+    );
+    // 트랙 · 눈금 글(50 … 100) 아래 — 눈금과 트랙 사이에 끼지 않는다
+    const ticks = Array.from(container.querySelectorAll("span")).find(
+      (e) => e.textContent === "100",
+    )!.parentElement!;
+    expect(
+      ticks.compareDocumentPosition(error()!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // 같은 글이 화면 맨 아래에 한 번 더 뜨지 않는다(보이는 곳 한 곳)
+    expect(container.querySelectorAll("[data-slot=field-error]")).toHaveLength(
+      1,
+    );
+    // 기준 저장이 실패한 뒤 다른 설정이 실패하면 화면 아래 오류 글이 맡는다(숨지 않는다)
+    mut.isError = true;
+    mut.variables = { pushEnabled: false };
+    act(() => root.render(<NotificationsManager mobile={false} />));
+    expect(error()).toBeNull();
+    expect(container.textContent).toContain("saveError");
+    mut.isError = false;
+    mut.variables = null;
+    act(() => root.render(<NotificationsManager mobile={false} />));
+    expect(error()).not.toBeNull();
     // 다시 끌면 오류 글이 걷힌다
     press();
     expect(error()).toBeNull();
