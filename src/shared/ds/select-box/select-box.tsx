@@ -53,7 +53,11 @@ import {
  */
 
 type Layout = "horizontal" | "vertical";
-const SelectBoxGroupContext = React.createContext<{ columns: 1 | 2 | 3 }>({
+// disabled — 하나 고르기 묶음(또는 Field)의 막힘. 상자가 받아 모양(글 · 설명 fg-disabled · 커서 · 누름 바탕 없음)도 막힘으로 그린다(03B-004)
+const SelectBoxGroupContext = React.createContext<{
+  columns: 1 | 2 | 3;
+  disabled?: boolean;
+}>({
   columns: 1,
 });
 const useLayout = (layout?: Layout): Layout => {
@@ -208,7 +212,9 @@ const RadioSelectBoxGroup = React.forwardRef<
     const field = useFieldGroupState();
     const off = disabled ?? field.disabled;
     return (
-      <SelectBoxGroupContext.Provider value={{ columns: columns ?? 1 }}>
+      <SelectBoxGroupContext.Provider
+        value={{ columns: columns ?? 1, disabled: off }}
+      >
         <RadioGroupPrimitive.Root
           ref={ref}
           data-slot="select-box-group"
@@ -254,12 +260,15 @@ const RadioSelectBox = React.forwardRef<
       rootProps,
       control = "radio",
       id,
-      disabled,
+      disabled: disabledProp,
       className,
       ...props
     },
     ref,
   ) => {
+    // 묶음(또는 Field)의 막힘을 받는다 — 칸에 직접 준 값이 이긴다. 여럿 고르기(CheckSelectBox)와 같다
+    const groupDisabled = React.useContext(SelectBoxGroupContext).disabled;
+    const disabled = disabledProp ?? groupDisabled;
     const autoId = React.useId();
     const rid = id ?? autoId;
     const mark =
