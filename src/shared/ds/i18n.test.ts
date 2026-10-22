@@ -1,4 +1,6 @@
 // ds 부품의 기본 글 — 한국어(초기화 전 · 기본)와 영어(Intl 형식 포함). 부품 안에 한국어 상수를 두지 않는다(01-043).
+import { createElement, Fragment } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import i18next from "i18next";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -10,7 +12,7 @@ import {
   formatDateValue,
   formatRangeValue,
 } from "./date-picker";
-import { dsMoney, dsText } from "./i18n";
+import { dsMoney, dsMoneyText, dsText, withCommaBreaks } from "./i18n";
 import { formatTimeValue, timePickerLabels } from "./time-picker";
 
 const d = (y: number, m: number, day: number) => new Date(y, m - 1, day);
@@ -71,5 +73,33 @@ describe("ds 글 — 영어", () => {
     expect(labels.weekdaysLong[0]).toBe("Sunday");
     expect(labels.month(2026, 10)).toBe("October 2026");
     expect(labels.presetNames.thisWeek).toBe("This week");
+  });
+});
+
+describe("금액 줄바꿈 — 쉼표 뒤에서만(03-D 결정 2 B)", () => {
+  const html = (node: ReturnType<typeof withCommaBreaks>) =>
+    renderToStaticMarkup(createElement(Fragment, null, node));
+  it("세 자리 묶음 사이 쉼표 뒤마다 <wbr> 을 넣는다 — 글자는 그대로", () => {
+    expect(html(withCommaBreaks("−123,456,789,012원"))).toBe(
+      "−123,<wbr/>456,<wbr/>789,<wbr/>012원",
+    );
+    // <wbr> 은 글자가 아니다 — 보이는 글 · 복사한 글 · 읽는 이름이 원래 글 그대로다
+    const el = document.createElement("span");
+    el.innerHTML = html(withCommaBreaks("−123,456,789,012원"));
+    expect(el.textContent).toBe("−123,456,789,012원");
+  });
+  it("쉼표가 없거나 숫자 사이가 아니면 글 그대로 — 글 값(이메일 · 문장)은 건드리지 않는다", () => {
+    expect(html(withCommaBreaks("4,500원"))).toBe("4,<wbr/>500원");
+    expect(withCommaBreaks("500원")).toBe("500원");
+    expect(withCommaBreaks("서울, 강남")).toBe("서울, 강남");
+    expect(withCommaBreaks("groo@example.com")).toBe("groo@example.com");
+    const node = createElement("b", null, "1,234원");
+    expect(withCommaBreaks(node)).toBe(node);
+  });
+  it("dsMoneyText 는 dsMoney 와 같은 글에 <wbr> 만 더한다", () => {
+    const el = document.createElement("span");
+    el.innerHTML = html(dsMoneyText(1234567));
+    expect(el.textContent).toBe(dsMoney(1234567));
+    expect(html(dsMoneyText(1234567))).toBe("1,<wbr/>234,<wbr/>567원");
   });
 });

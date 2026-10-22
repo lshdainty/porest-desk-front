@@ -32,7 +32,7 @@ import { useDsText } from "@/shared/ds/i18n";
  *
  *   Table               표 상자(가로 스크롤) + <table>. caption 필수(숨긴 표 이름 — 보이는 제목은 카드 머리) · rowHeight "text"(기본 45) ·
  *                       "rich"(72 — 썸네일 · 두 줄 칸이 하나라도 있으면 모든 줄) · stickyHeader(상자가 스스로 스크롤할 때 머리를 붙인다 —
- *                       높이는 className 의 max-h-*) · pagination(표 아래 12 의 Table Pagination — 표와 같은 상자라 함께 가로로 밀린다)
+ *                       높이는 className 의 max-h-*) · pagination(Table Pagination 자리 — 좌우 24 만이다. 표 아래 12 는 Table Pagination 이 갖는다(03-D 결정 5 B). 표와 같은 상자라 함께 가로로 밀린다)
  *   TableHeader · TableBody · TableRow   <thead> · <tbody> · <tr>. 본문의 TableRow 에 onClick 을 주면 누르는 줄(호버 · 누름 바탕) —
  *                       줄 안의 체크 · ⋮ · 링크를 누른 것은 줄 누르기가 아니다. 키보드로는 첫 열 이름(TableRowHeader 의 href · onClick)으로 간다
  *   TableHead           머리 칸 <th scope="col">. align "start"(기본) · "end"(숫자 — 머리도 오른쪽). sort 를 주면 정렬할 수 있는 열 —
@@ -163,7 +163,7 @@ const Table = React.forwardRef<HTMLDivElement, TableProps>(
               {children}
             </table>
             {pagination != null && (
-              <div data-slot="table-pagination-slot" className="px-x6 pt-x3">
+              <div data-slot="table-pagination-slot" className="px-x6">
                 {pagination}
               </div>
             )}

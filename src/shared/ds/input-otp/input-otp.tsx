@@ -67,7 +67,8 @@ const InputOTP = React.forwardRef<HTMLInputElement, InputOTPProps>(
         }
         // 입력의 data-slot(text-input-value)은 Input 그대로 둔다 — 코드 칸 표시는 따로
         data-input-otp=""
-        className={className}
+        // 막혀도 자리 글은 fg-placeholder — Input 의 막힌 글(fg-disabled)을 덮는다(스펙 disabled.placeholder, 사용자 결정 01T-013)
+        className={cn("disabled:placeholder:text-fg-placeholder", className)}
         // 고정폭 숫자는 상자에 건다 — 입력은 상자의 글꼴을 통째로 이어받는다(Input 의 font: inherit)
         rootClassName={cn("tabular-nums", rootClassName)}
         {...props}

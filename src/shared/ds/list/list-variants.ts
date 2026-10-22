@@ -41,8 +41,10 @@ export const listVariants = cva("flex w-full flex-col gap-0");
 
 // 줄 — 바탕 층과 콘텐츠 층의 컨테이너. 누르는 줄의 상태는 안쪽 [data-list-action](버튼 · 링크 · 라벨 · 컨트롤)에서 읽는다.
 // 기준 길이 기본값 24 — 누르는 순간 줄을 재서 인라인으로 덮는다(list.tsx 의 withPress)
+//
+// 줄(li)은 컨테이너다(@container/list-item) — 줄 안 폭이 제목 글자 16개(16em = 16rem)보다 좁으면 값을 본문 아래로 내린다(listContentVariants 의 narrow)
 export const listItemVariants = cva(
-  "group/list-item relative flex w-full [--press-basis:24]",
+  "group/list-item @container/list-item relative flex w-full [--press-basis:24]",
 );
 
 // 바탕 층 — 누름 · 호버 · 강조 바탕. 콘텐츠 뒤에 깔리고 줄지 않는다. 눌리거나 올리면 좌우 6 들어와 모서리가 둥글어진다.
@@ -79,6 +81,19 @@ export const listContentVariants = cva(
     "group-has-[[data-list-action]:not([data-disabled]):active]/list-item:[scale:calc(1-2/var(--press-basis))] motion-reduce:group-has-[[data-list-action]:not([data-disabled]):active]/list-item:[scale:1]",
     // 키보드 포커스에만 줄 안쪽 링 2px
     "has-[[data-slot=list-body]:focus-visible]:outline-2 has-[[data-slot=list-body]:focus-visible]:-outline-offset-2 has-[[data-slot=list-body]:focus-visible]:outline-stroke-focus-ring",
+    // 자식의 격자 자리 — 좁은 줄(narrow)에서만 뜻이 있다. 넓은 줄은 flex 라 grid-column · grid-row 가 무시된다
+    "[&>:is([data-slot=list-expand-button],[data-slot=list-expand-slot])]:col-start-1 [&>:is([data-slot=list-expand-button],[data-slot=list-expand-slot])]:row-start-1 [&>:is([data-slot=list-expand-button],[data-slot=list-expand-slot])]:row-span-2",
+    "[&>[data-slot=list-prefix]]:col-start-2 [&>[data-slot=list-prefix]]:row-start-1 [&>[data-slot=list-prefix]]:row-span-2",
+    "[&>[data-slot=list-body]]:col-start-3 [&>[data-slot=list-body]]:row-start-1",
+    "[&>[data-slot=list-suffix]]:col-start-4 [&>[data-slot=list-suffix]]:row-start-1",
+    // 값 + 꺾쇠 한 덩어리(Fragment)면 좁은 줄에서 suffix 상자를 풀어(contents) 꺾쇠는 줄 끝(col 4), 값은 본문 아래(col 3 · row 2)로 가른다
+    "[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:is(svg,button,a,input,[data-slot=list-mark])]:col-start-4 [&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:is(svg,button,a,input,[data-slot=list-mark])]:row-start-1",
+    "[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:col-start-3 [&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:row-start-2",
+    // 본문 오른쪽 여백 — 옆에 조작 요소(꺾쇠 · 버튼 · 링크 · 입력 · 표식)가 남으면 10, 남지 않으면 좁은 줄에서 0
+    "[&:has(>[data-slot=list-suffix]_svg,>[data-slot=list-suffix]_button,>[data-slot=list-suffix]_a,>[data-slot=list-suffix]_input,>[data-slot=list-suffix]_[data-slot=list-mark])>[data-slot=list-body]]:pr-x2_5",
+    // 값(글 값 · 금액)은 본문 아래 — 설명 ↔ 값 4 = 값 위 바깥 여백 2(스펙 suffix.marginTop) + 안쪽 여백 2(본문 안 제목 ↔ 설명 사이 2 와 같은 틈 —
+    // 값은 본문 밖의 형제라 그 틈이 저절로 생기지 않는다). `:has()` 안에 `:has()` 를 둘 수 없어 본문 쪽 여백으로는 못 준다. 화살표 · 컨트롤(스위치 · 체크 · 라디오) · 작은 버튼이 든 뒤 붙이개는 줄 끝 그대로
+    "[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:col-start-3 [&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:row-start-2",
   ].join(" "),
   {
     variants: {
@@ -86,10 +101,29 @@ export const listContentVariants = cva(
         center: "items-center",
         top: "items-start",
       },
+      // 단계마다 좌우 여백이 달라 줄 안 폭의 문턱(16rem + 좌우 여백)도 다르다 — 줄 24 · 24, 부모 4 · 24, 하위 104 · 24
       nest: {
-        none: "px-global-gutter",
-        parent: "pl-x1 pr-global-gutter",
-        child: "pl-[104px] pr-global-gutter",
+        none: [
+          "px-global-gutter",
+          "@max-[calc(16rem+48px)]/list-item:grid @max-[calc(16rem+48px)]/list-item:grid-cols-[auto_auto_minmax(0,1fr)_auto] @max-[calc(16rem+48px)]/list-item:items-start",
+          "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+          "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:mt-x0_5 @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:pt-x0_5",
+          "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5 @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5 @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:text-start",
+        ].join(" "),
+        parent: [
+          "pl-x1 pr-global-gutter",
+          "@max-[calc(16rem+28px)]/list-item:grid @max-[calc(16rem+28px)]/list-item:grid-cols-[auto_auto_minmax(0,1fr)_auto] @max-[calc(16rem+28px)]/list-item:items-start",
+          "@max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+          "@max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:mt-x0_5 @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:pt-x0_5",
+          "@max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5 @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5 @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:text-start",
+        ].join(" "),
+        child: [
+          "pl-[104px] pr-global-gutter",
+          "@max-[calc(16rem+128px)]/list-item:grid @max-[calc(16rem+128px)]/list-item:grid-cols-[auto_auto_minmax(0,1fr)_auto] @max-[calc(16rem+128px)]/list-item:items-start",
+          "@max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+          "@max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:mt-x0_5 @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:pt-x0_5",
+          "@max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5 @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5 @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:text-start",
+        ].join(" "),
       },
     },
     defaultVariants: { align: "center", nest: "none" },
@@ -111,9 +145,10 @@ export const listPrefixVariants = cva(
 );
 
 // 본문 — 제목 + 설명. 누르는 줄은 이것이 버튼 · 링크다. 남는 폭을 쓰고(flex-1), 뒤 붙이개가 길면 먼저 양보하되
-// 한 글자(1em)까지만 준다 — 뒤 여백 10 은 따로 더한다(스펙 body.minWidth 1em · Q-001 A). 제목 · 설명은 칸 끝에서 끊는다
+// 한 글자까지만 준다 — 그 한 글자는 제목 글자(t5 16)다. 본문 버튼은 14px 를 물려받아 1em 이 14 가 되므로 em 이 아니라 --text-t5 로 쓴다(03D-005 24 → 26).
+// 뒤 여백 10 은 따로 더한다(스펙 body.minWidth 1em · Q-001 A). 제목 · 설명은 칸 끝에서 끊는다
 export const listBodyVariants = cva(
-  "flex min-w-[calc(1em+var(--spacing-x2_5))] flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
+  "flex min-w-[calc(var(--text-t5)+var(--spacing-x2_5))] flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
 );
 
 // 제목 · 글 설명 — 평소엔 단어 단위, 본문이 낱말 하나보다 좁아질 때만 글자 사이에서 끊는다(overflow-wrap: anywhere)
@@ -202,7 +237,7 @@ export const listDividerVariants = cva(
 
 // 목록 제목 — 목록 밖, 바로 위. 좌우 24(줄과 같다) · 위아래 8 · 제목과 오른쪽 버튼 사이 10
 export const listHeaderVariants = cva(
-  "flex w-full items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4",
+  "m-0 flex w-full tracking-normal items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4",
   {
     variants: {
       variant: {

@@ -434,6 +434,21 @@ describe("CardStat — 지표", () => {
     expect(slot("card-stat-value")!.textContent).toBe("−123,456,789,012원");
     expect(slot("card-stat-value")!.className).not.toContain("truncate");
   });
+
+  it("금액은 쉼표 뒤에서만 줄을 바꾼다 — <wbr> 이 쉼표 뒤마다, 글자는 그대로(03-D 결정 2 B)", () => {
+    render(
+      <Card>
+        <CardStat label="순자산" value="−123,456,789,012원" />
+      </Card>,
+    );
+    const value = slot("card-stat-value")!;
+    expect(value.querySelectorAll("wbr")).toHaveLength(3);
+    expect(value.innerHTML).toBe("−123,<wbr>456,<wbr>789,<wbr>012원");
+    expect(value.textContent).toBe("−123,456,789,012원");
+    // 묶음 하나가 칸보다 길 때만 칸 끝 끊기 — flex 항목이라 min-content 까지 줄도록 anywhere + 칸 폭
+    expect(value.className).toContain("[overflow-wrap:anywhere]");
+    expect(value.className).toContain("max-w-full");
+  });
 });
 
 describe("순자산 카드(hero)", () => {
@@ -445,6 +460,13 @@ describe("순자산 카드(hero)", () => {
         <CardHeroDetail>아래 글</CardHeroDetail>
       </Card>,
     );
+
+  it("순자산 금액도 쉼표 뒤에서만 줄을 바꾼다 — 글자는 그대로", () => {
+    hero();
+    const amount = slot("card-hero-amount")!;
+    expect(amount.innerHTML).toBe("42,<wbr>898,<wbr>100원");
+    expect(amount.textContent).toBe("42,898,100원");
+  });
 
   it("브랜드 채움 그라디언트 — 다크는 끝 색이 다르다 · 테두리 없음 · 여백 24", () => {
     const card = hero();

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { List } from "@/shared/ds/list";
@@ -8,7 +8,6 @@ import { Button } from "@/shared/ui/button";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import {
-  useDeleteNotification,
   useMarkAllRead,
   useMarkRead,
   useNotifications,
@@ -20,7 +19,7 @@ import type { Notification } from "@/entities/notification";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-/** 알림 목록 skeleton — icon(34x34) + 제목+메시지 + 시간 + 삭제버튼 행 × 6. */
+/** 알림 목록 skeleton — 타일(40) + 제목+메시지 + 시간 행 × 6. */
 function NotificationsPageSkeleton() {
   return (
     <div className="py-x1">
@@ -38,7 +37,6 @@ function NotificationsPageSkeleton() {
             <SkeletonBase className="h-3 w-48" />
           </div>
           <SkeletonBase className="mt-0.5 h-3 w-8 shrink-0" />
-          <SkeletonBase className="size-7 shrink-0 rounded-md" />
         </div>
       ))}
     </div>
@@ -50,12 +48,11 @@ function NotificationsPageSkeleton() {
  *
  * 행 구성·tone 매핑·unread 시각·상대시간·footer 는 Popover 와 공용
  * (`@/entities/notification` NotificationRow / relativeTime / notificationVisual).
- * 차이: 풀페이지라 dialog 박스·backdrop 없음, 행 끝에 삭제(X) 버튼(Page 전용 기능 보존),
- *       unreadCount 는 별도 useUnreadCount 쿼리.
+ * 줄마다 × 를 달지 않는다(W4, 2026-10-21) — 팝오버 · 시트와 같은 SEED List 줄이다(타일 40 · 제목 16/400 · 안 읽은 줄만 버튼).
+ * 차이: 풀페이지라 dialog 박스·backdrop 없음, unreadCount 는 별도 useUnreadCount 쿼리.
  */
 export function NotificationsPage() {
   const { t } = useTranslation("notification");
-  const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const { mobile } = useOutletContext<OutletCtx>();
   // 상대시각 기준점 — 벨(NotificationBell)과 **같은 훅**을 쓴다. 기준이 갈리면 같은
@@ -65,7 +62,6 @@ export function NotificationsPage() {
   const { data: unreadCount = 0 } = useUnreadCount();
   const markRead = useMarkRead();
   const markAllRead = useMarkAllRead();
-  const deleteNotif = useDeleteNotification();
 
   const handleClick = (n: Notification) => {
     if (!n.isRead) markRead.mutate(n.rowId);
@@ -104,21 +100,6 @@ export function NotificationsPage() {
             pending={markRead.pendingIds.has(n.rowId)}
             now={now}
             onClick={() => handleClick(n)}
-            trailing={
-              <Button
-                variant="ghost"
-                size="icon"
-                loading={deleteNotif.isPending}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteNotif.mutate(n.rowId);
-                }}
-                className="h-7 w-7 text-[var(--fg-tertiary)]"
-                aria-label={tCommon("delete")}
-              >
-                <X size={12} />
-              </Button>
-            }
           />
         ))}
       </List>

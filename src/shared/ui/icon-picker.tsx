@@ -4,6 +4,7 @@ import { DynamicIcon, iconNames } from "lucide-react/dynamic";
 import type { IconName } from "lucide-react/dynamic";
 import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { dsText } from "@/shared/ds/i18n";
 import { cn } from "@/shared/lib/cn";
 import { isIconName } from "@/shared/lib/icon-map";
 import { Input } from "@/shared/ui/input";
@@ -113,6 +114,7 @@ export const IconPicker = ({
       <PopoverTrigger asChild>
         <button
           type="button"
+          aria-label={dsText("iconPicker.label")}
           className={cn(
             "flex h-10 w-10 items-center justify-center rounded-md border border-border-default bg-bg-page shadow-sm transition-colors hover:bg-surface-input",
             className,

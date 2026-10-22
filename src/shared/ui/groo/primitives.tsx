@@ -354,6 +354,8 @@ export function MonthPicker({
   const yearNav = (
     <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
       <button
+        type="button"
+        aria-label={t("prevYear")}
         onClick={() => setViewY(viewY - 1)}
         style={{
           background: "transparent",
@@ -378,6 +380,8 @@ export function MonthPicker({
         {formatYear(viewY)}
       </div>
       <button
+        type="button"
+        aria-label={t("nextYear")}
         onClick={() => setViewY(viewY + 1)}
         disabled={!allowFuture && viewY >= curY}
         style={{

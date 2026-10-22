@@ -249,7 +249,7 @@ const Bar = ({ count }: { count: number }) => (
     <Button variant="ghost" size="small" onClick={noop}>
       내보내기
     </Button>
-    <Button variant="ghost" ghostColor="critical" size="small" onClick={noop}>
+    <Button variant="ghost" size="small" onClick={noop}>
       <Trash2 />
       삭제
     </Button>

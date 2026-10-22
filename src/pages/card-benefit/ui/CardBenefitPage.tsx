@@ -201,7 +201,8 @@ function CardArtworkTile({
         >
           <img
             src={card.imgUrl ?? undefined}
-            alt={cardName}
+            // 옆에 카드 이름이 글로 있다 — 그림 이름은 비운다(image-frame.md "이름 옆이면 alt=\"\"", 낭독기가 이름을 두 번 읽지 않게)
+            alt=""
             onError={() => setImgError(true)}
             style={{
               width: "100%",
@@ -432,7 +433,8 @@ function CardListTile({
         {showImg ? (
           <img
             src={card.imgUrl ?? undefined}
-            alt={cardName}
+            // 옆에 카드 이름이 글로 있다 — 그림 이름은 비운다(image-frame.md "이름 옆이면 alt=\"\"", 낭독기가 이름을 두 번 읽지 않게)
+            alt=""
             onError={() => setImgError(true)}
             style={{
               width: "100%",

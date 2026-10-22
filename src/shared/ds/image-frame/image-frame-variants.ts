@@ -111,22 +111,30 @@ export function pickFloaters(children: React.ReactNode) {
 }
 
 // ── 카드 면(그림 없는 아는 카드사) ───────────────────────────
-// 기관 색 한 색 + 표의 글자색. 크기는 틀의 폭으로(container image-frame): 96 미만 첫 글자 · 96 ~ 239 medium · 240 이상 large
+// 기관 색 한 색 + 표의 글자색. 크기는 틀의 폭으로(container image-frame): 96 미만 첫 글자 · 96 ~ 239 medium · 240 이상 large.
+// 글이 안 드는 면은 첫 글자 면으로(03-D 결정 3 A) — 틀 높이 < (회사 줄 + 카드 이름 한 줄) × 글자 배율 + 아래 여백이면 회사 · 카드 이름 대신 회사 첫 글자.
+// 틀 높이 컨테이너 쿼리(rem 이라 글자 배율을 따른다): medium 은 calc(2.1875rem + 8px) = (t2 줄 높이 16 + t4 19 = 35)rem + 아래 8,
+// large 는 calc(2.5rem + 14px) = (t3 18 + t5 22 = 40)rem + 아래 14. 글 칸을 보이는 두 규칙(medium · large)은 서로 겹치지 않는 폭 범위라 순서와 무관하다
 export const CARD_FACE_TEXT: Record<InstitutionText, string> = {
   white: "text-static-white",
   dark: "text-fg-neutral dark:text-fg-neutral-inverted",
 };
 export const CARD_FACE = "relative size-full overflow-hidden font-sans";
-// small — 회사 첫 글자 가운데, 면 높이의 40%(정수로 · 가장 작아도 10) · 700 · 줄 높이 1 · 로마자 대문자.
+// 첫 글자 — 회사 첫 글자 가운데, 면 높이의 40%(정수로 · 가장 작아도 10) · 700 · 줄 높이 1 · 로마자 대문자. 글 칸이 보이면 숨긴다.
 // 줄 높이는 글자 크기 뒤에 붙인다 — tailwind-merge 는 뒤에 오는 글자 크기가 줄 높이를 지운다고 본다
 export const CARD_FACE_INITIAL = cn(
-  "absolute inset-0 flex items-center justify-center font-bold uppercase @min-[96px]/image-frame:hidden",
+  "absolute inset-0 flex items-center justify-center font-bold uppercase",
+  "[@container_image-frame_(width>=96px)_and_(width<240px)_and_(height>=calc(2.1875rem_+_8px))]:hidden",
+  "[@container_image-frame_(width>=240px)_and_(height>=calc(2.5rem_+_14px))]:hidden",
   "text-[length:max(10px,round(40cqh,1px))]",
   "leading-none",
 );
-// medium · large — 왼쪽 아래 회사 · 카드 이름
-export const CARD_FACE_LABEL =
-  "absolute inset-x-0 bottom-0 hidden flex-col px-x2_5 pb-x2 @min-[96px]/image-frame:flex @min-[240px]/image-frame:px-x4 @min-[240px]/image-frame:pb-x3_5";
+// medium · large — 왼쪽 아래 회사 · 카드 이름. 폭이 96 이상이고 높이가 글이 들 만큼일 때만 보인다
+export const CARD_FACE_LABEL = cn(
+  "absolute inset-x-0 bottom-0 hidden flex-col px-x2_5 pb-x2 @min-[240px]/image-frame:px-x4 @min-[240px]/image-frame:pb-x3_5",
+  "[@container_image-frame_(width>=96px)_and_(width<240px)_and_(height>=calc(2.1875rem_+_8px))]:flex",
+  "[@container_image-frame_(width>=240px)_and_(height>=calc(2.5rem_+_14px))]:flex",
+);
 export const CARD_FACE_ISSUER =
   "truncate text-t2 font-medium @min-[240px]/image-frame:text-t3";
 export const CARD_FACE_NAME =

@@ -12,6 +12,7 @@ import {
   submitOnRadioEnter,
   type RadiomarkProps,
 } from "@/shared/ds/radio-group";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { Switchmark, type SwitchmarkProps } from "@/shared/ds/switch";
 
 import {
@@ -53,12 +54,34 @@ type ItemBase = {
   title: React.ReactNode;
   detail?: React.ReactNode;
   prefix?: React.ReactNode;
+  /**
+   * 뒤 붙이개 — 글 · 금액 · 화살표 · 컨트롤 · 작은 버튼. 값 + 조작 요소는 Fragment(`<>값<ChevronRight/></>`)로 넘긴다 —
+   * 좁은 줄에서 값만 본문 아래로 내려가고 꺾쇠는 줄 끝에 남는다. 한 요소로 싸 넘기거나 값에 svg 를 붙이면 값까지 줄 끝에 남는다
+   */
   suffix?: React.ReactNode;
   /** 새 알림처럼 주목이 필요한 줄 — 옅은 브랜드 바탕(list.yaml highlight) */
   highlighted?: boolean;
   /** 맞춤 — 기본 center. 제목이 두 줄을 넘거나 설명이 길면 top. 한 목록 안에서는 줄마다 섞지 않는다 */
   align?: Align;
 };
+
+// 값 + 꺾쇠를 Fragment 로 넘긴 뒤 붙이개 — 글 조각을 span 으로 감싸 좁은 줄에서 값만 따로 놓을 수 있게 한다(글 조각은 격자 자리를 못 받는다).
+// 글 하나로 넘긴 값은 금액이면 쉼표 뒤 줄바꿈 자리(withCommaBreaks)만 건다
+function mixedSuffix(suffix: React.ReactNode): React.ReactNode {
+  if (React.isValidElement(suffix) && suffix.type === React.Fragment) {
+    const kids = React.Children.toArray(
+      (suffix.props as { children?: React.ReactNode }).children,
+    );
+    return kids.map((k, i) =>
+      typeof k === "string" || typeof k === "number" ? (
+        <span key={i}>{withCommaBreaks(String(k))}</span>
+      ) : (
+        k
+      ),
+    );
+  }
+  return withCommaBreaks(suffix);
+}
 
 const has = (node: React.ReactNode) => node != null && node !== false;
 const hl = (highlighted?: boolean) => (highlighted ? "highlighted" : "none");
@@ -204,7 +227,7 @@ function Row({
             value: suffixValue,
           })}
         >
-          {suffix}
+          {mixedSuffix(suffix)}
         </span>
       )}
     </>
@@ -872,13 +895,15 @@ export interface ListHeaderProps
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof listHeaderVariants> {
   asChild?: boolean;
+  /** 제목 태그 — 기본 h2(화면 제목 아래 단계), 카드 안이면 h3(03D-007). asChild 면 자식이 태그다 */
+  as?: "h2" | "h3" | "h4" | "div";
 }
 
 // 목록 제목 — 목록 밖, 바로 위. 오른쪽에 작은 버튼(도움말 · 전체 보기)을 둘 수 있다. 제목 글에 id 를 달고 목록의 aria-labelledby 로 잇는다
 // (버튼을 같이 두면 제목 글만 감싼 span 에 id 를 단다 — 버튼 이름이 목록 이름에 섞이지 않게)
 const ListHeader = React.forwardRef<HTMLDivElement, ListHeaderProps>(
-  ({ className, variant, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "div";
+  ({ className, variant, asChild = false, as: Tag = "h2", ...props }, ref) => {
+    const Comp = asChild ? Slot : Tag;
     return (
       <Comp
         ref={ref}

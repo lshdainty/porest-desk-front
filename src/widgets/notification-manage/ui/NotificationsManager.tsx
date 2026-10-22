@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import {
   BarChart3,
@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { Slider } from "@/shared/ui/slider";
+import { ThresholdSlider } from "./ThresholdSlider";
 import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
@@ -345,6 +345,9 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   const emailFrequency: EmailFrequency = pref?.emailFrequency ?? "WEEKLY";
 
   const calmDisabled = isLoading || updateMut.isPending;
+  // 예산 경고 기준을 끄는 동안의 값 — 머리 값 · 슬라이더가 따라가고, 저장이 끝나면 서버 값으로 돌아온다
+  const [drag, setDrag] = useState<number | null>(null);
+  const shownThreshold = drag ?? warnThreshold;
 
   if (isLoading) {
     return (
@@ -489,7 +492,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
           >
             {t("threshold.current")}{" "}
             <strong style={{ color: "var(--fg-brand-strong)" }}>
-              {warnThreshold}%
+              {shownThreshold}%
             </strong>
           </span>
         }
@@ -515,17 +518,16 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
         {/* 앱 Flutter Slider 는 위젯 높이 44 — 트랙 위아래 ~20px 내재 여백.
               웹 슬라이더(16px)에 동일한 실효 간격을 padding 으로 재현. */}
         <div style={{ padding: "20px 0" }}>
-          <Slider
-            min={50}
-            max={100}
-            step={5}
-            // 5단위 눈금 점 — 앱 divisions(10) 틱 마커 정합 (10구간 + 1 = 11).
-            ticks={11}
-            value={[warnThreshold]}
-            onValueChange={([v]) =>
-              updateMut.mutate({ budgetAlertThreshold: v })
+          <ThresholdSlider
+            value={shownThreshold}
+            disabled={isLoading}
+            onDrag={setDrag}
+            onCommit={(v) =>
+              updateMut.mutate(
+                { budgetAlertThreshold: v },
+                { onSettled: () => setDrag(null) },
+              )
             }
-            disabled={calmDisabled}
           />
         </div>
         <div

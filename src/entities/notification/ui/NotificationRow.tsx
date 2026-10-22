@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Spinner } from "@/shared/ui/spinner";
@@ -15,7 +14,6 @@ export function NotificationRow({
   notification,
   now,
   onClick,
-  trailing,
   pending,
 }: {
   notification: Notification;
@@ -29,8 +27,6 @@ export function NotificationRow({
   now: number;
   /** 안 읽은 줄을 눌렀을 때(읽음 처리) — 읽은 줄은 누르지 않는다 */
   onClick?: () => void;
-  /** 줄 오른쪽 끝 추가 액션(알림 화면 삭제 버튼). 시각 옆에 놓이고 따로 눌린다 */
-  trailing?: ReactNode;
   /** 읽음 처리 요청 진행 중 — 점 자리에 스피너, 누르지 못한다. */
   pending?: boolean;
 }) {
@@ -68,11 +64,8 @@ export function NotificationRow({
       </span>
     ),
     suffix: (
-      <span className="flex items-center gap-x2">
-        <span className="text-t3 text-fg-neutral-subtle">
-          {relativeTime(notification.createAt, now)}
-        </span>
-        {trailing}
+      <span className="text-t3 text-fg-neutral-subtle">
+        {relativeTime(notification.createAt, now)}
       </span>
     ),
     highlighted: unread,

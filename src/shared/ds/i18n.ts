@@ -1,3 +1,4 @@
+import { createElement, type ReactNode } from "react";
 import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 
@@ -46,6 +47,25 @@ export const dsMoney = (n: number) => {
     ? `₩${v.toLocaleString("en-US")}`
     : `${v.toLocaleString("ko-KR")}원`;
 };
+
+/**
+ * 금액 글을 쉼표 뒤에서만 줄을 바꿀 수 있게 한다(03-D 결정 2 B — Typography v114 의 예외). 세 자리 묶음 사이(숫자,숫자)의
+ * 쉼표 뒤마다 `<wbr>` 을 넣는다 — 보이는 글에만이다. `<wbr>` 은 글자가 아니라서 읽는 이름 · 복사한 글에 남지 않는다.
+ * 지표 · 순자산 · 목록 금액(ds 부품)은 글로 받은 금액에 이 함수를 스스로 건다. 상세 합계 · 옛 화면 금액(`money()`)은 화면 이관 때 쓴다.
+ * 쉼표가 없으면(다섯 자리 이하 · 글 값) 글 그대로다. 묶음 하나가 칸보다 길 때만 칸 끝 끊기(overflow-wrap)가 남는다.
+ */
+export const withCommaBreaks = (text: ReactNode): ReactNode => {
+  if (typeof text !== "string" || !/\d,\d/.test(text)) return text;
+  return text
+    .split(/(?<=\d,)(?=\d)/)
+    .flatMap((part, i) =>
+      i === 0 ? [part] : [createElement("wbr", { key: i }), part],
+    );
+};
+
+/** 돈 — {@link dsMoney} 와 같은 글, 쉼표 뒤마다 줄바꿈 자리(`<wbr>`)를 넣어 돌려준다. 이름 · 복사에는 {@link dsMoney}(글)를 쓴다 */
+export const dsMoneyText = (n: number): ReactNode =>
+  withCommaBreaks(dsMoney(n));
 
 /** 숫자를 지금 로케일로 */
 export const dsNumber = (n: number, opts?: Intl.NumberFormatOptions) =>
