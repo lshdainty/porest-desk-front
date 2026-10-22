@@ -420,6 +420,38 @@ export const ChipDemo = () => {
             </ChipGroup>
           </div>
         </DemoRow>
+        <DemoRow label="띠 폭 안쪽 312 · 342 — 긴 칩 · 입력값 칩 · 스크롤 줄(좌우 24 안)">
+          {[312, 342].map((width) => (
+            <div
+              key={width}
+              data-scene={`chip-strip-${width}`}
+              style={{ width }}
+              className="bg-bg-layer-default"
+            >
+              <ChipGroup aria-label={`띠 ${width}`}>
+                <Chip>숲길카드 새싹 포인트 플러스 체크카드 월 구독료</Chip>
+                <Chip selected>외식</Chip>
+                <InputChip onRemove={() => {}}>
+                  숲길카드 새싹 포인트 플러스 체크카드 월 구독료와 정기 결제
+                  모음
+                </InputChip>
+              </ChipGroup>
+              <div className="bg-bg-layer-default px-global-gutter">
+                <ChipGroup
+                  layout="scroll"
+                  bleed
+                  aria-label={`띠 스크롤 ${width}`}
+                >
+                  <Chip variant="solid">
+                    숲길카드 새싹 포인트 플러스 체크카드 월 구독료와 정기 결제
+                    모음
+                  </Chip>
+                  <Chip variant="solid">외식</Chip>
+                </ChipGroup>
+              </div>
+            </div>
+          ))}
+        </DemoRow>
         <DemoRow label="입력값 칩 · 긴 이름 — 지우기 × 는 남는다">
           <div className="w-full max-w-[360px]">
             <ChipGroup aria-label="긴 입력값">

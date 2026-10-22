@@ -297,8 +297,13 @@ export const AvatarDemo = () => (
         </AvatarStack>
       </DemoRow>
       <DemoRow label="놓인 폭에 맞춰 — 108 · 6명, 폭 312(폰 안쪽) · 480. 보이는 사람이 줄고 +N · 이름의 외 N명이 같이 바뀐다(크기는 줄지 않는다)">
-        {[312, 480].map((width) => (
-          <div key={width} style={{ width }} className="bg-bg-layer-default">
+        {[312, 342, 480].map((width) => (
+          <div
+            key={width}
+            data-scene={`avatar-${width}`}
+            style={{ width }}
+            className="bg-bg-layer-default"
+          >
             <AvatarStack
               size={108}
               aria-label={({ shown, rest, total }) =>

@@ -131,7 +131,7 @@ export const TagGroupDemo = () => (
         </div>
       </DemoRow>
       <DemoRow label="가장 나쁜 값 — 폭 120 · 항목 모두 최소 폭(첫 글자 + …), 두 글자 이하는 글 폭">
-        <div className="flex w-[120px]">
+        <div className="flex w-[120px]" data-scene="tag-120">
           <TagGroup size="t3" truncate>
             <TagGroupItem>교통</TagGroupItem>
             <TagGroupItem>숲길카드 새싹 체크(1234)</TagGroupItem>
