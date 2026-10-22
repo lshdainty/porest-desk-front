@@ -820,7 +820,12 @@ function SortableRow({
           </Button>
         </div>
       ) : reorderMode ? null : (
-        <button style={MANAGE_ROW.moreStyle} onClick={onEdit}>
+        <button
+          type="button"
+          aria-label={`${cat.categoryName} ${t("common:edit")}`}
+          style={MANAGE_ROW.moreStyle}
+          onClick={onEdit}
+        >
           <ChevronRight size={18} />
         </button>
       )}

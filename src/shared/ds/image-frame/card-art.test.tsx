@@ -100,7 +100,9 @@ describe("CardArt", () => {
   });
 
   it("글이 안 드는 면은 첫 글자 면 — 틀 높이 < (회사 줄 + 이름 한 줄) × 글자 배율 + 아래 여백(03-D 결정 3 A)", () => {
-    const el = render(<CardArt width={110} issuer="KB국민카드" name="노리2" />);
+    const el = render(
+      <CardArt width={110} issuer="KB국민카드" name="가람 체크" />,
+    );
     const initial = el.querySelector("[data-slot=card-art-initial]")!.className;
     const label = el.querySelector("[data-slot=card-art-label]")!.className;
     // medium(폭 96 ~ 239) — calc(2.1875rem + 8px) = (t2 16 + t4 19 = 35)rem + 아래 8. 글 칸이 보이면 첫 글자는 숨는다(둘이 같은 조건)

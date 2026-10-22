@@ -508,6 +508,8 @@ export const SettingsPage = () => {
           }}
         >
           <button
+            type="button"
+            aria-label={t("common:back")}
             onClick={() => changeSection(activeSection?.parent ?? "menu")}
             style={{
               border: 0,

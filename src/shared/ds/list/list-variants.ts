@@ -237,7 +237,7 @@ export const listDividerVariants = cva(
 
 // 목록 제목 — 목록 밖, 바로 위. 좌우 24(줄과 같다) · 위아래 8 · 제목과 오른쪽 버튼 사이 10
 export const listHeaderVariants = cva(
-  "flex w-full items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4",
+  "m-0 flex w-full items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4",
   {
     variants: {
       variant: {

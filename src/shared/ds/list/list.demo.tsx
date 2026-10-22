@@ -1266,10 +1266,7 @@ const NarrowDemo = () => (
       <Cell width={300}>
         <Specimen spec="list" combo={{ width: "narrow" }}>
           <List aria-label="좁은 줄 · 글 값 · 금액">
-            <ListItem
-              title="이메일"
-              suffix="groo.desk.design.system@example-company-domain.co.kr"
-            />
+            <ListItem title="이메일" suffix="long.address@example.com" />
             <ListButtonItem
               prefix={
                 <Tile color="orange">

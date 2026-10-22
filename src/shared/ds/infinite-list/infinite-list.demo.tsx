@@ -16,7 +16,7 @@ const STATUSES: { status: InfiniteListStatus; label: string }[] = [
   { status: "end", label: "끝 — 모두 봤어요." },
 ];
 
-const ROWS = ["하나카드 모아", "가람 체크", "숲길 신용", "다온 플러스"];
+const ROWS = ["다온 모아", "가람 체크", "숲길 신용", "다온 플러스"];
 
 // 직접 눌러 보기 — 목록 끝이 상자 아래 300 안으로 오면 다음 쪽을 받는다(IntersectionObserver). 못 불러오는 쪽을 골라 다시 시도를 본다
 const LiveDemo = () => {

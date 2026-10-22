@@ -177,6 +177,36 @@ describe("List — 좁은 줄(03-D 결정 1 B · 결정 2 B)", () => {
     );
   });
 
+  it("값 + 꺾쇠를 한 요소로 싸 넘기면 풀리지 않는다 — Fragment 로 넘길 때만 값이 내려간다(suffix 계약)", () => {
+    const mixed =
+      "[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))";
+    render(
+      <List>
+        <ListItem
+          title="통화"
+          suffix={
+            <>
+              대한민국 원<svg />
+            </>
+          }
+        />
+        <ListItem
+          title="언어"
+          suffix={
+            <span>
+              한국어
+              <svg />
+            </span>
+          }
+        />
+      </List>,
+    );
+    const [fragment, wrapped] = slots("list-suffix");
+    expect(fragment!.matches(mixed)).toBe(true);
+    // 한 요소로 싸면 suffix 의 직계 자식이 그 요소 하나뿐이라 풀리지 않는다 — 값까지 줄 끝에 남는다
+    expect(wrapped!.matches(mixed)).toBe(false);
+  });
+
   it("글로 넘긴 금액은 쉼표 뒤에 <wbr> — 글 값(이메일)은 그대로", () => {
     render(
       <List>
@@ -1174,6 +1204,19 @@ describe("ListDivider · ListHeader · ListTile", () => {
     expect(classes(bold!)).toEqual(
       expect.arrayContaining(["font-bold", "text-fg-neutral"]),
     );
+  });
+
+  it("목록 제목은 제목 태그다 — 기본 h2, 카드 안이면 as=h3 · 브라우저 기본 여백은 없다(03D-007)", () => {
+    render(
+      <>
+        <ListHeader>목록</ListHeader>
+        <ListHeader as="h3">카드 안 목록</ListHeader>
+      </>,
+    );
+    const [h2, h3] = slots("list-header");
+    expect(h2!.tagName).toBe("H2");
+    expect(h3!.tagName).toBe("H3");
+    expect(classes(h2!)).toContain("m-0");
   });
 
   it("목록 제목이 있으면 목록에 aria-labelledby 로 잇는다 — 오른쪽 버튼은 제목 글 밖이라 목록 이름에 섞이지 않는다", () => {

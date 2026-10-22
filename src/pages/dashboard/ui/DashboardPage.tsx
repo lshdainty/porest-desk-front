@@ -2680,7 +2680,7 @@ function WidgetHead({
         className="all"
         onClick={onAll}
         type="button"
-        aria-label={`${title} ${t("viewAll")}`}
+        aria-label={t("viewAllOf", { title })}
       >
         <ChevronRight size={16} />
       </button>
