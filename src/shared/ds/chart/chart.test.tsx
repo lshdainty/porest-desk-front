@@ -895,7 +895,8 @@ describe("ChartDonutLegend · ChartDonutCenter", () => {
 describe("열지도 — 세기 단계", () => {
   it("값 → 단계 경계(가장 큰 값의 8 · 22 · 45 · 75%)", () => {
     expect(HEAT_CUTS).toEqual([0.08, 0.22, 0.45, 0.75]);
-    expect(HEAT_MIX).toEqual([0.18, 0.35, 0.55, 0.75, 1]);
+    // 넷째 단계 섞음은 76% 다(2026-10-22 결정 B) — 끊는 자리 75% 는 그대로
+    expect(HEAT_MIX).toEqual([0.18, 0.35, 0.55, 0.76, 1]);
     expect(heatStep(7, 100)).toBe(0);
     expect(heatStep(8, 100)).toBe(1);
     expect(heatStep(21, 100)).toBe(1);
@@ -912,10 +913,12 @@ describe("열지도 — 세기 단계", () => {
     expect(heatStep(5, 0)).toBe(-1);
   });
 
-  it("단계마다 바탕 — 브랜드 채움을 카드 면에 18 · 35 · 55 · 75 · 100% 섞는다", () => {
+  it("단계마다 바탕 — 브랜드 채움을 카드 면에 18 · 35 · 55 · 76 · 100% 섞는다", () => {
     expect(HEAT_STEP_BG).toHaveLength(5);
-    for (const [i, pct] of [18, 35, 55, 75].entries())
+    for (const [i, pct] of [18, 35, 55, 76].entries()) {
       expect(HEAT_STEP_BG[i]).toContain(`_${pct}%,`);
+      expect(HEAT_STEP_SWATCH[i]).toContain(` ${pct}%,`);
+    }
     expect(HEAT_STEP_BG[4]).toBe("bg-bg-brand-solid");
     expect(HEAT_STEP_SWATCH[4]).toBe("var(--color-bg-brand-solid)");
   });
@@ -931,7 +934,25 @@ describe("열지도 — 단계마다 글자색(4.5:1)", () => {
     }) as typeof window.getComputedStyle);
   };
 
-  it("Desk 라이트 — 18 · 35 · 55% 는 fg-neutral, 75 · 100% 는 흰 글자", () => {
+  it("넷째 단계(76%) 위 흰 글자 대비 — Desk 라이트 4.74, 4.5 를 넘는다(75% 는 4.63)", () => {
+    const lin = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const lum = (rgb: number[]) =>
+      0.2126 * lin(rgb[0]!) + 0.7152 * lin(rgb[1]!) + 0.0722 * lin(rgb[2]!);
+    const brand = [1, 71, 173]; // Desk 라이트 bg-brand-solid
+    const white = [255, 255, 255];
+    const ratioAt = (p: number) => {
+      const mix = brand.map((b, k) => p * b + (1 - p) * white[k]!);
+      return (lum(white) + 0.05) / (lum(mix) + 0.05);
+    };
+    expect(ratioAt(HEAT_MIX[3])).toBeCloseTo(4.74, 2);
+    expect(ratioAt(HEAT_MIX[3])).toBeGreaterThan(4.5);
+    expect(ratioAt(0.75)).toBeLessThan(4.7);
+  });
+
+  it("Desk 라이트 — 18 · 35 · 55% 는 fg-neutral, 76 · 100% 는 흰 글자", () => {
     stub({
       "bg-brand-solid": "rgb(1, 71, 173)",
       "bg-layer-default": "rgb(255, 255, 255)",

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { Spinner } from "@/shared/ui/spinner";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -1047,6 +1047,7 @@ function TodoEditDialog({
   onSave: (values: TodoFormValues, id?: number) => void;
   submitting?: boolean;
 }) {
+  const uid = useId(); // 태그 칸 이름 잇기
   const { t } = useTranslation("todo");
   const { t: tc } = useTranslation("common");
   const isNew = !todo;
@@ -1142,9 +1143,12 @@ function TodoEditDialog({
           />
         </Field>
         <Field>
-          <FieldLabel>{t("tag")}</FieldLabel>
+          <FieldLabel id={`${uid}tag-label`}>{t("tag")}</FieldLabel>
           <Select value={tag} onValueChange={setTag}>
-            <SelectTrigger>
+            <SelectTrigger
+              id={`${uid}tag`}
+              aria-labelledby={`${uid}tag-label ${uid}tag`}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

@@ -1174,6 +1174,18 @@ describe("ListDivider · ListHeader · ListTile", () => {
     expect(classes(inset!)).not.toContain("w-full");
   });
 
+  it("목록 제목은 오른쪽 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다 — 제목 최소 50% · 줄바꿈(03-G 4A)", () => {
+    render(<ListHeader id="h1">일반</ListHeader>);
+    expect(classes(slots("list-header")[0]!)).toEqual(
+      expect.arrayContaining([
+        "flex-wrap",
+        "[&>:first-child:not(:last-child)]:min-w-[50%]",
+        "[&>:first-child:not(:last-child)]:flex-1",
+        "[&>:last-child:not(:first-child)]:ml-auto",
+      ]),
+    );
+  });
+
   it("목록 제목 — 14 · 500 · 옅은 색(기본) · boldSolid 는 700 · 짙은 색, 좌우 24 · 위아래 8 · 버튼과 사이 10", () => {
     render(
       <>

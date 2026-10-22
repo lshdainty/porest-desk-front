@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
@@ -52,6 +52,7 @@ export function AssetTradeDialog({
   mobile: boolean;
   onClose: () => void;
 }) {
+  const uid = useId(); // 결제 계좌 칸 이름 잇기
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
   const createMut = useCreateTrade();
@@ -260,7 +261,9 @@ export function AssetTradeDialog({
           팔았다고 통장으로 자동 이체되지는 않는다. */}
       {!isSell && (
         <Field className="mb-[14px]">
-          <FieldLabel>{t("trade.settlement")}</FieldLabel>
+          <FieldLabel id={`${uid}settle-label`}>
+            {t("trade.settlement")}
+          </FieldLabel>
           <Select
             value={
               settlementAssetRowId != null
@@ -271,7 +274,10 @@ export function AssetTradeDialog({
               setSettlementAssetRowId(v === "__cash__" ? null : Number(v))
             }
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id={`${uid}settle`}
+              aria-labelledby={`${uid}settle-label ${uid}settle`}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

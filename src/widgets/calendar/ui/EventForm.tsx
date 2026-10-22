@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { MapPin, Repeat, Bell, Tag, Check } from "lucide-react";
@@ -113,6 +113,7 @@ export const EventForm = ({
   isLoading,
   onDelete,
 }: EventFormProps) => {
+  const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
   const { data: userCalendars = [] } = useUserCalendars();
@@ -341,7 +342,7 @@ export const EventForm = ({
           {/* Calendar selector */}
           {selectableCalendars.length > 0 && (
             <div className="flex flex-col gap-2">
-              <Label>{t("form.calendar")}</Label>
+              <Label id={`${uid}cal-label`}>{t("form.calendar")}</Label>
               <Select
                 value={
                   selectedCalendarRowId
@@ -358,7 +359,10 @@ export const EventForm = ({
                   }
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  id={`${uid}cal`}
+                  aria-labelledby={`${uid}cal-label ${uid}cal`}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -383,7 +387,7 @@ export const EventForm = ({
           {/* Label selector */}
           {labels.length > 0 && (
             <div className="flex flex-col gap-2">
-              <Label>
+              <Label id={`${uid}lbl-label`}>
                 <Tag size={14} className="inline mr-1" />
                 {t("form.label")}
               </Label>
@@ -403,7 +407,10 @@ export const EventForm = ({
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  id={`${uid}lbl`}
+                  aria-labelledby={`${uid}lbl-label ${uid}lbl`}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

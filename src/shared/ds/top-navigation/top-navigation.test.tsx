@@ -88,7 +88,7 @@ describe("TopNavigation — 바", () => {
     expect(bar.className).toContain("env(safe-area-inset-right)");
     // 스크롤해도 선 · 그림자 · 숨김이 없다
     expect(bar.className).not.toMatch(/border|shadow|translate|hidden/);
-    expect(slot("top-navigation-row")?.className).toContain("h-14");
+    expect(slot("top-navigation-row")?.className).toContain("h-[56px]");
   });
 
   it("desktop 은 왼쪽이 본문 여백 32 이고 제목을 그리지 않는다", () => {
@@ -192,8 +192,8 @@ describe("TopNavigationActions · 버튼", () => {
     expect(button.tagName).toBe("BUTTON");
     expect(button.type).toBe("button");
     expect(button.getAttribute("aria-label")).toBe("검색");
-    expect(button.className).toContain("size-11");
-    expect(button.className).toContain("[&_svg]:size-6");
+    expect(button.className).toContain("size-[44px]");
+    expect(button.className).toContain("[&_svg]:size-[24px]");
     expect(button.className).toContain("active:[scale:calc(1-2/44)]");
     expect(button.className).toContain("motion-reduce:active:[scale:1]");
     // 키보드 포커스에만 상자 안쪽 2px 링
@@ -252,7 +252,7 @@ describe("TopNavigationActions · 버튼", () => {
     render(<TopNavigationTextButton>모두 읽음</TopNavigationTextButton>);
     const button = slot("top-navigation-text-button") as HTMLButtonElement;
     expect(button.type).toBe("button");
-    expect(button.className).toContain("h-11");
+    expect(button.className).toContain("h-[44px]");
     expect(button.className).toContain("px-x2_5");
     expect(button.className).toContain("font-medium");
     expect(button.className).toContain("--text-t5-static");

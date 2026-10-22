@@ -19,7 +19,7 @@ export const ROOT_LEFT: Record<TopNavigationType, string> = {
   standard: "pl-[calc(var(--spacing-x1_5)+env(safe-area-inset-left))]",
   desktop: "pl-[calc(var(--layout-margin)+env(safe-area-inset-left))]",
 };
-export const ROW = "flex h-14 items-center";
+export const ROW = "flex h-[56px] items-center";
 
 // ── 제목 ─────────────────────────────────────────────────────
 // 글자 크기 설정은 1.2배까지 — 크기 · 줄 높이 모두 clamp(고정 값(-static), 설정을 따르는 값(rem), 고정 값 × 1.2).
@@ -68,8 +68,8 @@ const PRESS_TRANSITION =
 
 // 아이콘 버튼 — 상자 44 = 누르는 영역 · 아이콘 24. 누르면 바탕 + 2px 거리 축소(44 → 0.955), 막히면 fg-disabled(바탕 · 축소 없음)
 export const ICON_BUTTON = [
-  "relative flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-r2 border-0 bg-transparent p-0 text-fg-neutral",
-  "[&_svg]:size-6 [&_svg]:shrink-0",
+  "relative flex size-[44px] shrink-0 cursor-pointer items-center justify-center rounded-r2 border-0 bg-transparent p-0 text-fg-neutral",
+  "[&_svg]:size-[24px] [&_svg]:shrink-0",
   // 켜고 끄는 단추(aria-pressed) — 끔 선 2 · 켬 선 2.5, 색은 그대로 fg-neutral(19B). aria-pressed 가 없는 버튼의 선은 건드리지 않는다
   "aria-[pressed=false]:[&_svg]:[stroke-width:2] aria-pressed:[&_svg]:[stroke-width:2.5]",
   PRESS_TRANSITION,
@@ -80,7 +80,7 @@ export const ICON_BUTTON = [
 
 // 글 버튼 — 높이 44 · 좌우 10 · t5 · 500. 누르는 순간 기준 max(44, 폭 ÷ 4, 24) 를 잰다(--press-basis)
 export const TEXT_BUTTON = [
-  "relative flex h-11 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-r2 border-0 bg-transparent px-x2_5 font-sans font-medium text-fg-neutral",
+  "relative flex h-[44px] shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-r2 border-0 bg-transparent px-x2_5 font-sans font-medium text-fg-neutral",
   TEXT_T5,
   PRESS_TRANSITION,
   "hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed active:[scale:calc(1-2/var(--press-basis,44))] motion-reduce:active:[scale:1]",

@@ -105,12 +105,12 @@ describe("FloatingActionButton", () => {
     const { className } = render(
       <FloatingActionButton icon={<Icon />} aria-label="할 일 추가" />,
     );
-    expect(className).toContain("size-14");
+    expect(className).toContain("size-[56px]");
     expect(className).toContain("rounded-full");
     expect(className).toContain("bg-bg-brand-solid");
     expect(className).toContain("text-static-white");
     expect(className).toContain("shadow-[var(--shadow-s3)]");
-    expect(className).toContain("[&>svg]:size-6");
+    expect(className).toContain("[&>svg]:size-[24px]");
     expect(className).toContain("[&>svg]:[stroke-width:2.5]");
   });
 
@@ -172,6 +172,6 @@ describe("FloatingActionButton", () => {
       />,
     );
     expect(className).toContain("custom");
-    expect(className).toContain("size-14");
+    expect(className).toContain("size-[56px]");
   });
 });

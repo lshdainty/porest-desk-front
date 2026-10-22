@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -115,6 +115,7 @@ function failReasonKey(reason: string): string {
 // ─── 메인 ──────────────────────────────────────────────────────
 
 export function DataImportSection({ mobile }: { mobile: boolean }) {
+  const uid = useId(); // 선택 칸 이름 잇기
   const { t } = useTranslation("export");
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("upload");
@@ -210,13 +211,17 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
           <SectionCard
             mobile={mobile}
             title={t("import.sourceTitle")}
+            titleId={`${uid}source-label`}
             desc={t("import.sourceDesc")}
           >
             <Select
               value={source}
               onValueChange={(v) => setSource(v as ImportSource)}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id={`${uid}source`}
+                aria-labelledby={`${uid}source-label ${uid}source`}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -442,6 +447,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 >
                   <div style={{ width: mobile ? 92 : 130, flexShrink: 0 }}>
                     <span
+                      id={`${uid}map-${mf.f}-label`}
                       style={{
                         fontSize: "var(--text-body-sm)",
                         fontWeight: 600,
@@ -468,7 +474,10 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                       }
                       onValueChange={(v) => setField(mf.f, v)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        id={`${uid}map-${mf.f}`}
+                        aria-labelledby={`${uid}map-${mf.f}-label ${uid}map-${mf.f}`}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -956,12 +965,15 @@ function Stepper({
 
 function SectionCard({
   title,
+  titleId,
   desc,
   children,
   mobile,
   flushContent,
 }: {
   title: string;
+  /** 제목 글에 다는 id — 안의 선택 칸이 이 글로 이름을 받는다(aria-labelledby) */
+  titleId?: string;
   desc?: string;
   children: React.ReactNode;
   mobile?: boolean;
@@ -971,6 +983,7 @@ function SectionCard({
     <>
       {/* 앱 PTypo.body(14) 정합(사용자 결정) — body-md(15) 아님. */}
       <div
+        id={titleId}
         style={{
           fontSize: "var(--text-body-sm)",
           fontWeight: 700,

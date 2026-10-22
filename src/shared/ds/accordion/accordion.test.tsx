@@ -618,6 +618,18 @@ describe("AccordionHeader · AccordionExpandAll", () => {
   };
   const expandAll = () => slot("accordion-expand-all");
 
+  it("목록 머리는 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다 — 제목 최소 50% · 줄바꿈(03-G 4A)", () => {
+    render(<Sheet />);
+    expect(slot("accordion-header").className.split(" ")).toEqual(
+      expect.arrayContaining([
+        "flex-wrap",
+        "[&>:first-child:not(:last-child)]:min-w-[50%]",
+        "[&>:first-child:not(:last-child)]:flex-1",
+        "[&>:last-child:not(:first-child)]:ml-auto",
+      ]),
+    );
+  });
+
   it("목록 머리 — 제목(건수 포함)과 오른쪽 자식, 높이 36 · 아래 8", () => {
     render(<Sheet />);
     const header = slot("accordion-header");
@@ -708,6 +720,7 @@ describe("AccordionHeader · AccordionExpandAll", () => {
         "before:min-w-11",
         "rounded-r2",
         "px-x3_5",
+        "-mr-x3_5",
         "font-bold",
         "text-fg-neutral-muted",
         "focus-visible:outline-offset-2",

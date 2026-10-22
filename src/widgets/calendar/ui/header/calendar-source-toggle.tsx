@@ -135,7 +135,6 @@ const UserCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
       className={cn(
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
         "hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
-        !calendar.isVisible && "opacity-50",
       )}
     >
       {pending ? (
@@ -166,7 +165,6 @@ const BuiltinSourceItem = ({ source }: { source: IBuiltinSource }) => {
         className={cn(
           "flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
           "hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
-          !source.enabled && "opacity-50",
         )}
       >
         <CheckboxIndicator

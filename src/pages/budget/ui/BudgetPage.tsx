@@ -846,7 +846,7 @@ export const BudgetPage = () => {
         style={{
           position: "relative",
           height: 12,
-          background: "var(--color-bg-neutral-weak-alpha)",
+          background: "var(--color-bg-neutral-weak)",
           borderRadius: "var(--radius-pill)",
           overflow: "hidden",
           marginBottom: 10,

@@ -324,15 +324,15 @@ describe("Tabs (Line)", () => {
   it("크기 — small 40 · 글 14, medium 44 · 글 16, 탭의 위아래 · 좌우 10 · 글은 아래로 · 700", () => {
     render(<Stats defaultValue="trend" />);
     expect(container.querySelector("[role=tablist]")!.className).toContain(
-      "min-h-10",
+      "min-h-[40px]",
     );
-    expect(tab("추이").className).toContain("min-h-10");
+    expect(tab("추이").className).toContain("min-h-[40px]");
     expect(tab("추이").className).toContain("text-t4");
     act(() => root.render(<Stats defaultValue="trend" size="medium" />));
     expect(container.querySelector("[role=tablist]")!.className).toContain(
-      "min-h-11",
+      "min-h-[44px]",
     );
-    expect(tab("추이").className).toContain("min-h-11");
+    expect(tab("추이").className).toContain("min-h-[44px]");
     expect(tab("추이").className).toContain("text-t5");
     for (const cls of ["p-x2_5", "items-end", "font-bold"]) {
       expect(tab("추이").className).toContain(cls);
@@ -391,7 +391,7 @@ describe("Tabs (Line)", () => {
     );
   });
 
-  it("Fill 목록이 넘치면 개발 중에 Hug 로 바꾸라고 경고한다", () => {
+  it("Fill 목록이 넘쳐도 Hug 로 바꾸라는 경고를 하지 않는다 — Fill 모양 그대로 목록만 가로 스크롤한다(03-G 3B)", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const original = Object.getOwnPropertyDescriptor(
       HTMLElement.prototype,
@@ -410,7 +410,103 @@ describe("Tabs (Line)", () => {
         delete (HTMLElement.prototype as unknown as Record<string, unknown>)
           .scrollWidth;
     }
-    expect(warn.mock.calls.map((c) => String(c[0])).join("\n")).toContain(
+    expect(warn.mock.calls.map((c) => String(c[0])).join("\n")).not.toContain(
+      "Fill 목록이 넘친다",
+    );
+  });
+
+  it("Fill 목록은 넘치면 가로 스크롤한다 — 스크롤바 숨김 · 고른 탭 드러내기 가장자리 16, 칸은 flex-1 그대로(Hug 가 아니다)", () => {
+    render(<Stats defaultValue="trend" />);
+    const fill = container.querySelector("[role=tablist]")!;
+    expect(fill.getAttribute("data-layout")).toBe("fill");
+    for (const c of [
+      "overflow-x-auto",
+      "[scrollbar-width:none]",
+      "[&::-webkit-scrollbar]:hidden",
+      "scroll-px-x4",
+      "px-0",
+    ])
+      expect(fill.className).toContain(c);
+    expect(tab("추이").className).toContain("flex-1");
+    expect(tab("추이").className).not.toContain("flex-none");
+  });
+
+  it("360 폭에 긴 탭 넷이 넘치면 줄이 스크롤되고, 고른 넷째 탭이 보이는 자리로 간다", () => {
+    const protoLeft = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      "offsetLeft",
+    );
+    const protoWidth = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      "offsetWidth",
+    );
+    const protoClient = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      "clientWidth",
+    );
+    const protoScroll = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      "scrollWidth",
+    );
+    // 탭 하나 160 — 넷이면 640, 줄 폭은 360
+    Object.defineProperty(HTMLElement.prototype, "offsetLeft", {
+      configurable: true,
+      get(this: HTMLElement) {
+        const v = this.getAttribute("data-value");
+        return v ? Number(v.replace("t", "")) * 160 : 0;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+      configurable: true,
+      get: () => 160,
+    });
+    Object.defineProperty(Element.prototype, "clientWidth", {
+      configurable: true,
+      get: () => 360,
+    });
+    Object.defineProperty(Element.prototype, "scrollWidth", {
+      configurable: true,
+      get: () => 640,
+    });
+    const scrolls: number[] = [];
+    const scrollTo = vi.fn((arg: ScrollToOptions) => {
+      scrolls.push(arg.left ?? 0);
+    });
+    // jsdom 에는 scrollTo 가 없다
+    Object.defineProperty(Element.prototype, "scrollTo", {
+      configurable: true,
+      writable: true,
+      value: scrollTo,
+    });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      render(
+        <Tabs defaultValue="t3">
+          <TabsList aria-label="증권 계좌">
+            {["t0", "t1", "t2", "t3"].map((v, i) => (
+              <TabsTrigger key={v} value={v}>
+                Brokerage account {i}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>,
+      );
+    } finally {
+      for (const [obj, key, d] of [
+        [HTMLElement.prototype, "offsetLeft", protoLeft],
+        [HTMLElement.prototype, "offsetWidth", protoWidth],
+        [Element.prototype, "clientWidth", protoClient],
+        [Element.prototype, "scrollWidth", protoScroll],
+      ] as const) {
+        if (d) Object.defineProperty(obj, key, d);
+        else delete (obj as unknown as Record<string, unknown>)[key];
+      }
+      delete (Element.prototype as Partial<Element>).scrollTo;
+    }
+    // 고른 넷째 탭의 오른쪽 끝(480 + 160 = 640) 이 줄 오른쪽(360) 에 닿도록 280 만큼 간다
+    expect(scrolls).toContain(280);
+    expect(scrollTo).toHaveBeenCalled();
+    expect(warn.mock.calls.map((c) => String(c[0])).join("\n")).not.toContain(
       "Fill 목록이 넘친다",
     );
   });

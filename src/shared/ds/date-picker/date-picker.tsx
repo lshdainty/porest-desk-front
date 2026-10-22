@@ -36,28 +36,31 @@ import {
   CONTINUOUS_MONTH_LABEL,
   CONTINUOUS_OVERSCAN,
   CONTINUOUS_SCROLL,
+  CELL,
   CONTINUOUS_WEEKDAYS,
+  type ContinuousMetrics,
   FOG,
   GRID,
   HEADER,
   LIVE,
+  METRICS_100,
   MONTH_GAP,
+  PROBE,
   MONTH_LABEL,
-  MONTH_LABEL_HEIGHT,
   NAV,
   NAV_END,
+  NAV_PX,
   NAV_START,
+  OUTSIDE,
   PRESETS,
   ROOT,
   ROOT_SIZE,
-  ROW_HEIGHT,
   TITLE,
   TITLE_ICON,
   TWO_MONTHS,
   TWO_MONTHS_HEADER,
   WEEK,
   WEEKDAY,
-  WEEKDAY_HEIGHT,
   WEEKDAY_ROW,
   WHEEL,
   WHEEL_MONTH,
@@ -388,6 +391,10 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     const monthLabelId = (d: Date) => `${id}m${monthNumber(d)}`;
 
     // ── 이어지는 달: 달 위치 ──
+    // 이름 줄 · 칸 · 요일 줄 높이 — 견본을 재서 쓴다(글자 크기를 따라 바뀐다)
+    const probeRef = React.useRef<HTMLDivElement>(null);
+    const [metrics, setMetrics] =
+      React.useState<ContinuousMetrics>(METRICS_100);
     const monthCount = continuous ? (yearEnd - yearStart + 1) * 12 : 0;
     const heights: number[] = [];
     const offsets: number[] = [];
@@ -395,8 +402,8 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     for (let i = 0; i < monthCount; i++) {
       const d = fromMonthNumber(firstMonth + i);
       const h =
-        MONTH_LABEL_HEIGHT +
-        weeksInMonth(d.getFullYear(), d.getMonth()) * ROW_HEIGHT +
+        metrics.label +
+        weeksInMonth(d.getFullYear(), d.getMonth()) * metrics.row +
         MONTH_GAP;
       offsets.push(total);
       heights.push(h);
@@ -410,21 +417,21 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     const [viewport, setViewport] = React.useState(0);
     const scrollTopRef = React.useRef(scrollTop);
 
-    // 그 날이 보이게 가장 적게 스크롤할 자리 — 위에 붙은 요일 줄 48 · 아래 안개 96 을 피한다
+    // 그 날이 보이게 가장 적게 스크롤할 자리 — 위에 붙은 요일 줄(100% 48) · 아래 안개 96 을 피한다
     const revealTop = (d: Date, current: number, height: number) => {
+      const { label, row: rowH, weekday } = metrics;
       const row = Math.floor(
         (new Date(d.getFullYear(), d.getMonth(), 1).getDay() +
           d.getDate() -
           1) /
           7,
       );
-      const rowTop =
-        WEEKDAY_HEIGHT + offsetOf(d) + MONTH_LABEL_HEIGHT + row * ROW_HEIGHT;
-      if (rowTop < current + WEEKDAY_HEIGHT) return rowTop - WEEKDAY_HEIGHT;
-      if (height > 0 && rowTop + ROW_HEIGHT > current + height - CONTINUOUS_FOG)
+      const rowTop = weekday + offsetOf(d) + label + row * rowH;
+      if (rowTop < current + weekday) return rowTop - weekday;
+      if (height > 0 && rowTop + rowH > current + height - CONTINUOUS_FOG)
         return Math.min(
-          rowTop + ROW_HEIGHT - height + CONTINUOUS_FOG,
-          rowTop - WEEKDAY_HEIGHT,
+          rowTop + rowH - height + CONTINUOUS_FOG,
+          rowTop - weekday,
         );
       return current;
     };
@@ -605,6 +612,35 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
       return () => observer.disconnect();
     }, [continuous]);
 
+    // 이어지는 달 — 견본(이름 줄 · 칸 · 요일 줄)을 재고, 글자 크기가 바뀌면 다시 잰다
+    React.useLayoutEffect(() => {
+      const el = probeRef.current;
+      if (!continuous || !el) return;
+      const parts = Array.from(el.children);
+      const measure = () => {
+        const [label, row, weekday] = parts.map(
+          (c) => c.getBoundingClientRect().height,
+        );
+        if (!label || !row || !weekday) return;
+        setMetrics((m) =>
+          m.label === label && m.row === row && m.weekday === weekday
+            ? m
+            : { label, row, weekday },
+        );
+      };
+      measure();
+      const observer = new ResizeObserver(measure);
+      for (const c of parts) observer.observe(c);
+      return () => observer.disconnect();
+    }, [continuous]);
+    // 높이가 바뀌면(처음 잰 값 · 배율 바뀜) 달 위치가 모두 움직인다 — 보던 달을 다시 맨 위로
+    const measuredRef = React.useRef(metrics);
+    React.useLayoutEffect(() => {
+      if (measuredRef.current === metrics) return;
+      measuredRef.current = metrics;
+      if (continuous) requestScroll(offsetOf(view));
+    });
+
     // autoFocus — 처음 그릴 때만. 시트 · 팝오버가 처음 초점을 둔 뒤 그리기 전에(바깥 표면의 effect 가 나중에 돈다 — 그다음 차례).
     // 지금 값은 ref 로 읽는다
     const autoFocusRef = React.useRef(autoFocus);
@@ -772,7 +808,7 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
         aria-label={labels.previousMonth}
         data-slot="date-picker-previous"
         disabled={!canPrev}
-        className={extra}
+        className={cn(NAV_PX, extra)}
         onClick={() => step(-1)}
       >
         <ChevronLeft aria-hidden />
@@ -786,7 +822,7 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
         aria-label={labels.nextMonth}
         data-slot="date-picker-next"
         disabled={!canNext}
-        className={extra}
+        className={cn(NAV_PX, extra)}
         onClick={() => step(1)}
       >
         <ChevronRight aria-hidden />
@@ -822,7 +858,7 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     // 이어지는 달 — 보이는 달 ± 2달(Tab 자리의 달은 늘)
     let body: React.ReactNode;
     if (continuous) {
-      const height = Math.max(viewport, ROW_HEIGHT * 8);
+      const height = Math.max(viewport, metrics.row * 8);
       const topIndex = monthAt(layout.offsets, layout.heights, scrollTop);
       const bottomIndex = monthAt(
         layout.offsets,
@@ -996,6 +1032,26 @@ const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
       >
         {presetRow}
         {body}
+        {continuous && (
+          <div
+            ref={probeRef}
+            aria-hidden
+            data-slot="date-picker-probe"
+            className={PROBE}
+          >
+            <div className={cn(MONTH_LABEL, CONTINUOUS_MONTH_LABEL)}>
+              {labels.month(view.getFullYear(), view.getMonth() + 1)}
+            </div>
+            <div className={WEEK}>
+              <div className={CELL}>
+                <span className={OUTSIDE}>30</span>
+              </div>
+            </div>
+            <div className={WEEKDAY_ROW}>
+              <div className={WEEKDAY}>{labels.weekdays[0]}</div>
+            </div>
+          </div>
+        )}
         <span
           aria-live="polite"
           aria-atomic="true"

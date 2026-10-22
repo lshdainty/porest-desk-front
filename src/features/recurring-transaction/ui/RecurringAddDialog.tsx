@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import {
   MAX_AMOUNT,
   blockNonDigitKey,
@@ -135,6 +135,7 @@ export function RecurringAddDialog({
   onSaved,
   mobile,
 }: Props) {
+  const uid = useId(); // 선택 칸 이름 잇기
   const { t } = useTranslation("recurring");
   const { t: tExpense } = useTranslation("expense");
   const { t: tCommon } = useTranslation("common");
@@ -466,6 +467,7 @@ export function RecurringAddDialog({
       {!isTransfer && topCategories.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div
+            id={`${uid}cat-label`}
             style={{
               fontSize: "var(--text-badge)",
               color: "var(--fg-tertiary)",
@@ -500,7 +502,10 @@ export function RecurringAddDialog({
                   value={categoryRowId != null ? String(categoryRowId) : ""}
                   onValueChange={(v) => setCategoryRowId(Number(v))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    id={`${uid}cat`}
+                    aria-labelledby={`${uid}cat-label ${uid}cat`}
+                  >
                     <SelectValue
                       placeholder={tExpense("addTx.subCategoryPlaceholder")}
                     />
@@ -563,7 +568,7 @@ export function RecurringAddDialog({
 
           {/* 결제 수단 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>
+            <FieldLabel id={`${uid}pm-label`}>
               {type === "INCOME"
                 ? tExpense("addTx.incomeMethod")
                 : tExpense("paymentMethodLabel")}
@@ -572,7 +577,10 @@ export function RecurringAddDialog({
               value={paymentMethod || "__none__"}
               onValueChange={(v) => setPaymentMethod(v === "__none__" ? "" : v)}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id={`${uid}pm`}
+                aria-labelledby={`${uid}pm-label ${uid}pm`}
+              >
                 <SelectValue placeholder={tExpense("selectNone")} />
               </SelectTrigger>
               <SelectContent>
@@ -590,7 +598,7 @@ export function RecurringAddDialog({
 
           {/* 계좌·카드 */}
           <Field style={{ marginBottom: 14 }}>
-            <FieldLabel>
+            <FieldLabel id={`${uid}asset-label`}>
               {type === "INCOME"
                 ? tExpense("addTx.depositAccount")
                 : tExpense("accountCard")}
@@ -601,7 +609,10 @@ export function RecurringAddDialog({
                 setAssetRowId(v === "__none__" ? null : Number(v))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id={`${uid}asset`}
+                aria-labelledby={`${uid}asset-label ${uid}asset`}
+              >
                 <SelectValue placeholder={tExpense("selectNone")} />
               </SelectTrigger>
               <SelectContent>

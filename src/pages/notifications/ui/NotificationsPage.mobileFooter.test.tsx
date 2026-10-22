@@ -47,6 +47,7 @@ vi.mock("@/features/notification", () => ({
   useMarkRead: () => ({ mutate: () => {}, pendingIds: new Set<number>() }),
   useMarkAllRead: () => ({ mutate: () => {}, isPending: false }),
   useDeleteNotification: () => ({ mutate: () => {} }),
+  NotificationMoreMenu: () => null,
 }));
 
 vi.mock("@/shared/hooks", () => ({
@@ -139,14 +140,15 @@ describe("모바일 알림 — footer 고정", () => {
   });
 });
 
-describe("알림 줄 — 줄마다 × 를 달지 않는다(W4)", () => {
+describe("알림 줄 — 줄마다 × 는 없고 끝 ⋮ 메뉴를 넘긴다(W4 → 알림 지우기 결정 B)", () => {
   it.each([true, false])(
-    "모바일 %s — 줄에 trailing 을 넘기지 않고 삭제 단추가 없다",
+    "모바일 %s — 줄에 trailing(×)을 넘기지 않고 menu(⋮)를 넘긴다",
     (isMobile) => {
       mobile = isMobile;
       render();
       const row = container.querySelector(".notif-row")!;
       expect(row.getAttribute("data-props")).not.toContain("trailing");
+      expect(row.getAttribute("data-props")).toContain("menu");
       expect(
         container.querySelector("[aria-label=delete], [aria-label='삭제']"),
       ).toBeNull();

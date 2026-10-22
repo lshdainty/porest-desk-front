@@ -21,28 +21,28 @@ export const ROOT_SIZE = {
 // 빠른 기간 칩 줄 — 머리와 12
 export const PRESETS = "shrink-0 pb-x3";
 
-// 머리 48 — 왼쪽 제목, 오른쪽 이전 · 다음(사이 0)
-export const HEADER = "flex h-12 shrink-0 items-center justify-between";
+// 머리 최소 48(글이 크면 그만큼만 늘어난다 — 03-C 결정 1B) — 왼쪽 제목, 오른쪽 이전 · 다음(사이 0)
+export const HEADER = "flex min-h-[48px] shrink-0 items-center justify-between";
 // 제목 — 누르는 자리는 머리 높이 48 전체, 글자는 왼쪽에서 4 · 셰브론과 4. 바탕이 없어 모서리 8 은 초점 링에만 보인다
 export const TITLE = [
-  "inline-flex h-12 min-w-0 cursor-pointer items-center gap-x1 rounded-r2 border-0 bg-transparent px-x1 font-sans text-t5 font-bold text-fg-neutral outline-none",
+  "inline-flex min-h-[48px] min-w-0 cursor-pointer items-center gap-x1 rounded-r2 border-0 bg-transparent px-x1 font-sans text-t5 font-bold text-fg-neutral outline-none",
   "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
 ].join(" ");
 // 셰브론 20 — 휠이 열리면 위로(150ms easing). 모션 줄이기면 바로
 export const TITLE_ICON =
-  "size-5 shrink-0 text-fg-neutral [transition:rotate_var(--motion-duration-d3)_var(--motion-ease-easing)] motion-reduce:[transition:none]";
+  "size-[20px] shrink-0 text-fg-neutral [transition:rotate_var(--motion-duration-d3)_var(--motion-ease-easing)] motion-reduce:[transition:none]";
 export const NAV = "flex shrink-0 items-center";
 
 // 두 달 — 사이 24, 달마다 가운데 이름 48 · 이전은 첫 달 왼쪽 끝 · 다음은 둘째 달 오른쪽 끝(위 4)
 export const TWO_MONTHS = "grid grid-cols-2 gap-x-x6";
 export const TWO_MONTHS_HEADER =
-  "relative flex h-12 items-center justify-center";
+  "relative flex min-h-[48px] items-center justify-center";
 export const NAV_START = "absolute left-0 top-x1";
 export const NAV_END = "absolute right-0 top-x1";
 
 // 달 이름 48 — 두 달 보기는 가운데, 이어지는 달은 왼쪽(좌우 4)에 붙고 달 아래 16
 export const MONTH_LABEL =
-  "flex h-12 items-center whitespace-nowrap text-t5 font-bold text-fg-neutral";
+  "flex min-h-[48px] items-center whitespace-nowrap text-t5 font-bold text-fg-neutral";
 export const CONTINUOUS_MONTH_LABEL = "px-x1";
 
 // 이어지는 달 — 스크롤 칸(스크롤바 숨김) · 위에 붙는 요일 줄 · 달마다 왼쪽 이름 48 + 아래 16 · 아래 안개 96.
@@ -50,25 +50,27 @@ export const CONTINUOUS_MONTH_LABEL = "px-x1";
 export const CONTINUOUS_SCROLL =
   "relative min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 export const CONTINUOUS_WEEKDAYS =
-  "sticky top-0 z-[2] grid h-12 grid-cols-7 bg-bg-layer-floating";
+  "sticky top-0 z-[2] grid min-h-[48px] grid-cols-7 bg-bg-layer-floating";
 export const CONTINUOUS_MONTH = "pb-x4";
 export const FOG =
   "pointer-events-none sticky bottom-0 z-[3] -mt-24 h-24 [background:linear-gradient(to_bottom,transparent,var(--color-bg-layer-floating))]";
 
-// 연 · 월 휠 자리 — 요일 줄 + 6주(336 — 스펙 값)를 덮는다. 휠 308 은 가운데(위아래 14). 연 120 · 월 96
-export const WHEEL = "flex h-[336px] items-center bg-bg-layer-floating";
+// 연 · 월 휠 자리 — 요일 줄 + 6주를 덮는다: max(48, 요일 줄 높이) + 6 × max(48, 숫자 줄 높이 + 6) — 100% 336 · 200% 348.
+// 글이 크면 달력을 따라 늘어나 열고 닫을 때 높이가 그대로다(WEEKDAY_ROW · CELL · DAY 와 같은 셈). 휠 308 은 가운데(100% 위아래 14). 연 120 · 월 96
+export const WHEEL =
+  "flex h-[calc(max(48px,var(--text-t4--line-height))_+_6_*_max(48px,calc(var(--text-t5--line-height)_+_6px)))] items-center bg-bg-layer-floating";
 export const WHEEL_YEAR = "w-[120px]";
 export const WHEEL_MONTH = "w-[96px]";
 
 // 달 그리드 — 크기 컨테이너. --day = min(42, 칸 폭 − 2) 를 원 · 띠 · 링이 같이 쓴다(칸이 44 보다 좁은 320 화면에서 원을 줄인다)
 export const GRID = "@container [--day:min(42px,calc(100cqw_/_7_-_2px))]";
 export const WEEK = "grid grid-cols-7";
-export const WEEKDAY_ROW = "grid h-12 grid-cols-7";
+export const WEEKDAY_ROW = "grid min-h-[48px] grid-cols-7";
 export const WEEKDAY =
   "flex items-center justify-center text-t4 font-medium text-fg-neutral-subtle";
 
-// 칸 — 높이 48 · 폭 = 달력 폭 ÷ 7. 기간 띠는 칸 안의 span(원 높이, 칸 세로 가운데)
-export const CELL = "relative isolate h-12 min-w-0";
+// 칸 — 높이 max(48, 숫자 줄 높이 + 6)(날짜 버튼 · 앞뒤 달 숫자의 위아래 3 이 키운다 — 100% 48 · 200% 50, 03-C 1B) · 폭 = 달력 폭 ÷ 7. 기간 띠는 칸 안의 span(원 높이, 칸 세로 가운데)
+export const CELL = "relative isolate min-h-[48px] min-w-0";
 export const BAND =
   "pointer-events-none absolute top-1/2 h-[var(--day)] -translate-y-1/2 bg-bg-neutral-weak";
 export const BAND_SIDE = {
@@ -79,14 +81,14 @@ export const BAND_SIDE = {
 
 // 날짜 버튼 — 칸 전체. 원(DAY_VISUAL)은 칸 가운데 --day(바탕만 color-transition), 키보드 초점 링(DAY_RING)은 원 둘레 안쪽 2px
 export const DAY =
-  "group/day relative isolate flex h-full w-full items-center justify-center border-0 bg-transparent p-0 font-sans text-t5 font-medium tabular-nums outline-none select-none [-webkit-tap-highlight-color:transparent]";
+  "group/day relative isolate flex h-full w-full items-center justify-center border-0 bg-transparent px-0 py-[3px] font-sans text-t5 font-medium tabular-nums outline-none select-none [-webkit-tap-highlight-color:transparent]";
 export const DAY_VISUAL =
   "pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[var(--day)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent [transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]";
 export const DAY_RING =
   "pointer-events-none absolute left-1/2 top-1/2 size-[var(--day)] -translate-x-1/2 -translate-y-1/2 rounded-full group-focus-visible/day:outline-2 group-focus-visible/day:-outline-offset-2 group-focus-visible/day:outline-stroke-focus-ring";
-// 호버(마우스 — 고운 포인터만) · 누름(터치) — 원 bg-layer-floating-pressed, 축소 없음
+// 호버(마우스 — 고운 포인터만) · 누름(터치) — 원 bg-neutral-weak-alpha-pressed(SEED 투명 색 — 03-C 결정 2B), 축소 없음
 export const DAY_PRESS =
-  "[@media(hover:hover)_and_(pointer:fine)]:group-hover/day:bg-bg-layer-floating-pressed group-active/day:bg-bg-layer-floating-pressed";
+  "[@media(hover:hover)_and_(pointer:fine)]:group-hover/day:bg-bg-neutral-weak-alpha-pressed group-active/day:bg-bg-neutral-weak-alpha-pressed";
 // 오늘(옅은 원) · 기간 사이 날(띠) 위의 호버 · 누름 — 한 단계 짙은 bg-neutral-weak-pressed(옅은 원 · 띠와 같은 색이면 안 보인다)
 export const DAY_PRESS_ON_WEAK =
   "[@media(hover:hover)_and_(pointer:fine)]:group-hover/day:bg-bg-neutral-weak-pressed group-active/day:bg-bg-neutral-weak-pressed";
@@ -111,18 +113,28 @@ export const DAY_TODAY_WEIGHT = "font-bold";
 export const DAY_STRIKE = "line-through";
 // 앞뒤 달 — 숫자만(버튼 아님), 흐리게 · 누르지 못한다
 export const OUTSIDE =
-  "flex h-full w-full cursor-default select-none items-center justify-center text-t5 font-medium tabular-nums text-fg-disabled";
+  "flex h-full w-full cursor-default select-none items-center justify-center py-[3px] text-t5 font-medium tabular-nums text-fg-disabled";
 
 export const LIVE = "sr-only";
 
-// 이어지는 달의 높이 — 달 이름 48 + 48 × 주 + 아래 16
-export const MONTH_LABEL_HEIGHT = 48;
-export const ROW_HEIGHT = 48;
+// 이어지는 달의 높이 — 달 이름 줄 + 칸 × 주 + 아래 16. 이름 줄 · 칸 · 요일 줄은 글자가 크면 늘어나(200% 에서 칸 50)
+// 숨은 견본(PROBE)으로 잰다. 처음 값은 100% 의 48 · 48 · 48
 export const MONTH_GAP = 16;
-export const WEEKDAY_HEIGHT = 48;
+export type ContinuousMetrics = { label: number; row: number; weekday: number };
+export const METRICS_100: ContinuousMetrics = {
+  label: 48,
+  row: 48,
+  weekday: 48,
+};
+// 견본 — 보이지 않고 보조 기술에도 숨긴다. 달 이름 줄 · 칸 한 줄(앞뒤 달 숫자 — 날짜 버튼과 같은 높이) · 요일 줄 차례
+export const PROBE =
+  "pointer-events-none invisible absolute inset-x-0 top-0 -z-10";
 export const CONTINUOUS_FOG = 96;
 export const CONTINUOUS_OVERSCAN = 2;
 
 /** 두 달 보기를 담는 PopoverContent 의 className — 팝오버 폭 744(달력 696 + 좌우 24). Popover 최대 480 의 예외(date-picker.md) */
 export const DATE_PICKER_TWO_MONTHS_POPOVER =
   "max-w-[min(744px,var(--radix-popover-content-available-width,744px))]";
+
+/** 이전 · 다음 버튼 — 40 px(글자 배율을 따르지 않는다 — 03-C 결정 1B, 레시피 NAV_PX) */
+export const NAV_PX = "h-[40px] w-[40px]";

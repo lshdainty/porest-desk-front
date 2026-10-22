@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useId, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -272,6 +272,8 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
   const tags = flattenTopTags(detail);
   const benefits = detail.benefits;
 
+  // 혜택 줄 단추 ↔ 펼친 칸 연결용 id(aria-controls) — 03G-011a
+  const panelBase = useId();
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const toggle = (i: number) =>
     setExpanded((prev) => {
@@ -395,10 +397,13 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                   ? undefined
                   : t("benefit.performanceNone"));
               const body = decodeHtml(b.detail ?? "");
+              const panelId = `${panelBase}-benefit-${b.rowId}`;
               return (
                 <div key={b.rowId} style={benefitRowShell}>
                   <button
                     type="button"
+                    aria-expanded={open}
+                    aria-controls={panelId}
                     onClick={() => toggle(i)}
                     style={{
                       width: "100%",
@@ -475,6 +480,7 @@ function DetailContent({ detail }: { detail: CardCatalogDetail }) {
                   </button>
                   {open && body && (
                     <div
+                      id={panelId}
                       style={{
                         padding: "14px 16px 16px",
                         fontSize: 13,

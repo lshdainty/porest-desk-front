@@ -235,9 +235,10 @@ export const listDividerVariants = cva(
   },
 );
 
-// 목록 제목 — 목록 밖, 바로 위. 좌우 24(줄과 같다) · 위아래 8 · 제목과 오른쪽 버튼 사이 10
+// 목록 제목 — 목록 밖, 바로 위. 좌우 24(줄과 같다) · 위아래 8 · 제목과 오른쪽 버튼 사이 10.
+// 오른쪽 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다(제목 최소 50% · 줄바꿈 — 03-G 결정 4A)
 export const listHeaderVariants = cva(
-  "m-0 flex w-full tracking-normal items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4",
+  "m-0 flex w-full tracking-normal items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto",
   {
     variants: {
       variant: {

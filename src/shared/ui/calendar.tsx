@@ -238,6 +238,8 @@ function CalendarDayButton({
         "data-[range-end=true]:bg-bg-brand-solid data-[range-end=true]:text-text-on-accent data-[range-end=true]:rounded-full",
         // range middle: button transparent + 사각형. 시각은 td level 의 cell bg(color-mix primary 12%) 가 담당.
         "data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-text-primary data-[range-middle=true]:rounded-none",
+        // 막힌 날 — 바탕 없음 + 취소선(date-picker 스펙, I-04 검수). Button 의 disabled:bg-bg-disabled 가 회색 원이 되지 않게 지운다
+        modifiers.disabled && "disabled:bg-transparent line-through",
         defaultClassNames.day,
         className,
       )}

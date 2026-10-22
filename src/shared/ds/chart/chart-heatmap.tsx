@@ -22,7 +22,7 @@ import { useDsText } from "@/shared/ds/i18n";
  * groo-design recipes/shadcn/components/ui/chart.tsx 의 ChartHeatmap 을 파일로 나눴다(chart.tsx 는 컴포넌트가 많다).
  *
  * 왼쪽 시간대 라벨 열 56(이름 13 · 700 + 시간 11 · fg-neutral-subtle) + 요일 칸, 위 요일 머리 12 · fg-neutral-subtle. 칸은 정사각형 · 모서리 4 · 사이 6.
- * 세기 다섯 — bg-brand-solid 를 카드 면에 18 · 35 · 55 · 75 · 100% 섞는다(가장 큰 값의 8 · 22 · 45 · 75% 에서 끊는다), 값이 없으면 bg-neutral-weak.
+ * 세기 다섯 — bg-brand-solid 를 카드 면에 18 · 35 · 55 · 76 · 100% 섞는다(가장 큰 값의 8 · 22 · 45 · 75% 에서 끊는다), 값이 없으면 bg-neutral-weak.
  * 가장 큰 칸에 고리를 두르지 않는다(사용자 결정 22A — 포커스 링과 헷갈린다).
  * 칸 폭(ResizeObserver 로 잰다)이 textMinCellWidth(112) 이상일 때만 칸에 원까지(11 / 15 · 700 · 고정폭 숫자, 빈 칸은 "—" fg-neutral-subtle),
  * 좁으면 글 없이 세기 색만 — 글자를 줄이거나 돈을 줄여("3.5만") 쓰지 않는다. 값은 툴팁 · 표로 보기가 준다.

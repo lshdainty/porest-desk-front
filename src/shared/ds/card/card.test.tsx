@@ -116,6 +116,26 @@ describe("Card — 면", () => {
     expect(card.className).not.toContain("p-x6");
   });
 
+  it("머리는 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려가는 클래스를 가진다 — 제목 최소 50% · 줄바꿈(03-G 4A)", () => {
+    render(
+      <Card>
+        <CardHeader>
+          <CardTitle>제목</CardTitle>
+          <button type="button">전체 보기</button>
+        </CardHeader>
+      </Card>,
+    );
+    const cls = slot("card-header")!.className.split(" ");
+    expect(cls).toEqual(
+      expect.arrayContaining([
+        "flex-wrap",
+        "[&>:first-child:not(:last-child)]:min-w-[50%]",
+        "[&>:first-child:not(:last-child)]:flex-1",
+        "[&>:last-child:not(:first-child)]:ml-auto",
+      ]),
+    );
+  });
+
   it("머리는 본문 종류를 따른다 — 글 카드 아래 8, 목록 카드 위 24 · 좌우 24 · 아래 4", () => {
     render(
       <Card>
@@ -223,6 +243,7 @@ describe("Card — 머리 동작", () => {
     const action = slot("card-action")!;
     expect(action.className).toContain("h-9");
     expect(action.className).toContain("px-x3_5");
+    expect(action.className).toContain("-mr-x3_5");
     expect(action.className).toContain("font-bold");
     expect(action.className).toContain("text-fg-neutral-muted");
     expect(action.className).toContain("before:h-11");

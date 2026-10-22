@@ -861,7 +861,7 @@ dutchPay,deleteConfirm.title,더치페이 삭제,Delete Dutch Pay
 dutchPay,deleteConfirm.message,"""{{name}}"" 더치페이를 삭제할까요? 이 작업은 되돌릴 수 없습니다.","Delete the ""{{name}}"" Dutch Pay? This action cannot be undone."
 notification,title,알림,Notifications
 notification,empty,알림이 없습니다,No notifications
-notification,markAllRead,모두 읽음,Mark all read
+notification,markAllRead,모두 읽음,Read all
 notification,type.EVENT_REMINDER,일정 알림,Event Reminder
 notification,type.BUDGET_ALERT,예산 알림,Budget Alert
 notification,type.TODO_REMINDER,할일 알림,Todo Reminder
@@ -2838,6 +2838,9 @@ stats,fixed.insight.tail,이에요.,.
 layout,notificationsUnread,"알림, 새 알림 있음","Notifications, new notifications"
 notification,row.unread,안 읽음,Unread
 notification,popover.unreadPlain,읽지 않은 알림 {{count}}개,{{count}} unread
+notification,more,{{title}} 더보기,More for {{title}}
+notification,deleteTitle,알림 삭제,Delete notification
+notification,deleteDescription,삭제한 알림은 되돌릴 수 없어요.,Deleted notifications can't be restored.
 layout,skipToMain,본문 바로가기,Skip to main content
 ds,common.close,닫기,Close
 ds,common.news,새 소식,New activity

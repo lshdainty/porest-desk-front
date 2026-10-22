@@ -212,6 +212,7 @@ describe("기본 캘린더는 늘 보이는 것으로 친다", () => {
     });
     // 캘린더 1(기본만) + 공휴일 1.
     expect(container.textContent).toContain("2개");
-    expect(rowOf("개인")!.className).toContain("opacity-50");
+    // 꺼진 줄은 체크로만 알린다 — 불투명도를 쓰지 않는다(DESIGN State)
+    expect(rowOf("개인")!.className).not.toContain("opacity");
   });
 });

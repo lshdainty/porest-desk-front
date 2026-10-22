@@ -459,4 +459,49 @@ describe("TimePicker — 값 규칙", () => {
     settle();
     expect(text("hour")).toBe("12");
   });
+
+  it("Home · End — 오전 · 오후를 그대로 두고 1 · 12 로 간다(지나간 칸을 세지 않는다 — 03-C 3A)", () => {
+    const onChange = vi.fn();
+    render(
+      <Controlled initial={{ hour: 15, minute: 30 }} onChange={onChange} />,
+    );
+    // 오후 3 → End → 오후 12(12:30) · Home → 오후 1(13:30)
+    key(col("hour"), "End");
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ hour: 12, minute: 30 });
+    expect(text("hour")).toBe("12");
+    expect(text("period")).toBe("오후");
+    key(col("hour"), "Home");
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ hour: 13, minute: 30 });
+    expect(text("hour")).toBe("1");
+    expect(text("period")).toBe("오후");
+  });
+
+  it("오전 9 에서 End → 오전 12(0:30) · Home → 오전 1(1:30)", () => {
+    const onChange = vi.fn();
+    render(
+      <Controlled initial={{ hour: 9, minute: 30 }} onChange={onChange} />,
+    );
+    key(col("hour"), "End");
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ hour: 0, minute: 30 });
+    expect(text("hour")).toBe("12");
+    expect(text("period")).toBe("오전");
+    key(col("hour"), "Home");
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ hour: 1, minute: 30 });
+    expect(text("period")).toBe("오전");
+  });
+
+  it("화살표로 넘기면 jump 가 아니다 — 11 → 12 에서 오전 · 오후가 넘어간다", () => {
+    const onChange = vi.fn();
+    render(
+      <Controlled initial={{ hour: 11, minute: 0 }} onChange={onChange} />,
+    );
+    key(col("hour"), "ArrowDown");
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ hour: 12, minute: 0 });
+    expect(text("period")).toBe("오후");
+  });
 });

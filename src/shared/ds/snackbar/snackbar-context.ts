@@ -26,7 +26,7 @@ export interface SnackbarOptions {
 }
 
 export interface SnackbarApi {
-  /** 띠를 띄운다 — 떠 있는 띠가 있으면 바로 바꾼다(한 번에 하나) */
+  /** 띠를 띄운다 — 떠 있는 띠가 있으면 바로 바꾼다(한 번에 하나). 떠 있는 띠에 액션이 있으면 그 띠가 끝난 뒤에 */
   show: (options: SnackbarOptions) => void;
   /** 떠 있는 띠를 닫는다(기다리는 띠도 버린다) */
   dismiss: () => void;

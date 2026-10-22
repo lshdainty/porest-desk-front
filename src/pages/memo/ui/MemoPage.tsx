@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useId, useMemo, useState } from "react";
 import { Spinner } from "@/shared/ui/spinner";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -1003,6 +1003,7 @@ function MemoEditDialog({
   ) => void;
   submitting?: boolean;
 }) {
+  const uid = useId(); // 태그 칸 이름 잇기
   const { t } = useTranslation("memo");
   const { t: tc } = useTranslation("common");
   const isNew = !memo;
@@ -1102,9 +1103,12 @@ function MemoEditDialog({
         }}
       >
         <Field>
-          <FieldLabel>{t("tagLabel")}</FieldLabel>
+          <FieldLabel id={`${uid}tag-label`}>{t("tagLabel")}</FieldLabel>
           <Select value={tag} onValueChange={setTag}>
-            <SelectTrigger>
+            <SelectTrigger
+              id={`${uid}tag`}
+              aria-labelledby={`${uid}tag-label ${uid}tag`}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

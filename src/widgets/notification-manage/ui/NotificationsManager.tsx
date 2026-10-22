@@ -63,6 +63,7 @@ function SettingRow({
   icon,
   tone,
   title,
+  titleId,
   titleStyle,
   description,
   descriptionColor = "var(--fg-tertiary)",
@@ -72,6 +73,8 @@ function SettingRow({
   icon: ReactNode;
   tone: Tone;
   title: string;
+  /** 제목 글에 다는 id — 안의 선택 칸이 이 글로 이름을 받는다(aria-labelledby) */
+  titleId?: string;
   /** 제목 타이포 override — 마스터 카드는 카드 제목 톤(16/700) 사용. */
   titleStyle?: CSSProperties;
   description: ReactNode;
@@ -111,6 +114,7 @@ function SettingRow({
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div
+          id={titleId}
           style={{
             // 앱 행 제목(bodySm 13/semi) 정합 — body-md(15) → label-sm(13).
             fontSize: "var(--text-label-sm)",
@@ -351,6 +355,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
   // 기준 저장이 실패하면 값은 서버 값으로 되돌아가고(onSettled) 슬라이더 아래 Field 오류 글로 알린다(slider.yaml commit)
   const [thresholdFailed, setThresholdFailed] = useState(false);
   const thresholdErrorId = useId();
+  const uid = useId(); // 알림음 선택 칸 이름 잇기
   // 기준 저장이 실패한 뒤 다른 설정이 실패하면 마지막 실패가 그쪽이므로 화면 아래 글이 맡는다(숨지 않게)
   const otherFailedLast =
     updateMut.isError &&
@@ -703,6 +708,7 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
               icon={<Volume2 size={18} strokeWidth={1.9} />}
               tone="info"
               title={t("sound.notif.title")}
+              titleId={`${uid}sound-label`}
               description={t("sound.notif.desc")}
               control={
                 <Select
@@ -715,7 +721,11 @@ export function NotificationsManager({ mobile }: { mobile: boolean }) {
                   }
                 >
                   {/* 앱 PSelect 정합: 폭 120 / 값 폰트 bodyLg(16) / chevron fgSecondary. */}
-                  <SelectTrigger className="w-[120px] text-body-lg [&>svg]:text-text-secondary">
+                  <SelectTrigger
+                    id={`${uid}sound`}
+                    aria-labelledby={`${uid}sound-label ${uid}sound`}
+                    className="w-[120px] text-body-lg [&>svg]:text-text-secondary"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

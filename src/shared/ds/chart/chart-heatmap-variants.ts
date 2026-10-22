@@ -10,8 +10,9 @@ export const HEAT_TEXT_MIN_CELL_WIDTH = 112;
 /** 왼쪽 시간대 라벨 열 폭(px) */
 export const HEAT_LABEL_COLUMN = 56;
 
-// 세기 다섯 — bg-brand-solid 를 카드 면에 섞은 비율(18 · 35 · 55 · 75 · 100%)
-export const HEAT_MIX = [0.18, 0.35, 0.55, 0.75, 1] as const;
+// 세기 다섯 — bg-brand-solid 를 카드 면에 섞은 비율(18 · 35 · 55 · 76 · 100%). 넷째는 75% 였다 — 그루 초록에서 어느 글자도 4.5 에 못 미쳐
+// 두 브랜드 함께 76% 로 올렸다(2026-10-22 사용자 결정 B). 끊는 자리(HEAT_CUTS)의 75% 는 그대로다
+export const HEAT_MIX = [0.18, 0.35, 0.55, 0.76, 1] as const;
 
 // 가장 큰 칸 값에 대한 비율로 끊는 자리 — 8 · 22 · 45 · 75%
 export const HEAT_CUTS = [0.08, 0.22, 0.45, 0.75] as const;
@@ -20,7 +21,7 @@ export const HEAT_STEP_BG = [
   "bg-[color-mix(in_srgb,var(--color-bg-brand-solid)_18%,var(--color-bg-layer-default))]",
   "bg-[color-mix(in_srgb,var(--color-bg-brand-solid)_35%,var(--color-bg-layer-default))]",
   "bg-[color-mix(in_srgb,var(--color-bg-brand-solid)_55%,var(--color-bg-layer-default))]",
-  "bg-[color-mix(in_srgb,var(--color-bg-brand-solid)_75%,var(--color-bg-layer-default))]",
+  "bg-[color-mix(in_srgb,var(--color-bg-brand-solid)_76%,var(--color-bg-layer-default))]",
   "bg-bg-brand-solid",
 ] as const;
 
@@ -38,7 +39,7 @@ export const HEAT_STEP_SWATCH = [
   "color-mix(in srgb, var(--color-bg-brand-solid) 18%, var(--color-bg-layer-default))",
   "color-mix(in srgb, var(--color-bg-brand-solid) 35%, var(--color-bg-layer-default))",
   "color-mix(in srgb, var(--color-bg-brand-solid) 55%, var(--color-bg-layer-default))",
-  "color-mix(in srgb, var(--color-bg-brand-solid) 75%, var(--color-bg-layer-default))",
+  "color-mix(in srgb, var(--color-bg-brand-solid) 76%, var(--color-bg-layer-default))",
   "var(--color-bg-brand-solid)",
 ] as const;
 

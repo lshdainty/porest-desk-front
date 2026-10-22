@@ -323,6 +323,58 @@ describe("Snackbar", () => {
     expect(band()!.textContent).toContain("셋째");
   });
 
+  it("액션 띠는 끝날 때까지 지킨다 — 새 띠는 바로 바꾸지 않고 그 띠가 시간으로 닫힌 뒤에 뜬다", () => {
+    withExitAnimation();
+    const api = mount();
+    act(() =>
+      api.show({
+        message: "지웠어요",
+        action: { label: "되돌리기", onClick: () => {} },
+      }),
+    );
+    act(() => api.show({ message: "다음 띠" }));
+    expect(band()!.dataset.state).toBe("open");
+    expect(band()!.textContent).toContain("지웠어요");
+    advance(5900);
+    expect(band()!.textContent).toContain("지웠어요");
+    advance(100);
+    advance(300);
+    expect(band()!.textContent).toContain("다음 띠");
+    expect(band()!.dataset.state).toBe("open");
+  });
+
+  it("액션 없는 띠끼리는 바로 바뀐다 — 지금 띠를 내보내고 새 띠가 뜬다", () => {
+    withExitAnimation();
+    const api = mount();
+    act(() => api.show({ message: "첫째" }));
+    act(() => api.show({ message: "둘째" }));
+    expect(band()!.dataset.state).toBe("closed");
+    advance(150);
+    expect(band()!.dataset.state).toBe("open");
+    expect(band()!.textContent).toContain("둘째");
+  });
+
+  it("액션 띠를 기다리는 중에 두 번 더 오면 마지막 것만 남는다 — 닫기로 끝내면 그것이 뜬다", () => {
+    withExitAnimation();
+    const api = mount();
+    act(() =>
+      api.show({
+        message: "지웠어요",
+        action: { label: "되돌리기", onClick: () => {} },
+      }),
+    );
+    act(() => api.show({ message: "둘째" }));
+    act(() => api.show({ message: "셋째" }));
+    expect(band()!.textContent).toContain("지웠어요");
+    const close = band()!.querySelector<HTMLButtonElement>(
+      "button[aria-label=닫기]",
+    )!;
+    act(() => close.click());
+    advance(150);
+    expect(bands()).toHaveLength(1);
+    expect(band()!.textContent).toContain("셋째");
+  });
+
   it("dismiss() 는 띠를 닫고 기다리는 것도 버린다", () => {
     withExitAnimation();
     const api = mount();

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   blockNonDigitKey,
   sanitizeAmountInput,
@@ -161,6 +161,7 @@ export function SplitTxDialog({
   initialSplits,
   onReconciled,
 }: Props) {
+  const uid = useId(); // 항목 카테고리 칸 이름 잇기
   const { t } = useTranslation("expense");
   const persistedTotal = Math.abs(expense.amount);
   const targetTotal = overrideTotal ?? persistedTotal;
@@ -688,6 +689,7 @@ export function SplitTxDialog({
                   }}
                 />
                 <span
+                  id={`${uid}item-${r.uid}-label`}
                   style={{
                     fontSize: "var(--text-caption)",
                     color: "var(--fg-secondary)",
@@ -738,6 +740,8 @@ export function SplitTxDialog({
                     }
                   >
                     <SelectTrigger
+                      id={`${uid}item-${r.uid}`}
+                      aria-labelledby={`${uid}item-${r.uid}-label ${uid}item-${r.uid}`}
                       style={{ background: "var(--bg-surface)", width: "100%" }}
                     >
                       <SelectValue placeholder={t("category")} />

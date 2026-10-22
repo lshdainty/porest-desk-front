@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import {
+  NotificationMoreMenu,
   useMarkAllRead,
   useMarkRead,
   useNotifications,
@@ -49,6 +50,7 @@ function NotificationsPageSkeleton() {
  * 행 구성·tone 매핑·unread 시각·상대시간·footer 는 Popover 와 공용
  * (`@/entities/notification` NotificationRow / relativeTime / notificationVisual).
  * 줄마다 × 를 달지 않는다(W4, 2026-10-21) — 팝오버 · 시트와 같은 SEED List 줄이다(타일 40 · 제목 16/400 · 안 읽은 줄만 버튼).
+ * 지우기는 줄 끝 ⋮ → 삭제 → 확인창이다(2026-10-22 알림 지우기 결정 B — 팝오버 · 시트 · 이 화면 셋이 같다).
  * 차이: 풀페이지라 dialog 박스·backdrop 없음, unreadCount 는 별도 useUnreadCount 쿼리.
  */
 export function NotificationsPage() {
@@ -100,6 +102,7 @@ export function NotificationsPage() {
             pending={markRead.pendingIds.has(n.rowId)}
             now={now}
             onClick={() => handleClick(n)}
+            menu={<NotificationMoreMenu notification={n} />}
           />
         ))}
       </List>

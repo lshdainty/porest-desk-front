@@ -55,6 +55,11 @@ describe("막힘은 전용 색 — opacity-50 을 쓰지 않는다", () => {
     for (const day of disabledDays) {
       expect(classesOf(day)).toContain("text-fg-disabled");
       expect(classesOf(day)).not.toContain("opacity-50");
+      // 막힌 날 칸은 회색 채운 원이 아니라 바탕 없음 + 취소선(date-picker 스펙)
+      const button = day.querySelector("button")!;
+      expect(classesOf(button)).toContain("disabled:bg-transparent");
+      expect(classesOf(button)).toContain("line-through");
+      expect(classesOf(button)).not.toContain("disabled:bg-bg-disabled");
     }
   });
 

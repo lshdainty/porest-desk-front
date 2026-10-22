@@ -23,6 +23,18 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("@/features/notification", () => ({
+  // 줄 끝 ⋮ 는 features/notification 의 NotificationMoreMenu.test.tsx 가 잰다 — 여기서는 자리만 본다
+  NotificationMoreMenu: ({
+    notification,
+  }: {
+    notification: { title: string };
+  }) => (
+    <button
+      type="button"
+      data-slot="notification-more"
+      aria-label={`${notification.title} 더보기`}
+    />
+  ),
   useNotifications: () => ({ data: state.items, isLoading: false }),
   useUnreadCount: () => ({
     data: state.items.filter((n) => !n.isRead).length,
@@ -140,20 +152,39 @@ describe.each([
     render();
     click(bell());
     const rows = [...dialog()!.querySelectorAll("li[data-notification-id]")];
-    const hasButton = rows.map((r) => !!r.querySelector("button"));
+    const hasButton = rows.map(
+      (r) => !!r.querySelector("button[data-slot=list-body]"),
+    );
     expect(hasButton).toEqual([true, true, false]);
+  });
+
+  it("줄마다 ⋮ 가 있고 줄 본문 버튼의 형제다 — 읽은 줄에도, 줄 버튼 안에는 없다", () => {
+    render();
+    click(bell());
+    const rows = [...dialog()!.querySelectorAll("li[data-notification-id]")];
+    expect(rows).toHaveLength(3);
+    for (const [i, r] of rows.entries()) {
+      const more = r.querySelector<HTMLElement>(
+        "[data-slot=notification-more]",
+      )!;
+      expect(more.getAttribute("aria-label")).toBe(`알림 ${i + 1} 더보기`);
+      expect(more.closest("[data-slot=list-body]")).toBeNull();
+      expect(more.closest("[data-slot=list-suffix]")).not.toBeNull();
+    }
   });
 
   it("안 읽은 줄을 누르면 읽음 처리하고 초점이 다음 안 읽은 줄로 간다", () => {
     render();
     click(bell());
     const first = dialog()!.querySelector<HTMLElement>(
-      '[data-notification-id="1"] button',
+      '[data-notification-id="1"] [data-slot=list-body]',
     )!;
     click(first);
     expect(state.markRead).toHaveBeenCalledWith(1);
     expect(document.activeElement).toBe(
-      dialog()!.querySelector('[data-notification-id="2"] button'),
+      dialog()!.querySelector(
+        '[data-notification-id="2"] [data-slot=list-body]',
+      ),
     );
   });
 

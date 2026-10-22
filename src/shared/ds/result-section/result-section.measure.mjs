@@ -40,6 +40,12 @@ export default {
     "px",
     "margin-top",
   ],
+  // 둘째 버튼 글자색 = fg-neutral-muted(스펙 키 secondaryButton.foreground — 03F-022). 둘째 버튼은 actions 의 둘째 자식이다(첫 버튼만 있는 견본은 요소가 없어 건너뛴다)
+  "secondaryButton.foreground": [
+    "[data-slot=result-section-actions] > :nth-child(2)",
+    "color",
+    "color",
+  ],
   "actions.gap": ["[data-slot=result-section-actions]", "px", "row-gap"],
   "actions.marginTop": [
     "[data-slot=result-section-actions]",

@@ -24,14 +24,15 @@ export const tabsListVariants = cva(
   {
     variants: {
       layout: {
-        // 칸을 똑같이 나눈다 — 막대는 탭에서 좌우 16 들인다
-        fill: "px-0 [--tabs-indicator-inset:var(--spacing-x4)]",
+        // 칸을 똑같이 나눈다 — 막대는 탭에서 좌우 16 들인다. 글이 칸을 넘으면 Fill 모양 그대로(Hug 로 바꾸지 않는다) 목록만
+        // 가로 스크롤(스크롤바는 숨긴다)하고, 고른 탭은 가장자리와 scroll-padding 16 을 두고 드러낸다(SEED, 03-G 결정 3B)
+        fill: "overflow-x-auto px-0 scroll-px-x4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--tabs-indicator-inset:var(--spacing-x4)]",
         // 글만큼 — 목록 좌우 16, 넘치면 가로 스크롤(스크롤바는 숨긴다). 고른 탭은 가장자리와 16 을 두고 드러낸다. 막대는 탭 폭 그대로
         hug: "overflow-x-auto px-x4 scroll-px-x4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--tabs-indicator-inset:0px]",
       },
       size: {
-        small: "min-h-10",
-        medium: "min-h-11",
+        small: "min-h-[40px]",
+        medium: "min-h-[44px]",
       },
     },
     defaultVariants: { layout: "fill", size: "small" },
@@ -56,8 +57,8 @@ export const tabsTriggerVariants = cva(
         hug: "flex-none",
       },
       size: {
-        small: "min-h-10 text-t4 [--press-basis:40]",
-        medium: "min-h-11 text-t5 [--press-basis:44]",
+        small: "min-h-[40px] text-t4 [--press-basis:40]",
+        medium: "min-h-[44px] text-t5 [--press-basis:44]",
       },
     },
     defaultVariants: { layout: "fill", size: "small" },
@@ -75,7 +76,7 @@ export const TABS_INDICATOR = [
 
 // 알림 점 — 브랜드 글자색, 글 끝에서 2 · 글 위쪽. 띄워 두므로 탭 폭이 넓어지지 않는다. 고른 탭에는 그리지 않는다
 export const TABS_NOTIFICATION =
-  "pointer-events-none absolute left-[calc(100%_+_2px)] top-0 size-1.5 rounded-full bg-fg-brand";
+  "pointer-events-none absolute left-[calc(100%_+_2px)] top-0 size-[6px] rounded-full bg-fg-brand";
 
 // Chip Tabs 목록 — 바탕 · 바닥 선 없이 한 줄 가로 스크롤(스크롤바는 숨긴다). 좌우 화면 여백 24 · 위아래 8 · 칩 사이 8.
 // 고른 칩을 드러낼 때는 가장자리와 화면 여백 24 를 둔다(scroll-padding). 양 끝 흐림(Scroll Fog row 좌우 20)은 useScrollFog 가 건다
@@ -85,7 +86,7 @@ export const chipTabsListVariants = cva(
 
 // Chip Tabs 알림 점 — 브랜드 글자색, 글 뒤 6(칩의 사이)에 세로 가운데. 칩 폭이 그만큼 넓어진다. 고른 칩(짙은 채움)에는 그리지 않는다
 export const CHIP_TABS_NOTIFICATION =
-  "pointer-events-none size-1.5 shrink-0 rounded-full bg-fg-brand";
+  "pointer-events-none size-[6px] shrink-0 rounded-full bg-fg-brand";
 
 // 내용 칸 — 모두 그려 두고 고르지 않은 칸은 숨긴다. 밀어 넘기는 동안 옆에서 들어오고 나가는 칸은 TabsSwipeArea 가 data-swipe-peek 를
 // 달아 띄운다. 키보드 포커스 링은 탭과 같이 안쪽 2px 다(칸이 화면 폭을 채워 바깥 링은 잘린다)

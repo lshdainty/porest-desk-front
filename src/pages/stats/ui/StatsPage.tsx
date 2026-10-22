@@ -204,7 +204,7 @@ const DONUT_COLORS = [
 // color-mix 로 --mossy-500 을 투명도 다르게 섞어 라이트/다크 양쪽에서 자동 적응.
 // 레벨 0 은 semantic muted bg 로 두어 "빈 셀" 구분 명확.
 const HEAT_PALETTE: { bg: string; fg: string }[] = [
-  { bg: "var(--color-bg-neutral-weak-alpha)", fg: "var(--fg-tertiary)" }, // 0 empty
+  { bg: "var(--color-bg-neutral-weak)", fg: "var(--fg-tertiary)" }, // 0 empty
   {
     bg: "color-mix(in oklch, var(--border-brand) 18%, transparent)",
     fg: "var(--fg-primary)",
@@ -218,7 +218,7 @@ const HEAT_PALETTE: { bg: string; fg: string }[] = [
     fg: "var(--fg-on-brand)",
   }, // 3
   {
-    bg: "color-mix(in oklch, var(--border-brand) 75%, transparent)",
+    bg: "color-mix(in oklch, var(--border-brand) 76%, transparent)",
     fg: "var(--fg-on-brand)",
   }, // 4
   { bg: "var(--border-brand)", fg: "var(--fg-on-brand)" }, // 5 peak
@@ -4045,7 +4045,7 @@ export const StatsPage = () => {
           {StatsTabs}
         </div>
         <div
-          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide"
+          className="flex-1 min-h-0 overflow-y-auto"
           style={swipeNav.style}
           {...swipeNav.handlers}
         >
