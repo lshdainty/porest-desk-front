@@ -5,6 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { icons as lucideIcons } from "lucide-react";
 
+import { TooltipProvider } from "@/shared/ds/tooltip";
 import { Field } from "@/shared/ds/field";
 
 import { CATEGORY_ICON_GLYPHS } from "./category-icon-glyphs";
@@ -534,7 +535,11 @@ describe("IconPicker — 트리거 · 여는 자리", () => {
   it("칸 툴팁은 마우스를 올릴 때만 연다 — 키보드 초점으로 열지 않아 Esc 한 번에 닫힌다(03B-012)", () => {
     vi.useFakeTimers();
     try {
-      render(<Controlled initial="coffee" />);
+      render(
+        <TooltipProvider>
+          <Controlled initial="coffee" />
+        </TooltipProvider>,
+      );
       act(() => trigger().click());
       const bubbleCount = () =>
         document.querySelectorAll("[data-slot=tooltip-content]").length;
