@@ -793,7 +793,7 @@ const HeaderDividerDemo = () => (
                 variant="ghost"
                 ghostColor="neutralMuted"
                 size="small"
-                className="-my-x2"
+                className="-my-x2 -mr-x3_5"
               >
                 전체 보기
               </Button>

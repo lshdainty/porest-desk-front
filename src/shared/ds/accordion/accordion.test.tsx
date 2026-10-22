@@ -720,6 +720,7 @@ describe("AccordionHeader · AccordionExpandAll", () => {
         "before:min-w-11",
         "rounded-r2",
         "px-x3_5",
+        "-mr-x3_5",
         "font-bold",
         "text-fg-neutral-muted",
         "focus-visible:outline-offset-2",

@@ -243,6 +243,7 @@ describe("Card — 머리 동작", () => {
     const action = slot("card-action")!;
     expect(action.className).toContain("h-9");
     expect(action.className).toContain("px-x3_5");
+    expect(action.className).toContain("-mr-x3_5");
     expect(action.className).toContain("font-bold");
     expect(action.className).toContain("text-fg-neutral-muted");
     expect(action.className).toContain("before:h-11");

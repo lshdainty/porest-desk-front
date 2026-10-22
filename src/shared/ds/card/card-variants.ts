@@ -88,7 +88,7 @@ export const CARD_TITLE =
 // 머리 동작 = SEED Text Button(D2) — 보이는 상자 36 · 좌우 14 · 모서리 8, 글 t4 · 700 · fg-neutral-muted, 꺾쇠 · 아이콘 없음.
 // 누르는 영역 44(::before), 누르면 바탕 + 2px 거리 축소
 export const CARD_ACTION = [
-  "relative inline-flex h-9 shrink-0 cursor-pointer items-center rounded-r2 border-0 bg-transparent px-x3_5",
+  "relative -mr-x3_5 inline-flex h-9 shrink-0 cursor-pointer items-center rounded-r2 border-0 bg-transparent px-x3_5",
   "font-sans text-t4 font-bold text-fg-neutral-muted no-underline",
   "before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
