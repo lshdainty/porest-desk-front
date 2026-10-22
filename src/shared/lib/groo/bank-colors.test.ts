@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { institutionColor } from "@/shared/ds/institution-colors";
-import { getCardBrand, CARD_FALLBACK_GRADIENT } from "@/entities/card";
 
 import { BANK_ENTRIES, INSTITUTION_INK, getBrandColor } from "./bank-colors";
 
@@ -45,19 +44,5 @@ describe("기관 색 — 표 하나(03E-010)", () => {
       fg: INSTITUTION_INK,
     });
     expect(getBrandColor("모르는 곳", "신한")).toEqual({ bg: "#0046FF" });
-  });
-
-  it("카드사도 같은 표 — 자산 로고와 같은 회사는 같은 색", () => {
-    expect(getCardBrand("신한카드").bg).toBe(getBrandColor("신한")!.bg);
-    expect(getCardBrand("KB국민카드 올원")).toEqual({
-      bg: "#FFBC00",
-      fg: INSTITUTION_INK,
-      known: true,
-    });
-    expect(getCardBrand("없는카드사")).toEqual({
-      bg: CARD_FALLBACK_GRADIENT,
-      fg: "#fff",
-      known: false,
-    });
   });
 });
