@@ -64,7 +64,7 @@ import { useDsText } from "@/shared/ds/i18n";
  *   TabsSwipeArea                    폰 1차 탭의 내용 칸 묶음 — 내용을 옆으로 밀어 이웃 탭으로 넘긴다
  *
  * Line
- *   layout   fill(기본 — 칸을 똑같이 나눈다, 막대는 탭에서 좌우 16 들인다) ·
+ *   layout   fill(기본 — 칸을 똑같이 나눈다, 막대는 탭에서 좌우 16 들인다. 글이 칸을 넘으면 목록만 가로 스크롤) ·
  *            hug(탭이 글 + 좌우 10 · 목록 좌우 16, 넘치면 가로 스크롤 — 스크롤바는 숨긴다. 막대는 탭 폭 그대로)
  *   size     small 40 · 글 t4 14(기본) · medium 44 · 글 t5 16
  * 목록은 놓인 폭을 채우고 바탕이 불투명하다(bg-layer-default). 바닥 구획 선은 안쪽 1px(inset shadow)이라 높이를 밀지 않는다.
@@ -80,8 +80,8 @@ import { useDsText } from "@/shared/ds/i18n";
  * 막힌 탭은 fg-disabled · not-allowed · 축소 없음. 고른 탭이 막히면(목록 전체를 막을 때) 막대도 fg-disabled 다.
  * 알림 점(notification)은 6px fg-brand(브랜드 글자색 — bg-brand-solid 는 다크 바탕에서 안 보인다) — 글 끝에서 2 · 글 위쪽에
  * 띄워 탭 폭을 넓히지 않는다. 보조 기술에는 "새 소식" 을 덧붙인다(점만으로 알리지 않는다). 고른 탭에는 점도 "새 소식" 도 없다
- * (내용을 보면 사라진다). 한 목록에 하나만 단다(둘 이상이면 개발 중에 경고). Fill 목록이 넘치면(글이 칸을 넘으면) 개발 중에
- * 경고한다 — Hug 로 바꾼다.
+ * (내용을 보면 사라진다). 한 목록에 하나만 단다(둘 이상이면 개발 중에 경고). Fill 목록이 넘치면(글이 칸을 넘으면) Hug 로 바꾸지
+ * 않고 Fill 모양 그대로 목록만 가로 스크롤한다(스크롤바 숨김) — 칸을 나누지 않고 글 + 좌우 10 폭으로 서고 고른 탭을 드러낸다(03-G 3B).
  *
  * Chip Tabs
  *   variant  solid(기본 — 화면 전체를 바꾸는 2차 탭, Chip Solid) · outline(일부를 바꾸는 2차 탭, Chip Outline Strong)
@@ -228,7 +228,7 @@ function useRevealSelected(
   }, [listRef, value, enabled]);
 }
 
-// 개발 중에만 — 이름 없는 목록 · 알림 점 둘 이상 · 넘치는 Fill 목록 · 빈칸 있는 value 를 알린다(같은 경고는 한 번만)
+// 개발 중에만 — 이름 없는 목록 · 알림 점 둘 이상 · 빈칸 있는 value 를 알린다(같은 경고는 한 번만)
 function useListChecks(
   listRef: React.RefObject<HTMLElement | null>,
   component: string,
@@ -257,12 +257,6 @@ function useListChecks(
     }
     if (list.querySelectorAll(":scope > [data-notification]").length > 1) {
       warn("notification", "알림 점이 둘 이상이다 — 새 소식은 한 탭에만 단다.");
-    }
-    if (fill && list.scrollWidth > list.clientWidth + 1) {
-      warn(
-        "overflow",
-        'Fill 목록이 넘친다 — 탭이 6개 이상이거나 글이 칸을 넘으면 layout="hug" 로 둔다.',
-      );
     }
     const spaced = Array.from(
       list.querySelectorAll<HTMLElement>(":scope > [role=tab]"),
@@ -348,7 +342,7 @@ const TabsList = React.forwardRef<
   const l = layout ?? "fill";
   const s = size ?? "small";
   useIndicator(own, bar, value);
-  useRevealSelected(own, value, l === "hug");
+  useRevealSelected(own, value, true);
   useListChecks(
     own,
     "TabsList",

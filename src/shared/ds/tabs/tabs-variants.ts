@@ -24,8 +24,9 @@ export const tabsListVariants = cva(
   {
     variants: {
       layout: {
-        // 칸을 똑같이 나눈다 — 막대는 탭에서 좌우 16 들인다
-        fill: "px-0 [--tabs-indicator-inset:var(--spacing-x4)]",
+        // 칸을 똑같이 나눈다 — 막대는 탭에서 좌우 16 들인다. 글이 칸을 넘으면 Fill 모양 그대로(Hug 로 바꾸지 않는다) 목록만
+        // 가로 스크롤(스크롤바는 숨긴다)하고, 고른 탭은 가장자리와 scroll-padding 16 을 두고 드러낸다(SEED, 03-G 결정 3B)
+        fill: "overflow-x-auto px-0 scroll-px-x4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--tabs-indicator-inset:var(--spacing-x4)]",
         // 글만큼 — 목록 좌우 16, 넘치면 가로 스크롤(스크롤바는 숨긴다). 고른 탭은 가장자리와 16 을 두고 드러낸다. 막대는 탭 폭 그대로
         hug: "overflow-x-auto px-x4 scroll-px-x4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--tabs-indicator-inset:0px]",
       },
