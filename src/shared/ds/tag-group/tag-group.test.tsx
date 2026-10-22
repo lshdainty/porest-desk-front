@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { TagGroup, TagGroupItem } from "./tag-group";
+import { tagGroupItemMinWidth } from "./tag-group-variants";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -222,6 +223,26 @@ describe("TagGroup", () => {
     expect(label.textContent).toBe("카드 분할 2");
     // wrap 이면 줄어드는 차례를 두지 않는다
     expect(items(group)[0]!.style.flexShrink).toBe("");
+  });
+
+  it("줄어드는 항목도 첫 글자 + … 까지 — 항목 최소 폭 2.1em(아이콘이 있으면 + 아이콘 + 2), 두 글자 이하는 글 폭(03-E 결정 5 B)", () => {
+    const group = render(
+      <TagGroup size="t3" truncate>
+        <TagGroupItem>교통</TagGroupItem>
+        <TagGroupItem>신한카드 Deep Dream 체크(1234)</TagGroupItem>
+        <TagGroupItem suffixIcon={<Icon />}>오후 2:10 도착</TagGroupItem>
+        <TagGroupItem suffixIcon={<Icon />}>ab</TagGroupItem>
+      </TagGroup>,
+    );
+    expect(items(group).map((item) => item.style.minWidth)).toEqual([
+      "max-content",
+      "2.1em",
+      "calc(2.1em + 13px + var(--spacing-x0_5))",
+      "max-content",
+    ]);
+    expect(tagGroupItemMinWidth("가나다", "t2", false)).toBe("2.1em");
+    expect(tagGroupItemMinWidth("가나", "t2", false)).toBe("max-content");
+    expect(tagGroupItemMinWidth(" 가나 ", "t4", true)).toBe("max-content");
   });
 
   it("한 줄 말줄임(truncate) — 항목마다 줄어드는 차례, 구분은 줄지 않는다", () => {

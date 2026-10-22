@@ -16,7 +16,8 @@ import { cva } from "class-variance-authority";
  *             묶음의 tone · weight 는 항목의 기본값이다
  *   truncate  false(기본) — 넘치면 낱말 단위로 줄을 바꾼다(keep-all + break-word, v114 — 항목 사이 · 항목 안 띄어쓰기에서)
  *             true — 한 줄(inline-flex · 최대 폭 100%). 넘치면 항목 글이 각자 말줄임(…)하고 구분은 줄지 않는다.
- *             줄어드는 차례는 항목의 shrink — 기본 1, 0 은 줄지 않고 수가 클수록 먼저 · 많이 준다(금액처럼 꼭 보일 항목은 0)
+ *             줄어드는 차례는 항목의 shrink — 기본 1, 0 은 줄지 않고 수가 클수록 먼저 · 많이 준다(금액처럼 꼭 보일 항목은 0).
+ *             줄어드는 항목도 첫 글자 + "…" 까지만 — 항목 최소 폭 2.1em(+ 아이콘), 두 글자 이하면 글 폭(max-content)
  *
  * 구분 " · " 는 줄이 안 바뀌는 공백(U+00A0) · 가운뎃점(U+00B7) · 공백 — 앞 항목에 붙어, 줄이 바뀌면 앞 줄 끝에 남고 다음 줄은
  * 항목으로 시작한다. 아이콘은 그 글과 한 줄에 붙어 있다(아이콘만 줄 끝에 남지 않는다 — 항목 + 구분을 한 칸으로 묶어 칸 안은
@@ -69,3 +70,42 @@ export const tagGroupItemVariants = cva("", {
     truncate: false,
   },
 });
+
+// 줄어드는 항목의 최소 폭 — 글 칸에 첫 글자 + "…" 가 남는 2.1em(글자 크기를 따른다) + 아이콘(12 · 13 · 14) · 사이 2.
+// 두 글자 이하인 글은 글 폭 그대로(max-content — 넓히지 않는다). 최소 폭은 항목 칸에 준다 — 글 칸(overflow hidden)의 최소 폭은
+// 항목의 최소 크기로 올라가지 않는다. 사용자 결정 2026-10-17 — 03-E 결정 5 B (두 글자 이하 기준은 2026-10-21 확정)
+const LABEL_MIN = "2.1em";
+const ICON_PX = { t2: 12, t3: 13, t4: 14 } as const;
+type GraphemeSegmenter = {
+  segment(input: string): Iterable<{ segment: string }>;
+};
+const Segmenter = (
+  Intl as unknown as {
+    Segmenter?: new (
+      locales: string | undefined,
+      options: { granularity: "grapheme" },
+    ) => GraphemeSegmenter;
+  }
+).Segmenter;
+const graphemes = Segmenter
+  ? new Segmenter(undefined, { granularity: "grapheme" })
+  : null;
+const graphemeCount = (text: string) =>
+  graphemes
+    ? Array.from(graphemes.segment(text)).length
+    : Array.from(text).length;
+
+export function tagGroupItemMinWidth(
+  label: unknown,
+  size: "t2" | "t3" | "t4",
+  hasIcon: boolean,
+): string {
+  if (
+    (typeof label === "string" || typeof label === "number") &&
+    graphemeCount(String(label).trim()) <= 2
+  )
+    return "max-content";
+  return hasIcon
+    ? `calc(${LABEL_MIN} + ${ICON_PX[size]}px + var(--spacing-x0_5))`
+    : LABEL_MIN;
+}
