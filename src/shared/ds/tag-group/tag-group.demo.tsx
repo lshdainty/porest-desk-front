@@ -70,7 +70,7 @@ export const TagGroupDemo = () => (
           <Specimen spec="tag-group" combo={{ size }}>
             <TagGroup size={size}>
               <TagGroupItem>식비</TagGroupItem>
-              <TagGroupItem>신한카드</TagGroupItem>
+              <TagGroupItem>숲길카드</TagGroupItem>
               <TagGroupItem suffixIcon={<Split />} srLabel="분할 2건">
                 2
               </TagGroupItem>
@@ -87,7 +87,7 @@ export const TagGroupDemo = () => (
         </DemoRow>
       ))}
       <DemoRow label="읽는 글">
-        <Reading text="식비, 신한카드, 분할 2건" />
+        <Reading text="식비, 숲길카드, 분할 2건" />
       </DemoRow>
     </DemoBlock>
 
@@ -115,7 +115,7 @@ export const TagGroupDemo = () => (
           >
             <TagGroup size="t3" truncate>
               <TagGroupItem>교통</TagGroupItem>
-              <TagGroupItem>신한카드 Deep Dream 체크(1234)</TagGroupItem>
+              <TagGroupItem>숲길카드 새싹 체크(1234)</TagGroupItem>
               <TagGroupItem>오후 2:10</TagGroupItem>
             </TagGroup>
           </Specimen>
@@ -125,9 +125,7 @@ export const TagGroupDemo = () => (
         <div className="flex w-[240px]">
           <TagGroup size="t3" truncate>
             <TagGroupItem shrink={0}>교통</TagGroupItem>
-            <TagGroupItem shrink={2}>
-              신한카드 Deep Dream 체크(1234)
-            </TagGroupItem>
+            <TagGroupItem shrink={2}>숲길카드 새싹 체크(1234)</TagGroupItem>
             <TagGroupItem shrink={0}>오후 2:10</TagGroupItem>
           </TagGroup>
         </div>
@@ -136,7 +134,7 @@ export const TagGroupDemo = () => (
         <div className="flex w-[120px]">
           <TagGroup size="t3" truncate>
             <TagGroupItem>교통</TagGroupItem>
-            <TagGroupItem>신한카드 Deep Dream 체크(1234)</TagGroupItem>
+            <TagGroupItem>숲길카드 새싹 체크(1234)</TagGroupItem>
             <TagGroupItem suffixIcon={<Eye />}>오후 2:10 도착</TagGroupItem>
           </TagGroup>
         </div>
@@ -166,7 +164,7 @@ export const TagGroupDemo = () => (
           >
             <TagGroup size="t3" truncate>
               <TagGroupItem>식비</TagGroupItem>
-              <TagGroupItem>신한카드</TagGroupItem>
+              <TagGroupItem>숲길카드</TagGroupItem>
               <TagGroupItem shrink={0}>오후 2:10</TagGroupItem>
             </TagGroup>
           </Specimen>
@@ -175,7 +173,7 @@ export const TagGroupDemo = () => (
           5,600원
         </span>
       </div>
-      <Reading text="식비, 신한카드, 오후 2:10" />
+      <Reading text="식비, 숲길카드, 오후 2:10" />
     </DemoBlock>
   </div>
 );

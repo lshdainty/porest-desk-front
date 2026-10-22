@@ -414,7 +414,7 @@ export const ChipDemo = () => {
         <DemoRow label="긴 이름">
           <div className="w-full max-w-[360px]">
             <ChipGroup aria-label="긴 이름">
-              <Chip>신한카드 마이 포인트 플러스 체크카드</Chip>
+              <Chip>숲길카드 새싹 포인트 플러스 체크카드</Chip>
               <Chip selected>월 구독료와 정기 결제 모음</Chip>
               <Chip>외식</Chip>
             </ChipGroup>
@@ -424,7 +424,7 @@ export const ChipDemo = () => {
           <div className="w-full max-w-[360px]">
             <ChipGroup aria-label="긴 입력값">
               <InputChip onRemove={() => {}}>
-                신한카드 마이 포인트 플러스 체크카드 월 구독료와 정기 결제 모음
+                숲길카드 새싹 포인트 플러스 체크카드 월 구독료와 정기 결제 모음
               </InputChip>
               <InputChip onRemove={() => {}}>외식</InputChip>
             </ChipGroup>
@@ -446,7 +446,7 @@ export const ChipDemo = () => {
         <DemoRow label="긴 이름 · 스크롤">
           <div className="w-[360px] bg-bg-layer-default px-global-gutter">
             <ChipGroup layout="scroll" bleed aria-label="긴 이름 스크롤">
-              <Chip variant="solid">신한카드 마이 포인트 플러스 체크카드</Chip>
+              <Chip variant="solid">숲길카드 새싹 포인트 플러스 체크카드</Chip>
               <Chip variant="solid" selected>
                 월 구독료와 정기 결제 모음
               </Chip>

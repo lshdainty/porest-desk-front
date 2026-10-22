@@ -124,7 +124,7 @@ const incomeCategory: ExpenseCategory = {
 /** 결제일 12일 신용카드. 8월 회차까지 결제가 끝났다(오늘 9월). */
 const card = {
   rowId: 9,
-  assetName: "현대카드",
+  assetName: "숲길카드",
   assetType: "CREDIT_CARD",
   paymentDay: 12,
   paymentAssetRowId: 1,
@@ -200,12 +200,12 @@ describe("거래 추가 시트의 선택 칸 이름", () => {
             rowId: 501,
             categoryRowId: 12,
             assetRowId: 9,
-            assetName: "현대카드",
+            assetName: "숲길카드",
             expenseType: "EXPENSE",
             amount: 12_000,
             description: "점심",
             expenseDate: "2026-08-20T12:30:00",
-            merchant: "김밥천국",
+            merchant: "숲길분식",
             paymentMethod: "CARD",
             installmentMonths: null,
             refundedAt: null,

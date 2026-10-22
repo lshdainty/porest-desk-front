@@ -52,7 +52,7 @@ describe("TagGroup", () => {
     const group = render(
       <TagGroup>
         <TagGroupItem>식비</TagGroupItem>
-        <TagGroupItem>신한카드</TagGroupItem>
+        <TagGroupItem>숲길카드</TagGroupItem>
         <TagGroupItem>오후 2:10</TagGroupItem>
       </TagGroup>,
     );
@@ -76,13 +76,13 @@ describe("TagGroup", () => {
     const group = render(
       <TagGroup>
         <TagGroupItem>식비</TagGroupItem>
-        <TagGroupItem>신한카드</TagGroupItem>
+        <TagGroupItem>숲길카드</TagGroupItem>
         <TagGroupItem>오후 2:10</TagGroupItem>
       </TagGroup>,
     );
     const sr = separators(group)[0]!.querySelector(".sr-only")!;
     expect(sr.textContent).toBe(", ");
-    expect(spokenText(group)).toBe("식비, 신한카드, 오후 2:10");
+    expect(spokenText(group)).toBe("식비, 숲길카드, 오후 2:10");
   });
 
   it("역할이 없다 — 줄마다 목록으로 읽지 않는다", () => {
@@ -229,7 +229,7 @@ describe("TagGroup", () => {
     const group = render(
       <TagGroup size="t3" truncate>
         <TagGroupItem>교통</TagGroupItem>
-        <TagGroupItem>신한카드 Deep Dream 체크(1234)</TagGroupItem>
+        <TagGroupItem>숲길카드 새싹 체크(1234)</TagGroupItem>
         <TagGroupItem suffixIcon={<Icon />}>오후 2:10 도착</TagGroupItem>
         <TagGroupItem suffixIcon={<Icon />}>ab</TagGroupItem>
       </TagGroup>,
@@ -249,7 +249,7 @@ describe("TagGroup", () => {
     const group = render(
       <TagGroup size="t3" truncate>
         <TagGroupItem>교통</TagGroupItem>
-        <TagGroupItem shrink={2}>신한카드 Deep Dream 체크(1234)</TagGroupItem>
+        <TagGroupItem shrink={2}>숲길카드 새싹 체크(1234)</TagGroupItem>
         <TagGroupItem shrink={0} suffixIcon={<Icon />}>
           오후 2:10
         </TagGroupItem>
