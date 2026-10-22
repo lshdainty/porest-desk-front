@@ -14,15 +14,15 @@ export type ChipSize = "small" | "medium" | "large";
 
 export const chipVariants = cva(
   [
-    "relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-x1_5 whitespace-nowrap rounded-full font-sans text-t4 font-medium no-underline",
+    "relative inline-flex max-w-full shrink-0 cursor-pointer select-none items-center justify-center gap-x1_5 whitespace-nowrap rounded-full font-sans text-t4 font-medium no-underline",
     // 누르는 영역 44 — 보이는 칩보다 작으면 ::before 가 넓힌다(Button 과 같다)
     "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     // 바탕 · 글자 · 테두리는 color-transition, 축소는 pressed-scale
     "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),color_var(--motion-duration-color-transition)_var(--motion-ease-easing),box-shadow_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
     "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
-    // 비활성 — 호버 · 누름 바탕보다 뒤에 나와 이긴다. 고른 채 막힘은 고름의 바탕 · 글자를 덮고 짙은 1px 를 남긴다
-    "disabled:cursor-not-allowed disabled:[scale:1] disabled:bg-bg-disabled disabled:text-fg-disabled",
+    // 비활성 — 호버 · 누름 바탕보다 뒤에 나와 이긴다. 막힌 바탕은 변형마다 둔다(Solid 안 고름은 바탕 그대로, 글 · 아이콘만 fg-disabled — 03-B 결정 1 A). 고른 채 막힘은 고름의 바탕 · 글자를 덮고 짙은 1px 를 남긴다
+    "disabled:cursor-not-allowed disabled:[scale:1] disabled:text-fg-disabled",
     "[&:is([data-state=checked],[data-selected])]:disabled:bg-bg-disabled [&:is([data-state=checked],[data-selected])]:disabled:text-fg-disabled [&:is([data-state=checked],[data-selected])]:disabled:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-solid)]",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
   ].join(" "),
@@ -30,17 +30,17 @@ export const chipVariants = cva(
     variants: {
       variant: {
         solid: [
-          "bg-bg-neutral-weak-alpha text-fg-neutral hover:bg-bg-neutral-weak-alpha-pressed active:bg-bg-neutral-weak-alpha-pressed",
+          "bg-bg-neutral-weak-alpha text-fg-neutral hover:bg-bg-neutral-weak-alpha-pressed active:bg-bg-neutral-weak-alpha-pressed disabled:bg-bg-neutral-weak-alpha",
           "[&:is([data-state=checked],[data-selected])]:bg-bg-neutral-inverted [&:is([data-state=checked],[data-selected])]:text-fg-neutral-inverted [&:is([data-state=checked],[data-selected])]:hover:bg-bg-neutral-inverted-pressed [&:is([data-state=checked],[data-selected])]:active:bg-bg-neutral-inverted-pressed",
         ].join(" "),
         // 고르면 짙은 채움 — 테두리는 지운다(SEED Chip Tabs 와 같다)
         outlineStrong: [
-          "bg-transparent text-fg-neutral shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed",
+          "bg-transparent text-fg-neutral shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed disabled:bg-bg-disabled",
           "[&:is([data-state=checked],[data-selected])]:bg-bg-neutral-inverted [&:is([data-state=checked],[data-selected])]:text-fg-neutral-inverted [&:is([data-state=checked],[data-selected])]:shadow-none [&:is([data-state=checked],[data-selected])]:hover:bg-bg-neutral-inverted-pressed [&:is([data-state=checked],[data-selected])]:active:bg-bg-neutral-inverted-pressed",
         ].join(" "),
         // 고르면 옅은 바탕 + 짙은 1px(v113), 글자는 그대로
         outlineWeak: [
-          "bg-transparent text-fg-neutral shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed",
+          "bg-transparent text-fg-neutral shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed disabled:bg-bg-disabled",
           "[&:is([data-state=checked],[data-selected])]:bg-bg-neutral-weak [&:is([data-state=checked],[data-selected])]:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-contrast)] [&:is([data-state=checked],[data-selected])]:hover:bg-bg-neutral-weak-pressed [&:is([data-state=checked],[data-selected])]:active:bg-bg-neutral-weak-pressed",
         ].join(" "),
       },
@@ -82,6 +82,9 @@ export const chipVariants = cva(
     },
   },
 );
+
+// 글 — 칩이 줄 폭(max-w-full)에 닿을 때만 글 끝을 말줄임한다. 앞 · 뒤 아이콘과 지우기 ×(shrink-0)는 줄지 않고 남는다
+export const CHIP_LABEL = "min-w-0 truncate";
 
 // 아이콘 — 앞 14 · 16 · 16, 뒤 14 · 14 · 16(medium 만 앞 ≠ 뒤), 지우기 14 · 14 · 16.
 // Tailwind 는 소스의 글자 그대로를 읽으므로 크기마다 다 적는다
@@ -152,7 +155,7 @@ export const CHIP_GROUP_RING =
 // 입력값 칩의 알약 — 누르지 않는다(호버 · 누름 없음). Outline Weak 의 고른 모습, 막히면 회색 바탕 + 짙은 1px stroke-neutral-solid
 export const inputChipVariants = cva(
   [
-    "relative inline-flex shrink-0 items-center justify-center gap-x1_5 whitespace-nowrap rounded-full font-sans text-t4 font-medium",
+    "relative inline-flex max-w-full shrink-0 items-center justify-center gap-x1_5 whitespace-nowrap rounded-full font-sans text-t4 font-medium",
     "bg-bg-neutral-weak text-fg-neutral shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-contrast)]",
     "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),color_var(--motion-duration-color-transition)_var(--motion-ease-easing),box-shadow_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
     "data-[disabled]:bg-bg-disabled data-[disabled]:text-fg-disabled data-[disabled]:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-solid)]",

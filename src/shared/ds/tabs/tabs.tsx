@@ -3,7 +3,12 @@ import { flushSync } from "react-dom";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { VariantProps } from "class-variance-authority";
 
-import { chipVariants, isPressKey, measurePress } from "@/shared/ds/chip";
+import {
+  ChipLabel,
+  chipVariants,
+  isPressKey,
+  measurePress,
+} from "@/shared/ds/chip";
 import { useScrollFog } from "@/shared/ds/scroll-fog";
 import { cn } from "@/shared/lib/cn";
 
@@ -550,7 +555,7 @@ const ChipTabsTrigger = React.forwardRef<
         {...pressSelect(value, tabs.setValue, { onMouseDown, onClick })}
         {...props}
       >
-        {children}
+        <ChipLabel>{children}</ChipLabel>
         {notification && !selected && (
           <span
             aria-hidden

@@ -183,6 +183,59 @@ describe("Chip (버튼)", () => {
     expect(cls).not.toContain("opacity");
   });
 
+  it("막힌 Solid(안 고름)는 바탕을 그대로 두고 글 · 아이콘만 fg-disabled — 다른 변형은 bg-disabled(03-B 결정 1 A)", () => {
+    render(
+      <>
+        <Chip variant="solid" disabled>
+          솔리드
+        </Chip>
+        <Chip variant="outlineWeak" disabled>
+          윤곽
+        </Chip>
+        <Chip variant="solid" selected disabled>
+          고른 솔리드
+        </Chip>
+      </>,
+    );
+    const [solid, outline, picked] = all("[data-slot=chip]");
+    expect(solid!.className).toContain("disabled:bg-bg-neutral-weak-alpha");
+    expect(solid!.className.split(" ")).not.toContain(
+      "disabled:bg-bg-disabled",
+    );
+    expect(solid!.className).toContain("disabled:text-fg-disabled");
+    expect(outline!.className).toContain("disabled:bg-bg-disabled");
+    // 고른 채 막힘은 회색 채움 + 짙은 1px (스펙 solid selected disabled)
+    expect(picked!.className).toContain(
+      "[&:is([data-state=checked],[data-selected])]:disabled:bg-bg-disabled",
+    );
+  });
+
+  it("줄보다 긴 칩은 줄 폭에서 멈추고 글만 말줄임 — 아이콘은 줄지 않는다(03-E 결정 2 A)", () => {
+    render(
+      <Chip prefixIcon={<Tag />} suffixIcon={<ChevronDown />}>
+        주말 가족 여행 준비 장보기 목록
+      </Chip>,
+    );
+    const chip = q("[data-slot=chip]");
+    expect(chip.className).toContain("max-w-full");
+    const label = q("[data-slot=chip-label]");
+    expect(label.className).toContain("truncate");
+    expect(label.className).toContain("min-w-0");
+    expect(label.textContent).toBe("주말 가족 여행 준비 장보기 목록");
+    expect(q("[data-slot=chip-prefix-icon]").className).toContain("shrink-0");
+    expect(q("[data-slot=chip-suffix-icon]").className).toContain("shrink-0");
+  });
+
+  it("아이콘만 있는 칩은 글 칸으로 감싸지 않는다", () => {
+    render(
+      <Chip layout="iconOnly" aria-label="필터 지우기">
+        <Tag />
+      </Chip>,
+    );
+    expect(container.querySelector("[data-slot=chip-label]")).toBeNull();
+    expect(q("[data-slot=chip] > svg")).not.toBeNull();
+  });
+
   it("Outline Strong 은 고르면 테두리를 지운다 · Solid 는 고르면 짙은 채움", () => {
     render(
       <>

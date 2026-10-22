@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 
 import { useFieldGroup } from "@/shared/ds/field";
+import { ignoreRadioJumpKeys } from "@/shared/ds/radio-group";
 import { useScrollFog } from "@/shared/ds/scroll-fog";
 import { cn } from "@/shared/lib/cn";
 
@@ -13,6 +14,7 @@ import {
   CHIP_GROUP_RING,
   CHIP_ICON_SLOT,
   CHIP_ICONS,
+  CHIP_LABEL,
   CHIP_REMOVE,
   CHIP_SCROLL_ROW,
   chipGroupVariants,
@@ -102,6 +104,21 @@ function useIconOnlyName(
       );
     }
   }, [ref, iconOnly, label, labelledBy]);
+}
+
+// 글만 있는 칩의 글 — 말줄임 칸으로 감싼다. 아이콘 · 요소가 섞이면(아이콘만 있는 칩 포함) 그대로 둔다(자식 선택자 [&>svg] 가 깨지지 않게)
+function ChipLabel({ children }: { children?: React.ReactNode }) {
+  const parts = React.Children.toArray(children);
+  const plain =
+    parts.length > 0 &&
+    parts.every((c) => typeof c === "string" || typeof c === "number");
+  return plain ? (
+    <span data-slot="chip-label" className={CHIP_LABEL}>
+      {children}
+    </span>
+  ) : (
+    <>{children}</>
+  );
 }
 
 function PrefixIcon({
@@ -218,7 +235,7 @@ const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
         {...props}
       >
         {prefix}
-        {children}
+        <ChipLabel>{children}</ChipLabel>
         {suffix}
       </button>
     );
@@ -284,7 +301,7 @@ const ChipToggle = React.forwardRef<
       {prefixIcon != null && (
         <PrefixIcon size={size ?? "medium"}>{prefixIcon}</PrefixIcon>
       )}
-      {children}
+      <ChipLabel>{children}</ChipLabel>
     </CheckboxPrimitive.Root>
   ),
 );
@@ -369,6 +386,7 @@ const ChipRadioGroup = React.forwardRef<
       value: valueProp,
       defaultValue,
       onValueChange,
+      onKeyDownCapture,
       ...props
     },
     ref,
@@ -387,6 +405,7 @@ const ChipRadioGroup = React.forwardRef<
           data-slot="chip-radio-group"
           className={cn(chipGroupVariants({ layout, bleed }), className)}
           {...useFieldGroup(props)}
+          onKeyDownCapture={ignoreRadioJumpKeys(onKeyDownCapture)}
           value={value}
           onValueChange={setValue}
         >
@@ -448,7 +467,7 @@ const ChipRadio = React.forwardRef<
       {prefixIcon != null && (
         <PrefixIcon size={size ?? "medium"}>{prefixIcon}</PrefixIcon>
       )}
-      {children}
+      <ChipLabel>{children}</ChipLabel>
     </RadioGroupPrimitive.Item>
   ),
 );
@@ -532,7 +551,7 @@ const InputChip = React.forwardRef<HTMLSpanElement, InputChipProps>(
         {...props}
       >
         {prefixIcon != null && <PrefixIcon size={s}>{prefixIcon}</PrefixIcon>}
-        <span id={labelId} data-slot="input-chip-label">
+        <span id={labelId} data-slot="input-chip-label" className={CHIP_LABEL}>
           {children}
         </span>
         <button
@@ -559,4 +578,12 @@ const InputChip = React.forwardRef<HTMLSpanElement, InputChipProps>(
 );
 InputChip.displayName = "InputChip";
 
-export { Chip, ChipGroup, ChipRadio, ChipRadioGroup, ChipToggle, InputChip };
+export {
+  Chip,
+  ChipGroup,
+  ChipLabel,
+  ChipRadio,
+  ChipRadioGroup,
+  ChipToggle,
+  InputChip,
+};
