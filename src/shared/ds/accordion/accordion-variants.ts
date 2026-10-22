@@ -154,9 +154,10 @@ export const accordionItemVariants = cva("relative", {
   defaultVariants: { variant: "inline" },
 });
 
-// 목록 머리 — 시트 · 대화상자에서 아코디언 위 한 줄. 높이 36 · 아래 8 · 제목 t5 · 700(카드 머리와 같은 글) + 오른쪽 모두 펼치기
+// 목록 머리 — 시트 · 대화상자에서 아코디언 위 한 줄. 높이 36 · 아래 8 · 제목 t5 · 700(카드 머리와 같은 글) + 오른쪽 모두 펼치기.
+// 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다(제목 최소 50% · 줄바꿈 — 03-G 결정 4A)
 export const ACCORDION_HEADER =
-  "mb-x2 flex min-h-9 items-center justify-between gap-x2";
+  "mb-x2 flex min-h-9 items-center justify-between gap-x2 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto";
 export const ACCORDION_HEADER_TITLE =
   "min-w-0 font-sans text-t5 font-bold text-fg-neutral break-keep [overflow-wrap:break-word]";
 

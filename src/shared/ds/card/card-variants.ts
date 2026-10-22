@@ -66,9 +66,10 @@ export const CARD_PRESS_PEERS = [
 export const CARD_HERO_GLOW =
   "pointer-events-none absolute -right-[40px] -top-[80px] -z-10 size-[240px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-static-white)_22%,transparent),transparent_70%)]";
 
-// 머리 — 제목과 오른쪽 동작 한 줄. 글 카드는 카드 여백 안 · 아래 8, 목록 · 아코디언 카드는 위 24 · 좌우 24 · 아래 4
+// 머리 — 제목과 오른쪽 동작 한 줄. 글 카드는 카드 여백 안 · 아래 8, 목록 · 아코디언 카드는 위 24 · 좌우 24 · 아래 4.
+// 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다(제목 최소 50% · 줄바꿈 — 03-G 결정 4A). 평소에는 한 줄 그대로다
 export const cardHeaderVariants = cva(
-  "flex items-center justify-between gap-x2",
+  "flex items-center justify-between gap-x2 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto",
   {
     variants: {
       body: {
