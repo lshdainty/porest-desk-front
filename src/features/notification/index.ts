@@ -7,3 +7,4 @@ export {
   useDeleteNotification,
 } from "./model/useNotifications";
 export { useNotificationSSE } from "./model/useNotificationSSE";
+export { NotificationMoreMenu } from "./ui/NotificationMoreMenu";

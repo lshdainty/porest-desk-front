@@ -68,6 +68,31 @@ describe("NotificationRow", () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it("menu(⋮)를 넘기면 시각 옆 뒤 붙이개에 놓인다 — 읽음 버튼의 형제이고 버튼 안에 들어가지 않는다", () => {
+    const render2 = (n: Notification) =>
+      act(() =>
+        root.render(
+          <List aria-label="알림">
+            <NotificationRow
+              notification={n}
+              now={0}
+              onClick={vi.fn()}
+              menu={<button type="button" data-slot="notification-more" />}
+            />
+          </List>,
+        ),
+      );
+    for (const n of [base, { ...base, isRead: true }]) {
+      render2(n);
+      const more = container.querySelector("[data-slot=notification-more]")!;
+      expect(more.closest("[data-slot=list-suffix]")).not.toBeNull();
+      expect(more.closest("[data-slot=list-body]")).toBeNull();
+      expect(
+        container.querySelector("[data-slot=list-suffix]")!.textContent,
+      ).toBe("방금");
+    }
+  });
+
   it("읽은 줄은 보기만 하는 줄 — 버튼이 하나도 없다", () => {
     render({ ...base, isRead: true }, vi.fn());
     expect(container.querySelectorAll("button")).toHaveLength(0);

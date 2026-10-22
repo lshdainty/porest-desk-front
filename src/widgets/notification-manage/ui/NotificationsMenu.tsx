@@ -21,6 +21,7 @@ import {
 import { Skeleton } from "@/shared/ds/skeleton";
 import { TopNavigationIconButton } from "@/shared/ds/top-navigation";
 import {
+  NotificationMoreMenu,
   useMarkAllRead,
   useMarkRead,
   useNotifications,
@@ -34,6 +35,7 @@ import type { Notification } from "@/entities/notification";
  * 데스크톱 머리의 벨 + 알림 목록(Q-017 17-3b B · popover.md "알림 목록").
  * 1280 이상은 벨 아래 Popover(폭 380 · 600 까지), 768 ~ 1279 는 Bottom Sheet — 머리 "알림" · 설명 · 닫기, 본문 목록,
  * 바닥 "알림 설정" · "모두 읽음". 줄은 SEED List 줄이고 안 읽은 줄만 버튼이다(누르면 읽음 + 초점이 다음 안 읽은 줄로).
+ * 줄 끝 ⋮ 는 읽음 버튼의 형제이고 "삭제" 하나를 연다(알림 지우기 결정 B) — 읽음 초점 이동은 `button` 을 찾으므로 줄 본문 버튼만 겨눈다.
  */
 export function NotificationsMenu({
   onGoSettings,
@@ -64,7 +66,7 @@ export function NotificationsMenu({
     markRead.mutate(n.rowId);
     const target = nextUnread
       ? bodyRef.current?.querySelector<HTMLElement>(
-          `[data-notification-id="${nextUnread.rowId}"] button`,
+          `[data-notification-id="${nextUnread.rowId}"] [data-slot=list-body]`,
         )
       : bodyRef.current;
     target?.focus();
@@ -108,6 +110,7 @@ export function NotificationsMenu({
           now={now}
           pending={markRead.pendingIds.has(n.rowId)}
           onClick={() => readAndAdvance(n)}
+          menu={<NotificationMoreMenu notification={n} />}
         />
       ))}
     </List>

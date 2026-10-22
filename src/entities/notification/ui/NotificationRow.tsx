@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Spinner } from "@/shared/ui/spinner";
@@ -15,6 +16,7 @@ export function NotificationRow({
   now,
   onClick,
   pending,
+  menu,
 }: {
   notification: Notification;
   /**
@@ -29,6 +31,11 @@ export function NotificationRow({
   onClick?: () => void;
   /** 읽음 처리 요청 진행 중 — 점 자리에 스피너, 누르지 못한다. */
   pending?: boolean;
+  /**
+   * 줄 끝에 시각과 함께 놓는 작은 버튼(⋮ 더보기) — 호출부가 넘긴다(entities 는 features 를 모른다).
+   * 뒤 붙이개에 놓이므로 줄의 읽음 버튼과 형제다 — 줄 버튼 안에 들어가지 않고 따로 눌린다.
+   */
+  menu?: ReactNode;
 }) {
   const { t } = useTranslation("notification");
   const { Icon, bg, fg } = notificationVisual(notification.notificationType);
@@ -63,7 +70,14 @@ export function NotificationRow({
         {notification.message}
       </span>
     ),
-    suffix: (
+    suffix: menu ? (
+      <>
+        <span className="text-t3 text-fg-neutral-subtle">
+          {relativeTime(notification.createAt, now)}
+        </span>
+        {menu}
+      </>
+    ) : (
       <span className="text-t3 text-fg-neutral-subtle">
         {relativeTime(notification.createAt, now)}
       </span>
