@@ -150,6 +150,33 @@ describe("List — 좁은 줄(03-D 결정 1 B · 결정 2 B)", () => {
     );
   });
 
+  it("값 + 꺾쇠 한 덩어리는 좁은 줄에서 풀려 값만 아래로 · 꺾쇠는 줄 끝 — 글 조각은 span 으로 감싼다", () => {
+    render(
+      <List>
+        <ListButtonItem
+          title="기본 통화"
+          suffix={
+            <>
+              대한민국 원<svg data-testid="chev" />
+            </>
+          }
+        />
+      </List>,
+    );
+    const suffix = slot("list-suffix");
+    expect(suffix.children[0]!.tagName).toBe("SPAN");
+    expect(suffix.children[0]!.textContent).toBe("대한민국 원");
+    const content = classes(slot("list-content")).join(" ");
+    expect(content).toContain(
+      "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents",
+    );
+    // 본문 오른쪽 여백 — 옆에 조작 요소가 남으면 10, 남지 않으면 좁은 줄에서 0
+    expect(content).toContain(":pr-x2_5");
+    expect(content).toContain(
+      "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+    );
+  });
+
   it("글로 넘긴 금액은 쉼표 뒤에 <wbr> — 글 값(이메일)은 그대로", () => {
     render(
       <List>

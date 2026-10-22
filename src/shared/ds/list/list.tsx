@@ -61,6 +61,24 @@ type ItemBase = {
   align?: Align;
 };
 
+// 값 + 꺾쇠를 Fragment 로 넘긴 뒤 붙이개 — 글 조각을 span 으로 감싸 좁은 줄에서 값만 따로 놓을 수 있게 한다(글 조각은 격자 자리를 못 받는다).
+// 글 하나로 넘긴 값은 금액이면 쉼표 뒤 줄바꿈 자리(withCommaBreaks)만 건다
+function mixedSuffix(suffix: React.ReactNode): React.ReactNode {
+  if (React.isValidElement(suffix) && suffix.type === React.Fragment) {
+    const kids = React.Children.toArray(
+      (suffix.props as { children?: React.ReactNode }).children,
+    );
+    return kids.map((k, i) =>
+      typeof k === "string" || typeof k === "number" ? (
+        <span key={i}>{withCommaBreaks(String(k))}</span>
+      ) : (
+        k
+      ),
+    );
+  }
+  return withCommaBreaks(suffix);
+}
+
 const has = (node: React.ReactNode) => node != null && node !== false;
 const hl = (highlighted?: boolean) => (highlighted ? "highlighted" : "none");
 
@@ -205,7 +223,7 @@ function Row({
             value: suffixValue,
           })}
         >
-          {withCommaBreaks(suffix)}
+          {mixedSuffix(suffix)}
         </span>
       )}
     </>

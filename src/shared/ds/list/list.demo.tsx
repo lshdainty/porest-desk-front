@@ -1297,6 +1297,17 @@ const NarrowDemo = () => (
         <div>
           <List aria-label="좁은 줄 · 줄 끝에 남는 것">
             <ListButtonItem
+              prefix={<Globe />}
+              title="기본 통화"
+              suffix={
+                <>
+                  대한민국 원
+                  <ChevronRight />
+                </>
+              }
+              onClick={noop}
+            />
+            <ListButtonItem
               prefix={<User />}
               title="계정"
               detail="아이디 · 비밀번호 · 이메일 · 연결된 로그인"
@@ -1308,6 +1319,27 @@ const NarrowDemo = () => (
               detail="새 소식이 있으면 알려 드려요"
               defaultChecked
             />
+          </List>
+        </div>
+      </Cell>
+    </DemoRow>
+    <DemoRow label="좁은 부모 줄 280 — 꺾쇠 단추는 위 10 에 선다(보통 글자 폭이면 가운데)">
+      <Cell width={280}>
+        <div>
+          <List aria-label="좁은 부모 줄">
+            <ListParentItem
+              prefix={
+                <Tile color="orange">
+                  <Utensils />
+                </Tile>
+              }
+              title="식비 · 외식 · 배달음식"
+              detail="지출 · 하위 2개"
+              expandLabel="식비 하위 카테고리 (좁은 줄)"
+              onClick={noop}
+            >
+              <ListButtonItem title="외식" onClick={noop} />
+            </ListParentItem>
           </List>
         </div>
       </Cell>

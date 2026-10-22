@@ -86,6 +86,11 @@ export const listContentVariants = cva(
     "[&>[data-slot=list-prefix]]:col-start-2 [&>[data-slot=list-prefix]]:row-start-1 [&>[data-slot=list-prefix]]:row-span-2",
     "[&>[data-slot=list-body]]:col-start-3 [&>[data-slot=list-body]]:row-start-1",
     "[&>[data-slot=list-suffix]]:col-start-4 [&>[data-slot=list-suffix]]:row-start-1",
+    // 값 + 꺾쇠 한 덩어리(Fragment)면 좁은 줄에서 suffix 상자를 풀어(contents) 꺾쇠는 줄 끝(col 4), 값은 본문 아래(col 3 · row 2)로 가른다
+    "[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:is(svg,button,a,input,[data-slot=list-mark])]:col-start-4 [&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:is(svg,button,a,input,[data-slot=list-mark])]:row-start-1",
+    "[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:col-start-3 [&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:row-start-2",
+    // 본문 오른쪽 여백 — 옆에 조작 요소(꺾쇠 · 버튼 · 링크 · 입력 · 표식)가 남으면 10, 남지 않으면 좁은 줄에서 0
+    "[&:has(>[data-slot=list-suffix]_svg,>[data-slot=list-suffix]_button,>[data-slot=list-suffix]_a,>[data-slot=list-suffix]_input,>[data-slot=list-suffix]_[data-slot=list-mark])>[data-slot=list-body]]:pr-x2_5",
     // 값(글 값 · 금액)은 본문 아래 — 설명 ↔ 값 4 = 값 위 바깥 여백 2(스펙 suffix.marginTop) + 안쪽 여백 2(본문 안 제목 ↔ 설명 사이 2 와 같은 틈 —
     // 값은 본문 밖의 형제라 그 틈이 저절로 생기지 않는다). `:has()` 안에 `:has()` 를 둘 수 없어 본문 쪽 여백으로는 못 준다. 화살표 · 컨트롤(스위치 · 체크 · 라디오) · 작은 버튼이 든 뒤 붙이개는 줄 끝 그대로
     "[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:col-start-3 [&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:row-start-2",
@@ -102,18 +107,21 @@ export const listContentVariants = cva(
           "px-global-gutter",
           "@max-[calc(16rem+48px)]/list-item:grid @max-[calc(16rem+48px)]/list-item:grid-cols-[auto_auto_minmax(0,1fr)_auto] @max-[calc(16rem+48px)]/list-item:items-start",
           "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+          "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:mt-x0_5 @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:pt-x0_5",
           "@max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5 @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5 @max-[calc(16rem+48px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:text-start",
         ].join(" "),
         parent: [
           "pl-x1 pr-global-gutter",
           "@max-[calc(16rem+28px)]/list-item:grid @max-[calc(16rem+28px)]/list-item:grid-cols-[auto_auto_minmax(0,1fr)_auto] @max-[calc(16rem+28px)]/list-item:items-start",
           "@max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+          "@max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:mt-x0_5 @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:pt-x0_5",
           "@max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5 @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5 @max-[calc(16rem+28px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:text-start",
         ].join(" "),
         child: [
           "pl-[104px] pr-global-gutter",
           "@max-[calc(16rem+128px)]/list-item:grid @max-[calc(16rem+128px)]/list-item:grid-cols-[auto_auto_minmax(0,1fr)_auto] @max-[calc(16rem+128px)]/list-item:items-start",
           "@max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-body]]:pr-0",
+          "@max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))]:contents @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:mt-x0_5 @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:has(>:is(svg,button,a,input,[data-slot=list-mark])):has(>:not(svg,button,a,input,[data-slot=list-mark]))>:not(svg,button,a,input,[data-slot=list-mark])]:pt-x0_5",
           "@max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:mt-x0_5 @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:pt-x0_5 @max-[calc(16rem+128px)]/list-item:[&>[data-slot=list-suffix]:not(:has(svg,button,a,input,[data-slot=list-mark]))]:text-start",
         ].join(" "),
       },
