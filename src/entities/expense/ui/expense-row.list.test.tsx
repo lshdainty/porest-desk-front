@@ -9,7 +9,10 @@ declare global {
 }
 
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
+  useTranslation: () => ({
+    t: (k: string, o?: { ns?: string }) => (o?.ns ? `${o.ns}:${k}` : k),
+    i18n: { language: "ko" },
+  }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
@@ -100,6 +103,14 @@ describe("거래 줄 — ds List", () => {
       "text-fg-neutral-subtle",
     );
     expect(container.querySelector(".line-through")).not.toBeNull();
+  });
+});
+
+describe("고정 배지 — 번역 키는 expense 네임스페이스에 있다(7a026206 를 잠근다)", () => {
+  it("고정 거래는 expense:fixed.badge 로 찾는다(common 에서 찾으면 키 이름이 그대로 보인다)", () => {
+    render({ ...base, isFixed: true });
+    expect(container.textContent).toContain("expense:fixed.badge");
+    expect(container.textContent).not.toMatch(/(^|[^:])fixed\.badge/);
   });
 });
 

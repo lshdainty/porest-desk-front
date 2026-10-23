@@ -44,8 +44,10 @@ export function ExpenseRow({
   /** 금액을 가리는 카드 — 기본 가계부 거래 목록, 홈은 `home.todaySpend`(I-06 29) */
   maskCard?: HideCardKey;
   /**
-   * 줄이 제 좌우 24 를 갖는가(ds List 기본). 기본 false — 날짜 머리 · 이체 줄 · 다이얼로그가 좌우 24 를 쥔 목록에서
-   * 글자 자리가 어긋나지 않게 한다(이체 줄 · 날짜 머리가 ds 로 옮겨지면 true 로 바꾼다). 띠 · 카드 안 목록(홈)은 true.
+   * **임시 인자 — 호스트가 옛 부품을 걷을 때까지만 둔다.** 줄이 제 좌우 24 를 갖는가(ds List 기본). 기본 false 는 날짜 머리 ·
+   * 이체 줄 · 다이얼로그가 아직 옛 부품이라 바깥 24 를 쥐고 있어서다(줄만 24 로 옮기면 한 목록 안에서 글자 자리가 갈린다).
+   * 걷는 몫: 가계부 = I-07 4 · 검색 = I-08 08-3 · 자산 상세 · 거래 상세 = 아직 지시서 없음. 다 옮겨지면 기본 true 로 바꾸고
+   * 이 인자를 지운다. 띠 · 카드 안 목록(홈)은 true.
    */
   gutter?: boolean;
 }) {
@@ -88,7 +90,7 @@ export function ExpenseRow({
       )}
       {splitCount > 0 && (
         <span className="ml-x1_5 inline-flex items-center gap-x0_5 align-middle text-t3 font-bold text-fg-brand">
-          <Split aria-hidden size={14} />
+          <Split aria-hidden size={16} />
           {splitCount}
         </span>
       )}
@@ -137,17 +139,15 @@ export function ExpenseRow({
       style={{ background: palette.bg, color: palette.color }}
       aria-hidden
     >
-      <Icon name={expense.categoryIcon || "tag"} size={20} strokeWidth={1.9} />
+      <Icon name={expense.categoryIcon || "tag"} size={20} />
     </ListTile>
   );
 
   return (
     <List
       className={cn(
-        // 한 줄만 든 목록 — 줄의 좌우 24 는 쓰는 자리가 정한다(gutter)
+        // 임시 — 호스트가 바깥 24 를 쥔 동안 줄의 좌우 24 를 걷는다(gutter 인자 주석)
         !gutter && "[&_[data-slot=list-content]]:px-0",
-        // 설명(Tag Group 한 줄 말줄임)이 본문 폭을 밀지 않게 — 줄 폭에 min-width 만 걸고 내용 폭은 0 으로 센다
-        "[&_[data-slot=list-detail]]:w-0 [&_[data-slot=list-detail]]:min-w-full",
       )}
     >
       {onClick ? (
