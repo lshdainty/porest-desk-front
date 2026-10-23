@@ -119,3 +119,42 @@ export function computeBudgetItems({
     };
   });
 }
+
+/**
+ * 고른 달까지 6개월 — 막대 · 전월 대비가 함께 쓴다. 범위 합계(`monthlyBuckets`)에서 달마다 꺼내고 없는 달은 0 으로 채운다.
+ * 반환 마지막이 고른 달이고, `prevExpense` 는 **고른 달의 전월** 지출이다(최근 6개월 밖의 달을 골라도 그 전월과 비교).
+ */
+export function sixMonths(
+  buckets:
+    | {
+        year: number;
+        month: number;
+        totalIncome: number;
+        totalExpense: number;
+      }[]
+    | undefined,
+  year: number,
+  month: number,
+) {
+  const key = (y: number, m: number) => `${y}-${m}`;
+  const byKey = new Map((buckets ?? []).map((b) => [key(b.year, b.month), b]));
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(year, month - 1 - (5 - i), 1);
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    const b = byKey.get(key(y, m));
+    return {
+      year: y,
+      month: m,
+      totalIncome: b?.totalIncome ?? 0,
+      totalExpense: b?.totalExpense ?? 0,
+    };
+  });
+  return { months, prevExpense: months[4]?.totalExpense ?? 0 };
+}
+
+/** 고른 달 직전 5개월의 첫날 — 6개월 범위 시작 */
+export function sixMonthsStart(year: number, month: number) {
+  const d = new Date(year, month - 6, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}

@@ -1,7 +1,13 @@
 // 홈 공용 계산 — 도넛 조각(I-06 18)과 예산 줄(22 · 23)
 import { describe, expect, it } from "vitest";
 import { chartColorOf } from "@/shared/lib/groo/chart-palette";
-import { categorySlices, colorSlices, computeBudgetItems } from "./home-shared";
+import {
+  categorySlices,
+  colorSlices,
+  computeBudgetItems,
+  sixMonths,
+  sixMonthsStart,
+} from "./home-shared";
 
 const cat = (rowId: number, color: string | null) => ({
   rowId,
@@ -76,5 +82,39 @@ describe("예산 줄", () => {
     expect(items[0]).toMatchObject({ isAll: true, spent: 3_912_345_678 });
     expect(items[1]).toMatchObject({ isAll: false, spent: 1_234_567_890 });
     expect(Object.keys(items[0] ?? {})).not.toContain("state");
+  });
+});
+
+describe("고른 달까지 6개월(전월 대비)", () => {
+  const b = (y: number, m: number, e: number) => ({
+    year: y,
+    month: m,
+    totalIncome: 0,
+    totalExpense: e,
+  });
+  it("마지막이 고른 달이고 전월은 고른 달의 전월이다 — 최근 6개월 밖의 달도", () => {
+    const buckets = [
+      b(2025, 8, 80),
+      b(2025, 9, 90),
+      b(2025, 12, 120),
+      b(2026, 1, 10),
+    ];
+    const { months, prevExpense } = sixMonths(buckets, 2026, 1);
+    expect(months.map((m) => `${m.year}-${m.month}`)).toEqual([
+      "2025-8",
+      "2025-9",
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-1",
+    ]);
+    expect(months[5]?.totalExpense).toBe(10);
+    // 없는 달은 0, 전월(2025-12)은 120
+    expect(months[2]?.totalExpense).toBe(0);
+    expect(prevExpense).toBe(120);
+  });
+  it("범위 시작은 고른 달 직전 5개월의 첫날", () => {
+    expect(sixMonthsStart(2026, 1)).toBe("2025-08-01");
+    expect(sixMonthsStart(2026, 10)).toBe("2026-05-01");
   });
 });

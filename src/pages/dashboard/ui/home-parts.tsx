@@ -419,9 +419,12 @@ export function CategoryBody({
   size,
   center,
   month,
+  totalLabel,
 }: {
   slices: ColoredSlice[];
   size: number;
+  /** 합계 라벨 — 이번 달이면 "이번 달 지출", 아니면 "{n}월 지출" */
+  totalLabel?: string;
   /** 데스크톱 — 가운데 합계를 시도한다 */
   center: boolean;
   month: number;
@@ -469,7 +472,7 @@ export function CategoryBody({
         </PieChart>
         {showCenter && (
           <ChartDonutCenter
-            label={t("summary.monthlyExpense")}
+            label={totalLabel ?? t("summary.monthlyExpense")}
             amount={totalText}
             onFitChange={setDsFits}
           />
@@ -481,7 +484,7 @@ export function CategoryBody({
           className="mt-x4 flex items-baseline justify-between gap-x3"
         >
           <span className="text-t3 text-fg-neutral-subtle">
-            {t("summary.monthlyExpense")}
+            {totalLabel ?? t("summary.monthlyExpense")}
           </span>
           <span className="min-w-0 text-end text-t5 font-bold tabular-nums text-fg-neutral">
             {withCommaBreaks(totalText)}

@@ -17,7 +17,9 @@ vi.mock("react-i18next", () => ({
 }));
 vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
 vi.mock("@/shared/ui/groo/primitives", () => ({
-  MonthPicker: () => <span data-testid="month-picker" />,
+  MonthPicker: ({ onChange }: { onChange: (v: string) => void }) => (
+    <button data-testid="month-picker" onClick={() => onChange("2026-01")} />
+  ),
 }));
 
 const q = (data: unknown, extra: object = {}) => ({
@@ -30,7 +32,6 @@ const state = {
   summary: q(undefined) as ReturnType<typeof q>,
   asset: q(undefined) as ReturnType<typeof q>,
   monthly: q(undefined) as ReturnType<typeof q>,
-  trend: q(undefined) as ReturnType<typeof q>,
   recent: q(undefined) as ReturnType<typeof q>,
   budgets: q(undefined) as ReturnType<typeof q>,
   cats: q(undefined) as ReturnType<typeof q>,
@@ -43,10 +44,19 @@ vi.mock("@/features/asset", () => ({ useAssetSummary: () => state.asset }));
 vi.mock("@/features/recurring-transaction", () => ({
   useRecurringTransactions: () => state.recurring,
 }));
+const calls = {
+  range: [] as [string, string][],
+  expenses: [] as { startDate?: string; endDate?: string }[],
+};
 vi.mock("@/features/expense", () => ({
-  useRangeSummary: () => state.monthly,
-  useMonthlyTrend: () => state.trend,
-  useExpenses: () => state.recent,
+  useRangeSummary: (a: string, b: string) => {
+    calls.range.push([a, b]);
+    return state.monthly;
+  },
+  useExpenses: (params: { startDate?: string; endDate?: string }) => {
+    calls.expenses.push(params);
+    return state.recent;
+  },
   useExpenseBudgets: () => state.budgets,
   useExpenseCategories: () => state.cats,
 }));
@@ -77,11 +87,14 @@ beforeEach(() => {
     totalDebt: 0,
     lastMonthNetWorth: 0,
   });
-  state.monthly = q({ totalIncome: 1, totalExpense: 1, categoryBreakdown: [] });
-  state.trend = q([
-    { year: 2026, month: 9, totalIncome: 10, totalExpense: 5 },
-    { year: 2026, month: 10, totalIncome: 10, totalExpense: 5 },
-  ]);
+  state.monthly = q({
+    totalIncome: 1,
+    totalExpense: 1,
+    categoryBreakdown: [],
+    monthlyBuckets: [],
+  });
+  calls.range.length = 0;
+  calls.expenses.length = 0;
   state.recent = q([]);
   state.budgets = q([]);
   state.cats = q([]);
@@ -166,6 +179,89 @@ describe("데스크톱 홈", () => {
     expect(
       Array.from(content.children).some((c) => c.className.includes("mt-x4")),
     ).toBe(true);
+  });
+
+  it("달을 골라도 '오늘 쓴 돈'은 늘 오늘 — 거래 질의가 오늘 하루이고 고른 달에 따라 바뀌지 않는다", () => {
+    render();
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    expect(calls.expenses[calls.expenses.length - 1]).toEqual({
+      startDate: today,
+      endDate: today,
+    });
+    act(() =>
+      (
+        container.querySelector("[data-testid=month-picker]") as HTMLElement
+      ).click(),
+    );
+    expect(calls.expenses[calls.expenses.length - 1]).toEqual({
+      startDate: today,
+      endDate: today,
+    });
+  });
+
+  it("6개월 막대 · 전월 대비는 고른 달까지 — 범위가 고른 달 직전 5개월 첫날 ~ 고른 달 말일", () => {
+    render();
+    act(() =>
+      (
+        container.querySelector("[data-testid=month-picker]") as HTMLElement
+      ).click(),
+    );
+    // 2026-01 을 골랐다 → 2025-08-01 ~ 2026-01-31
+    expect(calls.range).toContainEqual(["2025-08-01", "2026-01-31"]);
+  });
+
+  it("도넛 합계 라벨 — 이번 달이 아니면 '{n}월 지출'", () => {
+    state.monthly = q({
+      totalIncome: 0,
+      totalExpense: 100,
+      monthlyBuckets: [],
+      categoryBreakdown: [
+        {
+          categoryRowId: 1,
+          categoryName: "식비",
+          totalAmount: 100,
+          parentCategoryRowId: null,
+          expenseType: "EXPENSE",
+        },
+      ],
+    });
+    render();
+    const total = () =>
+      container.querySelector("[data-slot=home-donut-total]")?.textContent ??
+      container.querySelector("[data-slot=chart-donut-center]")?.textContent ??
+      "";
+    expect(total()).toContain("summary.monthlyExpense");
+    act(() =>
+      (
+        container.querySelector("[data-testid=month-picker]") as HTMLElement
+      ).click(),
+    );
+    expect(total()).toContain("summary.monthExpenseN");
+  });
+
+  it("달 고르기는 화면 제목 줄 오른쪽 — 이전 · 달 고르기 · 다음, 카드 머리에는 없다(Q2-B)", () => {
+    render();
+    const right = container.querySelector(".page__head .right") as HTMLElement;
+    expect(right.querySelector("[data-testid=month-picker]")).not.toBeNull();
+    expect(right.querySelector("[aria-label='prevMonth']")).not.toBeNull();
+    // 다음 달은 이번 달까지만 — 이번 달에서는 막힌다
+    expect(
+      (right.querySelector("[aria-label='nextMonth']") as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      container.querySelector(
+        "[data-slot=card-header] [data-testid=month-picker]",
+      ),
+    ).toBeNull();
+    // 이전 달 단추가 같은 달 상태를 바꾼다 — 6개월 범위가 한 달 앞으로 간다
+    const before = calls.range.length;
+    act(() =>
+      (right.querySelector("[aria-label='prevMonth']") as HTMLElement).click(),
+    );
+    expect(calls.range.length).toBeGreaterThan(before);
   });
 
   it("한 질의가 실패하면 그 카드만 실패 — 0원 없음 · 다시 시도는 그 질의 하나만", () => {

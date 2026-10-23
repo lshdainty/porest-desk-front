@@ -174,7 +174,7 @@ describe("폰 홈 띠 — 구역마다 따로(사용자 10-23)", () => {
     expect(state.monthly.refetch).not.toHaveBeenCalled();
   });
 
-  it("눈 단추 — 이름 고정 · aria-pressed 없음(toggle.md:102) · ds Toggle 클래스(40 상자)", () => {
+  it("눈 단추 — 이름 고정 · aria-pressed 없음(toggle.md:102) · ds Toggle 클래스(px 40 / 44 / 20)", () => {
     state.summary = q(summary(0, 0));
     render();
     const eye = container.querySelector(
@@ -182,7 +182,11 @@ describe("폰 홈 띠 — 구역마다 따로(사용자 10-23)", () => {
     ) as HTMLElement;
     expect(eye).not.toBeNull();
     expect(eye.hasAttribute("aria-pressed")).toBe(false);
-    expect(eye.className).toContain("size-10");
+    // 상자 · 누르는 영역 · 아이콘은 px(글자 200% 에서 커지지 않는다 — Q1-A)
+    expect(eye.className).toContain("size-[40px]");
+    expect(eye.className).toContain("before:size-[44px]");
+    expect(eye.className).toContain("[&_svg]:size-[20px]");
+    expect(eye.className).not.toMatch(/(^| )size-(10|11|5)( |$)/);
     expect(eye.className).toContain("text-static-white");
     expect(eye.className).not.toMatch(/rounded-full|bg-white/);
   });

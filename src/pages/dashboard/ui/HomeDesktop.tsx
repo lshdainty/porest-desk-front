@@ -24,6 +24,8 @@ import {
 import { MINUS, toLocalIso } from "@/shared/lib/groo/format";
 import { useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/shared/ui/button";
 import { MonthPicker } from "@/shared/ui/groo/primitives";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { dsMoney } from "@/shared/ds/i18n";
@@ -33,7 +35,6 @@ import {
   useExpenses,
   useExpenseCategories,
   useRangeSummary,
-  useMonthlyTrend,
   useExpenseBudgets,
 } from "@/features/expense";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
@@ -60,6 +61,8 @@ import {
   categorySlices,
   colorSlices,
   computeBudgetItems,
+  sixMonths,
+  sixMonthsStart,
   useCurrentMonthKey,
 } from "./home-shared";
 import { MASK, useMasked, won, wonIn, wonOut } from "./home-money";
@@ -70,10 +73,18 @@ import { MASK, useMasked, won, wonIn, wonOut } from "./home-money";
  * 768 ~ 1279 는 한 칸 최대 720 가운데, 1440 이상 본문 최대 1040 가운데(I-06 30 ~ 32).
  * 여백 — 위 20(spacing-nav-to-title) · 좌우 32(layout-margin) · 아래 56(spacing-screen-bottom).
  */
+/** "2026-10" 에서 delta 달 옮긴 키 */
+function shiftMonth(key: string, delta: number) {
+  const [y, m] = key.split("-").map(Number) as [number, number];
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export function HomeDesktop() {
   const { t } = useTranslation("dashboard");
   const { t: tLayout } = useTranslation("layout");
   const { t: tc } = useTranslation("common");
+  const { t: tb } = useTranslation("budget");
   const navigate = useNavigate();
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
   const handleHideToggle = useOpenHideAmountsSettings("home");
@@ -88,8 +99,11 @@ export function HomeDesktop() {
   const dashboardQ = useDashboardSummary();
   const assetSummaryQ = useAssetSummary(periodY, periodM);
   const monthlyQ = useRangeSummary(periodStart, periodEnd);
-  const trendQ = useMonthlyTrend(6);
-  const recentQ = useExpenses({ startDate: periodStart, endDate: periodEnd });
+  // 고른 달까지 6개월 — 막대 · 전월 대비(고른 달이 최근 6개월 밖이어도 그 달의 전월과 비교)
+  const trendQ = useRangeSummary(sixMonthsStart(periodY, periodM), periodEnd);
+  // 오늘 쓴 돈은 달 고르기와 상관없이 늘 오늘이다
+  const todayDStr = toLocalIso(new Date()).slice(0, 10);
+  const recentQ = useExpenses({ startDate: todayDStr, endDate: todayDStr });
   const budgetsQ = useExpenseBudgets({ year: periodY, month: periodM });
   const categoriesQ = useExpenseCategories();
   const recurringQ = useRecurringTransactions();
@@ -103,7 +117,6 @@ export function HomeDesktop() {
     monthly?.totalExpense ?? summary?.expenseSummary.monthlyExpense ?? 0;
   const balance = income - expense;
 
-  const todayDStr = toLocalIso(new Date()).slice(0, 10);
   // 오늘 쓴 거래만
   const todayTx: Expense[] = (recentQ.data ?? [])
     .filter((e) => e.expenseDate?.slice(0, 10) === todayDStr)
@@ -118,15 +131,11 @@ export function HomeDesktop() {
   const _daysInMonth = new Date(periodY, periodM, 0).getDate();
   const _dayOfMonth = _isCurMonth ? _today.getDate() : _daysInMonth;
   const dailyAvg = Math.round(expense / Math.max(1, _dayOfMonth));
-  const trendArr = trendQ.data ?? [];
-  const prevExpense = (() => {
-    if (trendArr.length < 2) return 0;
-    const idx = trendArr.findIndex(
-      (x) => x.year === periodY && x.month === periodM,
-    );
-    if (idx > 0) return trendArr[idx - 1]?.totalExpense ?? 0;
-    return trendArr[trendArr.length - 2]?.totalExpense ?? 0;
-  })();
+  const { months: trendArr, prevExpense } = sixMonths(
+    trendQ.data?.monthlyBuckets,
+    periodY,
+    periodM,
+  );
   const savingsPct =
     prevExpense > 0 ? ((prevExpense - expense) / prevExpense) * 100 : 0;
 
@@ -196,7 +205,39 @@ export function HomeDesktop() {
       className="px-[var(--layout-margin)] pb-screen-bottom pt-nav-to-title"
     >
       <div className="mx-auto w-full max-w-[var(--layout-max-low)] lg:max-w-[var(--layout-max-medium)]">
-        <PageHead title={tLayout("home")} />
+        <PageHead
+          title={tLayout("home")}
+          // 달 고르기 = 화면 제목 줄 오른쪽(사용자 10-23 Q2-B) — 순자산 · 수입 · 지출 · 카테고리 · 예산 · 오늘 쓴 돈(고른 달 · 늘 오늘)을
+          // 바꾸는 페이지 조절 줄. 데스크톱 예산 화면 PageControls 와 같은 자리 · 같은 부품(이전 · 다음 · 달 고르기 borderless)
+          actions={
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                aria-label={tb("prevMonth")}
+                onClick={() => setPeriod(shiftMonth(period, -1))}
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              <MonthPicker
+                value={period}
+                onChange={setPeriod}
+                variant="borderless"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                aria-label={tb("nextMonth")}
+                disabled={period >= initialKey}
+                onClick={() => setPeriod(shiftMonth(period, 1))}
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </>
+          }
+        />
         <div className="grid grid-cols-1 gap-x2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-[var(--layout-gutter)]">
           <div className="flex min-w-0 flex-col gap-x2">
             {assetSummaryQ.isError && assetSummaryQ.data === undefined ? (
@@ -231,7 +272,6 @@ export function HomeDesktop() {
                 <CardTitle>
                   {t("summary.monthIncomeExpense", { month: periodM })}
                 </CardTitle>
-                <MonthPicker value={period} onChange={setPeriod} />
               </CardHeader>
               <CardContent className="gap-0">
                 {monthFailed ? (
@@ -312,6 +352,12 @@ export function HomeDesktop() {
                     size={160}
                     center
                     month={periodM}
+                    totalLabel={
+                      periodY === _today.getFullYear() &&
+                      periodM === _today.getMonth() + 1
+                        ? t("summary.monthlyExpense")
+                        : t("summary.monthExpenseN", { month: periodM })
+                    }
                   />
                 )}
               </CardContent>

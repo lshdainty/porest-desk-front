@@ -2224,6 +2224,7 @@ dashboard,todo.recent,최근 할 일,Recent Todos
 dashboard,calendar.scheduled,예정된 일정,Upcoming Events
 dashboard,calendar.empty,예정 일정이 없어요,No upcoming events
 dashboard,summary.monthExpenseBook,{{month}}월 가계부,Monthly Expenses
+dashboard,summary.monthExpenseN,{{month}}월 지출,Month {{month}} expense
 dashboard,summary.monthIncomeExpense,{{month}}월 수입·지출,Monthly Income & Expense
 dashboard,avg.dailyAverage,하루 평균,Daily avg.
 dashboard,avg.spent,썼어요.,spent.
