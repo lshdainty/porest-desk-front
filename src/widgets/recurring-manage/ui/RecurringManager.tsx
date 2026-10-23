@@ -78,7 +78,14 @@ function FlatShell({
   );
 }
 
-export function RecurringManager({ mobile }: { mobile: boolean }) {
+export function RecurringManager({
+  mobile,
+  addRequest = 0,
+}: {
+  mobile: boolean;
+  /** 바깥(설정 폰 머리 "추가")이 올리면 추가 폼을 연다 */
+  addRequest?: number;
+}) {
   const { t } = useTranslation("recurring");
   const { t: tExpense } = useTranslation("expense");
   const { t: tCommon } = useTranslation("common");
@@ -95,6 +102,11 @@ export function RecurringManager({ mobile }: { mobile: boolean }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [editing, setEditing] = useState<RecurringTransaction | null>(null);
   const [adding, setAdding] = useState(false);
+  const [seenAddRequest, setSeenAddRequest] = useState(addRequest);
+  if (seenAddRequest !== addRequest) {
+    setSeenAddRequest(addRequest);
+    setAdding(true);
+  }
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   // 행 탭 → 상세. `⋮` 메뉴를 대신하는 비제스처 경로다 — 스와이프만 남기면
   // 제스처 없이는 아무것도 못 한다(WCAG 2.1.1).

@@ -94,7 +94,9 @@ export const SettingsPage = () => {
   const { t } = useTranslation("settings");
   const { mobile } = useOutletContext<OutletCtx>();
   // 폰 머리 오른쪽 "추가" 를 누른 횟수 — 카테고리 본문이 이 값이 바뀔 때 추가 폼을 연다.
-  const [categoryAddRequest, setCategoryAddRequest] = useState(0);
+  const [addRequests, setAddRequests] = useState<
+    Partial<Record<SectionId, number>>
+  >({});
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -179,7 +181,9 @@ export const SettingsPage = () => {
     if (!activeSection) return null;
     switch (activeSection.id) {
       case "categories":
-        return <CategoryManager mobile={m} addRequest={categoryAddRequest} />;
+        return (
+          <CategoryManager mobile={m} addRequest={addRequests.categories} />
+        );
       case "accounts":
         return <AccountManager mobile={m} />;
       case "budget":
@@ -187,9 +191,11 @@ export const SettingsPage = () => {
       case "goals":
         return <SavingGoalManager mobile={m} />;
       case "recurring":
-        return <RecurringManager mobile={m} />;
+        return (
+          <RecurringManager mobile={m} addRequest={addRequests.recurring} />
+        );
       case "presets":
-        return <PresetManager mobile={m} />;
+        return <PresetManager mobile={m} addRequest={addRequests.presets} />;
       case "calendar-share":
         return <CalendarShareSection mobile={m} />;
       case "calendar-labels":
@@ -246,9 +252,9 @@ export const SettingsPage = () => {
       <SettingsSubpageMobile
         activeSection={activeSection}
         goBack={goBack}
-        onHeadAction={(id) => {
-          if (id === "categories") setCategoryAddRequest((n) => n + 1);
-        }}
+        onHeadAction={(id) =>
+          setAddRequests((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 }))
+        }
         body={
           activeSection && TEMP_BODY_PADDING.includes(activeSection.id) ? (
             <div className="p-x6">{renderBody(true)}</div>

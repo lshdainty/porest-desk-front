@@ -6,24 +6,38 @@ import {
   TopNavigationTextButton,
   TopNavigationTitle,
 } from "@/shared/ds/top-navigation";
+import { useExpenseTemplates } from "@/features/expense";
+import { useRecurringTransactions } from "@/features/recurring-transaction";
 import type { SectionDef, SectionId } from "../model/sections";
 
 interface Props {
   activeSection: SectionDef | null;
   /** ← — 들어온 화면으로(History), 앞 화면이 없으면 상위로 고쳐 쓴다 */
   goBack: () => void;
-  /** 머리 오른쪽 글 버튼(섹션마다 하나 — HEAD_ACTION) 을 눌렀다 */
+  /** 머리 오른쪽 글 버튼 "추가" 를 눌렀다 */
   onHeadAction: (id: SectionId) => void;
   body: React.ReactNode;
 }
 
 /**
- * 머리 오른쪽 글 버튼을 두는 섹션 — 한 표. 글은 common 의 키.
- * 계좌 · 프리셋 · 반복 "추가" 는 각 본문 지시서(I-17 26 · I-20 C 13 · D 21)가 이 표에 한 줄씩 더한다.
+ * 머리 오른쪽 글 버튼 "추가" 를 두는 섹션(I-16 11) — 카테고리는 늘, 반복 · 프리셋은 비어 있으면 두지 않는다
+ * (I-20 C 13 · D 21 — 앱 `presetsNonEmpty` 와 같은 조건). 계좌 "추가" 는 I-17 26 이 한 줄 더한다.
  */
-const HEAD_ACTION: Partial<Record<SectionId, { key: string }>> = {
-  categories: { key: "add" },
-};
+const HEAD_ACTION_SECTIONS: SectionId[] = [
+  "categories",
+  "recurring",
+  "presets",
+];
+
+/** 반복 · 프리셋은 본문이 쓰는 것과 같은 조회(캐시 공유)로 "비어 있지 않은가" 를 본다 — 해당 섹션일 때만 마운트 */
+function RecurringGate({ children }: { children: React.ReactNode }) {
+  const q = useRecurringTransactions();
+  return (q.data?.length ?? 0) > 0 ? <>{children}</> : null;
+}
+function PresetGate({ children }: { children: React.ReactNode }) {
+  const q = useExpenseTemplates();
+  return (q.data?.length ?? 0) > 0 ? <>{children}</> : null;
+}
 
 /**
  * 폰 하위 화면 껍데기(I-16 10 ~ 13) — 흐름 안 흰 면. 머리는 ds Top Navigation standard,
@@ -37,7 +51,15 @@ export const SettingsSubpageMobile = ({
 }: Props) => {
   const { t } = useTranslation("settings");
   const { t: tCommon } = useTranslation("common");
-  const action = activeSection ? HEAD_ACTION[activeSection.id] : undefined;
+  const id = activeSection?.id;
+  const button =
+    id && HEAD_ACTION_SECTIONS.includes(id) ? (
+      <TopNavigationActions>
+        <TopNavigationTextButton onClick={() => onHeadAction(id)}>
+          {tCommon("add")}
+        </TopNavigationTextButton>
+      </TopNavigationActions>
+    ) : null;
   return (
     <>
       <TopNavigation type="standard">
@@ -48,14 +70,12 @@ export const SettingsSubpageMobile = ({
         <TopNavigationTitle>
           {activeSection ? t(activeSection.labelKey) : ""}
         </TopNavigationTitle>
-        {activeSection && action && (
-          <TopNavigationActions>
-            <TopNavigationTextButton
-              onClick={() => onHeadAction(activeSection.id)}
-            >
-              {tCommon(action.key)}
-            </TopNavigationTextButton>
-          </TopNavigationActions>
+        {id === "recurring" ? (
+          <RecurringGate>{button}</RecurringGate>
+        ) : id === "presets" ? (
+          <PresetGate>{button}</PresetGate>
+        ) : (
+          button
         )}
       </TopNavigation>
       <div className="min-h-0 flex-1 bg-bg-layer-default">{body}</div>

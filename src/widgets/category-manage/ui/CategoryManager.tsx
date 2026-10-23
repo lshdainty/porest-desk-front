@@ -64,7 +64,7 @@ type EditingState =
 /** reorderMode — 모바일 순서 편집(디자인 editMode): 켜야만 grip 노출·드래그 가능, 하위 강제 표시. */
 export function CategoryManager({
   mobile,
-  reorderMode = false,
+  reorderMode: reorderProp = false,
   addRequest = 0,
 }: {
   mobile: boolean;
@@ -80,6 +80,10 @@ export function CategoryManager({
   const updateMut = useUpdateExpenseCategory();
   const deleteMut = useDeleteExpenseCategory();
   const reorderMut = useReorderExpenseCategories();
+
+  // 폰 목록 제목의 "순서 바꾸기" ↔ "완료"(I-16 · I-20 B 5) — 켜면 순서 모드.
+  const [reorderOn, setReorderOn] = useState(false);
+  const reorderMode = reorderProp || (mobile && reorderOn);
 
   const [tab, setTab] = useState<ExpenseType>("EXPENSE");
   const [query, setQuery] = useState("");
@@ -377,6 +381,27 @@ export function CategoryManager({
                 gap: mobile ? 0 : 12,
               }}
             >
+              <div
+                className="flex items-center justify-between"
+                style={{ marginBottom: 8 }}
+              >
+                <h2 className="text-t4 font-medium text-fg-neutral-subtle">
+                  {t("listTitle", {
+                    kind:
+                      tab === "EXPENSE"
+                        ? t("expenseCategory")
+                        : t("incomeCategory"),
+                    count: tab === "EXPENSE" ? counts.expense : counts.income,
+                  })}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReorderOn((v) => !v)}
+                >
+                  {reorderMode ? t("reorderDone") : t("reorderEdit")}
+                </Button>
+              </div>
               {reorderMode ? (
                 // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
                 <div

@@ -1451,6 +1451,7 @@ category,editTitle,카테고리 수정,Edit category
 category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category
 category,incomeCategory,수입 카테고리,Income category
+category,listTitle,{{kind}} {{count}}개,{{kind}} · {{count}}
 category,preview,미리보기,Preview
 category,type,구분,Type
 category,parentCategory,상위 카테고리,Parent category
@@ -2532,7 +2533,7 @@ calendar,detail.durationH,{{h}}시간,{{h}}h
 calendar,detail.durationHM,{{h}}시간 {{m}}분,{{h}}h {{m}}m
 calendar,detail.durationM,{{m}}분,{{m}}m
 calendar,detail.memo,메모,Memo
-category,reorderEdit,편집,Edit
+category,reorderEdit,순서 바꾸기,Reorder
 category,reorderDone,완료,Done
 category,reorderHint,핸들을 잡고 위·아래로 끌어 순서를 바꿔요. 상위 카테고리끼리·하위 카테고리끼리 이동돼요.,Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
 expense,txm.spendSummary,소비 요약,Spending summary

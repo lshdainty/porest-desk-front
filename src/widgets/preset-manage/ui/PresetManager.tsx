@@ -38,7 +38,14 @@ function ListShell({
   );
 }
 
-export function PresetManager({ mobile }: { mobile: boolean }) {
+export function PresetManager({
+  mobile,
+  addRequest = 0,
+}: {
+  mobile: boolean;
+  /** 바깥(설정 폰 머리 "추가")이 올리면 추가 폼을 연다 */
+  addRequest?: number;
+}) {
   const { t } = useTranslation("expense");
   const { t: tCommon } = useTranslation("common");
   const templatesQ = useExpenseTemplates();
@@ -57,6 +64,11 @@ export function PresetManager({ mobile }: { mobile: boolean }) {
 
   const [sortBy, setSortBy] = useState<SortKey>("used");
   const [editing, setEditing] = useState<ExpenseTemplate | "new" | null>(null);
+  const [seenAddRequest, setSeenAddRequest] = useState(addRequest);
+  if (seenAddRequest !== addRequest) {
+    setSeenAddRequest(addRequest);
+    setEditing("new");
+  }
   const [confirmDelete, setConfirmDelete] = useState<ExpenseTemplate | null>(
     null,
   );
