@@ -136,6 +136,8 @@ export function TransferRow({
       className={cn(
         // 임시 — 호스트가 바깥 24 를 쥔 동안 줄의 좌우 24 를 걷는다(gutter 인자 주석)
         !gutter && "[&_[data-slot=list-content]]:px-0",
+        // 설명(Tag Group 한 줄 말줄임)이 본문 폭을 밀지 않게 — 줄 폭에 min-width 만 걸고 내용 폭은 0 으로 센다
+        "[&_[data-slot=list-detail]]:w-0 [&_[data-slot=list-detail]]:min-w-full",
       )}
     >
       {onClick ? (

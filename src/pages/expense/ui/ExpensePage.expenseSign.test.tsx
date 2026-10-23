@@ -102,7 +102,7 @@ describe("월 요약 지출 칸 — 부호는 값을 따른다", () => {
 
 describe("부호를 붙이는 자리는 네 곳뿐이고 전부 minusOf 를 지난다", () => {
   // 폰 화면은 ExpenseMobile.tsx 로 나뉘었다(I-07 10) — 두 파일을 함께 본다
-  const SRC = ["ExpensePage.tsx", "ExpenseMobile.tsx"]
+  const SRC = ["ExpensePage.tsx", "ExpenseMobile.tsx", "ExpenseMobileParts.tsx"]
     .map((n) => readFileSync(join(cwd(), "src/pages/expense/ui", n), "utf8"))
     .join("\n");
 

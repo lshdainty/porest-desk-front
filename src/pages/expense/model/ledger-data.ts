@@ -235,6 +235,17 @@ export function useExpenseData(
     filterActive,
     isLoadingList: expensesQ.isLoading || transfersQ.isLoading,
     isLoadingSummary: monthlyQ.isLoading,
+    // 불러오지 못했다 — 비어 있음("거래가 없어요")으로 보이면 안 된다. 화면이 실패로 그리고 다시 시도를 둔다
+    // (필터가 걸리면 요약은 거른 목록으로 다시 세므로 서버 월 요약이 실패해도 상관없다)
+    isError:
+      expensesQ.isError ||
+      transfersQ.isError ||
+      (!filterActive && monthlyQ.isError),
+    retry: () => {
+      void expensesQ.refetch();
+      void transfersQ.refetch();
+      void monthlyQ.refetch();
+    },
   };
 }
 
