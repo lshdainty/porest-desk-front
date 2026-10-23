@@ -14,7 +14,7 @@ import { describe, expect, it } from "vitest";
  * 번역 원본은 CSV 하나다(`src/locales/**` 는 생성물).
  */
 const LINE =
-  'category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨 주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."';
+  'category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."';
 
 describe("카테고리 상위 이동 안내", () => {
   it("웹·앱·서버가 같은 길을 말한다 — 전문 그대로", () => {

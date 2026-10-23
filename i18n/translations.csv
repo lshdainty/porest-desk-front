@@ -10,7 +10,7 @@ common,confirm,확인,Confirm
 common,loading,로딩 중...,Loading...
 common,noData,데이터가 없습니다,No data
 common,error,오류가 발생했습니다,An error occurred
-common,apiError,문제가 생겼어요. 잠시 후 다시 시도해 주세요,Something went wrong. Please try again.
+common,apiError,문제가 생겼어요. 잠시 후 다시 시도해주세요,Something went wrong. Please try again.
 common,amountClamped,최대 {{max}}까지 넣을 수 있어요. 그 값으로 맞췄어요,You can enter up to {{max}}. Adjusted to that amount.
 common,close,닫기,Close
 common,add,추가,Add
@@ -136,7 +136,7 @@ todo,createTodo,할일 추가,Add Todo
 todo,editTodo,할일 수정,Edit Todo
 todo,deleteTodo,할일 삭제,Delete Todo
 todo,addTodo,새 할일 추가,Add new todo
-todo,createFirst,첫 번째 할일을 만들어 보세요,Create your first todo
+todo,createFirst,첫 번째 할일을 만들어보세요,Create your first todo
 todo,empty,할일이 없습니다,No todos yet
 todo,status.ALL,전체,All
 todo,status.PENDING,대기,Pending
@@ -148,7 +148,7 @@ todo,priority.MEDIUM,보통,Medium
 todo,priority.LOW,낮음,Low
 todo,form.title,제목,Title
 todo,form.titlePlaceholder,할일 제목을 입력하세요,Enter todo title
-todo,form.titleRequired,제목을 입력해 주세요,Title is required
+todo,form.titleRequired,제목을 입력해주세요,Title is required
 todo,form.content,내용,Content
 todo,form.contentPlaceholder,상세 내용을 입력하세요,Enter details
 todo,form.priority,우선순위,Priority
@@ -242,7 +242,7 @@ calendar,eventType.BIRTHDAY,생일,Birthday
 calendar,eventType.HOLIDAY,휴일,Holiday
 calendar,form.title,제목,Title
 calendar,form.titlePlaceholder,일정 제목을 입력하세요,Enter event title
-calendar,form.titleRequired,제목을 입력해 주세요,Title is required
+calendar,form.titleRequired,제목을 입력해주세요,Title is required
 calendar,form.description,설명,Description
 calendar,form.descriptionPlaceholder,일정 설명을 입력하세요,Enter event description
 calendar,form.eventType,일정 유형,Event Type
@@ -285,7 +285,7 @@ memo,deleteMemo,메모 삭제,Delete Memo
 memo,newMemo,메모 추가,Add memo
 memo,untitled,제목 없음,Untitled
 memo,empty,메모가 없습니다,No memos yet
-memo,createFirst,첫 번째 메모를 작성해 보세요,Create your first memo
+memo,createFirst,첫 번째 메모를 작성해보세요,Create your first memo
 memo,pinned,고정됨,Pinned
 memo,pin,고정,Pin
 memo,unpin,고정 해제,Unpin
@@ -371,7 +371,7 @@ expense,totalIncome,총 수입,Total Income
 expense,totalExpense,총 지출,Total Expense
 expense,net,순수익,Net
 expense,noTransactions,거래 내역이 없습니다,No transactions yet
-expense,createFirst,첫 번째 거래를 기록해 보세요,Record your first transaction
+expense,createFirst,첫 번째 거래를 기록해보세요,Record your first transaction
 expense,category,카테고리,Category
 expense,categories,카테고리 관리,Manage categories
 expense,addCategory,카테고리 추가,Add category
@@ -440,7 +440,7 @@ asset,addTransfer,이체 추가,Add transfer
 asset,totalBalance,총 자산,Total Balance
 asset,count,개,
 asset,noAssets,등록된 자산이 없습니다,No assets registered
-asset,createFirst,첫 번째 자산을 등록해 보세요,Register your first asset
+asset,createFirst,첫 번째 자산을 등록해보세요,Register your first asset
 asset,noTransfers,이체 내역이 없습니다,No transfers yet
 asset,fee,수수료,Fee
 asset,loading,로딩 중...,Loading...
@@ -543,7 +543,7 @@ asset,editDialog.balanceLabelCard,이전 미결제 사용액 ({{unit}}),Unpaid b
 asset,editDialog.balanceLabelInvest,평가액 ({{unit}}),Valuation ({{unit}})
 asset,editDialog.balanceLabelAccount,잔액 ({{unit}}),Balance ({{unit}})
 asset,editDialog.balanceLabelOverdraft,사용 중인 금액 ({{unit}}),Amount Used ({{unit}})
-asset,editDialog.overdraftHelp,쓴 만큼을 양수로 넣어 주세요 — 빚으로 계산돼요,Enter the amount used as a positive number; it counts as debt
+asset,editDialog.overdraftHelp,쓴 만큼을 양수로 넣어주세요 — 빚으로 계산돼요,Enter the amount used as a positive number; it counts as debt
 asset,editDialog.overdraftLimitLabel,약정 한도 ({{unit}}· 선택),"Credit Line ({{unit}}, optional)"
 asset,editDialog.cardTypeLabel,카드 종류,Card Type
 asset,editDialog.cardProduct,카드 상품,Card Product
@@ -572,7 +572,7 @@ asset,editDialog.annualFeeFree,연회비 무료,No annual fee
 asset,editDialog.billingCycle,청구 사이클 (선택),Billing Cycle (optional)
 asset,editDialog.creditLimit,신용한도 ({{unit}}),Credit Limit ({{unit}})
 asset,editDialog.creditLimitPlaceholder,예: 3000000,e.g. 3000000
-asset,editDialog.nameTooLong,별칭은 30자 이내로 입력해 주세요.,Keep the alias to 30 characters or fewer.
+asset,editDialog.nameTooLong,별칭은 30자 이내로 입력해주세요.,Keep the alias to 30 characters or fewer.
 asset,editDialog.nameDuplicate,같은 이름의 계좌·카드가 이미 있어요.,An account or card with that name already exists.
 asset,editDialog.paymentDay,결제일,Payment Day
 asset,editDialog.paymentDayPlaceholder,결제일 선택,Select payment day
@@ -607,8 +607,8 @@ asset,accountSub.deposit,예금,Deposit
 asset,accountSub.cash,현금,Cash
 asset,accountSub.loan,대출,Loan
 asset,editDialog.overLimitBadge,한도 초과,Over limit
-asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되지만 한도나 사용액을 다시 확인해 주세요.,{{amount}} over the limit. It still saves — check the limit or the amount.
-asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어 주세요.,Enter the amount not yet paid.
+asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되지만 한도나 사용액을 다시 확인해주세요.,{{amount}} over the limit. It still saves — check the limit or the amount.
+asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어주세요.,Enter the amount not yet paid.
 asset,editDialog.currentUnpaid,지금 미결제 잔액 {{balance}},Unpaid now: {{balance}}
 asset,editDialog.carryoverLocked,결제가 끝나 고칠 수 없어요,"Already paid, so it can't be changed"
 asset,editDialog.dueCarryoverLabel,{{date}}에 결제될 금액 ({{unit}}),Due on {{date}} ({{unit}})
@@ -655,10 +655,10 @@ asset,savingGoal.goalCount,목표 목록 · {{n}}개,Goals · {{n}}
 asset,savingGoal.emptyManager,아직 저축 목표가 없어요. ‘목표 추가’로 시작해보세요.,No saving goals yet. Start with ‘Add goal’.
 asset,savingGoal.remaining,남은 금액,Remaining
 asset,savingGoal.achievedAt,달성일,Achieved on
-asset,savingGoal.errName,목표 이름을 입력해 주세요,Enter a goal name
-asset,savingGoal.errAmount,목표 금액을 입력해 주세요,Enter a goal amount
+asset,savingGoal.errName,목표 이름을 입력해주세요,Enter a goal name
+asset,savingGoal.errAmount,목표 금액을 입력해주세요,Enter a goal amount
 asset,savingGoal.errCurrentExceeds,현재 금액이 목표보다 클 수 없어요,Current amount can't exceed the target
-asset,savingGoal.errNameTooLong,목표 이름은 12자 이내로 입력해 주세요.,Keep the goal name to 12 characters or fewer.
+asset,savingGoal.errNameTooLong,목표 이름은 12자 이내로 입력해주세요.,Keep the goal name to 12 characters or fewer.
 asset,savingGoal.errNameDuplicate,같은 이름의 목표가 이미 있어요.,A goal with that name already exists.
 asset,savingGoal.errAmountTooLarge,목표 금액은 100억원까지 입력할 수 있어요.,Target amount can be up to 10 billion won.
 asset,subtitle,모든 계좌·카드·투자를 한 곳에서,"All accounts, cards, and investments in one place"
@@ -723,7 +723,7 @@ asset,assetDetail.periodPick,기간 선택,Select period
 asset,assetDetail.noUsage,이용 내역이 없어요.,No usage history yet.
 asset,assetDetail.billingHistory,청구 이력,Billing history
 asset,assetDetail.paymentDateLabel,결제일,Payment date
-asset,assetDetail.paymentDayMissing,결제일을 넣어 주세요,Please set a payment day
+asset,assetDetail.paymentDayMissing,결제일을 넣어주세요,Please set a payment day
 asset,assetDetail.payConfirm,결제 예정액 <strong>{{amount}}</strong>을 지금 결제 처리할까요?,Pay <strong>{{amount}}</strong> now?
 asset,assetDetail.paymentDateNote,결제일은 {{date}} 입니다.,The payment date is {{date}}.
 asset,assetDetail.payAction,결제하기,Pay
@@ -848,7 +848,7 @@ dutchPay,splitMethod.CUSTOM,직접 입력,Custom
 dutchPay,splitMethod.RATIO,비율 분할,Ratio
 dutchPay,form.title,제목,Title
 dutchPay,form.titlePlaceholder,더치페이 제목을 입력하세요,Enter title
-dutchPay,form.titleRequired,제목을 입력해 주세요,Title is required
+dutchPay,form.titleRequired,제목을 입력해주세요,Title is required
 dutchPay,form.description,설명,Description
 dutchPay,form.descriptionPlaceholder,설명을 입력하세요,Enter description
 dutchPay,form.totalAmount,총 금액,Total Amount
@@ -871,7 +871,7 @@ group,addGroup,그룹 추가,Add Group
 group,editGroup,그룹 수정,Edit Group
 group,joinGroup,그룹 참가,Join Group
 group,empty,그룹이 없습니다,No groups yet
-group,createFirst,첫 번째 그룹을 만들어 보세요,Create your first group
+group,createFirst,첫 번째 그룹을 만들어보세요,Create your first group
 group,backToList,목록으로,Back to list
 group,inviteCode,초대 코드,Invite Code
 group,inviteCodePlaceholder,초대 코드를 입력하세요,Enter invite code
@@ -922,7 +922,7 @@ expense,loadFromTemplate,템플릿에서 불러오기,Load from template
 expense,searchTemplatePlaceholder,템플릿 검색...,Search templates...
 expense,noTemplatesFound,템플릿이 없습니다,No templates found
 expense,addSubCategory,소분류 추가,Add Subcategory
-expense,cannotDeleteParentCategory,하위 카테고리가 있는 대분류는 삭제할 수 없습니다. 먼저 하위 카테고리를 삭제해 주세요.,Cannot delete a category that has subcategories. Please delete the subcategories first.
+expense,cannotDeleteParentCategory,하위 카테고리가 있는 대분류는 삭제할 수 없습니다. 먼저 하위 카테고리를 삭제해주세요.,Cannot delete a category that has subcategories. Please delete the subcategories first.
 expense,stats.period3m,3개월,3 months
 expense,stats.period6m,6개월,6 months
 expense,stats.period1y,1년,1 year
@@ -931,7 +931,7 @@ expense,stats.yearOverYear,전년 대비,Year over Year
 expense,stats.categoryTrend,카테고리 추이,Category Trend
 expense,stats.selectCategory,카테고리 선택,Select category
 expense,stats.budgetVsActual,예산 대비 지출,Budget vs Actual
-expense,stats.noBudgetSet,설정된 예산이 없습니다. 예산 탭에서 설정해 주세요.,No budgets set. Configure budgets in the Budget tab.
+expense,stats.noBudgetSet,설정된 예산이 없습니다. 예산 탭에서 설정해주세요.,No budgets set. Configure budgets in the Budget tab.
 expense,stats.merchantAnalysis,거래처 분석,Merchant Analysis
 expense,stats.noMerchantData,거래처 데이터가 없습니다,No merchant data available
 expense,stats.assetUsage,자산별 사용,Asset Usage
@@ -1135,14 +1135,14 @@ calendar,shareSection.you,(나),(me)
 calendar,shareSection.removeMember,멤버 내보내기,Remove member
 calendar,shareSection.removeMemberConfirm,"""{{name}}"" 님을 캘린더에서 내보내시겠어요?","Remove ""{{name}}"" from this calendar?"
 calendar,shareSection.removeMemberAction,내보내기,Remove
-calendar,shareSection.nameRequired,캘린더 이름을 입력해 주세요.,Please enter a calendar name.
+calendar,shareSection.nameRequired,캘린더 이름을 입력해주세요.,Please enter a calendar name.
 calendar,shareSection.create,만들기,Create
 calendar,shareSection.createNamePlaceholder,"예: 가족, 업무, 운동 일정","e.g. Family, Work, Workout"
 calendar,shareSection.joinCodePlaceholder,공유받은 초대 코드를 입력하세요,Enter the invite code you received
 calendar,shareSection.toast.deleted,캘린더를 삭제했어요,Calendar deleted
 calendar,shareSection.toast.created,캘린더를 만들었어요,Calendar created
 calendar,shareSection.toast.joined,캘린더에 참여했어요,Joined the calendar
-calendar,shareSection.toast.joinError,초대 코드를 확인해 주세요,Please check the invite code
+calendar,shareSection.toast.joinError,초대 코드를 확인해주세요,Please check the invite code
 calendar,shareSection.toast.updated,캘린더를 수정했어요,Calendar updated
 calendar,shareSection.toast.codeCopied,초대 코드를 복사했어요,Invite code copied
 calendar,shareSection.toast.codeRegenerated,초대 코드를 새로 만들었어요,New invite code created
@@ -1156,8 +1156,8 @@ calendar,labelsSection.emptyHint,{{label}} 버튼으로 만들어보세요,Use t
 calendar,labelsSection.deleteTitle,라벨 삭제,Delete label
 calendar,labelsSection.deleteMessage,"""{{name}}"" 라벨을 삭제할까요? 이 라벨이 지정된 일정은 라벨 없음 상태가 됩니다.","Delete the ""{{name}}"" label? Events with this label will become unlabeled."
 calendar,labelsSection.namePlaceholder,"예: 중요, 마감일, 회의","e.g. Important, Deadline, Meeting"
-calendar,labelsSection.nameRequired,라벨 이름을 입력해 주세요.,Please enter a label name.
-calendar,labelsSection.nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
+calendar,labelsSection.nameRequired,라벨 이름을 입력해주세요.,Please enter a label name.
+calendar,labelsSection.nameTooLong,이름은 12자 이내로 입력해주세요.,Name must be 12 characters or fewer.
 calendar,labelsSection.nameDuplicate,같은 이름의 라벨이 이미 있어요.,A label with that name already exists.
 calendar,labelsSection.colorN,색상 {{n}},Color {{n}}
 dashboard,allDay,종일,All Day
@@ -1176,8 +1176,8 @@ memo,noMemosHint,"생각이 떠오를 때, 새 메모를 만들어보세요.",Jo
 memo,allMemosSection,모든 메모,All memos
 memo,subtitle,생각·기록을 한곳에,Thoughts and notes in one place
 memo,titlePlaceholder,제목,Title
-memo,titleRequired,제목을 입력해 주세요,Please enter a title
-memo,contentPlaceholder,여기에 메모를 작성해 주세요,Write your memo here
+memo,titleRequired,제목을 입력해주세요,Please enter a title
+memo,contentPlaceholder,여기에 메모를 작성해주세요,Write your memo here
 memo,tagLabel,태그,Tag
 memo,pinToTop,상단에 고정,Pin to top
 memo,colorLabel,색상,Color
@@ -1196,8 +1196,8 @@ memo,tags.namePlaceholder,예: 아이디어,e.g. Ideas
 memo,tags.color,색상,Color
 memo,tags.colorN,색 {{n}},Color {{n}}
 memo,tags.editTitle,태그 수정,Edit tag
-memo,tags.nameRequired,이름을 입력해 주세요.,Please enter a name.
-memo,tags.nameTooLong,이름은 12자 이내로 입력해 주세요.,Keep the name under 12 characters.
+memo,tags.nameRequired,이름을 입력해주세요.,Please enter a name.
+memo,tags.nameTooLong,이름은 12자 이내로 입력해주세요.,Keep the name under 12 characters.
 memo,tags.nameDuplicate,같은 이름의 태그가 이미 있어요.,A tag with that name already exists.
 memo,tags.preview,미리보기,Preview
 notification,connectionLost,알림 연결이 끊어졌습니다,Notification connection lost
@@ -1252,7 +1252,7 @@ notification,email.frequency.label,발송 주기,Frequency
 notification,email.frequency.DAILY,매일,Daily
 notification,email.frequency.WEEKLY,매주,Weekly
 notification,email.frequency.MONTHLY,매월,Monthly
-notification,saveError,저장에 실패했어요. 잠시 뒤 다시 시도해 주세요.,Failed to save. Please try again shortly.
+notification,saveError,저장에 실패했어요. 잠시 뒤 다시 시도해주세요.,Failed to save. Please try again shortly.
 notification,popover.unread,읽지 않은 알림 <b>{{count}}</b>개,<b>{{count}}</b> unread
 notification,popover.noNew,새 알림이 없어요,No new notifications
 notification,popover.empty,아직 알림이 없어요,No notifications yet
@@ -1260,22 +1260,22 @@ user,passwordChange,비밀번호 변경,Change password
 user,passwordChangeDescription,현재 비밀번호를 확인한 뒤 새 비밀번호로 바꿔요,Verify your current password and set a new one
 user,currentPassword,현재 비밀번호,Current Password
 user,currentPasswordPlaceholder,현재 비밀번호를 입력하세요,Enter your current password
-user,currentPasswordRequired,현재 비밀번호를 입력해 주세요,Current password is required
+user,currentPasswordRequired,현재 비밀번호를 입력해주세요,Current password is required
 user,currentPasswordInvalid,현재 비밀번호가 맞지 않아요,That current password doesn't match
 user,newPassword,새 비밀번호,New Password
 user,newPasswordPlaceholder,새 비밀번호를 입력하세요,Enter your new password
-user,newPasswordRequired,새 비밀번호를 입력해 주세요,New password is required
+user,newPasswordRequired,새 비밀번호를 입력해주세요,New password is required
 user,confirmPassword,새 비밀번호 확인,Confirm New Password
 user,confirmPasswordPlaceholder,새 비밀번호를 다시 입력하세요,Re-enter your new password
-user,confirmPasswordRequired,새 비밀번호 확인을 입력해 주세요,Password confirmation is required
+user,confirmPasswordRequired,새 비밀번호 확인을 입력해주세요,Password confirmation is required
 user,passwordMismatch,새 비밀번호가 일치하지 않아요,New passwords do not match
 user,passwordMatched,새 비밀번호가 일치해요,New passwords match
 user,passwordRuleLength,8자 이상,At least 8 characters
 user,passwordRuleSpecial,특수문자 1자 이상,At least 1 special character
-user,passwordPolicyUnmet,비밀번호 조건을 모두 충족해 주세요,Password does not meet the requirements
-user,passwordSameAsCurrent,현재 비밀번호와 다른 비밀번호를 입력해 주세요,New password must be different from the current one
+user,passwordPolicyUnmet,비밀번호 조건을 모두 충족해주세요,Password does not meet the requirements
+user,passwordSameAsCurrent,현재 비밀번호와 다른 비밀번호를 입력해주세요,New password must be different from the current one
 user,passwordChangeSuccess,비밀번호를 바꿨어요,Password changed successfully
-user,passwordChangeError,비밀번호를 바꾸지 못했어요. 잠시 뒤 다시 시도해 주세요,Couldn't change your password. Please try again shortly
+user,passwordChangeError,비밀번호를 바꾸지 못했어요. 잠시 뒤 다시 시도해주세요,Couldn't change your password. Please try again shortly
 user,withdraw.title,desk 이용 해지,Stop using desk
 user,withdraw.intro,"이용을 해지하면 바로 로그인이 막히고 되돌릴 수 없어요.","Stopping desk signs you out immediately and cannot be undone."
 user,impact.calendarsOwned,내가 만든 공유 캘린더 {{count}}개가 삭제되고 멤버도 볼 수 없어요,{{count}} shared calendar(s) you created will be deleted — members lose access too
@@ -1285,9 +1285,9 @@ user,impact.dutchPayParticipations,참여 중인 정산 {{count}}개에 탈퇴�
 user,withdraw.irreversibleTitle,되돌릴 수 없어요,This cannot be undone
 user,withdraw.irreversibleRejoin,같은 아이디와 이메일로는 다시 가입할 수 없어요.,You cannot sign up again with the same ID or email address.
 user,withdraw.irreversibleData,해지한 뒤에는 기록을 다시 볼 수 없어요.,You will not be able to see your records again.
-user,withdraw.dataRetention,"가계부 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요. 필요한 자료는 해지 전에 내보내 주세요.","Your records are kept and then destroyed under our privacy policy. Export anything you need before you stop."
+user,withdraw.dataRetention,"가계부 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요. 필요한 자료는 해지 전에 내보내주세요.","Your records are kept and then destroyed under our privacy policy. Export anything you need before you stop."
 user,withdraw.reasonLabel,떠나시는 이유 (선택),Why are you leaving? (optional)
-user,withdraw.reasonPlaceholder,알려 주시면 다음에 더 낫게 만들게요,Tell us and we will do better next time
+user,withdraw.reasonPlaceholder,알려주시면 다음에 더 낫게 만들게요,Tell us and we will do better next time
 user,withdraw.next,계속,Continue
 user,withdraw.confirm,해지하기,Stop using desk
 user,withdraw.reauthIntro,본인이 맞는지 한 번만 더 확인할게요.,"Just once more, let us confirm it is you."
@@ -1298,8 +1298,8 @@ user,withdraw.codePlaceholder,6자리 숫자,6 digits
 user,withdraw.sendCode,코드 받기,Send code
 user,withdraw.resendCode,다시 받기,Send again
 user,withdraw.codeSent,메일로 코드를 보냈어요,We sent a code to your email
-user,withdraw.codeHint,메일함에 코드가 안 보이면 스팸함도 확인해 주세요.,"If you do not see it, check your spam folder."
-user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해 주세요,Could not stop your desk account. Please try again shortly
+user,withdraw.codeHint,메일함에 코드가 안 보이면 스팸함도 확인해주세요.,"If you do not see it, check your spam folder."
+user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해주세요,Could not stop your desk account. Please try again shortly
 user,withdraw.blockedSubscription,구독이 남아 있어 아직 해지할 수 없어요,"You still have an active subscription, so you cannot stop desk yet"
 user,withdraw.blockedSubscriptionUntil,구독이 {{date}} 까지 남아 있어 아직 해지할 수 없어요,"Your subscription runs until {{date}}, so you cannot stop desk yet"
 user,withdraw.blockedOther,아직 해지할 수 없는 상태예요,Your account cannot be stopped right now
@@ -1419,7 +1419,7 @@ category,noSearchResults,검색 결과가 없습니다.,No results found.
 category,parentFallback,상위 카테고리,Parent category
 category,deleteTitle,카테고리 삭제,Delete category
 category,deleteBlockedTitle,삭제 불가,Cannot delete
-category,deleteHasChildren,"""{{name}}"" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해 주세요.","The ""{{name}}"" category has subcategories and cannot be deleted. Clear them first."
+category,deleteHasChildren,"""{{name}}"" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해주세요.","The ""{{name}}"" category has subcategories and cannot be deleted. Clear them first."
 category,deleteWithBudget,"예산이 설정되어 있는 카테고리입니다. 삭제하면 예산도 함께 삭제됩니다. ""{{name}}"" 카테고리를 삭제할까요?","This category has a budget set. Deleting it will also delete the budget. Delete the ""{{name}}"" category?"
 category,deleteConfirm,"""{{name}}"" 카테고리를 삭제할까요?","Delete the ""{{name}}"" category?"
 category,overBudgetTitle,예산 초과 확인,Budget exceeded
@@ -1431,8 +1431,8 @@ category,collapse,접기,Collapse
 category,hasSubcategories,하위 카테고리 있음,Has subcategories
 category,addSub,하위 추가,Add subcategory
 category,edit,수정,Edit
-category,nameRequired,이름을 입력해 주세요.,Please enter a name.
-category,nameTooLong,이름은 12자 이내로 입력해 주세요.,Name must be 12 characters or fewer.
+category,nameRequired,이름을 입력해주세요.,Please enter a name.
+category,nameTooLong,이름은 12자 이내로 입력해주세요.,Name must be 12 characters or fewer.
 category,nameDuplicate,같은 위치에 같은 이름의 카테고리가 있습니다.,A category with this name already exists in this location.
 category,moveTx.entry,거래 옮기기,Move transactions
 category,moveTx.entryDesc,거래가 달린 카테고리는 하위 분류를 만들 수 없어요. 거래를 옮기면 만들 수 있어요,A category with transactions cannot have subcategories. Move them to enable it
@@ -1459,7 +1459,7 @@ category,parentCategory,상위 카테고리,Parent category
 category,optional,(선택),(optional)
 category,rootOption,— 최상위 카테고리로 두기 —,— Keep as top-level —
 category,selectParent,상위 카테고리 선택,Select parent category
-category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨 주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."
+category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."
 category,name,이름,Name
 category,namePlaceholder,"예: 반려동물, 부수입","e.g. Pets, Side income"
 category,colorN,색상 {{n}},Color {{n}}
@@ -1514,7 +1514,7 @@ dutchPay,monthStats.avgPeople,평균 인원,Avg. people
 dutchPay,perOne,1인,Per person
 dutchPay,nameLabel,정산 이름,Settlement name
 dutchPay,namePlaceholder,예: 팀 저녁 회식,e.g. Team dinner
-dutchPay,nameRequired,정산 이름을 입력해 주세요,Please enter a settlement name
+dutchPay,nameRequired,정산 이름을 입력해주세요,Please enter a settlement name
 dutchPay,placeLabel,장소,Place
 dutchPay,placePlaceholder,장소 또는 상호명 (선택),Place or venue (optional)
 dutchPay,selectedCount,{{count}}명 선택,{{count}} selected
@@ -1613,7 +1613,7 @@ expense,savePreset.namePlaceholder,예: 점심 도시락,e.g. Lunch box
 expense,savePreset.lockAmount,금액도 함께 저장,Save amount too
 expense,savePreset.lockOn,{{amount}}원이 항상 채워집니다.,{{amount}}원 will always be filled in.
 expense,savePreset.lockOff,체크 해제 시 금액은 비워두고 매번 직접 입력합니다.,"When unchecked, the amount stays empty and you enter it each time."
-expense,savePreset.needCategory,저장하려면 먼저 카테고리를 선택해 주세요.,Please select a category first to save.
+expense,savePreset.needCategory,저장하려면 먼저 카테고리를 선택해주세요.,Please select a category first to save.
 expense,txDetail.incomeTitle,수입 상세,Income details
 expense,txDetail.expenseTitle,지출 상세,Expense details
 expense,txDetail.uncategorized,미분류,Uncategorized
@@ -1633,7 +1633,7 @@ expense,txDetail.refundedAt,환불됨 · {{date}},Refunded · {{date}}
 expense,txDetail.refundCancel,환불 취소,Undo refund
 expense,txDetail.refundCancelConfirm,환불 표시를 지울까요? 이 거래가 합계에 다시 들어가요.,Remove the refund mark? This transaction counts in your totals again.
 expense,txDetail.refundCancelConfirmTransfer,"환불 표시를 지울까요? 이 거래가 합계에 다시 들어가고, 환급된 금액도 되돌아가요.","Remove the refund mark? This transaction counts in your totals again, and any refunded amount is reversed."
-expense,txDetail.refundedReadonly,환불된 거래는 수정할 수 없어요. 먼저 환불을 취소해 주세요,"Refunded transactions can't be edited. Undo the refund first"
+expense,txDetail.refundedReadonly,환불된 거래는 수정할 수 없어요. 먼저 환불을 취소해주세요,"Refunded transactions can't be edited. Undo the refund first"
 expense,txDetail.countCases,{{count}}건,{{count}}
 expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}
@@ -1657,7 +1657,7 @@ expense,splitTx.matched,분할 합계가 총액과 일치해요,The split total 
 expense,splitTx.splitSum,분할 합계,Split total
 expense,splitTx.totalChangedWarn,총액이 바뀌어 분할을 맞춰야 해요,The amount changed — adjust the split
 expense,splitTx.mismatchWarn,분할 합계가 총액과 달라요,The split total differs from the amount
-expense,splitTx.checkItems,분할 항목을 확인해 주세요,Please check the split items
+expense,splitTx.checkItems,분할 항목을 확인해주세요,Please check the split items
 expense,splitTx.short,부족,Short
 expense,splitTx.over,초과,Over
 expense,splitTx.quickAdjust,빠르게 맞추기,Quick adjust
@@ -1733,7 +1733,7 @@ expense,preset.typeLabel,유형,Type
 expense,preset.deleteConfirmMessage,"""{{name}}"" 프리셋을 삭제할까요? 이미 저장된 거래 내역에는 영향이 없습니다.","Delete the ""{{name}}"" preset? Already-saved transactions are unaffected."
 expense,preset.edit,프리셋 수정,Edit preset
 expense,preset.namePlaceholder,예: 점심 도시락,e.g. Lunch box
-expense,preset.nameTooLong,프리셋 이름은 12자 이내로 입력해 주세요.,Keep the preset name to 12 characters or fewer.
+expense,preset.nameTooLong,프리셋 이름은 12자 이내로 입력해주세요.,Keep the preset name to 12 characters or fewer.
 expense,preset.nameDuplicate,같은 이름의 프리셋이 이미 있어요.,A preset with that name already exists.
 expense,preset.defaultMerchant,기본 내역,Default details
 expense,preset.merchantPlaceholder,예: 한솥 도시락,e.g. Corner deli
@@ -1930,7 +1930,7 @@ settings,account.devices.desc,현재 기기,Current device
 settings,account.loginHistory.label,로그인 기록,Login History
 settings,account.loginHistory.desc,최근 30일,Last 30 days
 settings,sections.devices.label,로그인된 기기,Signed-in devices
-settings,sections.devices.desc,이 계정으로 로그인된 기기예요. 낯선 기기가 있으면 로그아웃해 주세요.,These devices are signed in to your account. Log out any you don't recognize.
+settings,sections.devices.desc,이 계정으로 로그인된 기기예요. 낯선 기기가 있으면 로그아웃해주세요.,These devices are signed in to your account. Log out any you don't recognize.
 settings,devices.current,현재 기기,Current device
 settings,devices.unknown,알 수 없는 기기,Unknown device
 settings,devices.lastUsed,마지막 사용 {{when}},Last used {{when}}
@@ -1977,7 +1977,7 @@ stocks,watch.empty,관심 종목이 없어요. 검색해서 별표를 눌러보�
 stocks,search.label,종목 검색,Search stocks
 stocks,search.placeholder,"종목명 · 티커로 검색 (예: 삼성전자, NVDA)","Search by name or ticker (e.g. Samsung, NVDA)"
 stocks,search.noResults,'{{query}}' 검색 결과가 없어요,No results for '{{query}}'
-stocks,connect.title,증권 계정을 연결해 주세요,Connect a brokerage account
+stocks,connect.title,증권 계정을 연결해주세요,Connect a brokerage account
 stocks,connect.holdingsDesc,토스증권 키를 연결하면 보유 종목과 평가손익을 실시간으로 볼 수 있어요.,Connect your Toss Securities key to see holdings and P&L in real time.
 stocks,connect.action,설정에서 연결하기,Connect in settings
 stocks,connect.gateDesc,토스증권 키를 연결하면 시세·보유 종목·평가손익을 실시간으로 볼 수 있어요.,"Connect your Toss Securities key to see prices, holdings, and P&L in real time."
@@ -2103,7 +2103,7 @@ stocks,warning.ADMINISTRATIVE,관리종목,Administrative issue
 stocks,warning.ADJUSTMENT_OF_SHARES,주식병합·분할,Share adjustment
 stocks,broker.toss,토스증권,Toss Securities
 stocks,broker.namu,나무증권,NAMUH Securities
-stocks,broker.unsupported,아직 지원하지 않는 증권사예요. 잠시 후 다시 확인해 주세요.,That provider isn't supported yet. Please check back shortly.
+stocks,broker.unsupported,아직 지원하지 않는 증권사예요. 잠시 후 다시 확인해주세요.,That provider isn't supported yet. Please check back shortly.
 stocks,namu.scopeNotice,나무증권은 호가·체결을 주지 않아 이 화면엔 없어요.,Namu doesn't provide order book or trade tape so they're not shown here.
 stocks,namu.priceEmpty,현재가가 없는 종목이에요,No current price for this instrument
 stocks,search.error,검색에 실패했어요,Search failed
@@ -2496,7 +2496,7 @@ export,import.newCatHint,"자동 감지된 카테고리 열 기준이에요. 오
 export,import.createdCatTitle,새로 만든 카테고리 {{count}}개,{{count}} categories created
 export,import.failuresTitle,실패한 행 {{count}}건,{{count}} failed rows
 export,import.failureLine,{{line}}행,Line {{line}}
-export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여 줘요,Showing the first {{shown}} of {{total}} failures
+export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여줘요,Showing the first {{shown}} of {{total}} failures
 export,import.failReason.date,날짜를 읽을 수 없어요,Couldn't read the date
 export,import.failReason.amount,금액을 읽을 수 없어요,Couldn't read the amount
 export,import.failReason.type,수입/지출 구분을 읽을 수 없어요,Couldn't tell income from expense
@@ -2570,8 +2570,8 @@ todo,tags.namePlaceholder,예: 운동,e.g. Workout
 todo,tags.color,색상,Color
 todo,tags.colorN,색 {{n}},Color {{n}}
 todo,tags.editTitle,태그 수정,Edit tag
-todo,tags.nameRequired,이름을 입력해 주세요.,Please enter a name.
-todo,tags.nameTooLong,이름은 12자 이내로 입력해 주세요.,Keep the name under 12 characters.
+todo,tags.nameRequired,이름을 입력해주세요.,Please enter a name.
+todo,tags.nameTooLong,이름은 12자 이내로 입력해주세요.,Keep the name under 12 characters.
 todo,tags.nameDuplicate,같은 이름의 태그가 이미 있어요.,A tag with that name already exists.
 todo,tags.preview,미리보기,Preview
 constellation,strip.title,오늘의 밤하늘 · {{name}},Tonight's sky · {{name}}
@@ -2711,13 +2711,13 @@ download,ios.desc,Sideloadly 처럼 IPA 를 직접 넣는 도구를 쓰신다면
 download,ios.cta,IPA 내려받기,Download IPA
 download,webHint,앱 없이도 브라우저에서 모든 기능을 쓸 수 있어요.,Everything works in the browser without the app.
 expense,sms.pasteOpen,결제 문자 붙여넣기,Paste a payment text
-expense,sms.pastePlaceholder,카드사에서 온 결제 문자를 그대로 붙여넣어 주세요,Paste the card payment text as it is
+expense,sms.pastePlaceholder,카드사에서 온 결제 문자를 그대로 붙여넣어주세요,Paste the card payment text as it is
 expense,sms.pasteAction,문자 읽기,Read text
 expense,sms.parsing,읽는 중…,Reading…
-expense,sms.notRecognized,결제 문자로 보이지 않아요. 문자 전체를 붙여넣었는지 확인해 주세요.,This doesn't look like a payment text. Please check that the whole message was pasted.
-expense,sms.cancelNotice,취소 문자예요. 자동 기록은 지원하지 않아요 — 원래 지출을 찾아 환불로 기록해 주세요.,This is a cancellation text. Automatic recording is not supported — find the original expense and record it as a refund.
-expense,sms.lowConfidence,일부 항목을 읽지 못했어요. 확인하고 채워 주세요.,Some fields could not be read. Please review and fill them in.
-expense,sms.parseFailed,문자를 읽지 못했어요. 잠시 후 다시 시도해 주세요.,Could not read the text. Please try again in a moment.
+expense,sms.notRecognized,결제 문자로 보이지 않아요. 문자 전체를 붙여넣었는지 확인해주세요.,This doesn't look like a payment text. Please check that the whole message was pasted.
+expense,sms.cancelNotice,취소 문자예요. 자동 기록은 지원하지 않아요 — 원래 지출을 찾아 환불로 기록해주세요.,This is a cancellation text. Automatic recording is not supported — find the original expense and record it as a refund.
+expense,sms.lowConfidence,일부 항목을 읽지 못했어요. 확인하고 채워주세요.,Some fields could not be read. Please review and fill them in.
+expense,sms.parseFailed,문자를 읽지 못했어요. 잠시 후 다시 시도해주세요.,Could not read the text. Please try again in a moment.
 expense,sms.rememberCard,이 카드를 기억해서 다음부터 자동으로 연결하기,Remember this card and link it automatically next time
 expense,txDetail.recordOnlyNote,결제가 끝난 회차에 적은 거래라 기록만 남았어요. 계좌에서는 빠지지 않았어요,"This was added to a cycle that was already paid, so it is kept as a record only. It was not taken from your account"
 expense,txDetail.recordOnlyPartNote,이 중 <amt>{{amount}}</amt>은 결제가 끝난 회차분이라 기록만 남았어요. 남은 회차는 정상 청구돼요,"<amt>{{amount}}</amt> of this belongs to cycles that were already paid, so it is kept as a record only. The remaining installments are billed as usual"
@@ -2726,7 +2726,7 @@ expense,closedCycle.partialNote,지난 회차분은 기록만 남아요.,Install
 expense,closedCycle.fixBalance,잔액 고치기,Fix balance
 expense,closedCycle.prepaidRefunded,미리 낸 돈 중 {{amount}}이 계좌로 돌아왔어요,{{amount}} of what you paid early went back to your account
 expense,addTx.saveConfirmTitle,저장할까요?,Save this?
-expense,addTx.moneyLockedNote,결제가 끝난 거래예요. 금액·날짜를 바꾸려면 고쳐 쓰기를 눌러 주세요,"This transaction has already been paid. To change the amount or date, tap Rewrite"
+expense,addTx.moneyLockedNote,결제가 끝난 거래예요. 금액·날짜를 바꾸려면 고쳐 쓰기를 눌러주세요,"This transaction has already been paid. To change the amount or date, tap Rewrite"
 expense,addTx.moneyLockedPaidOffNote,결제가 끝난 거래예요. 중도 정리한 할부라 금액·날짜를 바꿀 수 없어요.,"This transaction has already been paid. It is a paid-off installment, so the amount and date can't be changed."
 expense,addTx.rewrite,고쳐 쓰기,Rewrite
 expense,addTx.rewriteConfirmBody,원래 거래는 지워지고 새 거래로 바뀌어요.,The original transaction is deleted and replaced with a new one.
@@ -2973,8 +2973,8 @@ common,searchPeriodPick,기간 선택,Select period
 common,searchDone,완료,Done
 common,searchReset,초기화,Reset
 common,searchApply,적용,Apply
-common,searchBadAmount,최소 금액을 최대 금액보다 작게 해 주세요,Make the minimum smaller than the maximum
-common,searchBadPeriod,시작일을 종료일보다 앞으로 해 주세요,Make the start date earlier than the end date
+common,searchBadAmount,최소 금액을 최대 금액보다 작게 해주세요,Make the minimum smaller than the maximum
+common,searchBadPeriod,시작일을 종료일보다 앞으로 해주세요,Make the start date earlier than the end date
 common,searchFailed,검색하지 못했어요,Search failed
-common,searchEmptyHint,"키워드, 가맹점, 메모로 검색해 보세요","Search by keyword, merchant, or memo"
+common,searchEmptyHint,"키워드, 가맹점, 메모로 검색해보세요","Search by keyword, merchant, or memo"
 common,searchNoResults,결과가 없어요,No results
