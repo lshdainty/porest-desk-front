@@ -27,7 +27,7 @@
   position: relative;
   overflow: hidden;
 }
-/* 탭 셸의 본문 바닥 = 페이지 바탕(bg-page = layer-basement). 머리 · 탭 바는 스스로 흰 면이다.
+/* 탭 셸의 본문 바닥 = 페이지 바탕(bg-layer-basement). 머리 · 탭 바는 스스로 흰 면이다.
    풀스크린 화면(옛 ← 머리)은 옛 모양대로 surface 를 그대로 둔다. */
 .m-app--page {
   background: var(--bg-canvas);
