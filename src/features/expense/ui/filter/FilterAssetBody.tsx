@@ -27,22 +27,21 @@ export function FilterAssetBody({
         onChange={pick.setMode}
         name={t("accountCard")}
       />
-      {/* 줄이 제 좌우 24 를 갖는다 — 본문 여백 24 와 겹치지 않게 그 만큼 바깥으로 낸다 */}
-      <ListCheckGroup
-        aria-label={t("accountCard")}
-        className="-mx-global-gutter"
-      >
-        {assets.map((a) => (
-          <ListCheckItem
-            key={a.rowId}
-            markPosition="suffix"
-            prefix={<AssetLogo asset={a} size={40} />}
-            title={a.assetName}
-            checked={pick.ids.includes(a.rowId)}
-            onCheckedChange={(on) => pick.toggle(a.rowId, on === true)}
-          />
-        ))}
-      </ListCheckGroup>
+      {/* 줄이 제 좌우 24 를 갖는다 — 본문 여백 24 와 겹치지 않게 그 만큼 바깥으로 낸다(목록은 w-full 이라 감싸서 낸다) */}
+      <div className="-mx-global-gutter">
+        <ListCheckGroup aria-label={t("accountCard")}>
+          {assets.map((a) => (
+            <ListCheckItem
+              key={a.rowId}
+              markPosition="suffix"
+              prefix={<AssetLogo asset={a} size={40} />}
+              title={a.assetName}
+              checked={pick.ids.includes(a.rowId)}
+              onCheckedChange={(on) => pick.toggle(a.rowId, on === true)}
+            />
+          ))}
+        </ListCheckGroup>
+      </div>
     </div>
   );
 }
