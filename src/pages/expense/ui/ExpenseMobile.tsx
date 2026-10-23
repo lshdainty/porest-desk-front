@@ -15,7 +15,10 @@ import {
   insightDiffAmount,
 } from "@/pages/expense/lib/insight";
 import { monthFromQuery } from "@/pages/expense/lib/month-query";
-import { useExpenseSwipeActions } from "@/pages/expense/lib/use-expense-swipe-actions";
+import {
+  useExpenseSwipeActions,
+  type ExpenseSwipeAction,
+} from "@/pages/expense/lib/use-expense-swipe-actions";
 import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import {
   HIDE_AMOUNTS_MASK,
@@ -54,11 +57,10 @@ import {
 } from "@/shared/ui/groo/ledger";
 import { useLedgerScroll } from "@/shared/ui/groo/use-ledger-scroll";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { ExpenseRow } from "@/entities/expense";
 import { TransferRow } from "@/entities/asset";
 import { TransferDetailDialog } from "@/widgets/expense-detail/ui/TransferDetailDialog";
 import { useRangeSummary, useExpenseCategories } from "@/features/expense";
-import { SwipeActions } from "@/shared/ui/swipe-actions";
+import { SwipeActionsProvider } from "@/shared/ds/swipe-actions";
 import type { HideCardKey } from "@/shared/lib/groo/hide-amounts-cards";
 import { useAssets } from "@/features/asset";
 import type { AssetTransfer } from "@/entities/asset";
@@ -82,6 +84,11 @@ import {
   useExpenseData,
 } from "@/pages/expense/model/ledger-data";
 import { ExpenseDayGroupSkeleton } from "./ExpenseDayGroupSkeleton";
+import {
+  ExpenseSwipeRow,
+  PlainRow,
+  SwipeConfirmDialog,
+} from "./ExpenseSwipeRow";
 
 /**
  * 캘린더 셀의 일별 지출·수입은 두 카드에 걸친다 — '캘린더 금액' 이면서 '거래 목록' 의
@@ -461,6 +468,10 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const [editingTransfer, setEditingTransfer] = useState<AssetTransfer | null>(
     null,
   );
+  // 밀기 · ⋮ 의 삭제 — 확인창을 기다리는 동작
+  const [pendingAction, setPendingAction] = useState<ExpenseSwipeAction | null>(
+    null,
+  );
 
   const categoriesQ = useExpenseCategories();
   const assetsQ = useAssets();
@@ -639,463 +650,465 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const filterActive = activeCount > 0 || !!asset;
 
   return (
-    <LedgerShell ref={rootRef}>
-      {/* 고정 영역 — 월네비 + 총액(스크롤 시 접힘) + 캘린더. 리스트만 스크롤(design txm-pin). */}
-      <LedgerPin ref={pinRef} compact={compact}>
-        {/* 월 네비 + 필터/추가 */}
-        <LedgerMonthNav>
-          {!filterActive && (
-            <>
-              <LedgerNavBtn
-                onClick={() => goMonth(-1)}
-                aria-label={t("prevMonth")}
-              >
-                <ChevronLeft size={19} />
-              </LedgerNavBtn>
-              <LedgerMonthLabel>{txmMonthLabel(month)}</LedgerMonthLabel>
-              <LedgerNavBtn
-                onClick={() => goMonth(1)}
-                aria-label={t("nextMonth")}
-              >
-                <ChevronRight size={19} />
-              </LedgerNavBtn>
-            </>
-          )}
-          <LedgerNavBtn
-            className="ml-auto relative"
-            active={activeCount > 0}
-            onClick={() => setFilterOpen(true)}
-            aria-label={t("filter.title")}
-          >
-            <SlidersHorizontal size={18} />
-            {activeCount > 0 && (
-              <span
-                aria-hidden
-                className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[length:var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
-              >
-                {activeCount}
-              </span>
+    <SwipeActionsProvider>
+      <LedgerShell ref={rootRef}>
+        {/* 고정 영역 — 월네비 + 총액(스크롤 시 접힘) + 캘린더. 리스트만 스크롤(design txm-pin). */}
+        <LedgerPin ref={pinRef} compact={compact}>
+          {/* 월 네비 + 필터/추가 */}
+          <LedgerMonthNav>
+            {!filterActive && (
+              <>
+                <LedgerNavBtn
+                  onClick={() => goMonth(-1)}
+                  aria-label={t("prevMonth")}
+                >
+                  <ChevronLeft size={19} />
+                </LedgerNavBtn>
+                <LedgerMonthLabel>{txmMonthLabel(month)}</LedgerMonthLabel>
+                <LedgerNavBtn
+                  onClick={() => goMonth(1)}
+                  aria-label={t("nextMonth")}
+                >
+                  <ChevronRight size={19} />
+                </LedgerNavBtn>
+              </>
             )}
-          </LedgerNavBtn>
-          <LedgerNavBtn onClick={onAddTx} aria-label={t("addTransaction")}>
-            <Plus size={19} />
-          </LedgerNavBtn>
-        </LedgerMonthNav>
+            <LedgerNavBtn
+              className="ml-auto relative"
+              active={activeCount > 0}
+              onClick={() => setFilterOpen(true)}
+              aria-label={t("filter.title")}
+            >
+              <SlidersHorizontal size={18} />
+              {activeCount > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--bg-brand-hover)] px-1 text-[length:var(--text-badge)] font-bold text-[var(--fg-on-brand)]"
+                >
+                  {activeCount}
+                </span>
+              )}
+            </LedgerNavBtn>
+            <LedgerNavBtn onClick={onAddTx} aria-label={t("addTransaction")}>
+              <Plus size={19} />
+            </LedgerNavBtn>
+          </LedgerMonthNav>
 
-        {filterActive && (
-          <FilterChipsRow
-            filterValue={filterValue}
-            onChange={(v) =>
-              setFilterValue(
-                v && filterActiveCount(v, viewPeriod) > 0 ? v : null,
-              )
-            }
-            assetName={asset?.assetName}
-            onClearAsset={clear}
-            categories={categoriesQ.data ?? []}
-            assets={assetsQ.data?.assets ?? []}
-          />
-        )}
+          {filterActive && (
+            <FilterChipsRow
+              filterValue={filterValue}
+              onChange={(v) =>
+                setFilterValue(
+                  v && filterActiveCount(v, viewPeriod) > 0 ? v : null,
+                )
+              }
+              assetName={asset?.assetName}
+              onClearAsset={clear}
+              categories={categoriesQ.data ?? []}
+              assets={assetsQ.data?.assets ?? []}
+            />
+          )}
 
-        {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
-        {!filterActive && (
-          <LedgerCollapse>
-            <LedgerHead>
-              <div style={{ minWidth: 0 }}>
-                <LedgerTotal className="num">
-                  {isLoadingSummary ? (
-                    "—"
-                  ) : (
-                    <>
+          {/* 총액 + 인사이트 + 소비 요약 — 스크롤 시 접힘. 필터 활성 시 숨김. */}
+          {!filterActive && (
+            <LedgerCollapse>
+              <LedgerHead>
+                <div style={{ minWidth: 0 }}>
+                  <LedgerTotal className="num">
+                    {isLoadingSummary ? (
+                      "—"
+                    ) : (
+                      <>
+                        <MaskAmount card="ledger.txList" kind="expense">
+                          {wonPre()}
+                          {KRW(monthOut)}
+                        </MaskAmount>
+                        <WonUnit card="ledger.txList" kind="expense" />
+                      </>
+                    )}
+                  </LedgerTotal>
+                  {insight && <LedgerSub>{insight}</LedgerSub>}
+                </div>
+                <LedgerSumBtn
+                  active={sumOpen}
+                  onClick={() => setSumOpen((v) => !v)}
+                  aria-expanded={sumOpen}
+                >
+                  {t("txm.spendSummary")}
+                </LedgerSumBtn>
+              </LedgerHead>
+
+              {sumOpen && (
+                <LedgerSummary>
+                  <LedgerSummaryRow>
+                    <span>{t("income")}</span>
+                    <span className="num" style={{ color: "var(--fg-brand)" }}>
+                      <MaskAmount card="ledger.txList" kind="income">
+                        +{wonPre()}
+                        {KRW(monthIn)}
+                      </MaskAmount>
+                      <WonUnit card="ledger.txList" kind="income" />
+                    </span>
+                  </LedgerSummaryRow>
+                  <LedgerSummaryRow>
+                    <span>{t("expense")}</span>
+                    <span
+                      className="num"
+                      style={{ color: "var(--fg-expense)" }}
+                    >
                       <MaskAmount card="ledger.txList" kind="expense">
+                        {minusOf(monthOut)}
                         {wonPre()}
-                        {KRW(monthOut)}
+                        {KRW(Math.abs(monthOut))}
                       </MaskAmount>
                       <WonUnit card="ledger.txList" kind="expense" />
-                    </>
-                  )}
-                </LedgerTotal>
-                {insight && <LedgerSub>{insight}</LedgerSub>}
-              </div>
-              <LedgerSumBtn
-                active={sumOpen}
-                onClick={() => setSumOpen((v) => !v)}
-                aria-expanded={sumOpen}
-              >
-                {t("txm.spendSummary")}
-              </LedgerSumBtn>
-            </LedgerHead>
+                    </span>
+                  </LedgerSummaryRow>
+                  <LedgerSummaryRow total>
+                    <span>{t("txDetail.sumLabel")}</span>
+                    <span className="num">
+                      <MaskAmount card="ledger.txList" kind="net">
+                        {monthIn - monthOut >= 0 ? "+" : "−"}
+                        {wonPre()}
+                        {KRW(Math.abs(monthIn - monthOut))}
+                      </MaskAmount>
+                      <WonUnit card="ledger.txList" kind="net" />
+                    </span>
+                  </LedgerSummaryRow>
+                </LedgerSummary>
+              )}
+            </LedgerCollapse>
+          )}
 
-            {sumOpen && (
-              <LedgerSummary>
-                <LedgerSummaryRow>
-                  <span>{t("income")}</span>
-                  <span className="num" style={{ color: "var(--fg-brand)" }}>
-                    <MaskAmount card="ledger.txList" kind="income">
-                      +{wonPre()}
-                      {KRW(monthIn)}
-                    </MaskAmount>
-                    <WonUnit card="ledger.txList" kind="income" />
-                  </span>
-                </LedgerSummaryRow>
-                <LedgerSummaryRow>
-                  <span>{t("expense")}</span>
-                  <span className="num" style={{ color: "var(--fg-expense)" }}>
-                    <MaskAmount card="ledger.txList" kind="expense">
-                      {minusOf(monthOut)}
-                      {wonPre()}
-                      {KRW(Math.abs(monthOut))}
-                    </MaskAmount>
-                    <WonUnit card="ledger.txList" kind="expense" />
-                  </span>
-                </LedgerSummaryRow>
-                <LedgerSummaryRow total>
-                  <span>{t("txDetail.sumLabel")}</span>
-                  <span className="num">
-                    <MaskAmount card="ledger.txList" kind="net">
-                      {monthIn - monthOut >= 0 ? "+" : "−"}
-                      {wonPre()}
-                      {KRW(Math.abs(monthIn - monthOut))}
-                    </MaskAmount>
-                    <WonUnit card="ledger.txList" kind="net" />
-                  </span>
-                </LedgerSummaryRow>
-              </LedgerSummary>
-            )}
-          </LedgerCollapse>
-        )}
-
-        {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
-        {!filterActive && (
-          <LedgerCalendar ref={calRef}>
-            <LedgerDow
-              labels={dowLabels}
-              // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
-              // 카테고리 팔레트의 빨강(--color-chart-red)을 쓰고 있어 헤더만 톤이 달랐다.
-              colorFor={(i) =>
-                i === 0
-                  ? "var(--color-fg-critical)"
-                  : i === 6
-                    ? "var(--fg-brand)"
-                    : undefined
-              }
-            />
-            {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
-              <LedgerWeek key={wi}>
-                {w.map((c, i) => {
-                  if (!c) return <LedgerCell key={`e${i}`} empty />;
-                  const isSel = c.ds === selected;
-                  const data = byDay[c.ds];
-                  return (
-                    <LedgerCell
-                      key={c.ds}
-                      selected={isSel}
-                      onClick={() => {
-                        setSelected(c.ds);
-                        if (data) {
-                          lock(800);
-                          scrollToDay(c.ds);
-                        }
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!data || !calRef.current) return;
-                        const cell = e.currentTarget.getBoundingClientRect();
-                        const cal = calRef.current.getBoundingClientRect();
-                        setCellTip({
-                          ds: c.ds,
-                          left: cell.left - cal.left + cell.width / 2,
-                          top: cell.top - cal.top,
-                        });
-                      }}
-                      onMouseLeave={() => setCellTip(null)}
-                    >
-                      <LedgerCellNum
-                        selected={isSel}
-                        style={
-                          isSel
-                            ? undefined
-                            : {
-                                color: numColor(c.ds, i % 7),
-                                opacity: c.ds > todayStr ? 0.55 : 1,
-                              }
-                        }
-                      >
-                        {c.d}
-                      </LedgerCellNum>
-                      {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
-                      {data && data.out > 0 && (
-                        <LedgerCellAmt
-                          className="num"
-                          style={{ color: "var(--fg-expense)" }}
-                        >
-                          <MaskAmount
-                            card={CALENDAR_CELL_CARDS}
-                            kind="expense"
-                            mask="••"
-                          >
-                            -{KRW(data.out)}
-                          </MaskAmount>
-                        </LedgerCellAmt>
-                      )}
-                      {data && data.inn > 0 && (
-                        <LedgerCellAmt
-                          className="num"
-                          style={{ color: "var(--fg-brand)" }}
-                        >
-                          <MaskAmount
-                            card={CALENDAR_CELL_CARDS}
-                            kind="income"
-                            mask="••"
-                          >
-                            +{KRW(data.inn)}
-                          </MaskAmount>
-                        </LedgerCellAmt>
-                      )}
-                      {!data && <LedgerCellAmt className="num" />}
-                    </LedgerCell>
-                  );
-                })}
-              </LedgerWeek>
-            ))}
-            <LedgerExpand
-              expanded={expanded}
-              onClick={() => setExpanded((v) => !v)}
-              aria-label={expanded ? t("viewCalendar") : t("viewList")}
-            />
-            {/* 차트형 셀 툴팁 — 통계 GrooChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
-            {cellTip && tipDay && (
-              <LedgerCellTip
-                left={cellTip.left}
-                top={cellTip.top}
-                title={
-                  <>
-                    {Number(cellTip.ds.slice(5, 7))}.{" "}
-                    {Number(cellTip.ds.slice(8, 10))}
-                  </>
+          {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체. 필터 적용 시 숨김(리스트만, 사용자 결정). */}
+          {!filterActive && (
+            <LedgerCalendar ref={calRef}>
+              <LedgerDow
+                labels={dowLabels}
+                // 일요일은 아래 날짜 숫자와 같은 색이어야 한다(dowColor 도 --fg-expense).
+                // 카테고리 팔레트의 빨강(--color-chart-red)을 쓰고 있어 헤더만 톤이 달랐다.
+                colorFor={(i) =>
+                  i === 0
+                    ? "var(--color-fg-critical)"
+                    : i === 6
+                      ? "var(--fg-brand)"
+                      : undefined
                 }
-                rows={[
-                  {
-                    label: t("expense"),
-                    color: "var(--color-fg-critical)",
-                    value: (
-                      <>
-                        <MaskAmount card="ledger.txList" kind="expense">
-                          {minusOf(tipDay.out)}
-                          {wonPre()}
-                          {KRW(Math.abs(tipDay.out))}
-                        </MaskAmount>
-                        <WonUnit card="ledger.txList" kind="expense" />
-                      </>
-                    ),
-                  },
-                  {
-                    label: t("income"),
-                    color: "var(--fg-brand)",
-                    value: (
-                      <>
-                        <MaskAmount card="ledger.txList" kind="income">
-                          +{wonPre()}
-                          {KRW(tipDay.inn)}
-                        </MaskAmount>
-                        <WonUnit card="ledger.txList" kind="income" />
-                      </>
-                    ),
-                  },
-                ]}
               />
-            )}
-          </LedgerCalendar>
-        )}
-
-        {!filterActive && <LedgerDivider />}
-      </LedgerPin>
-
-      {/* 거래 리스트 — 날짜 그룹 */}
-      <LedgerList>
-        {isLoadingList ? (
-          <div
-            style={{
-              paddingTop: 24,
-              display: "flex",
-              flexDirection: "column",
-              gap: 24,
-            }}
-          >
-            <ExpenseDayGroupSkeleton rows={3} />
-            <ExpenseDayGroupSkeleton rows={2} />
-          </div>
-        ) : (
-          grouped.map(([d, items]) => {
-            const [yy, mm, dd] = d.split("-");
-            const dow = formatDay(d).dow;
-            const rel = relOf(d);
-            // 일별 합계 — 이체는 자산 간 이동이라 지출/수입 어느 쪽에도 넣지 않는다.
-            const dayExpenses = items.flatMap((i) =>
-              i.kind === "expense" ? [i.expense] : [],
-            );
-            const dOut = expenseSum(dayExpenses);
-            const dIn = incomeSum(dayExpenses);
-            return (
-              <LedgerDayGroup key={d} day={d}>
-                <LedgerDayHead>
-                  <LedgerDayDate>
-                    {(yy ?? "").slice(2)}. {Number(mm)}. {Number(dd)}({dow})
-                  </LedgerDayDate>
-                  {rel && <LedgerDayRel>&nbsp;· {rel}</LedgerDayRel>}
-                  <LedgerDaySum className="num">
-                    {dOut > 0 && (
-                      <span className="font-semibold text-[var(--fg-expense)]">
-                        <MaskAmount card="ledger.txList" kind="expense">
-                          -{wonPre()}
-                          {KRW(dOut)}
-                        </MaskAmount>
-                        <WonUnit card="ledger.txList" kind="expense" />
-                      </span>
-                    )}
-                    {dIn > 0 && (
-                      <span className="ml-2 font-semibold text-[var(--fg-brand)]">
-                        <MaskAmount card="ledger.txList" kind="income">
-                          +{wonPre()}
-                          {KRW(dIn)}
-                        </MaskAmount>
-                        <WonUnit card="ledger.txList" kind="income" />
-                      </span>
-                    )}
-                  </LedgerDaySum>
-                </LedgerDayHead>
-                <div>
-                  {items.map((item) => {
-                    // 지출·이체는 다른 테이블이라 rowId 가 겹칠 수 있다 — key·포커스는 종류까지 합쳐 판별.
-                    const isFocus =
-                      item.kind === "expense" &&
-                      focusTxId === item.expense.rowId;
-                    return item.kind === "expense" ? (
-                      <SwipeActions
-                        key={ledgerKey(item)}
-                        ref={isFocus ? focusRef : undefined}
-                        rowId={`expense-${item.expense.rowId}`}
-                        groupTag="expense-list"
-                        rowLabel={rowLabelOf(item.expense)}
-                        // 데스크톱 통과는 spec Platform — 이 브랜치는 이미 모바일 전용이라
-                        // 실질 no-op 이지만, 공용 컴포넌트로 옮겨질 때 새지 않게 의미를 남긴다.
-                        enabled
-                        style={{
-                          background: isFocus
-                            ? "var(--bg-brand-subtle)"
-                            : "var(--bg-surface)",
-                          transition: "background 0.4s",
-                          borderRadius: 10,
+              {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
+                <LedgerWeek key={wi}>
+                  {w.map((c, i) => {
+                    if (!c) return <LedgerCell key={`e${i}`} empty />;
+                    const isSel = c.ds === selected;
+                    const data = byDay[c.ds];
+                    return (
+                      <LedgerCell
+                        key={c.ds}
+                        selected={isSel}
+                        onClick={() => {
+                          setSelected(c.ds);
+                          if (data) {
+                            lock(800);
+                            scrollToDay(c.ds);
+                          }
                         }}
-                        // 시스템이 만든 거래(매도 실현손익·이체 이자)는 원본을 지워야 사라진다 —
-                        // 상세 다이얼로그가 버튼을 감추는 것과 같은 조건으로 액션 자체를 없앤다.
-                        actions={
-                          item.expense.autoSource != null
-                            ? []
-                            : swipeActionsFor(item.expense)
-                        }
+                        onMouseEnter={(e) => {
+                          if (!data || !calRef.current) return;
+                          const cell = e.currentTarget.getBoundingClientRect();
+                          const cal = calRef.current.getBoundingClientRect();
+                          setCellTip({
+                            ds: c.ds,
+                            left: cell.left - cal.left + cell.width / 2,
+                            top: cell.top - cal.top,
+                          });
+                        }}
+                        onMouseLeave={() => setCellTip(null)}
                       >
-                        <ExpenseRow
-                          expense={item.expense}
-                          onClick={(ex) => setDetail(ex)}
-                        />
-                      </SwipeActions>
-                    ) : (
-                      // 이체 행은 감싸지 않는다 — 앱도 제외한다.
-                      <div key={ledgerKey(item)}>
-                        <TransferRow
-                          transfer={item.transfer}
-                          onClick={(tr) => setTransferDetail(tr)}
-                        />
-                      </div>
+                        <LedgerCellNum
+                          selected={isSel}
+                          style={
+                            isSel
+                              ? undefined
+                              : {
+                                  color: numColor(c.ds, i % 7),
+                                  opacity: c.ds > todayStr ? 0.55 : 1,
+                                }
+                          }
+                        >
+                          {c.d}
+                        </LedgerCellNum>
+                        {/* 지출·수입 병기(각 줄) — 색은 아래 리스트와 동일(사용자 결정). */}
+                        {data && data.out > 0 && (
+                          <LedgerCellAmt
+                            className="num"
+                            style={{ color: "var(--fg-expense)" }}
+                          >
+                            <MaskAmount
+                              card={CALENDAR_CELL_CARDS}
+                              kind="expense"
+                              mask="••"
+                            >
+                              -{KRW(data.out)}
+                            </MaskAmount>
+                          </LedgerCellAmt>
+                        )}
+                        {data && data.inn > 0 && (
+                          <LedgerCellAmt
+                            className="num"
+                            style={{ color: "var(--fg-brand)" }}
+                          >
+                            <MaskAmount
+                              card={CALENDAR_CELL_CARDS}
+                              kind="income"
+                              mask="••"
+                            >
+                              +{KRW(data.inn)}
+                            </MaskAmount>
+                          </LedgerCellAmt>
+                        )}
+                        {!data && <LedgerCellAmt className="num" />}
+                      </LedgerCell>
                     );
                   })}
+                </LedgerWeek>
+              ))}
+              <LedgerExpand
+                expanded={expanded}
+                onClick={() => setExpanded((v) => !v)}
+                aria-label={expanded ? t("viewCalendar") : t("viewList")}
+              />
+              {/* 차트형 셀 툴팁 — 통계 GrooChartTooltip 시각 미러(지출·수입 모두, 사용자 결정). */}
+              {cellTip && tipDay && (
+                <LedgerCellTip
+                  left={cellTip.left}
+                  top={cellTip.top}
+                  title={
+                    <>
+                      {Number(cellTip.ds.slice(5, 7))}.{" "}
+                      {Number(cellTip.ds.slice(8, 10))}
+                    </>
+                  }
+                  rows={[
+                    {
+                      label: t("expense"),
+                      color: "var(--color-fg-critical)",
+                      value: (
+                        <>
+                          <MaskAmount card="ledger.txList" kind="expense">
+                            {minusOf(tipDay.out)}
+                            {wonPre()}
+                            {KRW(Math.abs(tipDay.out))}
+                          </MaskAmount>
+                          <WonUnit card="ledger.txList" kind="expense" />
+                        </>
+                      ),
+                    },
+                    {
+                      label: t("income"),
+                      color: "var(--fg-brand)",
+                      value: (
+                        <>
+                          <MaskAmount card="ledger.txList" kind="income">
+                            +{wonPre()}
+                            {KRW(tipDay.inn)}
+                          </MaskAmount>
+                          <WonUnit card="ledger.txList" kind="income" />
+                        </>
+                      ),
+                    },
+                  ]}
+                />
+              )}
+            </LedgerCalendar>
+          )}
+
+          {!filterActive && <LedgerDivider />}
+        </LedgerPin>
+
+        {/* 거래 리스트 — 날짜 그룹 */}
+        <LedgerList>
+          {isLoadingList ? (
+            <div
+              style={{
+                paddingTop: 24,
+                display: "flex",
+                flexDirection: "column",
+                gap: 24,
+              }}
+            >
+              <ExpenseDayGroupSkeleton rows={3} />
+              <ExpenseDayGroupSkeleton rows={2} />
+            </div>
+          ) : (
+            grouped.map(([d, items]) => {
+              const [yy, mm, dd] = d.split("-");
+              const dow = formatDay(d).dow;
+              const rel = relOf(d);
+              // 일별 합계 — 이체는 자산 간 이동이라 지출/수입 어느 쪽에도 넣지 않는다.
+              const dayExpenses = items.flatMap((i) =>
+                i.kind === "expense" ? [i.expense] : [],
+              );
+              const dOut = expenseSum(dayExpenses);
+              const dIn = incomeSum(dayExpenses);
+              return (
+                <LedgerDayGroup key={d} day={d}>
+                  <LedgerDayHead>
+                    <LedgerDayDate>
+                      {(yy ?? "").slice(2)}. {Number(mm)}. {Number(dd)}({dow})
+                    </LedgerDayDate>
+                    {rel && <LedgerDayRel>&nbsp;· {rel}</LedgerDayRel>}
+                    <LedgerDaySum className="num">
+                      {dOut > 0 && (
+                        <span className="font-semibold text-[var(--fg-expense)]">
+                          <MaskAmount card="ledger.txList" kind="expense">
+                            -{wonPre()}
+                            {KRW(dOut)}
+                          </MaskAmount>
+                          <WonUnit card="ledger.txList" kind="expense" />
+                        </span>
+                      )}
+                      {dIn > 0 && (
+                        <span className="ml-2 font-semibold text-[var(--fg-brand)]">
+                          <MaskAmount card="ledger.txList" kind="income">
+                            +{wonPre()}
+                            {KRW(dIn)}
+                          </MaskAmount>
+                          <WonUnit card="ledger.txList" kind="income" />
+                        </span>
+                      )}
+                    </LedgerDaySum>
+                  </LedgerDayHead>
+                  <div>
+                    {items.map((item) => {
+                      // 지출·이체는 다른 테이블이라 rowId 가 겹칠 수 있다 — key·포커스는 종류까지 합쳐 판별.
+                      const isFocus =
+                        item.kind === "expense" &&
+                        focusTxId === item.expense.rowId;
+                      return item.kind === "expense" ? (
+                        <ExpenseSwipeRow
+                          key={ledgerKey(item)}
+                          expense={item.expense}
+                          rowRef={isFocus ? focusRef : undefined}
+                          highlighted={isFocus}
+                          rowLabel={rowLabelOf(item.expense)}
+                          // 시스템이 만든 거래(매도 실현손익·이체 이자)는 원본을 지워야 사라진다 —
+                          // 상세 다이얼로그가 버튼을 감추는 것과 같은 조건으로 액션 자체를 없앤다.
+                          actions={
+                            item.expense.autoSource != null
+                              ? []
+                              : swipeActionsFor(item.expense)
+                          }
+                          onOpen={(ex) => setDetail(ex)}
+                          onAsk={setPendingAction}
+                        />
+                      ) : (
+                        // 이체 행은 감싸지 않는다 — 앱도 제외한다. 금액 열만 ⋮ 줄과 맞춘다.
+                        <PlainRow key={ledgerKey(item)}>
+                          <TransferRow
+                            transfer={item.transfer}
+                            onClick={(tr) => setTransferDetail(tr)}
+                          />
+                        </PlainRow>
+                      );
+                    })}
+                  </div>
+                </LedgerDayGroup>
+              );
+            })
+          )}
+          {!isLoadingList &&
+            expenses.length === 0 &&
+            transfers.length === 0 && (
+              <div style={{ padding: "56px 0", textAlign: "center" }}>
+                <ReceiptText
+                  size={36}
+                  style={{ color: "var(--fg-tertiary)", margin: "0 auto 12px" }}
+                />
+                <div
+                  style={{
+                    fontSize: "var(--text-body-sm)",
+                    fontWeight: 700,
+                    color: "var(--fg-primary)",
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("txm.emptyMonth", { month: txmMonthLabel(month) })}
                 </div>
-              </LedgerDayGroup>
-            );
-          })
-        )}
-        {!isLoadingList && expenses.length === 0 && transfers.length === 0 && (
-          <div style={{ padding: "56px 0", textAlign: "center" }}>
-            <ReceiptText
-              size={36}
-              style={{ color: "var(--fg-tertiary)", margin: "0 auto 12px" }}
-            />
-            <div
-              style={{
-                fontSize: "var(--text-body-sm)",
-                fontWeight: 700,
-                color: "var(--fg-primary)",
-                marginBottom: 4,
-              }}
-            >
-              {t("txm.emptyMonth", { month: txmMonthLabel(month) })}
-            </div>
-            <div
-              style={{
-                fontSize: "var(--text-label-sm)",
-                color: "var(--fg-tertiary)",
-              }}
-            >
-              {t("txm.emptyMonthDesc")}
-            </div>
-          </div>
-        )}
-      </LedgerList>
+                <div
+                  style={{
+                    fontSize: "var(--text-label-sm)",
+                    color: "var(--fg-tertiary)",
+                  }}
+                >
+                  {t("txm.emptyMonthDesc")}
+                </div>
+              </div>
+            )}
+        </LedgerList>
 
-      {!filterActive && (
-        <LedgerPrevBtn onClick={() => goMonth(-1)}>
-          {t("txm.prevMonthBtn", {
-            month: txmMonthLabel(shiftMonthKey(month, -1)),
-          })}
-        </LedgerPrevBtn>
-      )}
+        {!filterActive && (
+          <LedgerPrevBtn onClick={() => goMonth(-1)}>
+            {t("txm.prevMonthBtn", {
+              month: txmMonthLabel(shiftMonthKey(month, -1)),
+            })}
+          </LedgerPrevBtn>
+        )}
 
-      {detail && !editing && (
-        <TxDetailDialog
-          expense={detail}
-          mobile
-          onClose={() => setDetail(null)}
-          onEdit={(e) => {
-            setDetail(null);
-            setEditing(e);
-          }}
+        {detail && !editing && (
+          <TxDetailDialog
+            expense={detail}
+            mobile
+            onClose={() => setDetail(null)}
+            onEdit={(e) => {
+              setDetail(null);
+              setEditing(e);
+            }}
+          />
+        )}
+        {editing && (
+          <AddTxSheet
+            expense={editing}
+            mobile
+            onClose={() => setEditing(null)}
+          />
+        )}
+        {transferDetail && !editingTransfer && (
+          <TransferDetailDialog
+            transfer={transferDetail}
+            mobile
+            onClose={() => setTransferDetail(null)}
+            onEdit={(tr) => {
+              setTransferDetail(null);
+              setEditingTransfer(tr);
+            }}
+          />
+        )}
+        {editingTransfer && (
+          <AddTxSheet
+            editTransfer={editingTransfer}
+            mobile
+            onClose={() => setEditingTransfer(null)}
+          />
+        )}
+        {filterOpen && (
+          <FilterDialog
+            initial={filterValue}
+            defaultPeriod={viewPeriod}
+            categories={categoriesQ.data ?? []}
+            assets={assetsQ.data?.assets ?? []}
+            onClose={() => setFilterOpen(false)}
+            onApply={(v) => {
+              setFilterValue(v);
+              setFilterOpen(false);
+            }}
+            mobile
+          />
+        )}
+        <SwipeConfirmDialog
+          action={pendingAction}
+          onClose={() => setPendingAction(null)}
         />
-      )}
-      {editing && (
-        <AddTxSheet expense={editing} mobile onClose={() => setEditing(null)} />
-      )}
-      {transferDetail && !editingTransfer && (
-        <TransferDetailDialog
-          transfer={transferDetail}
-          mobile
-          onClose={() => setTransferDetail(null)}
-          onEdit={(tr) => {
-            setTransferDetail(null);
-            setEditingTransfer(tr);
-          }}
-        />
-      )}
-      {editingTransfer && (
-        <AddTxSheet
-          editTransfer={editingTransfer}
-          mobile
-          onClose={() => setEditingTransfer(null)}
-        />
-      )}
-      {filterOpen && (
-        <FilterDialog
-          initial={filterValue}
-          defaultPeriod={viewPeriod}
-          categories={categoriesQ.data ?? []}
-          assets={assetsQ.data?.assets ?? []}
-          onClose={() => setFilterOpen(false)}
-          onApply={(v) => {
-            setFilterValue(v);
-            setFilterOpen(false);
-          }}
-          mobile
-        />
-      )}
-    </LedgerShell>
+      </LedgerShell>
+    </SwipeActionsProvider>
   );
 }
