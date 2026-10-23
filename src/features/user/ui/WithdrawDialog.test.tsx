@@ -298,7 +298,11 @@ describe("막는 게 없을 때", () => {
   it("비밀번호가 틀리면 서버 글 대신 화면 글을 칸 밑에 붙인다", async () => {
     state.verifyError = Object.assign(
       new Error("Request failed with status code 400"),
-      { response: { data: { message: "비밀번호가 올바르지 않아요" } } },
+      {
+        response: {
+          data: { code: "AUTH_021", message: "비밀번호가 올바르지 않아요" },
+        },
+      },
     );
 
     act(() => click("withdraw.next"));
@@ -316,7 +320,7 @@ describe("막는 게 없을 때", () => {
 
   it("코드가 틀리면 서버 글 대신 '코드가 맞지 않거나 시간이 지났어요' 화면 글이다", async () => {
     state.verifyCodeError = Object.assign(new Error("x"), {
-      response: { data: { message: "AUTH_031" } },
+      response: { data: { code: "AUTH_021", message: "AUTH_021" } },
     });
     act(() => click("withdraw.next"));
     await flushClickGuard();
@@ -332,7 +336,20 @@ describe("막는 게 없을 때", () => {
     await act(async () => click("withdraw.confirm"));
     const text = document.body.textContent ?? "";
     expect(text).toContain("withdraw.codeWrong");
-    expect(text).not.toContain("AUTH_031");
+    expect(text).not.toContain("AUTH_021");
+  });
+
+  it("확인 단계의 네트워크 · 서버 오류는 '틀림' 이 아니라 해지 실패 글이다(앱과 한 벌 — AUTH_021 만 칸 글)", async () => {
+    state.verifyError = new Error("Network Error");
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    const pw = document.getElementById("withdraw-password") as HTMLInputElement;
+    act(() => setValue(pw, "whatever"));
+    await act(async () => click("withdraw.confirm"));
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("withdraw.failed");
+    expect(text).not.toContain("withdraw.passwordWrong");
+    expect(text).not.toContain("Network Error");
   });
 
   it("해지 요청이 실패하면 해지 실패 문구를 쓴다", async () => {
@@ -548,7 +565,7 @@ describe("해지하는 동안 — 덮개(I-05 37)", () => {
     expect(
       document.body.querySelector('[data-slot="busy-overlay"]'),
     ).toBeNull();
-    expect(document.body.textContent).toContain("withdraw.passwordWrong");
+    expect(document.body.textContent).toContain("withdraw.failed");
   });
 });
 

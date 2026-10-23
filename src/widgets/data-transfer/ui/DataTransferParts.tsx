@@ -80,7 +80,7 @@ export function DataSection({
         {desc}
         {children(titleId)}
         {footer && (
-          <div className="flex flex-col gap-x3 px-global-gutter pt-x3 pb-x6">
+          <div className="flex flex-col gap-x3 px-global-gutter pt-x3 pb-x3">
             {footer}
           </div>
         )}

@@ -39,6 +39,12 @@ import {
  */
 type Step = "impact" | "reauth";
 
+/** 서버 `REAUTH_FAILED`(AUTH_021) — 비밀번호 · 코드가 틀렸거나 지났다. */
+const REAUTH_FAILED = "AUTH_021";
+const isReauthFailed = (e: unknown) =>
+  (e as { response?: { data?: { code?: string } } } | null)?.response?.data
+    ?.code === REAUTH_FAILED;
+
 /** 본인 확인 방법. 비밀번호가 없는 소셜 전용 계정은 코드 말고 길이 없다. */
 type ReauthMethod = "password" | "emailCode";
 
@@ -172,11 +178,14 @@ export function WithdrawDialog({
         method === "password"
           ? await verifyPassword.mutateAsync(password)
           : await verifyCode.mutateAsync(code);
-    } catch {
+    } catch (e) {
+      // 틀림 · 지남(서버 AUTH_021 REAUTH_FAILED)만 그 칸의 글이고, 네트워크 · 서버 오류는 해지 실패 글이다(앱과 한 벌).
       setReauthError(
-        method === "password"
-          ? t("withdraw.passwordWrong")
-          : t("withdraw.codeWrong"),
+        isReauthFailed(e)
+          ? method === "password"
+            ? t("withdraw.passwordWrong")
+            : t("withdraw.codeWrong")
+          : t("withdraw.failed"),
       );
       setBusy(false);
       runningRef.current = false;
@@ -332,7 +341,7 @@ export function WithdrawDialog({
                 codeInputId="withdraw-code"
                 onResend={onSendCode}
               />
-              {/* 스팸함 안내 — 해부에는 없는 줄이지만 사용자 결정(10-23)으로 [코드 받기] 아래 R9 한 줄로 둔다 */}
+              {/* 스팸함 안내 — input-otp.md 해부(라벨 · 칸 · 설명 · 다시 받기)에 없는 줄이다. 남길지는 사용자 결정 대기(결과표 "빼 둔 것" 1) — 답 전에는 앱과 같이 [코드 받기] 아래 R9 한 줄 */}
               <p className="m-0 text-t4 text-fg-neutral-subtle">
                 {t("withdraw.codeHint")}
               </p>

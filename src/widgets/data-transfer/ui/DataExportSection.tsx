@@ -4,6 +4,7 @@ import { formatMonthDay } from "@/shared/lib/date";
 import {
   Braces,
   Calendar,
+  FileSearch,
   FileText,
   Receipt,
   SquareCheckBig,
@@ -505,12 +506,7 @@ function ExportPane({ mobile }: { mobile: boolean }) {
       </DataSection>
 
       {/* 민감 정보 가리기 + 액션 — 데스크톱은 마지막 카드 안 바닥 오른쪽, 폰은 화면 바닥 고정 */}
-      {mobile && (
-        <>
-          {maskCheckbox}
-          {actionBar}
-        </>
-      )}
+      {mobile && maskCheckbox}
 
       {/* 미리보기 결과 — 모든 폭에서 표(0 ~ 767 은 표와 함께 가로 스크롤) */}
       {preview && activeTab && (
@@ -546,8 +542,9 @@ function ExportPane({ mobile }: { mobile: boolean }) {
                         <TableStatusRow>
                           <ResultSection
                             size="medium"
-                            icon={<FileText />}
-                            title={t("section.noData")}
+                            icon={<FileSearch />}
+                            title={t("section.previewEmptyTitle")}
+                            description={t("section.noData")}
                           />
                         </TableStatusRow>
                       ) : (
@@ -565,8 +562,8 @@ function ExportPane({ mobile }: { mobile: boolean }) {
               ))}
               <p className="m-0 text-t4 text-fg-neutral-subtle">
                 {t("section.previewFooter", {
-                  rows: activeTab.rows.length,
-                  types: selected.length,
+                  rows: activeTab.rows.length.toLocaleString(),
+                  types: preview.length.toLocaleString(),
                   total: totalSelectedCount.toLocaleString(),
                 })}
               </p>
@@ -574,6 +571,8 @@ function ExportPane({ mobile }: { mobile: boolean }) {
           )}
         </DataSection>
       )}
+      {/* 폰 바닥 바는 pane 의 마지막 자식 — 미리보기가 떠도 화면 바닥을 떠나지 않는다 */}
+      {mobile && actionBar}
     </div>
   );
 }

@@ -192,7 +192,7 @@ describe("가져오기 완료 화면 — 실패한 행 (QA #61)", () => {
       failuresTruncated: true,
     });
     expect(container.textContent).toContain(
-      'import.failuresCapped{"shown":50,"total":120}',
+      'import.failuresCapped{"shown":"50","total":"120"}',
     );
   });
 
@@ -213,7 +213,7 @@ describe("가져오기 완료 화면 — 실패한 행 (QA #61)", () => {
       failuresTruncated: false,
     });
     expect(container.textContent).toContain(
-      'import.failuresCapped{"shown":50,"total":120}',
+      'import.failuresCapped{"shown":"50","total":"120"}',
     );
   });
 
@@ -241,7 +241,7 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       newCategoryCount: 2,
     };
     await toMapping();
-    expect(container.textContent).toContain('import.newCatTitle{"count":2}');
+    expect(container.textContent).toContain('import.newCatTitle{"count":"2"}');
     expect(container.textContent).toContain("싟비");
     expect(container.textContent).toContain("식비 > 커피");
   });
@@ -253,7 +253,7 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       newCategoryCount: 60,
     };
     await toMapping();
-    expect(container.textContent).toContain('import.newCatMore{"count":58}');
+    expect(container.textContent).toContain('import.newCatMore{"count":"58"}');
   });
 
   it("새로 생길 게 없으면 블록이 없다", async () => {
@@ -518,5 +518,35 @@ describe("검수 반영 — 완료 화면(I-05 50)", () => {
     const header = container.querySelector('[data-slot="list-header"]')!;
     expect(header.className).toContain("text-fg-neutral-subtle");
     expect(header.className).not.toContain("text-fg-neutral ");
+  });
+});
+
+describe("검수 재반영 — 쉼표 · 실패 사유 자리(W5 · W6)", () => {
+  it("건수에 천 단위 쉼표가 붙는다", async () => {
+    await toDone({
+      ...baseResult,
+      failed: 1200,
+      failures: [{ lineNo: 5, reason: "date" }],
+      failuresTruncated: true,
+      createdCategories: ["a"],
+      createdCategoryCount: 1234,
+    });
+    const text = container.textContent ?? "";
+    expect(text).toContain('import.failuresTitle{"count":"1,200"}');
+    expect(text).toContain('import.createdCatTitle{"count":"1,234"}');
+    expect(text).toContain(
+      'import.failuresCapped{"shown":"1","total":"1,200"}',
+    );
+  });
+
+  it("실패 사유는 줄 뒤 값이 아니라 설명(detail) 자리다 — 긴 문장도 줄바꿈된다", async () => {
+    await toDone(baseResult);
+    const row = [...container.querySelectorAll('[data-slot="list-item"]')].find(
+      (e) => e.textContent?.includes("import.failureLine"),
+    )!;
+    expect(
+      row.querySelector('[data-slot="list-detail"]')?.textContent,
+    ).toContain("import.failReason");
+    expect(row.querySelector('[data-slot="list-suffix"]')).toBeNull();
   });
 });

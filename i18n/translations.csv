@@ -1783,13 +1783,14 @@ export,section.customSelect,직접 선택,Custom
 export,section.rangeIncomplete,시작일과 종료일을 골라주세요.,Choose a start and end date.
 export,section.customRangeLabel,직접 고른 기간,Custom range
 export,section.dataTypeTitle,데이터 종류 — {{count}}개 선택됨,Data types — {{count}} selected
-export,section.dataTypeDesc,내보낼 데이터를 골라주세요. 여러 종류는 ZIP으로 묶여요.,Choose the data to export. Multiple types are bundled into a ZIP.
+export,section.dataTypeDesc,내보낼 데이터를 골라주세요. 여러 종류는 ZIP으로 묶어요.,Choose the data to export. Multiple types are bundled into a ZIP.
 export,section.dataTypeAll,모두,All
 export,section.countsFailed,건수를 불러오지 못했어요.,Could not load the counts.
 export,section.countGeon,{{count}}건,{{count}}
 export,section.maskSensitive,민감 정보 가리기 (잔액 · 금액 · 기관),"Mask sensitive info (balances, amounts, institutions)"
 export,section.noData,이 기간에 내보낼 데이터가 없어요.,No data to export for this period.
-export,section.previewFooter,상위 {{rows}}행 미리보기 · 선택 {{types}}종 합계 약 {{total}}건,"Top {{rows}} rows · {{types}} types, about {{total}} total"
+export,section.previewEmptyTitle,미리볼 데이터가 없어요,Nothing to preview
+export,section.previewFooter,상위 {{rows}}행 미리보기 · 선택한 {{types}}종 합계 약 {{total}}건,"Top {{rows}} rows · {{types}} selected types, about {{total}} in total"
 export,section.previewTabs,미리보기 데이터 종류,Preview data type
 export,section.period.thisMonth,이번 달,This month
 export,section.period.lastMonth,지난 달,Last month
@@ -1797,7 +1798,7 @@ export,section.period.last3m,최근 3개월,Last 3 months
 export,section.period.thisYear,올해,This year
 export,section.period.custom,사용자 지정,Custom
 export,section.dataType.EXPENSE,거래 내역,Transactions
-export,section.dataType.ASSET,자산·계좌,Assets & Accounts
+export,section.dataType.ASSET,자산 · 계좌,Assets & Accounts
 export,section.dataType.BUDGET,예산 설정,Budget
 export,section.dataType.CATEGORY,카테고리,Categories
 export,section.dataType.MEMO,메모,Memos
@@ -2487,12 +2488,12 @@ export,import.source.banksaladDesc,가계부 내역,Ledger export file
 export,import.source.toss,토스,Toss
 export,import.source.tossDesc,거래내역,Transaction history
 export,import.source.custom,직접 매핑,Custom
-export,import.source.customDesc,CSV·Excel 직접 연결,Map CSV/Excel yourself
+export,import.source.customDesc,CSV · Excel 직접 연결,Map CSV / Excel yourself
 export,import.uploadTitle,파일 업로드,Upload file
 export,import.uploadDesc,"CSV 또는 Excel(.xlsx, .xls) 파일을 올려주세요. 최대 10MB.","Upload a CSV or Excel (.xlsx, .xls) file. Up to 10MB."
 export,import.errorType,CSV 또는 Excel 파일만 올릴 수 있어요.,Only CSV or Excel files can be uploaded.
 export,import.errorSize,파일은 10MB까지 올릴 수 있어요.,Files up to 10MB can be uploaded.
-export,import.notice,가져온 데이터는 기존 거래에 추가되며 덮어쓰지 않아요. 미리보기에서 중복·오류를 확인할 수 있어요.,Imported data is added to existing transactions without overwriting. Check duplicates and errors in the preview.
+export,import.notice,가져온 데이터는 기존 거래에 추가되며 덮어쓰지 않아요. 미리보기에서 중복 · 오류를 확인할 수 있어요.,Imported data is added to existing transactions without overwriting. Check duplicates and errors in the preview.
 export,import.fileTitle,가져올 파일,File to import
 export,import.rowsDetected,{{total}}개 행 · 유효 {{valid}}건,{{total}} rows · {{valid}} valid
 export,import.change,변경,Change
@@ -2509,7 +2510,7 @@ export,import.field.subcategory,소분류,Subcategory
 export,import.field.time,시간,Time
 export,import.field.merchant,거래처,Merchant
 export,import.field.paymentMethod,결제수단,Payment method
-export,import.previewDesc,처음 몇 행 미리보기 · 중복 의심 {{dup}}건,Preview of first rows · {{dup}} possible duplicates
+export,import.previewDesc,중복 의심 {{dup}}건,{{dup}} possible duplicates
 export,import.income,수입,Income
 export,import.expense,지출,Expense
 export,import.dupBadge,중복,Duplicate
@@ -2517,11 +2518,11 @@ export,import.errorBadge,오류,Error
 export,import.statusCol,상태,Status
 export,import.optionsTitle,가져오기 옵션,Import options
 export,import.optDupSkip,중복 거래 건너뛰기,Skip duplicate transactions
-export,import.optDupSkipDesc,날짜·금액·내용이 같은 {{dup}}건을 제외해요,"Excludes {{dup}} rows with same date, amount & content"
+export,import.optDupSkipDesc,날짜 · 금액 · 내용이 같은 {{dup}}건을 제외해요.,"Excludes {{dup}} rows with same date, amount & content."
 export,import.blockedTitle,{{names}} 카테고리에 거래가 직접 등록돼 있어 하위 분류를 만들 수 없어요,Cannot create subcategories under {{names}} — it already has transactions
 export,import.blockedDesc,해당 대분류를 쓰는 행은 저장에 실패해요. 그 카테고리의 거래를 하위로 옮기거나 파일의 분류를 바꿔주세요.,Rows using it will fail. Move its transactions into a subcategory or change the category in the file.
 export,import.optAutoCat,새 카테고리 자동 생성,Auto-create new categories
-export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요,Missing categories are created automatically
+export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요.,Missing categories are created automatically.
 export,import.prev,이전,Back
 export,import.doImport,{{count}}건 가져오기,Import {{count}}
 export,import.doneTitle,{{count}}건을 가져왔어요,Imported {{count}} transactions
@@ -2541,7 +2542,7 @@ export,import.newCatHint,자동 감지된 카테고리 열 기준이에요. 오�
 export,import.createdCatTitle,새로 만든 카테고리 {{count}}개,{{count}} categories created
 export,import.failuresTitle,실패한 행 {{count}}건,{{count}} failed rows
 export,import.failureLine,{{line}}행,Line {{line}}
-export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여줘요,Showing the first {{shown}} of {{total}} failures
+export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여줘요.,Showing the first {{shown}} of {{total}} failures.
 export,import.failReason.date,날짜를 읽을 수 없어요,Couldn't read the date
 export,import.failReason.amount,금액을 읽을 수 없어요,Couldn't read the amount
 export,import.failReason.type,수입 · 지출 구분을 읽을 수 없어요,Couldn't tell income from expense

@@ -317,3 +317,19 @@ describe("표기 한 벌(사용자 결정 · date-picker.md:181)", () => {
     expect(field.querySelector("svg")).not.toBeNull();
   });
 });
+
+describe("검수 재반영 — 폰 바닥 바 · 목록 카드 바닥 · 빈 미리보기(W2 · W3 · W4)", () => {
+  it("폰 바닥 바는 pane 의 마지막 자식이다 — 미리보기가 떠도 바닥을 떠나지 않는다", async () => {
+    await render(true);
+    const pane =
+      container.querySelector('[role="tabpanel"]')!.firstElementChild!;
+    expect(pane.lastElementChild!.getAttribute("data-slot")).toBe(
+      "data-action-bar",
+    );
+  });
+
+  it("목록 카드의 바닥 아래 여백은 카드 몫 하나다(36 이 아니라 24)", async () => {
+    await render(false);
+    expect(container.innerHTML).not.toContain('pb-x6"');
+  });
+});

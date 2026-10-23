@@ -126,6 +126,9 @@ const FAIL_REASONS = [
  * 사유를 늘려도 화면에 영문 코드(`fxRate` 따위)가 튀어나오면 안 된다. 그런 값은
  * 기본 문구로 떨어뜨린다.
  */
+/** 건수 글 — 천 단위 쉼표(앱 decimalPattern 과 같게). i18n 에 숫자 형식이 없어 호출하는 쪽이 만든다 */
+const fmt = (n: number) => n.toLocaleString();
+
 function failReasonKey(reason: string): string {
   return (FAIL_REASONS as readonly string[]).includes(reason)
     ? `import.failReason.${reason}`
@@ -256,9 +259,11 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
         disabled={!canExecute}
       >
         {t("import.doImport", {
-          count: dupSkip
-            ? analysis.validRows - analysis.duplicateCount
-            : analysis.validRows,
+          count: fmt(
+            dupSkip
+              ? analysis.validRows - analysis.duplicateCount
+              : analysis.validRows,
+          ),
         })}
       </Button>
     </ActionBar>
@@ -343,8 +348,8 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                   prefix={<FileSpreadsheet />}
                   title={analysis.fileName}
                   detail={t("import.rowsDetected", {
-                    total: analysis.totalRows,
-                    valid: analysis.validRows,
+                    total: fmt(analysis.totalRows),
+                    valid: fmt(analysis.validRows),
                   })}
                   suffix={
                     <Button variant="ghost" size="small" onClick={reset}>
@@ -400,7 +405,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             mobile={mobile}
             title={t("preview")}
             description={t("import.previewDesc", {
-              dup: analysis.duplicateCount,
+              dup: fmt(analysis.duplicateCount),
             })}
           >
             {() => (
@@ -472,7 +477,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                   <ListCheckItem
                     title={t("import.optDupSkip")}
                     detail={t("import.optDupSkipDesc", {
-                      dup: analysis.duplicateCount,
+                      dup: fmt(analysis.duplicateCount),
                     })}
                     checked={dupSkip}
                     onCheckedChange={(c) => setDupSkip(c === true)}
@@ -490,7 +495,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                   <CategoryList
                     t={t}
                     title={t("import.newCatTitle", {
-                      count: analysis.newCategoryCount,
+                      count: fmt(analysis.newCategoryCount),
                     })}
                     names={analysis.newCategories ?? []}
                     total={analysis.newCategoryCount}
@@ -526,7 +531,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             <DataSection
               mobile={mobile}
               title={t("import.createdCatTitle", {
-                count: result.createdCategoryCount,
+                count: fmt(result.createdCategoryCount),
               })}
               heading="listHeader"
               list
@@ -545,7 +550,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
           {result.failures.length > 0 && (
             <DataSection
               mobile={mobile}
-              title={t("import.failuresTitle", { count: result.failed })}
+              title={t("import.failuresTitle", { count: fmt(result.failed) })}
               heading="listHeader"
               list
             >
@@ -556,7 +561,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                       <ListItem
                         key={f.lineNo}
                         title={t("import.failureLine", { line: f.lineNo })}
-                        suffix={t(failReasonKey(f.reason))}
+                        detail={t(failReasonKey(f.reason))}
                       />
                     ))}
                   </List>
@@ -564,8 +569,8 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                     result.failed > result.failures.length) && (
                     <p className="m-0 px-global-gutter pt-x3 text-t4 text-fg-neutral-subtle">
                       {t("import.failuresCapped", {
-                        shown: result.failures.length,
-                        total: result.failed,
+                        shown: fmt(result.failures.length),
+                        total: fmt(result.failed),
                       })}
                     </p>
                   )}
@@ -638,7 +643,7 @@ function CategoryList({
       </List>
       {total > names.length && (
         <p className="m-0 px-global-gutter pt-x3 text-t4 text-fg-neutral-subtle">
-          {t("import.newCatMore", { count: total - names.length })}
+          {t("import.newCatMore", { count: fmt(total - names.length) })}
         </p>
       )}
       {hint && (
