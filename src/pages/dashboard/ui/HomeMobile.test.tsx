@@ -191,13 +191,13 @@ describe("폰 홈 띠 — 구역마다 따로(사용자 10-23)", () => {
     expect(eye.className).not.toMatch(/rounded-full|bg-white/);
   });
 
-  it("순자산 두 칸 — 위 20 · 첫 칸 오른쪽 16 · 둘째 칸 왼쪽 16 · 오른쪽 0", () => {
+  it("순자산 두 칸 — 위 바깥 20 · 안쪽 위 16 · 첫 칸 오른쪽 16 · 둘째 칸 왼쪽 16 · 오른쪽 0", () => {
     state.summary = q(summary(0, 0));
     render();
     const hero = container.querySelector("[data-variant=hero]")!;
     const split = hero.querySelector(".grid.grid-cols-2")!;
     expect(split.className).toContain("mt-x5");
-    expect(split.className).toContain("pt-x5");
+    expect(split.className).toContain("pt-x4");
     const [first, second] = Array.from(split.children);
     expect(first!.className).toContain("pr-x4");
     expect(second!.className).toContain("pl-x4");

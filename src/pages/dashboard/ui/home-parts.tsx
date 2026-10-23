@@ -229,7 +229,7 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
           />
           <Skeleton text="t3" className={cn("mt-x1 w-1/2", HERO_SKELETON)} />
           <div
-            className={cn("mt-x5 grid grid-cols-2 border-t pt-x5", HERO_LINE)}
+            className={cn("mt-x5 grid grid-cols-2 border-t pt-x4", HERO_LINE)}
           >
             <Skeleton text="t5" className={cn("w-2/3", HERO_SKELETON)} />
             <Skeleton text="t5" className={cn("ml-x4 w-2/3", HERO_SKELETON)} />
@@ -258,7 +258,7 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
             )}
           </div>
           <div
-            className={cn("mt-x5 grid grid-cols-2 border-t pt-x5", HERO_LINE)}
+            className={cn("mt-x5 grid grid-cols-2 border-t pt-x4", HERO_LINE)}
           >
             <HeroCell label={data.assetLabel}>
               {m(won(data.totalAssets))}

@@ -154,6 +154,10 @@ describe("데스크톱 홈", () => {
       "[data-slot=chart-legend-tile]",
     );
     expect(tiles).toHaveLength(2);
+    // 큰 글자 처리는 ds 가 한다 — 화면이 타일 폭을 덮지 않는다
+    expect(
+      container.querySelector("[data-slot=chart-legend-tiles]")!.className,
+    ).not.toContain("min-w-max");
     act(() => tiles[0]?.click());
     const after = container.querySelectorAll<HTMLElement>(
       "[data-slot=chart-legend-tile]",
