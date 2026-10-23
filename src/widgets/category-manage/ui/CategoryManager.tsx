@@ -28,6 +28,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Icon } from "@/shared/ui/groo/primitives";
 import { Button } from "@/shared/ui/button";
+import { Button as DsButton } from "@/shared/ds/button";
 import { Input } from "@/shared/ui/input";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { MANAGE_ROW, manageRowClass } from "@/shared/ui/groo/manage-row-tokens";
@@ -330,10 +331,15 @@ export function CategoryManager({
             title={te("categories")}
             description={t("manager.description")}
             actions={
-              <Button size="sm" onClick={() => setEditing({ kind: "new" })}>
-                <Plus size={14} strokeWidth={2.4} />
-                {t("add")}
-              </Button>
+              // 제목 줄 오른쪽 주 동작 = Button small neutralOutline + 앞 아이콘 14, 글은 동작 이름(I-16 28 · S3)
+              <DsButton
+                variant="neutralOutline"
+                size="small"
+                onClick={() => setEditing({ kind: "new" })}
+              >
+                <Plus aria-hidden />
+                {te("addCategory")}
+              </DsButton>
             }
           />
         )}
