@@ -190,7 +190,7 @@ export function ExpenseMobileSkeleton({ month }: { month?: string }) {
         </LedgerCalendar>
         <LedgerDivider />
       </div>
-      <LedgerList>
+      <LedgerList className="-mx-global-gutter">
         <DayGroupSkeleton rows={3} />
         <DayGroupSkeleton rows={2} />
       </LedgerList>
@@ -477,7 +477,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
       const dIn = incomeSum(dayExpenses);
       return (
         <LedgerDayGroup key={d} day={d}>
-          <LedgerDayHead>
+          <LedgerDayHead gutter>
             <LedgerDayDate relative={rel}>
               {(yy ?? "").slice(2)}. {Number(mm)}. {Number(dd)}({dow})
             </LedgerDayDate>
@@ -531,6 +531,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                 // 이체 행은 감싸지 않는다 — 앱도 제외한다. 금액 열만 ⋮ 줄과 맞춘다.
                 <PlainRow key={ledgerKey(item)}>
                   <TransferRow
+                    gutter
                     transfer={item.transfer}
                     onClick={(tr) => setTransferDetail(tr)}
                   />
@@ -781,7 +782,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         </LedgerPin>
 
         {/* 거래 리스트 — 날짜 그룹 */}
-        <LedgerList>{body}</LedgerList>
+        <LedgerList className="-mx-global-gutter">{body}</LedgerList>
 
         {!filterActive && !isError && (
           <LedgerPrevBtn onClick={() => goMonth(-1)}>

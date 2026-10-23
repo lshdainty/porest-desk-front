@@ -32,8 +32,8 @@ export function RowMoreSpacer() {
 /** 이체 줄처럼 밀기 · ⋮ 가 없는 줄을 같은 열에 맞춘다 */
 export function PlainRow({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center">
-      <div className="min-w-0 flex-1">{children}</div>
+    <div className="flex items-center pr-global-gutter">
+      <div className="-mr-global-gutter min-w-0 flex-1">{children}</div>
       <RowMoreSpacer />
     </div>
   );
@@ -77,13 +77,15 @@ export function ExpenseSwipeRow({
   const row = (
     <div
       className={cn(
-        "flex items-center transition-colors",
-        // 강조 바탕만 모서리 10(list.yaml highlight.radius — 평소 0, 앱과 같다)
-        highlighted && "rounded-r2_5 bg-bg-brand-weak",
+        "relative isolate flex items-center pr-global-gutter",
+        // 강조 바탕은 줄 안쪽 좌우 6 을 들이고 모서리 10(list.yaml highlight — 평소 0, 앱과 같다)
+        highlighted &&
+          "before:absolute before:inset-x-x1_5 before:inset-y-0 before:-z-10 before:rounded-r2_5 before:bg-bg-brand-weak",
       )}
     >
-      <div className="min-w-0 flex-1">
-        <ExpenseRow expense={expense} onClick={onOpen} />
+      {/* 줄이 제 좌우 24 를 갖는다. 오른쪽 24 는 ⋮ 자리 밑으로 겹쳐 금액 끝(화면 끝에서 56)을 지킨다 */}
+      <div className="-mr-global-gutter min-w-0 flex-1">
+        <ExpenseRow gutter expense={expense} onClick={onOpen} />
       </div>
       {dsActions.length > 0 ? (
         <SwipeActionsMenu

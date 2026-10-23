@@ -383,7 +383,7 @@ describe("알림 · 검색에서 들어온 줄 (I-07 6 · ?txId=)", () => {
       behavior: "smooth",
       block: "center",
     });
-    const hl = container.querySelector(".bg-bg-brand-weak");
+    const hl = container.querySelector('[class*="bg-bg-brand-weak"]');
     expect(hl?.textContent).toContain("가게2");
     expect(container.innerHTML).not.toContain("brand-subtle");
   });

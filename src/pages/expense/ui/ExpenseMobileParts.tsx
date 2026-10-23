@@ -5,7 +5,6 @@ import { ChipGroup, InputChip } from "@/shared/ds/chip";
 import { formatRangeValue, parseDayKey } from "@/shared/ds/date-picker";
 import { List, ListItem } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
-import { cn } from "@/shared/lib/cn";
 import { KRW, minusOf } from "@/shared/lib/groo/format";
 import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
@@ -15,7 +14,6 @@ import {
   type FilterValue,
 } from "@/features/expense/model/filter";
 import { LedgerDayGroup, LedgerDayHead } from "@/shared/ui/groo/ledger";
-import { GUTTER_OFF } from "@/pages/expense/model/mobile-consts";
 
 /*
  * 폰 가계부만 쓰는 조각 — 원장 머리 · 달력 · 날짜 머리는 공용 `shared/ui/groo/ledger.tsx` 가 가진다(할 일 · 검색과 한 벌).
@@ -41,7 +39,7 @@ export function SummaryRows({
   const val = (node: ReactNode) =>
     loading ? <Skeleton text="t5" className="w-x16" /> : node;
   return (
-    <List className={cn("mt-x2", GUTTER_OFF)}>
+    <List className="-mx-global-gutter mt-x2">
       <ListItem
         title={incomeLabel}
         suffix={val(
@@ -223,7 +221,7 @@ export function FilterChipsRow({
 /** 거래 줄 스켈레톤 — List 두 줄 줄과 같은 짜임이라 높이가 같다(66). 타일 12 · 제목 t5 · 설명 t3 · 금액 t5 */
 export function RowSkeleton() {
   return (
-    <List className={GUTTER_OFF} aria-hidden>
+    <List aria-hidden>
       <ListItem
         align="top"
         prefix={<Skeleton radius="12" className="size-x10" />}
@@ -239,7 +237,7 @@ export function RowSkeleton() {
 export function DayGroupSkeleton({ rows }: { rows: number }) {
   return (
     <LedgerDayGroup>
-      <LedgerDayHead>
+      <LedgerDayHead gutter>
         <Skeleton text="t4" className="w-x16" />
       </LedgerDayHead>
       {Array.from({ length: rows }, (_, i) => (
