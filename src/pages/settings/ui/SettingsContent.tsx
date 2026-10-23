@@ -44,7 +44,8 @@ export const SettingsContent = ({ activeSection, back, renderBody }: Props) => {
           <SettingsBackLink to={back.to} label={back.label} />
         </div>
       )}
-      <div ref={setHeadSlot} className={`${gap} [&>.page__head]:mb-0`}>
+      {/* PageHead 자신의 아래 20 은 이 자리가 대신 갖는다 — .page__head 규칙이 레이어 밖이라 ! 로 눌러야 먹는다 */}
+      <div ref={setHeadSlot} className={`${gap} [&>.page__head]:!mb-0`}>
         {ownHead && (
           <PageHead
             title={t(activeSection.labelKey)}
