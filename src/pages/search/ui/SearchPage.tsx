@@ -116,15 +116,13 @@ export function SearchPage() {
                 </LedgerDayDate>
                 <LedgerDaySum className="num">
                   {dOut > 0 && (
-                    <span className="font-semibold text-fg-neutral">
+                    <span className="text-fg-neutral">
                       {minusOf(dOut)}
                       {KRW(dOut)}
                     </span>
                   )}
                   {dIn > 0 && (
-                    <span className="ml-2 font-semibold text-fg-brand">
-                      +{KRW(dIn)}
-                    </span>
+                    <span className="ml-x2 text-fg-brand">+{KRW(dIn)}</span>
                   )}
                 </LedgerDaySum>
               </LedgerDayHead>
