@@ -715,7 +715,10 @@ export type ListCheckItemProps = Omit<
   "title" | "prefix" | "size" | "shape" | "children"
 > &
   Omit<ControlRowProps, "suffix" | "prefix"> &
-  MarkPlacement<"prefix">;
+  MarkPlacement<"prefix"> & {
+    /** 뒤 값 글자 — 체크를 뒤(markPosition "suffix")에 둘 때 체크 앞에 놓인다(건수 · 개수). 값 + 조작 요소는 Fragment 로 넘기는 규칙 그대로 */
+    suffixValue?: React.ReactNode;
+  };
 
 // 체크 줄 — 여럿 고르기. 체크 24 를 앞(기본)이나 뒤에. 저장해야 적용되는 선택에 쓴다
 const ListCheckItem = React.forwardRef<
@@ -731,6 +734,7 @@ const ListCheckItem = React.forwardRef<
       highlighted,
       rootProps,
       markPosition = "prefix",
+      suffixValue,
       className,
       id,
       disabled,
@@ -756,7 +760,18 @@ const ListCheckItem = React.forwardRef<
         title={title}
         detail={detail}
         prefix={markPosition === "prefix" ? mark : prefix}
-        suffix={markPosition === "suffix" ? mark : undefined}
+        suffix={
+          markPosition === "suffix" ? (
+            suffixValue != null && suffixValue !== false ? (
+              <>
+                {suffixValue}
+                {mark}
+              </>
+            ) : (
+              mark
+            )
+          ) : undefined
+        }
         align={align}
         highlighted={highlighted}
         rootProps={rootProps}

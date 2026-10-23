@@ -42,10 +42,18 @@ export function PeriodField({
   from,
   to,
   onChange,
+  label: fieldLabel,
+  invalid,
+  errorMessage,
 }: {
   from: string;
   to: string;
   onChange: (next: { from: string; to: string }) => void;
+  /** 칸 이름 — 기본 "기간" (검색). 다른 화면이 쓸 때만 */
+  label?: string;
+  /** 오류 — 기간이 비었을 때 같은 칸 아래 글(R19) */
+  invalid?: boolean;
+  errorMessage?: string;
 }) {
   const { t } = useTranslation("common");
   const surface = useInputButtonSurface();
@@ -101,7 +109,11 @@ export function PeriodField({
     </>
   );
   return (
-    <Field label={t("searchPeriod")}>
+    <Field
+      label={fieldLabel ?? t("searchPeriod")}
+      invalid={invalid}
+      errorMessage={errorMessage}
+    >
       {sheet ? (
         <BottomSheet open={open} onOpenChange={setOpen}>
           {trigger}

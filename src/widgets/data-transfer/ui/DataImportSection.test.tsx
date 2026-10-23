@@ -7,6 +7,7 @@
 // 캐시가 실제로 비워진다는 것이다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
@@ -56,6 +57,11 @@ vi.mock("react-i18next", () => ({
 }));
 
 const { DataImportSection } = await import("./DataImportSection");
+
+/** 지금 주소 — 가져오기 뒤 가계부로 가는지 본다 */
+function Where() {
+  return <output data-testid="where">{useLocation().pathname}</output>;
+}
 
 let container: HTMLDivElement;
 let root: Root;
@@ -107,18 +113,24 @@ const invalidatedKeys = () =>
     .mock.calls.map((c) => JSON.stringify(c[0]?.queryKey));
 
 /** 파일 선택 → 분석까지. 매핑 단계에 선다. */
-async function toMapping() {
+async function toMapping(file?: File) {
   await act(async () => {
     root.render(
       <QueryClientProvider client={queryClient}>
-        <DataImportSection mobile={false} />
+        <MemoryRouter initialEntries={["/desk/settings"]}>
+          <DataImportSection mobile={false} />
+          <Where />
+        </MemoryRouter>
       </QueryClientProvider>,
     );
   });
   const input =
     container.querySelector<HTMLInputElement>('input[type="file"]')!;
-  const file = new File(["a"], "qa.csv", { type: "text/csv" });
-  Object.defineProperty(input, "files", { value: [file] });
+  const picked = file ?? new File(["a"], "qa.csv", { type: "text/csv" });
+  Object.defineProperty(input, "files", {
+    value: [picked],
+    configurable: true,
+  });
   await act(async () => {
     input.dispatchEvent(new Event("change", { bubbles: true }));
   });
@@ -256,7 +268,7 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       newCategoryCount: 1,
     };
     await toMapping();
-    const autoCat = container.querySelectorAll('[role="switch"]')[1]!;
+    const autoCat = container.querySelectorAll('[role="checkbox"]')[1]!;
     await act(async () => {
       (autoCat as HTMLElement).click();
     });
@@ -303,5 +315,170 @@ describe("가져오기 성공 — 캐시 비우기 (QA #144)", () => {
   it("기본 출처는 서버 enum 이름 POREST 로 보낸다", async () => {
     await toMapping();
     expect(state.analyzeSources).toEqual(["POREST"]);
+  });
+});
+
+describe("가져오기 단계 머리 (Q6 6B · I-05 48)", () => {
+  it("1 단계는 '1 / 3단계' + 단계 이름 + 한 줄 설명이고 단계 원은 없다", async () => {
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <DataImportSection mobile={false} />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+    const text = container.textContent ?? "";
+    expect(text).toContain('import.stepMeta{"current":1,"total":3}');
+    expect(text).toContain("import.stepUpload");
+    expect(text).toContain("import.stepUploadDesc");
+    expect(text).not.toContain("import.stepDone");
+    expect(text).not.toContain("✓");
+  });
+
+  it("2 단계는 '2 / 3단계' + 열 매핑", async () => {
+    await toMapping();
+    const text = container.textContent ?? "";
+    expect(text).toContain('import.stepMeta{"current":2,"total":3}');
+    expect(text).toContain("import.stepMappingDesc");
+  });
+
+  it("완료 화면에는 단계 머리가 없다", async () => {
+    await toDone(baseResult);
+    expect(container.textContent).not.toContain("import.stepMeta");
+  });
+});
+
+describe("파일 고르기 (I-05 48)", () => {
+  const bigFile = new File([new Uint8Array(10 * 1024 * 1024 + 1)], "big.csv", {
+    type: "text/csv",
+  });
+
+  it("10MB 가 넘으면 분석하지 않고 칸 아래 오류 글로 알린다", async () => {
+    await toMapping(bigFile);
+    expect(state.analyzeSources).toEqual([]);
+    expect(container.textContent).toContain("import.errorSize");
+  });
+
+  it("형식이 다르면 칸 아래 오류 글로 알린다", async () => {
+    await toMapping(new File(["a"], "memo.pdf", { type: "application/pdf" }));
+    expect(state.analyzeSources).toEqual([]);
+    expect(container.textContent).toContain("import.errorType");
+  });
+
+  it("파일 선택은 키보드로 닿는 버튼이다 — 점선 div 가 아니다", async () => {
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <DataImportSection mobile={false} />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+    const pick = container.querySelector('[data-slot="attachment-input-pick"]');
+    expect(pick?.tagName).toBe("BUTTON");
+  });
+});
+
+describe("미리보기 표 (I-05 46 · 48)", () => {
+  const rows = [
+    {
+      lineNo: 2,
+      date: "2026-10-01",
+      type: "EXPENSE",
+      amount: 1000,
+      category: "식비",
+      asset: "현금",
+      memo: "",
+      duplicate: false,
+      error: null,
+    },
+    {
+      lineNo: 3,
+      date: "2026-10-02",
+      type: "EXPENSE",
+      amount: 2000,
+      category: "식비",
+      asset: "현금",
+      memo: "",
+      duplicate: true,
+      error: null,
+    },
+    {
+      lineNo: 4,
+      date: null,
+      type: null,
+      amount: null,
+      category: null,
+      asset: null,
+      memo: "",
+      duplicate: false,
+      error: "date",
+    },
+  ];
+
+  it("ds Table 이고, 오류 · 중복 줄은 흐리지 않고 상태 배지로 가른다", async () => {
+    state.analyze = { ...analysis, preview: rows };
+    await toMapping();
+    expect(container.querySelector('[data-slot="table"]')).not.toBeNull();
+    const trs = [...container.querySelectorAll("tbody tr")] as HTMLElement[];
+    expect(trs).toHaveLength(3);
+    for (const tr of trs) {
+      expect(tr.style.opacity).toBe("");
+      expect(tr.className).not.toMatch(/opacity/);
+    }
+    expect(trs[1]!.textContent).toContain("import.dupBadge");
+    expect(trs[2]!.textContent).toContain("import.errorBadge");
+    expect(trs[0]!.textContent).not.toContain("import.dupBadge");
+  });
+});
+
+describe("옵션 · 완료 (I-05 48 · 50)", () => {
+  it("중복 건너뛰기 · 새 카테고리 자동 생성은 Checkbox 이고 스위치가 아니다", async () => {
+    await toMapping();
+    expect(container.querySelectorAll('[role="switch"]')).toHaveLength(0);
+    expect(
+      container.querySelectorAll('[role="checkbox"]').length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it("완료 화면은 Result Section done 이고 [가계부로 가기] 가 가계부로 간다", async () => {
+    await toDone(baseResult);
+    const rs = container.querySelector('[data-slot="result-section"]');
+    expect(rs?.getAttribute("data-kind")).toBe("done");
+    expect(rs?.getAttribute("data-size")).toBe("large");
+    await act(async () => {
+      btn("import.toLedger")!.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      );
+    });
+    expect(container.querySelector('[data-testid="where"]')?.textContent).toBe(
+      "/desk/expense",
+    );
+  });
+
+  it("[다른 파일 가져오기] 는 글 버튼(ghost)이다", async () => {
+    await toDone(baseResult);
+    expect(btn("import.another")!.className).toContain("bg-transparent");
+  });
+});
+
+describe("가져오는 동안 덮개 (I-05 49)", () => {
+  it("실행 중 덮개가 서고 걷힌다", async () => {
+    let finish!: (r: ImportExecuteResult) => void;
+    state.execute = new Promise<ImportExecuteResult>((r) => (finish = r));
+    await toMapping();
+    await act(async () => {
+      btn("import.doImport")!.click();
+    });
+    expect(
+      document.body.querySelector('[data-slot="busy-overlay"]'),
+    ).not.toBeNull();
+    await act(async () => finish(baseResult));
+    expect(
+      document.body.querySelector('[data-slot="busy-overlay"]'),
+    ).toBeNull();
   });
 });

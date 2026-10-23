@@ -4,8 +4,6 @@ import { formatMonthDay } from "@/shared/lib/date";
 import {
   Braces,
   Calendar,
-  Download,
-  Eye,
   FileText,
   Receipt,
   SquareCheckBig,
@@ -15,15 +13,33 @@ import {
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Input } from "@/shared/ui/input";
-import { Switch } from "@/shared/ui/switch";
+import { Button } from "@/shared/ds/button";
+import { Checkbox } from "@/shared/ds/checkbox";
+import { Field } from "@/shared/ds/field";
+import { useDsText } from "@/shared/ds/i18n";
+import { ListCheckGroup, ListCheckItem, ListDivider } from "@/shared/ds/list";
+import { useWideSurface } from "@/shared/ds/overlay";
+import { RadioSelectBox, RadioSelectBoxGroup } from "@/shared/ds/select-box";
+import { Skeleton } from "@/shared/ds/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableStatusRow,
+} from "@/shared/ds/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ds/tabs";
+import { ResultSection } from "@/shared/ds/result-section";
+import { serverErrorMessage } from "@/shared/api/error-message";
 import { downloadBlob } from "@/shared/lib/download";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { PeriodField } from "@/widgets/transaction-search/ui/PeriodField";
 import { DataImportSection } from "./DataImportSection";
+import { ActionBar, DataSection } from "./DataTransferParts";
 import {
   downloadExport,
+  ExportStalledError,
   fetchExportCounts,
   fetchExportPreview,
   type ExportDataType,
@@ -37,7 +53,7 @@ import {
 const DATA_TYPES: {
   v: ExportDataType;
   labelKey: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: React.ComponentType;
 }[] = [
   { v: "EXPENSE", labelKey: "section.dataType.EXPENSE", Icon: Receipt },
   { v: "ASSET", labelKey: "section.dataType.ASSET", Icon: Wallet },
@@ -54,7 +70,7 @@ const FORMATS: {
   label: string;
   ext: string;
   descKey: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: React.ComponentType;
 }[] = [
   {
     v: "CSV",
@@ -156,6 +172,32 @@ function buildFilename(
 export function DataExportSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("export");
   const [mode, setMode] = useState<"export" | "import">("export");
+
+  // 내보내기 ↔ 가져오기를 바꿔도 안의 입력(고른 파일 · 기간)이 남도록 두 칸을 모두 그려 둔다(Tabs 내용 칸 — 숨김만).
+  return (
+    <Tabs
+      value={mode}
+      onValueChange={(v) => setMode(v as "export" | "import")}
+      className="flex flex-col gap-x6"
+    >
+      <TabsList aria-label={t("section.tabsLabel")}>
+        <TabsTrigger value="export">{t("export")}</TabsTrigger>
+        <TabsTrigger value="import">{t("import.tab")}</TabsTrigger>
+      </TabsList>
+      <TabsContent value="export">
+        <ExportPane mobile={mobile} />
+      </TabsContent>
+      <TabsContent value="import">
+        <DataImportSection mobile={mobile} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function ExportPane({ mobile }: { mobile: boolean }) {
+  const { t } = useTranslation("export");
+  const dsT = useDsText();
+  const wide = useWideSurface();
   const [format, setFormat] = useState<ExportFormat>("CSV");
   const [period, setPeriod] = useState<ExportPeriod>("THIS_MONTH");
   const [customFrom, setCustomFrom] = useState(
@@ -170,6 +212,8 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
   const [mask, setMask] = useState(false);
 
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [countsError, setCountsError] = useState(false);
+  const [countsTry, setCountsTry] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<ExportPreviewTable[] | null>(null);
@@ -204,19 +248,28 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
           map[c.type] = c.count;
         });
         setCounts(map);
+        setCountsError(false);
       })
       .catch(() => {
-        /* 전역 토스트가 처리 */
+        // 전역 토스트에 기대지 않고 자리에서 알린다(I-05 42) — 값 자리를 비우고 묶음 아래 오류 + 다시 시도
+        if (alive) setCountsError(true);
       });
     return () => {
       alive = false;
     };
-  }, [queryBody, customInvalid]);
+  }, [queryBody, customInvalid, countsTry]);
 
   const toggleType = (v: ExportDataType) =>
     setSelected((prev) =>
       prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v],
     );
+
+  const allChecked = selected.length === ALL_TYPES.length;
+  const parentChecked: boolean | "indeterminate" = allChecked
+    ? true
+    : selected.length > 0
+      ? "indeterminate"
+      : false;
 
   const totalSelectedCount = selected.reduce(
     (sum, ty) => sum + (counts[TYPE_SLUG[ty]] ?? 0),
@@ -245,7 +298,19 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
         mask,
       });
       downloadBlob(blob, buildFilename(format, selected, range));
+      // 알림 띠는 셸 PR 까지 옛 길(sonner) — 문구만 Writing 대로(Q7 7A)
       toast.success(t("section.exportDone"));
+    } catch (e) {
+      // 받기가 멈췄거나 서버가 거절했다 — 옛 길의 오류 알림 + 동작 "다시 시도"
+      toast.error(
+        e instanceof ExportStalledError
+          ? t("section.exportStalled")
+          : serverErrorMessage(e, t("section.exportFailed")),
+        {
+          id: "export-failed",
+          action: { label: dsT("common.retry"), onClick: handleExport },
+        },
+      );
     } finally {
       setDownloading(false);
     }
@@ -253,503 +318,230 @@ export function DataExportSection({ mobile }: { mobile: boolean }) {
 
   const activeTab =
     preview?.find((tb) => tb.type === previewTab) ?? preview?.[0] ?? null;
-
-  const modeSeg = (
-    // 언어 설정과 동일한 container 세그먼트(pill/sm, 풀폭 균등, 사용자 결정) —
-    // 트랙(surface-input) + active = surface-default pill + shadow.
-    <Tabs
-      value={mode}
-      onValueChange={(v) => v && setMode(v as "export" | "import")}
-    >
-      <TabsList variant="pill" size="sm" className="w-full">
-        <TabsTrigger value="export" className="flex-1">
-          {t("export")}
-        </TabsTrigger>
-        <TabsTrigger value="import" className="flex-1">
-          {t("import.tab")}
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
-  );
-
-  if (mode === "import") {
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--spacing-2xl)",
-        }}
-      >
-        {modeSeg}
-        <DataImportSection mobile={mobile} />
-      </div>
-    );
-  }
+  const buttonSize = wide ? "medium" : "large";
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--spacing-2xl)",
-      }}
-    >
-      {modeSeg}
-      {/* 1. 기간 선택 */}
-      <SectionCard mobile={mobile} title={t("section.periodSelect")}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(5, 1fr)",
-            gap: 8,
-          }}
-        >
-          {PERIODS.map((p) => {
-            const active = period === p.v;
-            const r = resolveRange(p.v, customFrom, customTo);
-            const sub =
-              p.v === "CUSTOM"
-                ? t("section.customSelect")
-                : `${krLabel(r.start)} — ${krLabel(r.end)}`;
-            return (
-              <button
-                key={p.v}
-                type="button"
-                onClick={() => setPeriod(p.v)}
-                style={tileStyle(active)}
-              >
-                <div
-                  style={{
-                    fontSize: "var(--text-body-sm)",
-                    fontWeight: 700,
-                    color: active
-                      ? "var(--fg-brand-strong)"
-                      : "var(--fg-primary)",
-                  }}
-                >
-                  {t(p.labelKey)}
-                </div>
-                <div
-                  style={{
-                    fontSize: "var(--text-badge)",
-                    color: "var(--fg-tertiary)",
-                    marginTop: 3,
-                  }}
-                >
-                  {sub}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        {period === "CUSTOM" && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto 1fr",
-              gap: 8,
-              alignItems: "center",
-              marginTop: 10,
-            }}
+    <div className={mobile ? "flex flex-col gap-x6" : "flex flex-col gap-x2"}>
+      {/* 1. 기간 — 폰은 1열 가로형(Q5 5B), 데스크톱 · 태블릿은 5열 */}
+      <DataSection mobile={mobile} title={t("section.periodSelect")}>
+        {(titleId) => (
+          <RadioSelectBoxGroup
+            aria-labelledby={titleId}
+            columns={1}
+            // ds 묶음은 1 ~ 3열까지다 — 데스크톱 · 태블릿 5열(지금 그대로, Q5 밖)은 열 수만 덮는다
+            className={mobile ? undefined : "auto-rows-fr grid-cols-5"}
+            value={period}
+            onValueChange={(v) => setPeriod(v as ExportPeriod)}
           >
-            <Input
-              type="date"
-              value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
-            />
-            <span style={{ color: "var(--fg-tertiary)" }}>~</span>
-            <Input
-              type="date"
-              value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
-            />
-          </div>
-        )}
-        {customInvalid && (
-          <div
-            style={{
-              marginTop: 8,
-              fontSize: "var(--text-caption)",
-              color: "var(--color-fg-critical)",
-            }}
-          >
-            {t("section.dateError")}
-          </div>
-        )}
-      </SectionCard>
-
-      {/* 2. 데이터 종류 */}
-      <SectionCard
-        mobile={mobile}
-        flushContent
-        title={t("section.dataTypeTitle", { count: selected.length })}
-        desc={t("section.dataTypeDesc")}
-      >
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {DATA_TYPES.map((dt) => {
-            const active = selected.includes(dt.v);
-            const IconComp = dt.Icon;
-            const cnt = counts[TYPE_SLUG[dt.v]];
-            return (
-              <label
-                key={dt.v}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  // 모바일 좌우 0 — 페이지가 24 를 쥔다(설정 리스트 공통 규칙).
-                  padding: mobile ? "12px 0" : "12px 4px",
-                  cursor: "pointer",
-                }}
-              >
-                <Checkbox
-                  checked={active}
-                  onCheckedChange={() => toggleType(dt.v)}
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <span style={iconBoxStyle}>
-                  <IconComp size={16} />
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: "var(--text-body-sm)",
-                    fontWeight: 600,
-                    color: "var(--fg-primary)",
-                  }}
-                >
-                  {t(dt.labelKey)}
-                </span>
-                <span
-                  style={{
-                    fontSize: "var(--text-caption)",
-                    color: "var(--fg-tertiary)",
-                  }}
-                >
-                  {cnt == null
-                    ? "…"
-                    : t("section.countGeon", { count: cnt.toLocaleString() })}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </SectionCard>
-
-      {/* 3. 파일 형식 */}
-      <SectionCard mobile={mobile} title={t("fileFormat")}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)",
-            gap: 8,
-          }}
-        >
-          {FORMATS.map((f) => {
-            const active = format === f.v;
-            const IconComp = f.Icon;
-            return (
-              <button
-                key={f.v}
-                type="button"
-                onClick={() => setFormat(f.v)}
-                style={tileStyle(active)}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <IconComp size={16} />
-                  <span
-                    style={{
-                      fontSize: "var(--text-body-sm)",
-                      fontWeight: 700,
-                      color: active
-                        ? "var(--fg-brand-strong)"
-                        : "var(--fg-primary)",
-                    }}
-                  >
-                    {f.label}
-                  </span>
-                  <span
-                    style={{
-                      marginLeft: "auto",
-                      fontSize: "var(--text-badge)",
-                      color: "var(--fg-tertiary)",
-                    }}
-                  >
-                    {f.ext}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: "var(--text-badge)",
-                    color: "var(--fg-tertiary)",
-                    marginTop: 4,
-                  }}
-                >
-                  {t(f.descKey)}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </SectionCard>
-
-      {/* 마스킹 + 액션 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-        }}
-      >
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            cursor: "pointer",
-          }}
-        >
-          <Switch checked={mask} onCheckedChange={setMask} />
-          <span
-            style={{
-              fontSize: "var(--text-body-sm)",
-              color: "var(--fg-secondary)",
-            }}
-          >
-            {t("section.maskSensitive")}
-          </span>
-        </label>
-        {/* 모바일 — 앱처럼 풀폭 반반(사용자 결정). 데스크톱은 우측 정렬 유지. */}
-        <div
-          style={
-            mobile
-              ? { display: "flex", gap: 8, flexBasis: "100%" }
-              : { display: "flex", gap: 8, marginLeft: "auto" }
-          }
-        >
-          <Button
-            variant="outline"
-            onClick={handlePreview}
-            loading={previewing}
-            disabled={!selected.length || customInvalid}
-            style={mobile ? { flex: 1 } : undefined}
-          >
-            <Eye size={14} /> {t("preview")}
-          </Button>
-          <Button
-            onClick={handleExport}
-            loading={downloading}
-            disabled={!selected.length || customInvalid}
-            style={mobile ? { flex: 1 } : undefined}
-          >
-            <Download size={14} /> {t("export")}
-          </Button>
-        </div>
-      </div>
-
-      {/* 미리보기 결과 */}
-      {preview && activeTab && (
-        <SectionCard mobile={mobile} title={t("preview")}>
-          <div
-            style={{
-              display: "flex",
-              gap: 6,
-              flexWrap: "wrap",
-              marginBottom: 12,
-            }}
-          >
-            {preview.map((tbl) => {
-              const on = (previewTab ?? preview[0]?.type) === tbl.type;
+            {PERIODS.map((p) => {
+              const r = resolveRange(p.v, customFrom, customTo);
+              const sub =
+                p.v === "CUSTOM"
+                  ? t("section.customSelect")
+                  : `${krLabel(r.start)} — ${krLabel(r.end)}`;
               return (
-                <button
-                  key={tbl.type}
-                  type="button"
-                  onClick={() => setPreviewTab(tbl.type)}
-                  style={{
-                    padding: "5px 10px",
-                    borderRadius: "var(--radius-full)",
-                    border: on
-                      ? "1px solid var(--border-brand)"
-                      : "1px solid var(--border-subtle)",
-                    background: on
-                      ? "var(--bg-brand-subtle)"
-                      : "var(--bg-surface)",
-                    color: on
-                      ? "var(--fg-brand-strong)"
-                      : "var(--fg-secondary)",
-                    fontSize: "var(--text-caption)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  {tbl.displayName} {tbl.totalCount.toLocaleString()}
-                </button>
+                <RadioSelectBox
+                  key={p.v}
+                  value={p.v}
+                  label={t(p.labelKey)}
+                  description={sub}
+                  layout={mobile ? "horizontal" : "vertical"}
+                  footer={
+                    p.v === "CUSTOM" ? (
+                      <PeriodField
+                        from={customFrom}
+                        to={customTo}
+                        label={t("section.customRangeLabel")}
+                        invalid={customInvalid}
+                        errorMessage={t("section.rangeIncomplete")}
+                        onChange={(next) => {
+                          setCustomFrom(next.from);
+                          setCustomTo(next.to);
+                        }}
+                      />
+                    ) : undefined
+                  }
+                />
               );
             })}
-          </div>
-          <div style={{ overflowX: "auto" }}>
-            {activeTab.rows.length === 0 ? (
-              <div
-                style={{
-                  padding: "24px 0",
-                  textAlign: "center",
-                  color: "var(--fg-tertiary)",
-                  fontSize: "var(--text-body-sm)",
-                }}
-              >
-                {t("section.noData")}
-              </div>
-            ) : (
-              <table
-                style={{
-                  borderCollapse: "collapse",
-                  width: "100%",
-                  fontSize: "var(--text-caption)",
-                }}
-              >
-                <thead>
-                  <tr>
-                    {activeTab.headers.map((h) => (
-                      <th key={h} style={thStyle}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeTab.rows.map((row, ri) => (
-                    <tr key={ri}>
-                      {row.map((cell, ci) => (
-                        <td key={ci} style={tdStyle}>
-                          {cell}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <div
-            style={{
-              marginTop: 10,
-              fontSize: "var(--text-badge)",
-              color: "var(--fg-tertiary)",
-            }}
-          >
-            {t("section.previewFooter", {
-              rows: activeTab.rows.length,
-              types: selected.length,
-              total: totalSelectedCount.toLocaleString(),
-            })}
-          </div>
-        </SectionCard>
-      )}
-    </div>
-  );
-}
+          </RadioSelectBoxGroup>
+        )}
+      </DataSection>
 
-// ─── 보조 컴포넌트/스타일 ──────────────────────────────────────
-
-function SectionCard({
-  title,
-  desc,
-  children,
-  mobile,
-  flushContent,
-}: {
-  title: string;
-  desc?: string;
-  children: React.ReactNode;
-  mobile?: boolean;
-  flushContent?: boolean;
-}) {
-  const inner = (
-    <>
-      {/* 앱 PTypo.body(14) 정합(사용자 결정) — body-md(15) 아님. */}
-      <div
-        style={{
-          fontSize: "var(--text-body-sm)",
-          fontWeight: 700,
-          color: "var(--fg-primary)",
-        }}
+      {/* 2. 데이터 종류 — 맨 위 부모 "모두" + 체크 묶음 */}
+      <DataSection
+        mobile={mobile}
+        title={t("section.dataTypeTitle", { count: selected.length })}
+        description={t("section.dataTypeDesc")}
       >
-        {title}
-      </div>
-      {desc && (
-        <div
-          style={{
-            fontSize: "var(--text-caption)",
-            color: "var(--fg-tertiary)",
-            marginTop: 2,
-            marginBottom: 4,
-          }}
+        {(titleId) => (
+          <>
+            <Field
+              invalid={countsError}
+              errorMessage={t("section.countsFailed")}
+            >
+              <ListCheckGroup aria-labelledby={titleId}>
+                <ListCheckItem
+                  title={t("section.dataTypeAll")}
+                  markPosition="suffix"
+                  checked={parentChecked}
+                  onCheckedChange={(c) =>
+                    setSelected(c === true ? [...ALL_TYPES] : [])
+                  }
+                />
+                <ListDivider />
+                {DATA_TYPES.map((dt) => {
+                  const cnt = counts[TYPE_SLUG[dt.v]];
+                  const IconComp = dt.Icon;
+                  return (
+                    <ListCheckItem
+                      key={dt.v}
+                      prefix={<IconComp />}
+                      title={t(dt.labelKey)}
+                      markPosition="suffix"
+                      suffixValue={
+                        cnt != null ? (
+                          t("section.countGeon", {
+                            count: cnt.toLocaleString(),
+                          })
+                        ) : countsError ? undefined : (
+                          <Skeleton text="t5" className="w-x10" />
+                        )
+                      }
+                      checked={selected.includes(dt.v)}
+                      onCheckedChange={() => toggleType(dt.v)}
+                    />
+                  );
+                })}
+              </ListCheckGroup>
+            </Field>
+            {countsError && (
+              <div>
+                <Button
+                  variant="ghost"
+                  size="small"
+                  onClick={() => setCountsTry((n) => n + 1)}
+                >
+                  {dsT("common.retry")}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </DataSection>
+
+      {/* 3. 파일 형식 — 폰은 1열 가로형, 데스크톱 · 태블릿은 3열 */}
+      <DataSection mobile={mobile} title={t("fileFormat")}>
+        {(titleId) => (
+          <RadioSelectBoxGroup
+            aria-labelledby={titleId}
+            columns={mobile ? 1 : 3}
+            value={format}
+            onValueChange={(v) => setFormat(v as ExportFormat)}
+          >
+            {FORMATS.map((f) => {
+              const IconComp = f.Icon;
+              return (
+                <RadioSelectBox
+                  key={f.v}
+                  value={f.v}
+                  prefix={<IconComp />}
+                  label={`${f.label} ${f.ext}`}
+                  description={t(f.descKey)}
+                  layout={mobile ? "horizontal" : "vertical"}
+                />
+              );
+            })}
+          </RadioSelectBoxGroup>
+        )}
+      </DataSection>
+
+      {/* 민감 정보 가리기 + 액션 */}
+      <Checkbox
+        checked={mask}
+        onCheckedChange={(c) => setMask(c === true)}
+        label={t("section.maskSensitive")}
+      />
+      <ActionBar mobile={mobile}>
+        <Button
+          variant="neutralWeak"
+          size={buttonSize}
+          onClick={handlePreview}
+          loading={previewing}
+          disabled={!selected.length || customInvalid}
         >
-          {desc}
-        </div>
+          {t("preview")}
+        </Button>
+        <Button
+          variant="neutralSolid"
+          size={buttonSize}
+          onClick={handleExport}
+          loading={downloading}
+          disabled={!selected.length || customInvalid}
+        >
+          {t("export")}
+        </Button>
+      </ActionBar>
+
+      {/* 미리보기 결과 — 모든 폭에서 표(0 ~ 767 은 표와 함께 가로 스크롤) */}
+      {preview && activeTab && (
+        <DataSection mobile={mobile} title={t("preview")}>
+          {() => (
+            <Tabs
+              value={activeTab.type}
+              onValueChange={setPreviewTab}
+              className="flex flex-col gap-x3"
+            >
+              <TabsList layout="hug" aria-label={t("section.previewTabs")}>
+                {preview.map((tbl) => (
+                  <TabsTrigger key={tbl.type} value={tbl.type}>
+                    {tbl.displayName} {tbl.totalCount.toLocaleString()}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {preview.map((tbl) => (
+                <TabsContent key={tbl.type} value={tbl.type}>
+                  <Table caption={`${t("preview")} ${tbl.displayName}`}>
+                    <TableHeader>
+                      <TableRow>
+                        {tbl.headers.map((h) => (
+                          <TableHead key={h}>{h}</TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tbl.rows.length === 0 ? (
+                        <TableStatusRow>
+                          <ResultSection
+                            size="medium"
+                            icon={<FileText />}
+                            title={t("section.noData")}
+                          />
+                        </TableStatusRow>
+                      ) : (
+                        tbl.rows.map((row, ri) => (
+                          <TableRow key={ri}>
+                            {row.map((cell, ci) => (
+                              <TableCell key={ci}>{cell}</TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+              ))}
+              <p className="m-0 text-t4 text-fg-neutral-subtle">
+                {t("section.previewFooter", {
+                  rows: activeTab.rows.length,
+                  types: selected.length,
+                  total: totalSelectedCount.toLocaleString(),
+                })}
+              </p>
+            </Tabs>
+          )}
+        </DataSection>
       )}
-      <div style={{ marginTop: flushContent ? 0 : 12 }}>{children}</div>
-    </>
-  );
-  // 모바일 카드 다이어트(사용자 결정) — 셸 없이 [label+content] 플랫 묶음.
-  // 묶음 간 간격은 최상위 gap-2xl(32)가 담당. 데스크톱은 기존 카드 유지.
-  if (mobile) return <section>{inner}</section>;
-  return (
-    <div
-      style={{
-        background: "var(--bg-surface)",
-        boxShadow: "var(--shadow-sm)",
-        borderRadius: "var(--radius-card)",
-        padding: "var(--spacing-lg)",
-      }}
-    >
-      {inner}
     </div>
   );
 }
-
-const tileStyle = (active: boolean): React.CSSProperties => ({
-  padding: 14,
-  background: active ? "var(--bg-brand-subtle)" : "var(--bg-surface)",
-  border: active
-    ? "1px solid var(--border-brand)"
-    : "1px solid var(--border-subtle)",
-  borderRadius: "var(--radius-lg)",
-  cursor: "pointer",
-  textAlign: "left",
-  fontFamily: "inherit",
-});
-
-const iconBoxStyle: React.CSSProperties = {
-  width: 32,
-  height: 32,
-  borderRadius: "var(--radius-md)",
-  background: "var(--bg-muted)",
-  color: "var(--fg-secondary)",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexShrink: 0,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "6px 10px",
-  borderBottom: "1px solid var(--border-default)",
-  color: "var(--fg-secondary)",
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "6px 10px",
-  borderBottom: "1px solid var(--border-subtle)",
-  color: "var(--fg-primary)",
-  whiteSpace: "nowrap",
-  maxWidth: 220,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-};
