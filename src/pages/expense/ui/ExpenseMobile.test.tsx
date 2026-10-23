@@ -324,7 +324,7 @@ describe("비어 있음 · 실패 · 불러오기 (I-07 16)", () => {
     );
 
     expect(result?.textContent).toContain("조건에 맞는 거래가 없어요");
-    expect(result?.textContent).toContain("조건을 바꾸거나 지워 보세요.");
+    expect(result?.textContent).toContain("조건을 바꾸거나 지워보세요.");
     expect(result?.querySelector("svg.lucide-funnel-x")).not.toBeNull();
     expect(result?.querySelector("button")).toBeNull();
   });

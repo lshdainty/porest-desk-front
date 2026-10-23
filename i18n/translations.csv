@@ -1671,7 +1671,7 @@ expense,txDetail.sumLabel,합계,Total
 expense,txDetail.prevAtMerchant,{{merchant}}에서의 이전 거래,Previous transactions at {{merchant}}
 expense,txDetail.thisMonth,이번 달,This month
 expense,txDetail.countTimes,{{count}}회,{{count}} times
-expense,txDetail.deleteMessage,"""{{name}}"" 거래를 삭제할까요? 연결된 자산 잔액이 함께 조정됩니다.","Delete the ""{{name}}"" transaction? The linked asset balance will be adjusted too."
+expense,txDetail.deleteMessage,"""{{name}}"" 거래를 삭제할까요? 연결된 자산 잔액이 함께 바뀌어요.","Delete the ""{{name}}"" transaction? The linked asset balance will be adjusted too."
 expense,splitTx.extraAmount,추가 금액,Extra amount
 expense,splitTx.strategy.prop.title,비례 배분,Proportional
 expense,splitTx.strategy.prop.desc,비중대로 자동 조정,Auto-adjust by weight
@@ -1704,7 +1704,7 @@ expense,filter.title,필터,Filter
 expense,filter.reset,초기화,Reset
 expense,filter.apply,필터 적용,Apply filter
 expense,filter.period,기간,Period
-expense,filter.dateError,시작일이 종료일보다 늦을 수 없습니다.,The start date cannot be later than the end date.
+expense,filter.dateError,시작일이 종료일보다 늦을 수 없어요.,The start date cannot be later than the end date.
 expense,filter.txType,거래 종류,Transaction type
 expense,filter.amountRange,금액 범위,Amount range
 expense,filter.minAmount,최소 금액,Min amount
@@ -2571,7 +2571,7 @@ expense,txm.monthCalendar,월 달력,Month calendar
 expense,txm.loadFailed,거래를 불러오지 못했어요,Couldn't load transactions
 expense,txm.loadFailedDesc,잠시 뒤에 다시 시도해주세요.,Please try again in a moment.
 expense,txm.emptyFiltered,조건에 맞는 거래가 없어요,No transactions match
-expense,txm.emptyFilteredDesc,조건을 바꾸거나 지워 보세요.,Change or clear the filters.
+expense,txm.emptyFilteredDesc,조건을 바꾸거나 지워보세요.,Change or clear the filters.
 expense,filter.appliedGroup,적용한 필터,Applied filters
 expense,filter.matchAllDesc,걸린 조건을 모두 만족하는 거래만,Only transactions that meet all conditions
 expense,filter.matchAnyDesc,걸린 조건 중 하나라도 만족하면,Transactions that meet any condition
