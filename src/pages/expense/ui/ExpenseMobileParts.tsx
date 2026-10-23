@@ -6,6 +6,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { Button } from "@/shared/ds/button";
 import { ChartTooltipContent } from "@/shared/ds/chart";
 import { ChipGroup, InputChip } from "@/shared/ds/chip";
@@ -118,7 +119,7 @@ export function LedgerHeadRow({
 }) {
   return (
     <div className="flex flex-wrap items-start gap-x3 pt-x2">
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-auto">
         <div className="num text-t9 font-bold tabular-nums text-fg-neutral">
           {total}
         </div>
@@ -164,7 +165,7 @@ export function SummaryRows({
           <span className="num font-bold tabular-nums text-fg-brand">
             <MaskAmount card="ledger.txList" kind="income">
               +{wonPre()}
-              {KRW(monthIn)}
+              {withCommaBreaks(KRW(monthIn))}
             </MaskAmount>
             <WonUnit card="ledger.txList" kind="income" />
           </span>
@@ -177,7 +178,7 @@ export function SummaryRows({
             <MaskAmount card="ledger.txList" kind="expense">
               {minusOf(monthOut)}
               {wonPre()}
-              {KRW(Math.abs(monthOut))}
+              {withCommaBreaks(KRW(Math.abs(monthOut)))}
             </MaskAmount>
             <WonUnit card="ledger.txList" kind="expense" />
           </span>
@@ -190,7 +191,7 @@ export function SummaryRows({
             <MaskAmount card="ledger.txList" kind="net">
               {monthIn - monthOut >= 0 ? "+" : "−"}
               {wonPre()}
-              {KRW(Math.abs(monthIn - monthOut))}
+              {withCommaBreaks(KRW(Math.abs(monthIn - monthOut)))}
             </MaskAmount>
             <WonUnit card="ledger.txList" kind="net" />
           </span>
@@ -290,7 +291,7 @@ export function CellNumber({
   return (
     <span
       className={cn(
-        "inline-flex size-8 items-center justify-center rounded-full text-t5 tabular-nums",
+        "inline-flex min-h-x8 min-w-x8 items-center justify-center rounded-full px-x1 text-t5 tabular-nums",
         selected
           ? "bg-bg-brand-solid font-bold text-static-white"
           : cn(

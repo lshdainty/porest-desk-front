@@ -4,7 +4,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { FunnelX, Plus, ReceiptText, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/shared/ds/button";
 import { Divider } from "@/shared/ds/divider";
-import { useDsText } from "@/shared/ds/i18n";
+import { useDsText, withCommaBreaks } from "@/shared/ds/i18n";
 import { ResultSection } from "@/shared/ds/result-section";
 import { ScrollAutoHide } from "@/shared/ds/scroll-auto-hide";
 import { SwipeActionsProvider } from "@/shared/ds/swipe-actions";
@@ -509,7 +509,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                     <span className="text-fg-neutral">
                       <MaskAmount card="ledger.txList" kind="expense">
                         -{wonPre()}
-                        {KRW(dOut)}
+                        {withCommaBreaks(KRW(dOut))}
                       </MaskAmount>
                       <WonUnit card="ledger.txList" kind="expense" />
                     </span>
@@ -518,7 +518,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                     <span className="ml-x2 text-fg-brand">
                       <MaskAmount card="ledger.txList" kind="income">
                         +{wonPre()}
-                        {KRW(dIn)}
+                        {withCommaBreaks(KRW(dIn))}
                       </MaskAmount>
                       <WonUnit card="ledger.txList" kind="income" />
                     </span>
@@ -630,7 +630,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                     <>
                       <MaskAmount card="ledger.txList" kind="expense">
                         {wonPre()}
-                        {KRW(monthOut)}
+                        {withCommaBreaks(KRW(monthOut))}
                       </MaskAmount>
                       <WonUnit card="ledger.txList" kind="expense" />
                     </>
