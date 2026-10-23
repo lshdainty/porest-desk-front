@@ -112,7 +112,7 @@ const Shell = () => {
       return (
         <div className="m-app" data-screen-label="Mobile">
           <SkipLink />
-          {/* 풀스크린도 띠 화면이다 — 바닥은 basement, 머리 다음 본문은 8 틈 아래 흰 띠(I-01 결정 4B · groo.css .m-fullscreen) */}
+          {/* 풀스크린도 띠 화면이다 — 바닥은 basement, 머리 바로 아래 흰 띠(I-01 결정 4B · I-05 74 · groo.css .m-fullscreen) */}
           <main
             id="main"
             tabIndex={-1}
@@ -152,11 +152,11 @@ const Shell = () => {
           {/* 스와이프 그룹은 셸마다 하나 — "한 번에 한 행" 과 "스크롤하면 닫힘" 을 여기가 맡는다.
               화면마다 두면 리스트를 새로 붙일 때 빠뜨려 여러 행이 열린 채 남는다. */}
           <SwipeActionsProvider>
-            {/* 띠 화면 — 맨 위 8 은 바닥이 보이는 틈, 그 아래는 화면 폭 흰 띠(모서리 · 테두리 · 그림자 없음) */}
+            {/* 띠 화면 — 머리 바로 아래 화면 폭 흰 띠(모서리 · 테두리 · 그림자 없음), 시작 틈 없음(I-05 74) */}
             <div
               className={cn(
                 "flex flex-1 flex-col",
-                floor === "strip" && "mt-x2 bg-surface-default",
+                floor === "strip" && "bg-surface-default",
               )}
             >
               <Outlet

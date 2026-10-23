@@ -44,13 +44,13 @@
 /* =============================================================================
  * Primitives — hero, tx row, cat icon, chart, budget bar, account card
  * ========================================================================== */
-/* 폰 구역 화면 — 구역(직계 자식)마다 화면 폭 흰 띠, 사이 · 맨 위 8 은 바닥이 보이는 틈(DESIGN Layout "화면 바탕",
-   2026-10-21 I-01 결정 3). 띠 안은 카드 안과 같은 사방 24. 순자산은 모서리 없는 띠(screen-bands.tsx) */
+/* 폰 구역 화면 — 구역(직계 자식)마다 화면 폭 흰 띠, 띠 사이 8 은 바닥이 보이는 틈(DESIGN Layout "화면 바탕",
+   2026-10-21 I-01 결정 3). 시작 · 끝 틈은 없다 — 머리 바로 아래 첫 띠, 마지막 띠 아래 틈 0(I-05 74).
+   띠 안은 카드 안과 같은 사방 24. 순자산은 모서리 없는 띠(screen-bands.tsx) */
 .screen-bands {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-x2);
-  padding-top: var(--spacing-x2);
 }
 .screen-bands > :not(.contents),
 .screen-bands > .contents > * {
@@ -71,10 +71,9 @@
 .screen-bands > :empty {
   display: none;
 }
-/* 풀스크린 띠 화면 — 바닥 basement 위, ← 머리 다음 본문은 8 틈 아래 화면 폭 흰 띠 한 장(I-01 결정 4B).
+/* 풀스크린 띠 화면 — 바닥 basement 위, ← 머리 바로 아래 화면 폭 흰 띠 한 장(I-01 결정 4B, 시작 틈 없음 — I-05 74).
    본문이 묶음마다 띠를 그리면(.screen-bands) 셸은 띠를 깔지 않는다 */
 .m-fullscreen > .m-back-header + :not(.screen-bands) {
-  margin-top: var(--spacing-x2);
   background: var(--color-surface-default);
 }
 
