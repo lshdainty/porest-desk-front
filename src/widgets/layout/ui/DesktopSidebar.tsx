@@ -13,7 +13,7 @@ import {
   useMyFeatures,
 } from "@/features/subscription/model/useSubscription";
 import { brokerPath, useBrokerLabel } from "@/features/stock/lib/broker";
-import { BrandMark } from "@/shared/ui/brand-mark";
+import { GrooTree } from "@/shared/ui/groo/groo-tree";
 import { useLinkClick } from "../lib/use-link-click";
 import { NAV, type NavItem } from "../model/nav";
 
@@ -80,7 +80,10 @@ export function DesktopSidebar() {
       <SideNavigationHeader
         logo={
           <>
-            <BrandMark size={24} />
+            {/* 나무 24(폭 22.3) — 로고 슬롯이 직계 svg 를 24×24 로 고정해 감싼다. 사이 8 · 이름은 슬롯의 t5 · 700 */}
+            <span className="flex shrink-0">
+              <GrooTree size={24} />
+            </span>
             그루 담다
           </>
         }

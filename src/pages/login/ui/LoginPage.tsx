@@ -11,7 +11,7 @@ import {
   savePkce,
 } from "@/features/auth/lib/pkce";
 import { Button } from "@/shared/ui/button";
-import { BrandMark } from "@/shared/ui/brand-mark";
+import { GrooTree } from "@/shared/ui/groo/groo-tree";
 
 export const LoginPage = () => {
   if (hasToken()) {
@@ -76,9 +76,9 @@ const LoginForm = () => {
     // gap 32(앱 x32)로 분리.
     <div className="flex w-full flex-col gap-8">
       <div className="flex flex-col items-center gap-2 text-center">
-        {/* 마크(아이콘)만 좌측 + '그루 담다' 는 실제 텍스트(합성 이미지 금지). 마크 56 / gap 0. */}
-        <div className="flex items-center justify-center">
-          <BrandMark size={56} />
+        {/* 나무(장식) 56 + 사이 8 + '그루 담다' 는 실제 텍스트(합성 이미지 금지) — 가로 묶음(로고 결정 5A, I-05 86). */}
+        <div className="flex items-center justify-center gap-x2">
+          <GrooTree size={56} />
           <span
             style={{
               fontSize: "var(--text-display-md)",

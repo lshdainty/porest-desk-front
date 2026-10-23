@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500">
-  <g transform="translate(40 50) scale(2.4096) translate(-147 -183)"><path id="trunk" fill="#A96D57" d="M212 282H235 C234 304 237 323 244 339 H203 C210 321 212 303 212 282Z"/> <path id="left-leaf" fill="#075B3C" d="M163 193 C182 191 207 201 224 212 C245 230 248 261 224 288 C201 290 178 282 166 265 C154 248 154 215 163 193Z"/> <path id="right-leaf" fill="#43BF5E" d="M224 212 C242 201 265 194 284 193 C292 214 294 245 282 265 C271 282 248 290 224 288 C201 263 200 232 224 212Z"/> <path id="overlap" fill="#218D49" d="M224 212 C245 230 248 261 224 288 C201 263 200 232 224 212Z"/></g>
-  <text x="520" y="358" font-family="Pretendard, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="300" font-weight="700" letter-spacing="-6" fill="#FFFFFF">그루</text>
-  <text x="1060" y="358" font-family="Pretendard, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="300" font-weight="600" letter-spacing="-6" fill="#9CA3AF">담다</text>
-</svg>
