@@ -291,7 +291,7 @@ export function CellNumber({
   return (
     <span
       className={cn(
-        "inline-flex min-h-x8 min-w-x8 items-center justify-center rounded-full px-x1 text-t5 tabular-nums",
+        "inline-flex min-h-x9 min-w-x9 items-center justify-center rounded-full px-x1 text-t5 tabular-nums",
         selected
           ? "bg-bg-brand-solid font-bold text-static-white"
           : cn(

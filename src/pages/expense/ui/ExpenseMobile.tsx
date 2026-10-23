@@ -85,6 +85,9 @@ function currentMonthKey(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+/** 칸 툴팁 폭의 반(chart 툴팁 최소 128 + 좌우 12 의 반올림) — 달력 양 끝에서 이만큼 들인다 */
+const TIP_HALF_WIDTH = 84;
+
 /** 모바일 가계부 — 캘린더 스트립 + 리스트 통합 뷰 (design tx-mobile.jsx SoT, 현대카드 모티브).
  *  탭 전환 없음: 월네비 → 총액+인사이트+[소비 요약] → 접이식 캘린더(일별 합계) → 날짜그룹 리스트. */
 const TXM_PAD = (n: number) => String(n).padStart(2, "0");
@@ -683,9 +686,15 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                             const cell =
                               e.currentTarget.getBoundingClientRect();
                             const cal = calRef.current.getBoundingClientRect();
+                            // 툴팁은 칸 가운데 위에 뜨되 달력 밖으로 잘리지 않게 양 끝에서 반 폭만큼 들인다
+                            const center =
+                              cell.left - cal.left + cell.width / 2;
                             setCellTip({
                               ds: c.ds,
-                              left: cell.left - cal.left + cell.width / 2,
+                              left: Math.min(
+                                Math.max(center, TIP_HALF_WIDTH),
+                                cal.width - TIP_HALF_WIDTH,
+                              ),
                               top: cell.top - cal.top,
                             });
                           }}
