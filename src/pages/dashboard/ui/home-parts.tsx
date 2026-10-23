@@ -25,6 +25,7 @@ import { dsMoney, useDsText, withCommaBreaks } from "@/shared/ds/i18n";
 import { List, ListButtonItem, ListItem } from "@/shared/ds/list";
 import { Progress } from "@/shared/ds/progress";
 import { ResultSection } from "@/shared/ds/result-section";
+import { toggleVariants } from "@/shared/ds/toggle";
 import { Badge } from "@/shared/ds/badge";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { cn } from "@/shared/lib/cn";
@@ -101,11 +102,14 @@ export function SectionFailure({
   className?: string;
 }) {
   const dsT = useDsText();
+  const { t } = useTranslation("dashboard");
   return (
     <ResultSection
       kind="failure"
       size="medium"
+      as="h3"
       title={title}
+      description={t("loadFailedDesc")}
       primaryAction={{ label: dsT("common.retry"), onClick: onRetry }}
       className={cn(band && "px-x6", "[[data-slot=card]_&]:px-0", className)}
     />
@@ -121,13 +125,41 @@ export function EmptyLine({ children }: { children: ReactNode }) {
   );
 }
 
-/** 목록 줄 스켈레톤 — List 한 줄 46(글 t5 22 + 위아래 12) */
-export function RowsSkeleton({ rows = 2 }: { rows?: number }) {
+/**
+ * 목록 줄 스켈레톤 — 실제 줄과 같은 높이(List 한 줄 46 · 두 줄 66, I-06 33).
+ * plain = 글 한 줄(이번 달 가계부 키-값), dot = 앞 원 20 + 제목 + 값(일정 · 할 일), tx = 앞 타일 40 + 제목 · 설명 + 금액(오늘 쓴 돈 · 결제).
+ */
+export function RowsSkeleton({
+  rows = 2,
+  kind = "plain",
+}: {
+  rows?: number;
+  kind?: "plain" | "dot" | "tx";
+}) {
   return (
     <div aria-hidden>
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="px-x6 py-x3">
-          <Skeleton text="t5" className="w-3/4" />
+        <div key={i} className="flex items-center gap-x3 px-x6 py-x3">
+          {kind === "dot" && (
+            <Skeleton radius="full" className="size-x5 shrink-0" />
+          )}
+          {kind === "tx" && (
+            <Skeleton radius="12" className="size-x10 shrink-0" />
+          )}
+          {kind === "tx" ? (
+            <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
+              <Skeleton text="t5" className="w-3/4" />
+              <Skeleton text="t3" className="w-1/2" />
+            </div>
+          ) : (
+            <Skeleton
+              text="t5"
+              className={kind === "plain" ? "w-3/4" : "min-w-0 flex-1"}
+            />
+          )}
+          {kind !== "plain" && (
+            <Skeleton text="t5" className="w-x10 shrink-0" />
+          )}
         </div>
       ))}
     </div>
@@ -137,8 +169,6 @@ export function RowsSkeleton({ rows = 2 }: { rows?: number }) {
 // ── 순자산 ─────────────────────────────────────────────────────
 export type HeroData = {
   loading: boolean;
-  failed: boolean;
-  onRetry: () => void;
   label: string;
   netWorth: number;
   totalAssets: number;
@@ -165,7 +195,6 @@ const HERO_LINE =
  */
 export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
   const { t } = useTranslation("dashboard");
-  const dsT = useDsText();
   const hiddenNet = useHideAmounts("home.netWorth");
   const m = useMasked("home.netWorth");
   const dir =
@@ -177,19 +206,12 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
           <Wallet aria-hidden size={16} />
           {data.label}
         </CardHeroLabel>
+        {/* 금액 가리기 설정 단추 — 설정으로 가는 버튼이라 Toggle 이 아니다(toggle.md:102 aria-pressed 없음). 채움 위 톤 */}
         <button
           type="button"
           aria-label={t("hideAmountsSettings")}
-          aria-pressed={hiddenNet}
           onClick={data.onHideSettings}
-          className={cn(
-            // 보이는 40 · 누르는 44 · 아이콘 20 · 흰 아이콘만(둘레 원 · 바탕 · 테두리 없음) — 누르면 축소만
-            "relative -my-x2 -mr-x2 inline-flex size-10 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-static-white",
-            "[--press-basis:40] [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
-            "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
-            "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-static-white",
-          )}
+          className={cn(toggleVariants({ tone: "inverted" }), "-my-x2 -mr-x2")}
         >
           {hiddenNet ? (
             <EyeOff aria-hidden size={20} />
@@ -198,18 +220,7 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
           )}
         </button>
       </div>
-      {data.failed ? (
-        <ResultSection
-          kind="failure"
-          size="medium"
-          title={t("loadFailed.netWorth")}
-          primaryAction={{
-            label: dsT("common.retry"),
-            onClick: data.onRetry,
-          }}
-          className="[&_[data-slot=result-section-asset]]:text-static-white [&_[data-slot=result-section-title]]:text-static-white"
-        />
-      ) : data.loading ? (
+      {data.loading ? (
         <div aria-hidden>
           <Skeleton
             text="t12"
@@ -218,7 +229,7 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
           />
           <Skeleton text="t3" className={cn("mt-x1 w-1/2", HERO_SKELETON)} />
           <div
-            className={cn("mt-x4 grid grid-cols-2 border-t pt-x4", HERO_LINE)}
+            className={cn("mt-x5 grid grid-cols-2 border-t pt-x5", HERO_LINE)}
           >
             <Skeleton text="t5" className={cn("w-2/3", HERO_SKELETON)} />
             <Skeleton text="t5" className={cn("ml-x4 w-2/3", HERO_SKELETON)} />
@@ -247,7 +258,7 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
             )}
           </div>
           <div
-            className={cn("mt-x4 grid grid-cols-2 border-t pt-x4", HERO_LINE)}
+            className={cn("mt-x5 grid grid-cols-2 border-t pt-x5", HERO_LINE)}
           >
             <HeroCell label={data.assetLabel}>
               {m(won(data.totalAssets))}
@@ -275,12 +286,33 @@ function HeroCell({
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0 pr-x3 first:pr-x3", className)}>
+    <div className={cn("min-w-0 pr-x4 last:pr-0", className)}>
       <CardHeroLabel>{label}</CardHeroLabel>
       <div className="mt-x1 text-t5 font-bold tabular-nums text-static-white">
         {withCommaBreaks(children)}
       </div>
     </div>
+  );
+}
+
+/** 순자산 실패 — 채움 위가 아니라 흰 면 + 머리 "순자산"(ds Result Section 은 채움 위 톤이 없다 — 색을 덮지 않는다) */
+export function NetWorthFailure({
+  title,
+  onRetry,
+  band,
+}: {
+  title: string;
+  onRetry: () => void;
+  band?: boolean;
+}) {
+  const { t } = useTranslation("dashboard");
+  return (
+    <>
+      <HomeHead band={band} title={t("asset.netAsset")} />
+      <div className={band ? "pb-x6" : undefined}>
+        <SectionFailure band={band} title={title} onRetry={onRetry} />
+      </div>
+    </>
   );
 }
 
@@ -360,6 +392,22 @@ export function MonthRows({
 }
 
 // ── 카테고리 도넛 ──────────────────────────────────────────────
+/** 글 폭이 limit 이하인가 — 잰 글 요소의 크기가 바뀔 때만 상태로 옮긴다(ResizeObserver 콜백) */
+function useFitLimit(limit: number) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [fits, setFits] = useState(true);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() =>
+      setFits(el.getBoundingClientRect().width <= limit),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [limit]);
+  return [ref, fits] as const;
+}
+
 export type ColoredSlice = HomeSlice & { color: ChartColor; fill: string };
 
 /**
@@ -380,14 +428,27 @@ export function CategoryBody({
 }) {
   const { t } = useTranslation("dashboard");
   const m = useMasked("home.categoryDonut");
-  const [fits, setFits] = useState(true);
+  const [dsFits, setDsFits] = useState(true);
   const total = slices.reduce((a, s) => a + s.amount, 0);
   const totalText = m(won(total));
-  const showRow = !center || !fits;
+  // 가운데 합계 판정 = 결정 2A "금액 글 폭 ≤ 구멍 − 16"(ds 판정 101.1 이 아니라 화면이 직접 쓴다 — 폭 100 ~ 101.1 의 금액에서 갈린다)
+  const hole = chartDonutRadii(size).innerRadius * 2;
+  const [measureRef, decisionFits] = useFitLimit(hole - 16);
+  const showCenter = center && decisionFits;
+  const showRow = !showCenter || !dsFits;
   const legendId = `home-cat-legend-${size}`;
   const pct = (v: number) => `${Math.round((v / total) * 100)}%`;
   return (
-    <div className="flex flex-col">
+    <div className="relative flex flex-col">
+      {center && (
+        <span
+          ref={measureRef}
+          aria-hidden
+          className="pointer-events-none invisible absolute whitespace-nowrap text-t5 font-bold tabular-nums"
+        >
+          {totalText}
+        </span>
+      )}
       <Chart
         label={t("chart.categoryName", { month, total: totalText })}
         legendId={legendId}
@@ -406,11 +467,11 @@ export function CategoryBody({
             }
           />
         </PieChart>
-        {center && (
+        {showCenter && (
           <ChartDonutCenter
             label={t("summary.monthlyExpense")}
             amount={totalText}
-            onFitChange={setFits}
+            onFitChange={setDsFits}
           />
         )}
       </Chart>
@@ -429,8 +490,7 @@ export function CategoryBody({
       )}
       <ChartDonutLegend
         id={legendId}
-        // 큰 글자에서 이름이 글자 하나씩 서지 않게 — 이름 칸은 5rem 밑으로 줄지 않고, 모자라면 % · 금액이 아래 줄로 내려간다
-        className="mt-x4 [&_[data-slot=chart-donut-row]]:flex-wrap [&_[data-slot=chart-donut-label]]:min-w-[5rem] [&_[data-slot=chart-donut-amount]]:ml-auto"
+        className="mt-x4"
         items={slices.map((s) => ({
           key: s.id,
           label: s.name,
@@ -458,9 +518,14 @@ export function CategorySkeleton({ size }: { size: number }) {
       <div className="flex justify-center">
         <Skeleton radius="full" style={{ width: size, height: size }} />
       </div>
-      <div className="mt-x4 flex flex-col gap-x3">
+      {/* 범례 줄 높이 = 실제 줄(min-h-11 — 44) */}
+      <div className="mt-x4 flex flex-col">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} text="t4" className="w-full" />
+          <div key={i} className="flex min-h-11 items-center gap-x2">
+            <Skeleton radius="4" className="size-2.5 shrink-0" />
+            <Skeleton text="t4" className="min-w-0 flex-1" />
+            <Skeleton text="t4" className="w-x10 shrink-0" />
+          </div>
         ))}
       </div>
     </div>
@@ -491,8 +556,6 @@ export function BudgetBody({ items }: { items: BudgetItem[] }) {
           value={b.spent}
           max={b.budgetAmount}
           formatValue={(v) => m(won(v))}
-          // 큰 글자에서 이름이 글자 하나씩 서지 않게 — 이름 칸은 5rem 밑으로 줄지 않고, 모자라면 오른쪽 글이 아래 줄로 내려간다
-          className="[&_[data-slot=progress-header]]:flex-wrap [&_[data-slot=progress-label]]:min-w-[5rem] [&_[data-slot=progress-status]]:ml-auto"
         />
       ))}
     </div>
@@ -514,6 +577,9 @@ export function BudgetSkeleton() {
 }
 
 // ── 목록 줄: 일정 · 할 일 · 오늘 쓴 돈 ────────────────────────────
+// 앞 붙이개를 제목 첫 줄 가운데에 둔다 — 높이 = 제목 한 줄(t5 줄 높이). 한 줄 · 위 맞춤 어느 쪽이든 같다
+const PREFIX_LINE = "inline-flex h-[var(--text-t5--line-height)] items-center";
+
 /**
  * 제목이 두 줄을 넘는 줄이 하나라도 있으면 그 목록은 위 맞춤(list.md:50 — 한 목록 안 맞춤을 섞지 않는다).
  * 줄 폭에 따라 달라지므로 그린 뒤 잰다(ResizeObserver 콜백에서만 상태로 옮긴다).
@@ -557,15 +623,17 @@ export function EventRows({
           title={ev.title}
           align={align}
           prefix={
-            <span
-              aria-hidden
-              className="mx-x1 mt-x1 size-2 rounded-full"
-              style={{
-                background: ev.color
-                  ? getPaletteByColor(ev.color).color
-                  : "var(--color-fg-brand)",
-              }}
-            />
+            <span className={PREFIX_LINE}>
+              <span
+                aria-hidden
+                className="mx-x1 size-x2 rounded-full"
+                style={{
+                  background: ev.color
+                    ? getPaletteByColor(ev.color).color
+                    : "var(--color-fg-brand)",
+                }}
+              />
+            </span>
           }
           suffix={
             <span
@@ -618,19 +686,25 @@ export function TodoRows({
             }
             align={align}
             prefix={
-              done ? (
-                <CircleCheck aria-hidden className="text-fg-positive" />
-              ) : (
-                <span
-                  aria-hidden
-                  className={cn(
-                    "size-5 rounded-full border-2 border-solid",
-                    isOver
-                      ? "border-fg-critical"
-                      : "border-stroke-neutral-contrast",
-                  )}
-                />
-              )
+              <span className={PREFIX_LINE}>
+                {done ? (
+                  <CircleCheck
+                    aria-hidden
+                    size={20}
+                    className="text-fg-positive"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "size-x5 rounded-full border-2 border-solid",
+                      isOver
+                        ? "border-fg-critical"
+                        : "border-stroke-neutral-solid",
+                    )}
+                  />
+                )}
+              </span>
             }
             suffix={
               td.dueDate ? (

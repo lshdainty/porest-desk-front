@@ -102,15 +102,25 @@ describe("데스크톱 홈", () => {
     expect(grid.className).toContain(
       "lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]",
     );
-    expect(grid.className).toContain("lg:gap-x6");
+    expect(grid.className).toContain("lg:gap-[var(--layout-gutter)]");
     for (const col of Array.from(grid.children))
       expect(col.className).toContain("gap-x2");
     // 본문 최대 720(태블릿) · 1040(1440 이상) 가운데
     const body = container.querySelector(
       "[data-slot=home-desktop] > div",
     ) as HTMLElement;
-    expect(body.className).toContain("max-w-[720px]");
-    expect(body.className).toContain("lg:max-w-[1040px]");
+    expect(body.className).toContain("max-w-[var(--layout-max-low)]");
+    expect(body.className).toContain("lg:max-w-[var(--layout-max-medium)]");
+    // 여백 — 위 spacing-nav-to-title · 좌우 layout-margin · 아래 spacing-screen-bottom(숫자 눈금이 아니라 토큰 이름)
+    const page = container.querySelector(
+      "[data-slot=home-desktop]",
+    ) as HTMLElement;
+    for (const c of [
+      "pt-nav-to-title",
+      "px-[var(--layout-margin)]",
+      "pb-screen-bottom",
+    ])
+      expect(page.className).toContain(c);
     expect(body.className).toContain("mx-auto");
   });
 
@@ -142,6 +152,20 @@ describe("데스크톱 홈", () => {
     expect(
       container.querySelector("[data-testid=month-picker]"),
     ).not.toBeNull();
+  });
+
+  it("수입 · 지출 카드 — 타일 ↔ 차트 8(타일 아래 8 · 본문 간격 0) · 차트 ↔ 안내 16", () => {
+    render();
+    const content = container.querySelector(
+      "[data-slot=card-content]",
+    ) as HTMLElement;
+    expect(content.className).toContain("gap-0");
+    expect(
+      content.querySelector("[data-slot=chart-legend-list]")!.className,
+    ).toContain("mb-x2");
+    expect(
+      Array.from(content.children).some((c) => c.className.includes("mt-x4")),
+    ).toBe(true);
   });
 
   it("한 질의가 실패하면 그 카드만 실패 — 0원 없음 · 다시 시도는 그 질의 하나만", () => {

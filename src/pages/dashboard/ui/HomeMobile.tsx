@@ -20,6 +20,7 @@ import {
   EventRows,
   HeroCard,
   HomeHead,
+  NetWorthFailure,
   MonthNote,
   MonthRows,
   OverdueBadge,
@@ -39,9 +40,9 @@ import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
 import { useMonthNote } from "./use-month-note";
 
 /**
- * 폰 홈 — 띠 넷(I-06 1A): ① 순자산 ② 이번 달 돈(가계부 · 카테고리 · 예산) ③ 할 일 · 일정 ④ 오늘 쓴 돈.
- * 띠 사이 8, 띠 안 구역 사이는 구역 제목 + 여백(앞 구역 아래 24 + 다음 머리 위 24 = 48). 선 · 틈을 두지 않는다.
- * 앱 `dashboard_screen.dart` 와 같은 구조 · 같은 값이다(짝 1).
+ * 폰 홈 — **구역마다 따로 띠**(사용자 10-23): 순자산 · 이번 달 가계부 · 카테고리 · 예산 · 다가오는 일정 · 최근 할 일 · 오늘 쓴 돈.
+ * 띠 사이 8, 머리 아래 · 마지막 아래 틈 0. 띠 안은 카드 안과 같은 값(머리 위 24 · 글 구역 아래 24 · 목록 구역 아래 12 + 줄 12).
+ * 일정 · 할 일이 비면 그 띠가 없다(둘 다 비면 둘 다). 앱 `dashboard_screen.dart` 와 같은 구조 · 같은 값이다(짝 1).
  */
 export function HomeMobile() {
   const { t } = useTranslation("dashboard");
@@ -101,9 +102,6 @@ export function HomeMobile() {
   const monthFailed = monthlyQ.isError && monthlyQ.data === undefined;
   const monthLoading = monthlyQ.data === undefined && !monthlyQ.isError;
   const overdue = summary?.todoSummary.overDueCount ?? 0;
-  // 띠 ③ — 둘 다 비면 띠 자체가 없다(빈 흰 띠 · 겹친 틈 없음)
-  const showBand3 =
-    summaryLoading || summaryFailed || events.length > 0 || todos.length > 0;
   const todayLoading = recentQ.data === undefined && !recentQ.isError;
   const todayFailed = recentQ.isError && recentQ.data === undefined;
   const openToday = (e: Expense) => {
@@ -114,214 +112,228 @@ export function HomeMobile() {
     navigate(`/desk/expense?${params.toString()}`);
   };
 
+  const assetFailed = assetSummaryQ.isError && assetSummaryQ.data === undefined;
+  const showEvents = summaryLoading || summaryFailed || events.length > 0;
+  const showTodos = summaryLoading || summaryFailed || todos.length > 0;
+
   return (
     // 폰 구역 화면 — 띠 사이 8 만 틈이다(머리 아래 · 마지막 띠 아래 없음 — I-05 74 · I-06 6 ~ 7)
     <ScreenBands>
-      {/* 띠 ① 순자산 */}
-      <HeroCard
-        band
-        data={{
-          loading: assetSummaryQ.data === undefined && !assetSummaryQ.isError,
-          failed: assetSummaryQ.isError && assetSummaryQ.data === undefined,
-          onRetry: () => void assetSummaryQ.refetch(),
-          label: t("asset.netAsset"),
-          netWorth: asset?.netWorth ?? 0,
-          totalAssets: asset?.totalAssets ?? 0,
-          totalDebt: asset?.totalDebt ?? 0,
-          // 지난달 순자산이 0 이면 증감률을 낼 수 없다 — 안내 글로 바꾼다(QA #20).
-          hasLastMonth: (asset?.lastMonthNetWorth ?? 0) !== 0,
-          changePercent: asset?.changePercent ?? 0,
-          changeAmount: asset?.changeAmount ?? 0,
-          showChangeAmount: false,
-          assetLabel: t("asset.assetTab"),
-          debtLabel: t("asset.debtTab"),
-          onHideSettings: handleHideToggle,
-        }}
-      />
-
-      {/* 띠 ② 이번 달 돈 */}
-      <div data-band="flush" data-testid="home-band-month">
-        <section data-section="month">
-          <HomeHead
+      {/* 띠 순자산 */}
+      {assetFailed ? (
+        <div data-band="flush" data-section="netWorth">
+          <NetWorthFailure
             band
-            list
-            title={t("summary.monthExpenseBook", { month })}
+            title={t("loadFailed.netWorth")}
+            onRetry={() => void assetSummaryQ.refetch()}
           />
+        </div>
+      ) : (
+        <HeroCard
+          band
+          data={{
+            loading: assetSummaryQ.data === undefined,
+            label: t("asset.netAsset"),
+            netWorth: asset?.netWorth ?? 0,
+            totalAssets: asset?.totalAssets ?? 0,
+            totalDebt: asset?.totalDebt ?? 0,
+            // 지난달 순자산이 0 이면 증감률을 낼 수 없다 — 안내 글로 바꾼다(QA #20).
+            hasLastMonth: (asset?.lastMonthNetWorth ?? 0) !== 0,
+            changePercent: asset?.changePercent ?? 0,
+            changeAmount: asset?.changeAmount ?? 0,
+            showChangeAmount: false,
+            assetLabel: t("asset.assetTab"),
+            debtLabel: t("asset.debtTab"),
+            onHideSettings: handleHideToggle,
+          }}
+        />
+      )}
+
+      {/* 띠 이번 달 가계부 */}
+      <section data-band="flush" data-section="month">
+        <HomeHead band list title={t("summary.monthExpenseBook", { month })} />
+        {monthFailed ? (
+          <SectionFailure
+            band
+            title={t("loadFailed.month")}
+            onRetry={() => void monthlyQ.refetch()}
+          />
+        ) : monthLoading ? (
+          <div className="pb-x6">
+            <RowsSkeleton rows={2} />
+          </div>
+        ) : (
+          <>
+            <MonthRows income={income} expense={expense} />
+            <div className="px-x6 pb-x6">
+              <MonthNote {...note} />
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* 띠 카테고리 */}
+      <section data-band="flush" data-section="category">
+        <HomeHead
+          band
+          title={t("categoryTitle")}
+          action={{
+            label: t("viewAll"),
+            onClick: () => navigate("/desk/stats"),
+          }}
+        />
+        <div className="px-x6 pb-x6">
           {monthFailed ? (
             <SectionFailure
-              band
-              title={t("loadFailed.month")}
+              title={t("loadFailed.category")}
               onRetry={() => void monthlyQ.refetch()}
             />
           ) : monthLoading ? (
-            <RowsSkeleton rows={2} />
+            <CategorySkeleton size={120} />
+          ) : slices.length === 0 ? (
+            <EmptyLine>{t("categoryEmptyNow")}</EmptyLine>
           ) : (
-            <>
-              <MonthRows income={income} expense={expense} />
-              <div className="px-x6 pb-x6">
-                <MonthNote {...note} />
-              </div>
-            </>
-          )}
-        </section>
-        <section data-section="category">
-          <HomeHead
-            band
-            title={t("categoryTitle")}
-            action={{
-              label: t("viewAll"),
-              onClick: () => navigate("/desk/stats"),
-            }}
-          />
-          <div className="px-x6 pb-x6">
-            {monthFailed ? (
-              <SectionFailure
-                title={t("loadFailed.category")}
-                onRetry={() => void monthlyQ.refetch()}
-              />
-            ) : monthLoading ? (
-              <CategorySkeleton size={120} />
-            ) : slices.length === 0 ? (
-              <EmptyLine>{t("categoryEmptyNow")}</EmptyLine>
-            ) : (
-              <CategoryBody
-                slices={slices}
-                size={120}
-                center={false}
-                month={month}
-              />
-            )}
-          </div>
-        </section>
-        <section data-section="budget">
-          <HomeHead
-            band
-            title={t("expense.budget")}
-            action={{
-              label: t("viewAll"),
-              onClick: () => navigate("/desk/budget"),
-            }}
-          />
-          <div className="px-x6 pb-x6">
-            {monthFailed || (budgetsQ.isError && !budgetsQ.data) ? (
-              <SectionFailure
-                title={t("loadFailed.budget")}
-                onRetry={() => {
-                  void monthlyQ.refetch();
-                  void budgetsQ.refetch();
-                }}
-              />
-            ) : budgetsQ.data === undefined || monthLoading ? (
-              <BudgetSkeleton />
-            ) : budgetItems.length === 0 ? (
-              <EmptyLine>{t("budget.empty")}</EmptyLine>
-            ) : (
-              <BudgetBody items={budgetItems} />
-            )}
-          </div>
-        </section>
-      </div>
-
-      {/* 띠 ③ 할 일 · 일정 — 둘 다 비면 띠가 없다 */}
-      {showBand3 && (
-        <div data-band="flush" data-testid="home-band-plan">
-          {summaryFailed ? (
-            <SectionFailure
-              band
-              title={t("loadFailed.summary")}
-              onRetry={() => void dashboardQ.refetch()}
+            <CategoryBody
+              slices={slices}
+              size={120}
+              center={false}
+              month={month}
             />
-          ) : (
-            <>
-              {(summaryLoading || events.length > 0) && (
-                <section data-section="events">
-                  <HomeHead
-                    band
-                    list
-                    title={t("schedule.title")}
-                    action={{
-                      label: t("viewAll"),
-                      onClick: () => navigate("/desk/calendar"),
-                    }}
-                  />
-                  {summaryLoading ? (
-                    <RowsSkeleton />
-                  ) : (
-                    <div className="pb-x3">
-                      <EventRows
-                        events={events}
-                        onOpen={() => navigate("/desk/calendar")}
-                      />
-                    </div>
-                  )}
-                </section>
-              )}
-              {(summaryLoading || todos.length > 0) && (
-                <section data-section="todos">
-                  <HomeHead
-                    band
-                    list
-                    title={t("todo.recent")}
-                    suffix={
-                      overdue > 0 ? <OverdueBadge count={overdue} /> : undefined
-                    }
-                    action={{
-                      label: t("viewAll"),
-                      onClick: () => navigate("/desk/todo"),
-                    }}
-                  />
-                  {summaryLoading ? (
-                    <RowsSkeleton />
-                  ) : (
-                    <div className="pb-x3">
-                      <TodoRows
-                        todos={todos}
-                        todayStr={todayStr}
-                        onOpen={() => navigate("/desk/todo")}
-                      />
-                    </div>
-                  )}
-                </section>
-              )}
-            </>
           )}
         </div>
-      )}
+      </section>
 
-      {/* 띠 ④ 오늘 쓴 돈 */}
-      <div data-band="flush" data-testid="home-band-today">
-        <section data-section="today">
+      {/* 띠 예산 */}
+      <section data-band="flush" data-section="budget">
+        <HomeHead
+          band
+          title={t("expense.budget")}
+          action={{
+            label: t("viewAll"),
+            onClick: () => navigate("/desk/budget"),
+          }}
+        />
+        <div className="px-x6 pb-x6">
+          {monthFailed || (budgetsQ.isError && !budgetsQ.data) ? (
+            <SectionFailure
+              title={t("loadFailed.budget")}
+              onRetry={() => {
+                void monthlyQ.refetch();
+                void budgetsQ.refetch();
+              }}
+            />
+          ) : budgetsQ.data === undefined || monthLoading ? (
+            <BudgetSkeleton />
+          ) : budgetItems.length === 0 ? (
+            <EmptyLine>{t("budget.empty")}</EmptyLine>
+          ) : (
+            <BudgetBody items={budgetItems} />
+          )}
+        </div>
+      </section>
+
+      {/* 띠 다가오는 일정 — 비면 띠가 없다(화면이 그리지 않는다) */}
+      {showEvents && (
+        <section data-band="flush" data-section="events">
           <HomeHead
             band
             list
-            title={t("expense.todaySpent")}
-            suffix={
-              todayTotal > 0 ? <TodayTotal total={todayTotal} /> : undefined
-            }
+            title={t("schedule.title")}
             action={{
               label: t("viewAll"),
-              onClick: () => navigate("/desk/expense"),
+              onClick: () => navigate("/desk/calendar"),
             }}
           />
-          {todayFailed ? (
+          {summaryFailed ? (
             <SectionFailure
               band
-              title={t("loadFailed.today")}
-              onRetry={() => void recentQ.refetch()}
+              title={t("loadFailed.events")}
+              onRetry={() => void dashboardQ.refetch()}
             />
-          ) : todayLoading ? (
-            <RowsSkeleton />
-          ) : todayTx.length === 0 ? (
+          ) : summaryLoading ? (
             <div className="pb-x3">
-              <EmptyLine>{t("expense.noTodaySpent")}</EmptyLine>
+              <RowsSkeleton kind="dot" />
             </div>
           ) : (
             <div className="pb-x3">
-              <TodayRows items={todayTx} onOpen={openToday} />
+              <EventRows
+                events={events}
+                onOpen={() => navigate("/desk/calendar")}
+              />
             </div>
           )}
         </section>
-      </div>
+      )}
+
+      {/* 띠 최근 할 일 */}
+      {showTodos && (
+        <section data-band="flush" data-section="todos">
+          <HomeHead
+            band
+            list
+            title={t("todo.recent")}
+            suffix={overdue > 0 ? <OverdueBadge count={overdue} /> : undefined}
+            action={{
+              label: t("viewAll"),
+              onClick: () => navigate("/desk/todo"),
+            }}
+          />
+          {summaryFailed ? (
+            <SectionFailure
+              band
+              title={t("loadFailed.todos")}
+              onRetry={() => void dashboardQ.refetch()}
+            />
+          ) : summaryLoading ? (
+            <div className="pb-x3">
+              <RowsSkeleton kind="dot" />
+            </div>
+          ) : (
+            <div className="pb-x3">
+              <TodoRows
+                todos={todos}
+                todayStr={todayStr}
+                onOpen={() => navigate("/desk/todo")}
+              />
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 띠 오늘 쓴 돈 */}
+      <section data-band="flush" data-section="today">
+        <HomeHead
+          band
+          list
+          title={t("expense.todaySpent")}
+          suffix={
+            todayTotal > 0 ? <TodayTotal total={todayTotal} /> : undefined
+          }
+          action={{
+            label: t("viewAll"),
+            onClick: () => navigate("/desk/expense"),
+          }}
+        />
+        {todayFailed ? (
+          <SectionFailure
+            band
+            title={t("loadFailed.today")}
+            onRetry={() => void recentQ.refetch()}
+          />
+        ) : todayLoading ? (
+          <div className="pb-x3">
+            <RowsSkeleton kind="tx" />
+          </div>
+        ) : todayTx.length === 0 ? (
+          <div className="pb-x3">
+            <EmptyLine>{t("expense.noTodaySpent")}</EmptyLine>
+          </div>
+        ) : (
+          <div className="pb-x3">
+            <TodayRows items={todayTx} onOpen={openToday} />
+          </div>
+        )}
+      </section>
     </ScreenBands>
   );
 }

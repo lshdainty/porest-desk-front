@@ -48,6 +48,7 @@ import {
   HeroCard,
   HomeHead,
   MonthNote,
+  NetWorthFailure,
   OverdueBadge,
   RowsSkeleton,
   SectionFailure,
@@ -190,32 +191,40 @@ export function HomeDesktop() {
   const viewAll = t("viewAll");
 
   return (
-    <div data-slot="home-desktop" className="px-x8 pb-x14 pt-x5">
-      <div className="mx-auto w-full max-w-[720px] lg:max-w-[1040px]">
+    <div
+      data-slot="home-desktop"
+      className="px-[var(--layout-margin)] pb-screen-bottom pt-nav-to-title"
+    >
+      <div className="mx-auto w-full max-w-[var(--layout-max-low)] lg:max-w-[var(--layout-max-medium)]">
         <PageHead title={tLayout("home")} />
-        <div className="grid grid-cols-1 gap-x2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-x6">
+        <div className="grid grid-cols-1 gap-x2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-[var(--layout-gutter)]">
           <div className="flex min-w-0 flex-col gap-x2">
-            <HeroCard
-              data={{
-                loading:
-                  assetSummaryQ.data === undefined && !assetSummaryQ.isError,
-                failed:
-                  assetSummaryQ.isError && assetSummaryQ.data === undefined,
-                onRetry: () => void assetSummaryQ.refetch(),
-                label: `${t("asset.netAsset")} · ${formatYearMonth(new Date(periodY, periodM - 1))}`,
-                netWorth: asset?.netWorth ?? 0,
-                totalAssets: asset?.totalAssets ?? 0,
-                totalDebt: asset?.totalDebt ?? 0,
-                // 지난달 순자산이 0 이면 증감률을 낼 수 없다 — 안내 글로 바꾼다(QA #20).
-                hasLastMonth: (asset?.lastMonthNetWorth ?? 0) !== 0,
-                changePercent: asset?.changePercent ?? 0,
-                changeAmount: asset?.changeAmount ?? 0,
-                showChangeAmount: true,
-                assetLabel: t("asset.assetTab"),
-                debtLabel: t("asset.debtTab"),
-                onHideSettings: handleHideToggle,
-              }}
-            />
+            {assetSummaryQ.isError && assetSummaryQ.data === undefined ? (
+              <Card>
+                <NetWorthFailure
+                  title={t("loadFailed.netWorth")}
+                  onRetry={() => void assetSummaryQ.refetch()}
+                />
+              </Card>
+            ) : (
+              <HeroCard
+                data={{
+                  loading: assetSummaryQ.data === undefined,
+                  label: `${t("asset.netAsset")} · ${formatYearMonth(new Date(periodY, periodM - 1))}`,
+                  netWorth: asset?.netWorth ?? 0,
+                  totalAssets: asset?.totalAssets ?? 0,
+                  totalDebt: asset?.totalDebt ?? 0,
+                  // 지난달 순자산이 0 이면 증감률을 낼 수 없다 — 안내 글로 바꾼다(QA #20).
+                  hasLastMonth: (asset?.lastMonthNetWorth ?? 0) !== 0,
+                  changePercent: asset?.changePercent ?? 0,
+                  changeAmount: asset?.changeAmount ?? 0,
+                  showChangeAmount: true,
+                  assetLabel: t("asset.assetTab"),
+                  debtLabel: t("asset.debtTab"),
+                  onHideSettings: handleHideToggle,
+                }}
+              />
+            )}
 
             <Card>
               <CardHeader>
@@ -224,7 +233,7 @@ export function HomeDesktop() {
                 </CardTitle>
                 <MonthPicker value={period} onChange={setPeriod} />
               </CardHeader>
-              <CardContent>
+              <CardContent className="gap-0">
                 {monthFailed ? (
                   <SectionFailure
                     title={t("loadFailed.month")}
@@ -269,7 +278,7 @@ export function HomeDesktop() {
                   onRetry={() => void recentQ.refetch()}
                 />
               ) : todayLoading ? (
-                <RowsSkeleton />
+                <RowsSkeleton kind="tx" />
               ) : todayTx.length === 0 ? (
                 <EmptyLine>{t("expense.noTodaySpent")}</EmptyLine>
               ) : (
@@ -343,7 +352,7 @@ export function HomeDesktop() {
                   onRetry={() => void recurringQ.refetch()}
                 />
               ) : recurringQ.data === undefined ? (
-                <RowsSkeleton rows={3} />
+                <RowsSkeleton rows={3} kind="tx" />
               ) : upcomingPayments.length === 0 ? (
                 <EmptyLine>{t("payment.empty")}</EmptyLine>
               ) : (
@@ -364,11 +373,11 @@ export function HomeDesktop() {
               />
               {summaryFailed ? (
                 <SectionFailure
-                  title={t("loadFailed.summary")}
+                  title={t("loadFailed.todoCard")}
                   onRetry={() => void dashboardQ.refetch()}
                 />
               ) : summaryLoading ? (
-                <RowsSkeleton />
+                <RowsSkeleton kind="dot" />
               ) : todos.length === 0 ? (
                 <EmptyLine>{t("todo.empty")}</EmptyLine>
               ) : (
@@ -390,11 +399,11 @@ export function HomeDesktop() {
               />
               {summaryFailed ? (
                 <SectionFailure
-                  title={t("loadFailed.summary")}
+                  title={t("loadFailed.scheduled")}
                   onRetry={() => void dashboardQ.refetch()}
                 />
               ) : summaryLoading ? (
-                <RowsSkeleton />
+                <RowsSkeleton kind="dot" />
               ) : events.length === 0 ? (
                 <EmptyLine>{t("calendar.empty")}</EmptyLine>
               ) : (
@@ -544,7 +553,8 @@ function IncomeExpenseChart({
           />
         </>
       )}
-      {note}
+      {/* 차트 ↔ 안내 16 · 지표 타일 ↔ 차트 8(타일 아래 8 은 ds) — 카드 본문 기본 간격 12 를 0 으로 두고 직접 둔다 */}
+      <div className="mt-x4">{note}</div>
     </>
   );
 }

@@ -2239,10 +2239,14 @@ dashboard,lastMonthThan,지난달보다,than last month
 dashboard,todo.overdueSr,연체 {{count}}건,{{count}} overdue
 dashboard,loadFailed.netWorth,순자산을 불러오지 못했어요,Couldn't load net assets
 dashboard,loadFailed.month,이번 달 가계부를 불러오지 못했어요,Couldn't load this month's ledger
-dashboard,loadFailed.category,카테고리별 지출을 불러오지 못했어요,Couldn't load spending by category
+dashboard,loadFailed.category,카테고리를 불러오지 못했어요,Couldn't load categories
 dashboard,loadFailed.budget,예산을 불러오지 못했어요,Couldn't load budgets
 dashboard,loadFailed.today,오늘 쓴 돈을 불러오지 못했어요,Couldn't load today's spending
-dashboard,loadFailed.summary,할 일과 일정을 불러오지 못했어요,Couldn't load tasks and events
+dashboard,loadFailed.events,다가오는 일정을 불러오지 못했어요,Couldn't load upcoming events
+dashboard,loadFailed.todos,최근 할 일을 불러오지 못했어요,Couldn't load recent tasks
+dashboard,loadFailed.scheduled,예정된 일정을 불러오지 못했어요,Couldn't load scheduled events
+dashboard,loadFailed.todoCard,할 일을 불러오지 못했어요,Couldn't load tasks
+dashboard,loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
 dashboard,loadFailed.trend,수입·지출 추이를 불러오지 못했어요,Couldn't load the income and expense trend
 dashboard,loadFailed.payment,예정된 결제를 불러오지 못했어요,Couldn't load upcoming payments
 dashboard,chart.incomeExpenseName,"{{month}}월까지 6개월 수입·지출","Income and expense for the 6 months through month {{month}}"
