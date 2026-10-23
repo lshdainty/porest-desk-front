@@ -2234,7 +2234,7 @@ dashboard,avg.spentMore,더 썼어요.,spent more.
 dashboard,avg.same,동일해요.,no change.
 dashboard,hideAmountsSettings,금액 가리기 설정,Hide amounts settings
 dashboard,budgetName,{{name}} 예산,{{name}} budget
-dashboard,allBudget,전체 예산,Total budget
+dashboard,allBudget,총 예산,total budget
 dashboard,categoryEmptyNow,이번 달 지출이 없어요,No spending this month
 dashboard,lastMonthThan,지난달보다,than last month
 dashboard,todo.overdueSr,연체 {{count}}건,{{count}} overdue

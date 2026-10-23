@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 // 홈 공용 계산 — 도넛 조각(I-06 18)과 예산 줄(22 · 23)
 import { describe, expect, it } from "vitest";
 import { chartColorOf } from "@/shared/lib/groo/chart-palette";
@@ -116,5 +117,14 @@ describe("고른 달까지 6개월(전월 대비)", () => {
   it("범위 시작은 고른 달 직전 5개월의 첫날", () => {
     expect(sixMonthsStart(2026, 1)).toBe("2025-08-01");
     expect(sixMonthsStart(2026, 10)).toBe("2026-05-01");
+  });
+});
+
+describe("홈 예산 줄 이름 글", () => {
+  it('한 달 전체 예산 금액의 이름은 "총 예산" · "total budget"(사용자 10-23 I-19)', () => {
+    const line = readFileSync("i18n/translations.csv", "utf-8")
+      .split("\n")
+      .find((l) => l.startsWith("dashboard,allBudget,"));
+    expect(line).toBe("dashboard,allBudget,총 예산,total budget");
   });
 });
