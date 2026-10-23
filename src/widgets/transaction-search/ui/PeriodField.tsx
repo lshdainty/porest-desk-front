@@ -32,6 +32,10 @@ const PRESETS = DATE_PRESETS.filter((n) =>
   ["thisWeek", "thisMonth", "lastMonth", "last3Months", "thisYear"].includes(n),
 );
 
+// 값이 한 줄 말줄임(truncate)이 아니라 keep-all 줄바꿈이 되고 상자(min-h)가 글을 따라 커진다. 5열 상자 안(글 자리 20 ~ 35px)에서는 달력 아이콘이 글과 겹쳐 grow 일 때는 아이콘을 뺀다
+const GROW =
+  "[&_[data-slot=input-button-value]]:overflow-visible [&_[data-slot=input-button-value]]:text-clip [&_[data-slot=input-button-value]]:whitespace-normal [&_[data-slot=input-button-value]]:break-keep [&_[data-slot=input-button-value]]:[overflow-wrap:normal] [&_[data-slot=input-button-content]]:py-x2";
+
 /**
  * 고급 필터의 기간 칸 — 칸 하나(Input Button)를 누르면 Date Picker 기간 고르기가 열린다(top-navigation.md 거래 검색
  * "기간 — Input Button 으로 여는 Date Picker 기간 고르기, 브라우저 날짜 칸을 쓰지 않는다", I-01 결과 확인 고치기 W2).
@@ -45,6 +49,7 @@ export function PeriodField({
   label: fieldLabel,
   invalid,
   errorMessage,
+  grow = false,
 }: {
   from: string;
   to: string;
@@ -54,6 +59,8 @@ export function PeriodField({
   /** 오류 — 기간이 비었을 때 같은 칸 아래 글(R19) */
   invalid?: boolean;
   errorMessage?: string;
+  /** 좁은 자리(펼침 안 · 5열 상자)에서 값을 말줄임하지 않고 단어 단위(keep-all)로 줄을 바꿔 칸이 글을 따라 커진다 */
+  grow?: boolean;
 }) {
   const { t } = useTranslation("common");
   const surface = useInputButtonSurface();
@@ -68,7 +75,8 @@ export function PeriodField({
     <InputButton
       placeholder={label}
       value={formatRangeValue(current, new Date())}
-      suffixIcon={<CalendarDays />}
+      suffixIcon={grow ? undefined : <CalendarDays />}
+      rootClassName={grow ? GROW : undefined}
       aria-haspopup="dialog"
       aria-expanded={open}
       onClick={() => {

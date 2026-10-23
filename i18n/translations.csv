@@ -2541,11 +2541,11 @@ export,import.failureLine,{{line}}행,Line {{line}}
 export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여줘요,Showing the first {{shown}} of {{total}} failures
 export,import.failReason.date,날짜를 읽을 수 없어요,Couldn't read the date
 export,import.failReason.amount,금액을 읽을 수 없어요,Couldn't read the amount
-export,import.failReason.type,수입/지출 구분을 읽을 수 없어요,Couldn't tell income from expense
+export,import.failReason.type,수입 · 지출 구분을 읽을 수 없어요,Couldn't tell income from expense
 export,import.failReason.parentHasTx,이 카테고리에는 거래가 직접 달려 있어 하위 분류를 만들 수 없어요,This category has its own transactions so no subcategory can be created
 export,import.failReason.resolve,카테고리나 자산을 찾지 못했어요,Couldn't match the category or asset
 export,import.failReason.save,저장하는 중에 오류가 났어요,Something went wrong while saving
-export,import.failReason.unknown,알 수 없는 이유로 실패했어요,Failed for an unknown reason
+export,import.failReason.unknown,알 수 없는 이유로 못 가져왔어요,Couldn't import it for an unknown reason
 calendar,detail.start,시작,Start
 calendar,detail.end,종료,End
 calendar,detail.dday,D-DAY,D-DAY

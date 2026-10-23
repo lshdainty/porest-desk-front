@@ -354,6 +354,7 @@ function ExportPane({ mobile }: { mobile: boolean }) {
                       <PeriodField
                         from={customFrom}
                         to={customTo}
+                        grow
                         label={t("section.customRangeLabel")}
                         invalid={customInvalid}
                         errorMessage={t("section.rangeIncomplete")}

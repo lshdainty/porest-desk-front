@@ -153,6 +153,11 @@ describe("기간 · 형식 Select Box (I-05 41 · 43)", () => {
     // 펼침은 고른 상자 안에 있고, 그 안에 기간 칸(Date Picker 기간)이 하나 있다
     const box = radios[4]!.closest('[data-slot="select-box"]')!;
     expect(box.textContent).toContain("section.customRangeLabel");
+    // 값은 말줄임이 아니라 keep-all 줄바꿈이고 칸이 글을 따라 커진다(1024 5열 상자)
+    const field = box.querySelector('[data-slot="input-button"]')!;
+    expect(field.className).toContain("break-keep");
+    expect(field.className).toContain("whitespace-normal");
+    expect(field.className).toContain("overflow-visible");
   });
 });
 
