@@ -86,3 +86,12 @@ describe("로그인 화면 이름 · 부제 · 버튼(5 · 6 · 7)", () => {
     );
   });
 });
+
+describe("로그인 간격은 px 토큰이다(6) — 글자 200% 에서 커지지 않는다", () => {
+  it("Tailwind 숫자(rem) 간격 클래스가 없다", () => {
+    const html = container.innerHTML;
+    expect(html).not.toMatch(/(?:^|[\s"])(?:gap|p|px|py|m|mx|my)-[1-9]/);
+    for (const c of ["p-x6", "gap-x8", "gap-x2", "max-w-[384px]"])
+      expect(html).toContain(c);
+  });
+});

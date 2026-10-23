@@ -26,6 +26,7 @@ import { NAV, type NavItem } from "../model/nav";
  */
 export function DesktopSidebar() {
   const { t } = useTranslation("layout");
+  const { t: tc } = useTranslation("common");
   const { pathname } = useLocation();
   const link = useLinkClick();
   const hasSecurities = useHasSecurities();
@@ -84,7 +85,7 @@ export function DesktopSidebar() {
             <span className="flex shrink-0">
               <GrooTree size={24} />
             </span>
-            그루 담다
+            {tc("app.title")}
           </>
         }
       />

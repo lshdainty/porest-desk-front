@@ -19,9 +19,9 @@ export const LoginPage = () => {
 
   return (
     // 앱 로그인 정합(사용자 결정) — 카드/이미지 패널 없이 셸 밖 흰 면(bg-layer-default, 11B) 중앙 콘텐츠만.
-    <div className="flex min-h-svh flex-col items-center justify-center bg-bg-layer-default p-6">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-bg-layer-default p-x6">
       {/* max-w-sm 금지 — groo --spacing-sm(8px) 이 Tailwind 스케일을 가려 8px 로 컴파일됨. */}
-      <div className="w-full max-w-[24rem]">
+      <div className="w-full max-w-[384px]">
         <LoginForm />
       </div>
     </div>
@@ -71,8 +71,8 @@ const LoginForm = () => {
   return (
     // 묶음 구조(사용자 결정) — [로고+타이틀+안내문] 한 묶음(내부 gap 8, 앱 x8) ↔ 버튼을
     // gap 32(앱 x32)로 분리.
-    <div className="flex w-full flex-col gap-8">
-      <div className="flex flex-col items-center gap-2 text-center">
+    <div className="flex w-full flex-col gap-x8">
+      <div className="flex flex-col items-center gap-x2 text-center">
         {/* 나무(장식) 56 + 사이 8 + 이름 — 가로 묶음(로고 결정 5A, I-05 86). 이름은 실제 글(합성 이미지 금지)이고
             화면 제목이다 — h1 하나(02W-002). 크기 · 자간은 지금 그대로(32 / 40 · 700) */}
         <div className="flex items-center justify-center gap-x2">

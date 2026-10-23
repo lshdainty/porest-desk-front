@@ -202,7 +202,7 @@ describe("DesktopSidebar 머리 로고(I-05 87)", () => {
     expect(svg.querySelectorAll("path")).toHaveLength(4);
     expect(svg.querySelector("rect")).toBeNull();
     expect(svg.getAttribute("aria-hidden")).toBe("true");
-    expect(logo.textContent).toBe("그루 담다");
+    expect(logo.textContent).toBe("app.title");
   });
 
   it("나무는 로고 슬롯의 직계 svg 가 아니다 — 슬롯의 24×24 고정이 폭 22.3 을 늘리지 않는다", () => {
