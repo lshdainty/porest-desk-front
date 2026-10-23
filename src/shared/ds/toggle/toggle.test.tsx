@@ -203,11 +203,11 @@ describe("Toggle", () => {
   it("스펙의 모양 규칙을 클래스로 건다 — 보이는 40 · 모서리 8 · 44 영역 · 아이콘 20 · 선 2 / 2.5 · 축소 · 링 2px · 띄움 2px", () => {
     const button = render(<Toggle aria-label="관심 등록" icon={<Star />} />);
     const cls = button.className;
-    expect(cls).toContain("size-10");
+    expect(cls).toContain("size-[40px]");
     expect(cls).toContain("rounded-r2");
     expect(cls).toContain("bg-transparent");
-    expect(cls).toContain("before:size-11");
-    expect(cls).toContain("[&_svg]:size-5");
+    expect(cls).toContain("before:size-[44px]");
+    expect(cls).toContain("[&_svg]:size-[20px]");
     expect(cls).toContain("[&_svg]:[stroke-width:2]");
     expect(cls).toContain("aria-pressed:[&_svg]:[stroke-width:2.5]");
     expect(cls).toContain("active:[scale:calc(1-2/var(--press-basis))]");

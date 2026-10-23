@@ -160,3 +160,14 @@ export const CAT_PALETTE = CHART_PAIRS.map((p) => ({
   bg: `var(${p.cssVar}-weak)`,
   baseHex: p.base,
 }));
+
+/**
+ * 저장된 hex 가 차트 10색의 기본 값이면 그 색 이름 — ds `assignChartColors` 의 `colorOf` 에 쓴다.
+ * 저장된 hex 는 이름표다(DESIGN v110). 팔레트 밖 hex · 색 없음은 null — 그 차트에서 쓰지 않은 색이 배정된다.
+ */
+export function chartColorOf(
+  color: string | null | undefined,
+): ChartKey | null {
+  if (!color) return null;
+  return BASE_TO_PAIR.get(color.toLowerCase())?.key ?? null;
+}

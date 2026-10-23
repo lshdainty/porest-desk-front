@@ -236,7 +236,8 @@ export const TOOLTIP_SURFACE =
 
 // 지표 타일 — 모서리 12 · 위아래 10 · 좌우 12 · 폭 100 이상 · 누르면 2px 거리 축소 · 키보드 포커스에만 바깥 2px 링
 export const LEGEND_TILE = [
-  "flex min-w-[100px] flex-[1_1_0] cursor-pointer flex-col items-start rounded-r3 border-0 px-x3 py-x2_5 text-start font-sans",
+  // 폭 100 이상 — 글(금액)이 타일을 넘지 않게 최소 폭은 100 과 내용의 최소 폭(쉼표 뒤 줄바꿈) 중 큰 값. 모자라면 다음 줄로 내려간다
+  "flex min-w-[max(100px,min-content)] flex-[1_1_0] cursor-pointer flex-col items-start rounded-r3 border-0 px-x3 py-x2_5 text-start font-sans",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1] aria-disabled:cursor-not-allowed aria-disabled:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -246,9 +247,19 @@ export const LEGEND_TILE = [
 export const LEGEND_TILE_HIDDEN =
   "bg-bg-layer-default shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] hover:bg-bg-layer-default-pressed";
 
-// 도넛 범례 줄 — 최소 44 · 이름 14(t4) · 사이 8
-export const DONUT_ROW =
-  "relative isolate flex min-h-11 w-full items-center gap-x2 text-start font-sans text-t4";
+// 도넛 범례 줄 — 최소 44 · 이름 14(t4) · 사이 8. 줄 안 폭이 16em(= 16rem) 보다 좁으면(큰 글자) List 와 같게 % · 금액을 이름 아래 왼쪽으로
+// 내린다(list.md:142-148 "큰 글자에서 값을 본문 아래로"). 줄(li)이 컨테이너다
+export const DONUT_ROW = [
+  "relative isolate flex min-h-11 w-full items-center gap-x2 text-start font-sans text-t4",
+  "@max-[16rem]/donut:grid @max-[16rem]/donut:grid-cols-[auto_auto_minmax(0,1fr)] @max-[16rem]/donut:items-start @max-[16rem]/donut:gap-y-x0_5 @max-[16rem]/donut:py-x2",
+].join(" ");
+export const DONUT_NARROW = {
+  swatch: "@max-[16rem]/donut:mt-x1",
+  label: "@max-[16rem]/donut:col-span-2",
+  percent: "@max-[16rem]/donut:col-start-2 @max-[16rem]/donut:row-start-2",
+  amount:
+    "@max-[16rem]/donut:col-start-3 @max-[16rem]/donut:row-start-2 @max-[16rem]/donut:justify-self-start",
+} as const;
 
 // 누르는 줄 — List 줄처럼 카드 끝까지(본문 여백 24 를 되돌린다), 글자는 그대로 24 에 선다. 키보드 포커스에만 안쪽 2px 링
 export const DONUT_ROW_PRESSABLE = [

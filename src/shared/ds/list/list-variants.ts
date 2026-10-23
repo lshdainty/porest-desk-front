@@ -166,8 +166,10 @@ export const listTitleVariants = cva(
 const HIGHLIGHT_MUTED =
   "[@media(hover:hover)]:group-has-[[data-list-action]:not([data-disabled]):hover]/list-item:text-fg-neutral-muted group-has-[[data-list-action]:not([data-disabled]):active]/list-item:text-fg-neutral-muted";
 
+// 설명 칸은 내용 폭을 0 으로 세고 본문 폭만 min-width 로 건다(w-0 min-w-full) — 한 줄 말줄임(Tag Group truncate)이 본문의 최소 폭을
+// 키워 금액을 줄 밖으로 미는 것을 막는다. 본문이 폭을 정하고 설명은 그 안에서 줄을 바꾸거나 말줄임한다(list.md:128 "금액은 한 줄 · 본문이 양보")
 export const listDetailVariants = cva(
-  "font-sans text-t3 [overflow-wrap:anywhere]",
+  "w-0 min-w-full font-sans text-t3 [overflow-wrap:anywhere]",
   {
     variants: {
       disabled: { true: "text-fg-disabled", false: "text-fg-neutral-subtle" },

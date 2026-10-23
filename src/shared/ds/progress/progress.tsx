@@ -201,14 +201,18 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         data-slot="progress"
         data-meaning={meaning}
         data-state={state}
-        className={cn("flex flex-col gap-x1_5 font-sans", className)}
+        className={cn(
+          "@container/progress flex flex-col gap-x1_5 font-sans",
+          className,
+        )}
         {...props}
       >
         {/* 이름 줄 — 막대의 이름 · 값 글이 같은 말을 하므로 보조 기술에는 숨긴다 */}
         <div
           aria-hidden="true"
           data-slot="progress-header"
-          className="flex items-baseline justify-between gap-x2"
+          // 줄 안 폭이 16rem 보다 좁으면(큰 글자) 오른쪽 글을 이름 아래 왼쪽으로(list.md:142-148 — List 와 같은 문턱)
+          className="flex items-baseline justify-between gap-x2 @max-[16rem]/progress:flex-col @max-[16rem]/progress:items-start @max-[16rem]/progress:gap-x0_5"
         >
           <span
             data-slot="progress-label"

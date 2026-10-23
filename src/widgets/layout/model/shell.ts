@@ -9,7 +9,7 @@
  *  3. 데스크톱 머리 — 검색칸 · 테마 토글 · 금액 가리기 눈을 걷고 왼쪽을 비운다. 오른쪽은 "내역 추가" 주 버튼 + 알림 · 설정
  *     (DesktopHeader — 알림은 1280 이상 Popover · 미만 Bottom Sheet, 테마는 설정 > 표시 설정).
  *  4. 증권 부모 — 연결 증권사가 둘 이상이면 펼치기 전용(하위 = 증권사), 아니면 /desk/stocks 링크. 구독이 없으면 숨김(DesktopSidebar).
- *  5. 틀 경계는 768(탭 바 ↔ 사이드바)과 1280(사이드바 펼침 ↔ 접힘 — Side Navigation 이 스스로 정한다). 홈 2단(.dash-grid)의 문턱도 1280 이다(17-6 A). 그 밖 화면의 1100 분기는 그대로.
+ *  5. 틀 경계는 768(탭 바 ↔ 사이드바)과 1280(사이드바 펼침 ↔ 접힘 — Side Navigation 이 스스로 정한다). 홈 2단(HomeDesktop 격자)의 문턱도 1280 이다(17-6 A). 그 밖 화면의 1100 분기는 그대로.
  */
 import { ChartPie, FilePen, ReceiptText, Wallet } from "lucide-react";
 import type { ComponentType } from "react";

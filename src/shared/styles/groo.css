@@ -56,12 +56,17 @@
 .screen-bands > .contents > * {
   padding: var(--spacing-x6);
 }
-.screen-bands > :not(.contents, .balance-hero),
+.screen-bands > :not(.contents, [data-slot="card"][data-variant="hero"]),
 .screen-bands > .contents > * {
   background: var(--color-surface-default);
 }
-.screen-bands > .balance-hero {
+/* 순자산(ds Card hero)은 모서리 없는 화면 폭 띠 — 흰 띠로 칠하지 않는다(I-06 11) */
+.screen-bands > [data-slot="card"][data-variant="hero"] {
   border-radius: 0;
+}
+/* 구역이 제 여백을 갖는 띠(홈 — 목록 구역은 좌우 0, 머리 · 줄이 24 를 쥔다 — I-06 5) */
+.screen-bands > [data-band="flush"] {
+  padding: 0;
 }
 /* 묶음 목록 띠(설정 · 전체) — 띠 안 위 4 · 좌우 24 · 아래 8, 머리 · 줄이 제 위아래 여백을 갖는다(앱 PScreenBand) */
 .screen-bands--list > :not(.contents),
@@ -75,119 +80,6 @@
    본문이 묶음마다 띠를 그리면(.screen-bands) 셸은 띠를 깔지 않는다 */
 .m-fullscreen > .m-back-header + :not(.screen-bands) {
   background: var(--color-surface-default);
-}
-
-.balance-hero {
-  background: linear-gradient(
-    135deg,
-    var(--bg-brand) 0%,
-    color-mix(in srgb, var(--bg-brand) 60%, #000) 100%
-  );
-  color: var(--fg-on-brand);
-  border-radius: var(--radius-2xl);
-  padding: 24px 24px 20px;
-  position: relative;
-  overflow: hidden;
-}
-/* dark: primary-light → 브랜드 채움 그라데이션. 어두운 페이지에서
-   카드를 밝게 도드라지게 + 디자인 시스템 dark brand 원칙(fg/border 전부 primary-light)
-   정합. --bg-brand 자체를 바꾸면 채움 버튼 전체에 영향 → hero 전용 오버라이드.
-   끝은 채움 역할(bg-brand-solid)이다 — primary 는 v108 부터 글자 역할(fg-brand)의 별칭이라
-   다크에서 primary-light 와 같은 밝은 값이 되어 그라데이션이 사라진다(2026-10-06).
-   app tokens.dart bgHeroGradientStart/End 와 정합. */
-.dark .balance-hero {
-  background: linear-gradient(
-    135deg,
-    var(--color-fg-brand) 0%,
-    var(--color-bg-brand-solid) 100%
-  );
-}
-.balance-hero::after {
-  content: "";
-  position: absolute;
-  right: -40px;
-  top: -80px;
-  width: 240px;
-  height: 240px;
-  border-radius: var(--radius-pill);
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--fg-on-brand) 22%, transparent),
-    transparent 70%
-  );
-  pointer-events: none;
-}
-.balance-hero__eyebrow {
-  font-size: var(--text-caption);
-  font-weight: 500;
-  opacity: 0.72;
-  letter-spacing: -0.012em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.balance-hero__amount {
-  font-size: var(--text-display-md);
-  font-weight: 800;
-  letter-spacing: -0.022em;
-  line-height: 1.15;
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  font-variant-numeric: tabular-nums;
-}
-.balance-hero__amount .unit {
-  font-size: var(--text-title-md);
-  font-weight: 600;
-  opacity: 0.8;
-}
-.balance-hero__sub {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  font-size: var(--text-label-sm);
-  opacity: 0.78;
-}
-.balance-hero__sub .chg {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  opacity: 1;
-  font-weight: 600;
-}
-/* hero gradient(코발트) 위 등락 — 흰 글자 + ▲ · ▼ (D1: 방향은 화살표가 말한다, 색은 두 모드 같다) */
-.balance-hero__sub .chg.up,
-.balance-hero__sub .chg.down {
-  color: var(--color-static-white);
-}
-.balance-hero__split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-}
-.balance-hero__split > div {
-  padding-right: 12px;
-}
-.balance-hero__split > div + div {
-  padding-left: 16px;
-  padding-right: 0;
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
-}
-.balance-hero__split .l {
-  font-size: var(--text-caption);
-  opacity: 0.7;
-  margin-bottom: 4px;
-}
-.balance-hero__split .v {
-  font-size: var(--text-body-lg);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.012em;
 }
 
 /* 플랫 섹션 헤드 — 모바일 카드 다이어트 (design app.css .sec-head 미러).
@@ -340,31 +232,7 @@
   background: var(--bg-sunken);
 }
 
-/* Dashboard grid */
-.dash-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  padding: 24px var(--layout-margin);
-}
-.dash-grid__left {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.dash-grid__right {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-@media (max-width: 1279px) {
-  .dash-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Page container — 홈(.dash-grid)과 동일 사이드 여백, max-width 제한 없음 */
+/* Page container — 좌우 여백 layout-margin, max-width 제한 없음 */
 .page {
   padding: var(--spacing-nav-to-title) var(--layout-margin) 48px;
   width: 100%;

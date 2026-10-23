@@ -5,6 +5,7 @@ import { cn } from "@/shared/lib/cn";
 
 import {
   CHART_ROOT,
+  DONUT_NARROW,
   DONUT_PILL,
   DONUT_ROW,
   DONUT_ROW_PRESSABLE,
@@ -19,7 +20,7 @@ import {
 import { withSeriesDefaults } from "./chart-series";
 import { ChartTooltipRow } from "./chart-tooltip-row";
 import { useEscapeFirst } from "./use-escape-first";
-import { useDsText } from "@/shared/ds/i18n";
+import { useDsText, withCommaBreaks } from "@/shared/ds/i18n";
 
 /*
  * Groo Chart — 색은 DESIGN.md v110 · v111, 부품은 SEED Layout 의 대시보드 그림(2026-10-08). 수치 원본은 groo-design specs/components/chart.yaml
@@ -460,7 +461,7 @@ const ChartLegendTiles = React.forwardRef<
                   data-slot="chart-legend-total"
                   className="mt-x0_5 text-t5 font-bold tabular-nums text-fg-neutral"
                 >
-                  {item.total}
+                  {withCommaBreaks(item.total)}
                 </span>
               </button>
             );
@@ -498,25 +499,35 @@ function DonutLegendBody({ item }: { item: ChartDonutLegendItem }) {
       <span
         aria-hidden
         data-slot="chart-donut-swatch"
-        className={cn("size-2.5 shrink-0 rounded-[2px]", DOT_BG[item.color])}
+        className={cn(
+          "size-2.5 shrink-0 rounded-[2px]",
+          DONUT_NARROW.swatch,
+          DOT_BG[item.color],
+        )}
       />
       <span
         data-slot="chart-donut-label"
-        className="min-w-0 flex-1 text-fg-neutral"
+        className={cn("min-w-0 flex-1 text-fg-neutral", DONUT_NARROW.label)}
       >
         {item.label}
       </span>
       <span
         data-slot="chart-donut-percent"
-        className="tabular-nums text-fg-neutral-subtle"
+        className={cn(
+          "tabular-nums text-fg-neutral-subtle",
+          DONUT_NARROW.percent,
+        )}
       >
         {item.percent}
       </span>
       <span
         data-slot="chart-donut-amount"
-        className="font-bold tabular-nums text-fg-neutral"
+        className={cn(
+          "font-bold tabular-nums text-fg-neutral",
+          DONUT_NARROW.amount,
+        )}
       >
-        {item.amount}
+        {withCommaBreaks(item.amount)}
       </span>
     </>
   );
@@ -534,7 +545,11 @@ const ChartDonutLegend = React.forwardRef<
     {...props}
   >
     {items.map((item) => (
-      <li key={item.key} data-slot="chart-donut-legend-item" className="flex">
+      <li
+        key={item.key}
+        data-slot="chart-donut-legend-item"
+        className="@container/donut flex"
+      >
         {item.onClick ? (
           <button
             type="button"

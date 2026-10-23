@@ -1034,8 +1034,6 @@ dashboard,budget.remainingAmount,잔여 {{amount}},{{amount}} left
 dashboard,budget.exceededAmount,{{amount}} 초과,{{amount}} over
 dashboard,budget.categoryBudget,카테고리별 예산,Budget by Category
 dashboard,asset.netAsset,순자산,Net Assets
-dashboard,asset.totalAsset,총 자산,Total Assets
-dashboard,asset.totalDebt,총 부채,Total Debt
 dashboard,asset.assetTab,자산,Assets
 dashboard,asset.debtTab,부채,Debts
 dashboard,payment.method,결제수단,Method
@@ -2209,15 +2207,12 @@ dashboard,chart.savings,저축,Savings
 dashboard,all,전체,All
 dashboard,manage,관리,Manage
 dashboard,detail,자세히,Details
-dashboard,manageBudget,예산 관리,Manage Budget
 dashboard,balance,잔액,Balance
 dashboard,showAmount,금액 표시,Show amount
 dashboard,hideAmount,금액 가리기,Hide amount
 dashboard,vsLastMonth,지난달 대비,vs. last month
 dashboard,noLastMonth,지난달 기록 없음,No record for last month
 dashboard,categoryTitle,카테고리,Category
-dashboard,categoryEmpty,카테고리 데이터가 없습니다,No category data
-dashboard,categoryEmptyMobile,카테고리 데이터가 없어요,No category data
 dashboard,budget.empty,등록된 예산이 없어요,No budget set
 dashboard,expense.todaySpent,오늘 쓴 돈,Today's Spending
 dashboard,expense.noTodaySpent,오늘은 아직 쓴 돈이 없어요,No spending today yet
@@ -2229,6 +2224,7 @@ dashboard,todo.recent,최근 할 일,Recent Todos
 dashboard,calendar.scheduled,예정된 일정,Upcoming Events
 dashboard,calendar.empty,예정 일정이 없어요,No upcoming events
 dashboard,summary.monthExpenseBook,{{month}}월 가계부,Monthly Expenses
+dashboard,summary.monthExpenseN,{{month}}월 지출,Month {{month}} expense
 dashboard,summary.monthIncomeExpense,{{month}}월 수입·지출,Monthly Income & Expense
 dashboard,avg.dailyAverage,하루 평균,Daily avg.
 dashboard,avg.spent,썼어요.,spent.
@@ -2236,6 +2232,29 @@ dashboard,avg.vsPrev,전월 대비,vs. last month
 dashboard,avg.saving,절약 중이에요.,saved.
 dashboard,avg.spentMore,더 썼어요.,spent more.
 dashboard,avg.same,동일해요.,no change.
+dashboard,hideAmountsSettings,금액 가리기 설정,Hide amounts settings
+dashboard,budgetName,{{name}} 예산,{{name}} budget
+dashboard,allBudget,총 예산,Total budget
+dashboard,categoryEmptyNow,이번 달 지출이 없어요,No spending this month
+dashboard,lastMonthThan,지난달보다,than last month
+dashboard,todo.overdueSr,연체 {{count}}건,{{count}} overdue
+dashboard,loadFailed.netWorth,순자산을 불러오지 못했어요,Couldn't load net assets
+dashboard,loadFailed.month,이번 달 가계부를 불러오지 못했어요,Couldn't load this month's ledger
+dashboard,loadFailed.category,카테고리를 불러오지 못했어요,Couldn't load categories
+dashboard,loadFailed.budget,예산을 불러오지 못했어요,Couldn't load budgets
+dashboard,loadFailed.today,오늘 쓴 돈을 불러오지 못했어요,Couldn't load today's spending
+dashboard,loadFailed.events,다가오는 일정을 불러오지 못했어요,Couldn't load upcoming events
+dashboard,loadFailed.todos,최근 할 일을 불러오지 못했어요,Couldn't load recent tasks
+dashboard,loadFailed.scheduled,예정된 일정을 불러오지 못했어요,Couldn't load scheduled events
+dashboard,loadFailed.todoCard,할 일을 불러오지 못했어요,Couldn't load tasks
+dashboard,loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
+dashboard,loadFailed.trend,수입·지출 추이를 불러오지 못했어요,Couldn't load the income and expense trend
+dashboard,loadFailed.payment,예정된 결제를 불러오지 못했어요,Couldn't load upcoming payments
+dashboard,chart.incomeExpenseName,"{{month}}월까지 6개월 수입·지출","Income and expense for the 6 months through month {{month}}"
+dashboard,chart.categoryName,"{{month}}월 카테고리별 지출, 합계 {{total}}","Month {{month}} spending by category, total {{total}}"
+dashboard,chart.tableMonth,월,Month
+dashboard,chart.tablePercent,비율,Share
+dashboard,chart.tableCategory,카테고리,Category
 recurring,freq.DAILY,매일,Daily
 recurring,freq.WEEKLY,매주,Weekly
 recurring,freq.MONTHLY,매월,Monthly
