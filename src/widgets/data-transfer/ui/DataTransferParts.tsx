@@ -15,17 +15,28 @@ export function DataSection({
   mobile,
   title,
   description,
+  list = false,
   children,
 }: {
   mobile: boolean;
   title: string;
   /** 구역 아래 설명 — R9 칸 설명(t4 · fg-neutral-subtle) */
   description?: string;
+  /** 본문이 List 다 — 줄이 자기 좌우 24 를 가지므로 카드는 여백 없는 목록 카드(body="list"), 폰은 페이지 여백 밖까지 편다 */
+  list?: boolean;
   children: (titleId: string) => ReactNode;
 }) {
   const titleId = useId();
   const desc = description ? (
-    <p className="m-0 text-t4 text-fg-neutral-subtle">{description}</p>
+    <p
+      className={
+        list && !mobile
+          ? "m-0 px-global-gutter text-t4 text-fg-neutral-subtle"
+          : "m-0 text-t4 text-fg-neutral-subtle"
+      }
+    >
+      {description}
+    </p>
   ) : null;
   if (mobile) {
     return (
@@ -35,8 +46,23 @@ export function DataSection({
           {title}
         </ListHeader>
         {desc}
-        {children(titleId)}
+        {list ? (
+          <div className="-mx-global-gutter">{children(titleId)}</div>
+        ) : (
+          children(titleId)
+        )}
       </section>
+    );
+  }
+  if (list) {
+    return (
+      <Card aria-labelledby={titleId} body="list">
+        <CardHeader>
+          <CardTitle id={titleId}>{title}</CardTitle>
+        </CardHeader>
+        {desc}
+        {children(titleId)}
+      </Card>
     );
   }
   return (

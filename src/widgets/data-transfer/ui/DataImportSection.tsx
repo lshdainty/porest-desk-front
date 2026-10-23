@@ -49,6 +49,9 @@ import {
 } from "@/features/import/api/importApi";
 import { ActionBar, DataSection } from "./DataTransferParts";
 
+// 미리보기 표는 칸이 글 폭만큼 서고 표 상자가 가로로 스크롤한다(0 ~ 767 도 표 — table.md) — 줄을 바꿔 칸을 찌그러뜨리지 않는다
+const PREVIEW_TABLE = "[&_td]:whitespace-nowrap [&_th]:whitespace-nowrap";
+
 // ─── 소스 프리셋 / 매핑 필드 ───────────────────────────────────
 // 서버로 가는 값(v)은 서버 enum 이름이다 — 문구처럼 바꾸면 400(#461). 화면 이름은 nameKey 가 정한다.
 
@@ -314,7 +317,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             </Callout>
           )}
 
-          <DataSection mobile={mobile} title={t("import.fileTitle")}>
+          <DataSection mobile={mobile} title={t("import.fileTitle")} list>
             {() => (
               <List>
                 <ListItem
@@ -382,7 +385,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             })}
           >
             {() => (
-              <Table caption={t("preview")}>
+              <Table tableClassName={PREVIEW_TABLE} caption={t("preview")}>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("import.field.date")}</TableHead>
@@ -438,7 +441,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             )}
           </DataSection>
 
-          <DataSection mobile={mobile} title={t("import.optionsTitle")}>
+          <DataSection mobile={mobile} title={t("import.optionsTitle")} list>
             {(titleId) => (
               <>
                 <ListCheckGroup aria-labelledby={titleId}>
@@ -460,15 +463,17 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 {/* 오타가 그대로 새 카테고리가 되던 자리(QA #59) — 실행 전에 이름을 보여 주고,
                     마음에 안 들면 바로 위 체크를 끄면 미분류로 들어간다. */}
                 {autoCat && analysis.newCategoryCount > 0 && (
-                  <CategoryNames
-                    t={t}
-                    title={t("import.newCatTitle", {
-                      count: analysis.newCategoryCount,
-                    })}
-                    names={analysis.newCategories ?? []}
-                    total={analysis.newCategoryCount}
-                    hint={t("import.newCatHint")}
-                  />
+                  <div className="px-global-gutter pt-x3 pb-x4">
+                    <CategoryNames
+                      t={t}
+                      title={t("import.newCatTitle", {
+                        count: analysis.newCategoryCount,
+                      })}
+                      names={analysis.newCategories ?? []}
+                      total={analysis.newCategoryCount}
+                      hint={t("import.newCatHint")}
+                    />
+                  </div>
                 )}
               </>
             )}
@@ -531,29 +536,34 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
 
           {/* 종전엔 "실패 2" 숫자뿐이라 CSV 를 고칠 수가 없었다(QA #61). */}
           {result.failures.length > 0 && (
-            <section className="flex flex-col gap-x2">
-              <ListHeader variant="boldSolid" className="px-0 py-x1">
-                {t("import.failuresTitle", { count: result.failed })}
-              </ListHeader>
-              <List>
-                {result.failures.map((f) => (
-                  <ListItem
-                    key={f.lineNo}
-                    title={t("import.failureLine", { line: f.lineNo })}
-                    suffix={t(failReasonKey(f.reason))}
-                  />
-                ))}
-              </List>
-              {(result.failuresTruncated ||
-                result.failed > result.failures.length) && (
-                <p className="m-0 text-t4 text-fg-neutral-subtle">
-                  {t("import.failuresCapped", {
-                    shown: result.failures.length,
-                    total: result.failed,
-                  })}
-                </p>
+            <DataSection
+              mobile={mobile}
+              title={t("import.failuresTitle", { count: result.failed })}
+              list
+            >
+              {() => (
+                <>
+                  <List>
+                    {result.failures.map((f) => (
+                      <ListItem
+                        key={f.lineNo}
+                        title={t("import.failureLine", { line: f.lineNo })}
+                        suffix={t(failReasonKey(f.reason))}
+                      />
+                    ))}
+                  </List>
+                  {(result.failuresTruncated ||
+                    result.failed > result.failures.length) && (
+                    <p className="m-0 px-global-gutter pt-x3 text-t4 text-fg-neutral-subtle">
+                      {t("import.failuresCapped", {
+                        shown: result.failures.length,
+                        total: result.failed,
+                      })}
+                    </p>
+                  )}
+                </>
               )}
-            </section>
+            </DataSection>
           )}
 
           <ActionBar mobile={mobile}>

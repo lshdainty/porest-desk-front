@@ -48,6 +48,9 @@ import {
   type ExportPreviewTable,
 } from "@/features/export/api/exportApi";
 
+// 미리보기 표는 칸이 글 폭만큼 서고 표 상자가 가로로 스크롤한다(0 ~ 767 도 표 — table.md) — 줄을 바꿔 칸을 찌그러뜨리지 않는다
+const PREVIEW_TABLE = "[&_td]:whitespace-nowrap [&_th]:whitespace-nowrap";
+
 // ─── 데이터 종류 / 형식 / 기간 정의 ─────────────────────────────
 
 const DATA_TYPES: {
@@ -373,6 +376,7 @@ function ExportPane({ mobile }: { mobile: boolean }) {
         mobile={mobile}
         title={t("section.dataTypeTitle", { count: selected.length })}
         description={t("section.dataTypeDesc")}
+        list
       >
         {(titleId) => (
           <>
@@ -501,7 +505,10 @@ function ExportPane({ mobile }: { mobile: boolean }) {
               </TabsList>
               {preview.map((tbl) => (
                 <TabsContent key={tbl.type} value={tbl.type}>
-                  <Table caption={`${t("preview")} ${tbl.displayName}`}>
+                  <Table
+                    tableClassName={PREVIEW_TABLE}
+                    caption={`${t("preview")} ${tbl.displayName}`}
+                  >
                     <TableHeader>
                       <TableRow>
                         {tbl.headers.map((h) => (
