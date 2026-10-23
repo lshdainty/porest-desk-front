@@ -78,11 +78,10 @@ const LoginForm = () => {
         <div className="flex items-center justify-center gap-x2">
           <GrooTree size={56} />
           <h1
-            className="m-0 font-bold text-fg-neutral"
+            className="m-0 text-t12 font-bold text-fg-neutral"
             style={{
-              fontSize: "var(--text-display-md)",
               lineHeight: 1.25,
-              letterSpacing: "-0.02em",
+              letterSpacing: "-0.32px",
             }}
           >
             {tc("app.title")}

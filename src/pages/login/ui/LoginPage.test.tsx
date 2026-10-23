@@ -62,6 +62,14 @@ describe("로그인 화면 이름 · 부제 · 버튼(5 · 6 · 7)", () => {
     expect(h1s[0]?.textContent).toBe("app.title");
   });
 
+  it("이름 글은 t12 역할 · 줄 높이 40 · 자간 -0.32px 이다(앱 groo_wordmark 와 같음, 옛 display-md 아님)", () => {
+    const h1 = container.querySelector("h1")!;
+    expect(h1.className).toContain("text-t12");
+    expect(h1.style.fontSize).toBe("");
+    expect(h1.style.lineHeight).toBe("1.25");
+    expect(h1.style.letterSpacing).toBe("-0.32px");
+  });
+
   it("안내 글은 t5 · fg-neutral-muted 부제다(옛 text-muted-foreground 아님)", () => {
     const p = container.querySelector("p")!;
     expect(p.textContent).toBe("sso.description");
