@@ -910,7 +910,6 @@ group,commentPlaceholder,댓글을 입력하세요,Enter a comment
 group,reply,답글,Reply
 login,sso.description,SSO 계정으로 로그인하세요,Sign in with your SSO account
 login,sso.login,SSO 로그인,SSO login
-login,sso.redirecting,로그인 페이지로 이동 중...,Redirecting to login...
 login,authenticating,인증 중…,Authenticating…
 expense,budget.save,저장,Save
 expense,budget.deleteConfirm.title,예산 삭제,Delete Budget
