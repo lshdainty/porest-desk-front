@@ -15,6 +15,7 @@ common,apiError,문제가 생겼어요. 잠시 후 다시 시도해주세요,Som
 common,amountClamped,최대 {{max}}까지 넣을 수 있어요. 그 값으로 맞췄어요,You can enter up to {{max}}. Adjusted to that amount.
 common,close,닫기,Close
 common,add,추가,Add
+common,newTab,새 탭,new tab
 common,next,다음,Next
 common,prev,이전,Previous
 common,prevYear,이전 해,Previous year

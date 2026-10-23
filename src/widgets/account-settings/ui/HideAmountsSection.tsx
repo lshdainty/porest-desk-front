@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Chip } from "@/shared/ui/chip";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
+import { useSettingsLeaveGuard } from "@/shared/ui/groo/settings-frame-context";
 import { HideAmountsUnlockDialog } from "./HideAmountsUnlockDialog";
 import {
   cardsOfPage,
@@ -101,6 +101,20 @@ export function HideAmountsSection({
     if (dirty) setConfirmDiscard(true);
     else onBack();
   };
+
+  // 데스크톱 · 태블릿은 "‹ 계정" 을 틀이 그린다(I-16 29) — 바꾼 채 누르면 틀이 이 가드를 먼저 부르고,
+  // 확인하면 틀이 가려던 곳으로 간다.
+  const leaveTo = useRef<(() => void) | null>(null);
+  useSettingsLeaveGuard(
+    mobile
+      ? null
+      : (go) => {
+          if (dirty) {
+            leaveTo.current = go;
+            setConfirmDiscard(true);
+          } else go();
+        },
+  );
 
   const pageLabel = (page: HidePageKey | null) =>
     page === null ? t("hideAmounts.tabAll") : t(`hideAmounts.page.${page}`);
@@ -240,10 +254,15 @@ export function HideAmountsSection({
           message={t("hideAmounts.discardBody")}
           confirmLabel={t("hideAmounts.discardConfirm")}
           danger
-          onCancel={() => setConfirmDiscard(false)}
-          onConfirm={() => {
+          onCancel={() => {
+            leaveTo.current = null;
             setConfirmDiscard(false);
-            onBack();
+          }}
+          onConfirm={() => {
+            const go = leaveTo.current ?? onBack;
+            leaveTo.current = null;
+            setConfirmDiscard(false);
+            go();
           }}
         />
       )}
@@ -313,8 +332,7 @@ export function HideAmountsSection({
     );
   }
 
-  // 데스크톱 — 설정 우측 패널. 좌측 nav 에 자리가 없는 화면이라(계정 > 보안에서 들어온다)
-  // 맨 위에 돌아갈 길을 둔다.
+  // 데스크톱 — 설정 우측 패널. 돌아가는 길 "‹ 계정" 과 제목 줄은 틀이 그린다(I-16 29).
   return (
     <div
       style={{
@@ -323,12 +341,6 @@ export function HideAmountsSection({
         gap: "var(--spacing-lg)",
       }}
     >
-      <div>
-        <Button variant="ghost" size="sm" flush="left" onClick={back}>
-          <ChevronLeft size={16} />
-          {t("sections.account.label")}
-        </Button>
-      </div>
       {kindSection}
       <div
         style={{

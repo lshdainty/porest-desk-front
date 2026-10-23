@@ -1,6 +1,7 @@
 // 데스크톱 왼쪽 목록의 고른 칸 판정(I-12 35) — 숨은 칸(기기)에서 부모 "계정" 이 켜지고 aria-current 가 붙는다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SECTIONS, type SectionId } from "../model/sections";
 
@@ -11,9 +12,6 @@ declare global {
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   initReactI18next: { type: "3rdParty", init: () => {} },
-}));
-vi.mock("@/shared/ui/theme-context", () => ({
-  useTheme: () => ({ resolvedTheme: "light" }),
 }));
 
 const { SettingsDesktopFrame } = await import("./SettingsDesktopFrame");
@@ -34,15 +32,17 @@ afterEach(() => {
 const current = (section: SectionId) => {
   act(() =>
     root.render(
-      <SettingsDesktopFrame
-        section={section}
-        activeSection={SECTIONS.find((s) => s.id === section) ?? null}
-        openSection={() => {}}
-        renderBody={() => null}
-      />,
+      <MemoryRouter>
+        <SettingsDesktopFrame
+          section={section}
+          activeSection={SECTIONS.find((s) => s.id === section) ?? null}
+          onSelect={() => {}}
+          renderBody={() => null}
+        />
+      </MemoryRouter>,
     ),
   );
-  return [...container.querySelectorAll("aside button")]
+  return [...container.querySelectorAll("nav a")]
     .filter((b) => b.getAttribute("aria-current") === "page")
     .map((b) => b.textContent);
 };

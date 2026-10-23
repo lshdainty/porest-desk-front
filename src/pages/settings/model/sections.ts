@@ -172,6 +172,7 @@ export const SECTIONS: SectionDef[] = [
     icon: Eye,
     descKey: "hideAmounts.desc",
     hidden: true,
+    // 데스크톱 목록의 "계정" 이 켜지고 "‹ 계정" 이 이 화면의 돌아가는 길이다(I-16 26 · S6)
     parent: "account",
   },
   // 계정 > 보안에서 들어온다. 목록에는 안 나온다.
@@ -186,14 +187,10 @@ export const SECTIONS: SectionDef[] = [
 ];
 
 /**
- * 데스크톱 우측 패널 제목을 여기서 그려 주는 섹션.
+ * 제목 줄을 틀이 직접 그리는 섹션(I-16 27).
  *
- * 나머지 섹션은 각자 `ManagerHead` 를 갖고 있는데(카테고리·계좌·예산·저축목표·
- * 캘린더 공유·캘린더 라벨·할일 태그·알림) 이 다섯은 없어서, 같은 자리에서 어떤
- * 섹션은 제목+설명으로 시작하고 어떤 섹션은 본문이 바로 시작했다. 좌측 nav 로 위치는
- * 알 수 있지만 패널 첫 줄의 리듬이 섹션마다 달랐다.
- *
- * 금액 가리기는 자기 뒤로가기 줄을 갖고 있어 제외한다.
+ * 나머지 섹션은 위젯이 `ManagerHead` 를 그리고(틀이 둔 제목 줄 자리로 간다), 이 일곱은 위젯에 머리가 없어서 틀이
+ * 섹션 이름 · 설명으로 같은 제목 줄을 그린다 — 어느 섹션이든 본문 칸 맨 위가 같은 제목 줄로 시작한다.
  */
 export const NEEDS_DESKTOP_HEAD: SectionId[] = [
   "recurring",
@@ -202,6 +199,7 @@ export const NEEDS_DESKTOP_HEAD: SectionId[] = [
   "data",
   "account",
   "devices",
+  "hide-amounts",
 ];
 
 /**
