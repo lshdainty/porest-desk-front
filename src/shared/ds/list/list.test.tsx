@@ -281,6 +281,10 @@ describe("List · ListItem", () => {
       expect.arrayContaining(["text-t3", "text-fg-neutral-subtle"]),
     );
     expect(slot("list-detail", second)).toBeNull();
+    // 설명 칸은 내용 폭을 0 으로 세고 본문 폭만 min-width 로 건다 — 한 줄 말줄임이 본문 폭을 밀어 값이 줄 밖으로 나가지 않게
+    expect(classes(slot("list-detail", first))).toEqual(
+      expect.arrayContaining(["w-0", "min-w-full"]),
+    );
     // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 최소 폭 제목 글자 1개(--text-t5) + 뒤 여백 10
     expect(classes(slot("list-body", second))).toEqual(
       expect.arrayContaining([

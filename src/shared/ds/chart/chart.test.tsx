@@ -641,6 +641,21 @@ describe("ChartTooltip · ChartTooltipContent", () => {
 });
 
 describe("ChartLegendTiles — 지표 타일", () => {
+  it("타일은 폭 100 과 내용의 최소 폭 중 큰 값 — 큰 글자에서 금액이 타일 밖으로 나가지 않는다", async () => {
+    await render(
+      <ChartLegendTiles
+        items={[
+          { key: "a", label: "수입", color: "blue", total: "1,234,567,890원" },
+        ]}
+      />,
+    );
+    const tile = q("[data-slot=chart-legend-tile]")!;
+    expect(tile.className).toContain("min-w-[max(100px,min-content)]");
+    expect(q("[data-slot=chart-legend-total]")!.innerHTML).toBe(
+      "1,<wbr>234,<wbr>567,<wbr>890원",
+    );
+  });
+
   const items = [
     {
       key: "income",
@@ -732,7 +747,7 @@ describe("ChartLegendTiles — 지표 타일", () => {
   });
 
   it("모양 클래스 — 폭 100 이상 · 모서리 12 · 위아래 10 · 좌우 12 · 누르면 2px 축소(모션 줄이기면 안 함) · 키보드 포커스에만 바깥 링", () => {
-    expect(LEGEND_TILE).toContain("min-w-[100px]");
+    expect(LEGEND_TILE).toContain("min-w-[max(100px,min-content)]");
     expect(LEGEND_TILE).toContain("rounded-r3");
     expect(LEGEND_TILE).toContain("px-x3");
     expect(LEGEND_TILE).toContain("py-x2_5");
@@ -791,6 +806,34 @@ describe("ChartDonutLegend · ChartDonutCenter", () => {
     const rows = qa("[data-slot=chart-donut-row]");
     expect(rows).toHaveLength(2);
     expect(rows[0]!.textContent).toBe("식비41%384,400원");
+  });
+
+  it("큰 글자 — 줄(li)이 컨테이너이고 줄 안 폭 16rem 미만이면 % · 금액이 이름 아래 왼쪽(List 와 같은 문턱)", async () => {
+    await render(<ChartDonutLegend items={items} />);
+    const li = q("[data-slot=chart-donut-legend-item]")!;
+    expect(li.className).toContain("@container/donut");
+    const row = q("[data-slot=chart-donut-row]")!;
+    expect(row.className).toContain("@max-[16rem]/donut:grid");
+    expect(q("[data-slot=chart-donut-label]")!.className).toContain(
+      "@max-[16rem]/donut:col-span-2",
+    );
+    expect(q("[data-slot=chart-donut-percent]")!.className).toContain(
+      "@max-[16rem]/donut:row-start-2",
+    );
+    expect(q("[data-slot=chart-donut-amount]")!.className).toContain(
+      "@max-[16rem]/donut:col-start-3",
+    );
+  });
+
+  it("금액은 쉼표 뒤에서만 줄을 바꾼다", async () => {
+    await render(
+      <ChartDonutLegend
+        items={[{ ...items[1]!, amount: "1,234,567,890원" }]}
+      />,
+    );
+    expect(q("[data-slot=chart-donut-amount]")!.innerHTML).toBe(
+      "1,<wbr>234,<wbr>567,<wbr>890원",
+    );
   });
 
   it("하위가 있는 줄(onClick)만 누르는 줄 — 버튼, 나머지는 글", async () => {

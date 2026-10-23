@@ -61,6 +61,17 @@ describe("Progress", () => {
     expect(part("progress-fill").style.width).toBe("87.5%");
   });
 
+  it("큰 글자 — 이름 줄은 줄 안 폭 16rem 미만이면 오른쪽 글을 이름 아래 왼쪽으로(List 와 같은 문턱)", () => {
+    const el = render(<Progress label="식비 예산" value={1} max={2} />);
+    expect(el.className).toContain("@container/progress");
+    expect(part("progress-header").className).toContain(
+      "@max-[16rem]/progress:flex-col",
+    );
+    // 이름은 줄을 바꾼다 — 말줄임 없음
+    expect(part("progress-label").className).toContain("break-keep");
+    expect(part("progress-label").className).not.toContain("truncate");
+  });
+
   it("한도를 넘으면 — 채움 끝까지 · 위험 색, 오른쪽 글 'N원 초과', 값은 목표에서 멈춘다", () => {
     const el = render(
       <Progress label="교통 예산" value={120000} max={100000} />,
