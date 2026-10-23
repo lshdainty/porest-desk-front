@@ -342,14 +342,14 @@ export function CategoryManager({
           <>
             {/* header 바로 아래 full-width 흰띠 underline 탭 — 컨테이너 padding(24/20) 상쇄해 full-bleed flush.
                 sticky 기준은 컨테이너 content box(=padding-top 24 아래)라, 시각 최상단에 딱 붙여 고정하려면
-                top 도 padding-top 만큼 음수(-24) 여야 함. top:0 이면 24px 떠 보임.
+                스크롤은 이제 설정 껍데기의 main 이고 ds 머리(높이 56)가 위에 붙어 있어 top 은 머리 높이 56(I-16).
                 margin/top 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 반드시 일치. */}
             <div
               style={{
                 background: "var(--bg-surface)",
                 margin: "-24px -20px 0",
                 position: "sticky",
-                top: -24,
+                top: 56,
                 zIndex: 5,
               }}
             >
