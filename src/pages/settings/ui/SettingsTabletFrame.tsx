@@ -63,7 +63,7 @@ function SettingsMenuPage({ onSelect }: { onSelect: (id: SectionId) => void }) {
   return (
     <>
       {/* 제목 줄 ↔ 첫 카드 24(T7) — PageHead 자신의 아래 20 은 이 감싸개가 대신 갖는다 */}
-      <div className="mb-x6 [&>.page__head]:!mb-0">
+      <div className="settings-head-slot mb-x6">
         <PageHead title={t("page.title")} description={t("page.subtitle")} />
       </div>
       <div className="flex flex-col gap-x2">
