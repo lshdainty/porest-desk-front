@@ -20,6 +20,8 @@ import {
   settleOpen,
   swipeActionVariants,
   swipeBadgeVariants,
+  swipeLabelWidth,
+  swipeTextScale,
   swipeSlotWidth,
   swipeTrayWidth,
 } from "./swipe-actions-variants";
@@ -161,7 +163,7 @@ function List({
 
 describe("크기 · 판정 값(스펙)", () => {
   it("칸 폭은 첫 칸 56 · 다음부터 48, 트레이는 56 · 104 · 152", () => {
-    expect([0, 1, 2].map(swipeSlotWidth)).toEqual([56, 48, 48]);
+    expect([0, 1, 2].map((i) => swipeSlotWidth(i))).toEqual([56, 48, 48]);
     expect([1, 2, 3].map(swipeTrayWidth)).toEqual([56, 104, 152]);
   });
 
@@ -712,5 +714,80 @@ describe("줄 끝 ⋮ — 같은 동작의 다른 길", () => {
     expect(
       first.disabled || first.getAttribute("aria-disabled") === "true",
     ).toBe(true);
+  });
+});
+
+describe("라벨 폭 — 영어 · 긴 글은 칸이 글 폭만큼 넓어진다(최소 배지 36, 한국어는 그대로)", () => {
+  it("한국어 두 글자 동사는 배지 안에 들어 칸이 56 · 48 그대로다", () => {
+    expect(swipeLabelWidth("수정")).toBeLessThanOrEqual(36);
+    expect([0, 1, 2].map((i) => swipeSlotWidth(i, "삭제"))).toEqual([
+      56, 48, 48,
+    ]);
+    expect(swipeTrayWidth(["삭제", "수정"])).toBe(104);
+  });
+
+  it('영어 "Delete" 는 배지(36)보다 넓어 칸이 넓어지고, 트레이 폭도 따라간다', () => {
+    expect(swipeLabelWidth("Delete")).toBeGreaterThan(36);
+    expect(swipeSlotWidth(0, "Delete")).toBeGreaterThan(56);
+    expect(swipeTrayWidth(["Delete", "Edit"])).toBeGreaterThan(104);
+  });
+
+  it("글자 크기 200%(루트 32px)면 한국어 '삭제' 도 48 이 되어 칸이 넓어지고, 칸 style 도 따라간다", async () => {
+    const root = document.documentElement;
+    root.style.fontSize = "32px";
+    try {
+      expect(swipeTextScale()).toBe(2);
+      expect(swipeLabelWidth("삭제")).toBe(48);
+      expect(swipeSlotWidth(0, "삭제")).toBe(68);
+      expect(swipeSlotWidth(0, "Delete")).toBeGreaterThan(
+        swipeSlotWidth(0, "삭제"),
+      );
+      const host = document.createElement("div");
+      document.body.appendChild(host);
+      const r = createRoot(host);
+      await act(async () =>
+        r.render(
+          <SwipeActions
+            actions={[
+              { kind: "destructive", label: "삭제", onSelect: () => {} },
+            ]}
+          >
+            <div>row</div>
+          </SwipeActions>,
+        ),
+      );
+      const cell = host.querySelector<HTMLElement>("[data-slot=swipe-action]")!;
+      expect(parseFloat(cell.style.inlineSize)).toBe(68);
+      act(() => r.unmount());
+      host.remove();
+    } finally {
+      root.style.fontSize = "";
+    }
+  });
+
+  it("칸 폭은 글 폭을 따라 style 로 들어간다 — 라벨이 두 줄로 꺾이지 않는다", async () => {
+    window.history.replaceState(null, "");
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const r = createRoot(host);
+    await act(async () =>
+      r.render(
+        <SwipeActions
+          actions={[
+            { kind: "primary", label: "Edit", onSelect: () => {} },
+            { kind: "destructive", label: "Delete", onSelect: () => {} },
+          ]}
+        >
+          <div>row</div>
+        </SwipeActions>,
+      ),
+    );
+    const cells = host.querySelectorAll<HTMLElement>(
+      "[data-slot=swipe-action]",
+    );
+    // 안쪽(Delete)이 첫 칸이다 — 56 보다 넓다
+    expect(parseFloat(cells[0]!.style.inlineSize)).toBeGreaterThan(56);
+    act(() => r.unmount());
+    host.remove();
   });
 });
