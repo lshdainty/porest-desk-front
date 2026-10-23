@@ -30,6 +30,10 @@ import {
 } from "lightweight-charts";
 import { useTheme } from "@/shared/ui/theme-context";
 import {
+  StockChartLegend,
+  type StockChartLegendValue,
+} from "./StockChartLegend";
+import {
   securitiesApi,
   type BrokerCandle,
   type BrokerCandlePage,
@@ -189,14 +193,7 @@ export function LightweightStockChart({
   const pollLatestRef = useRef<() => void>(() => {});
   const intervalRef = useRef<"1m" | "1d">("1d"); // 시간 포맷터(마운트시 등록)가 최신 interval 참조용
   const [version, setVersion] = useState(0); // 초기 로드 완료 신호(가시범위 재설정 트리거)
-  const [legend, setLegend] = useState<{
-    o: number;
-    h: number;
-    l: number;
-    c: number;
-    vol: number;
-    up: boolean;
-  } | null>(null);
+  const [legend, setLegend] = useState<StockChartLegendValue | null>(null);
 
   const interval = RANGE_CFG[range].interval;
   intervalRef.current = interval;
@@ -560,48 +557,10 @@ export function LightweightStockChart({
     return () => clearInterval(id);
   }, [symbol, interval]);
 
-  const fmtPrice = (v: number) =>
-    isUs ? `$${v.toFixed(2)}` : Math.round(v).toLocaleString("ko-KR");
-  const fmtVol = (v: number) =>
-    v >= 1_000_000
-      ? `${(v / 1_000_000).toFixed(1)}M`
-      : v >= 1_000
-        ? `${(v / 1_000).toFixed(0)}K`
-        : `${Math.round(v)}`;
-
   return (
     <div style={{ position: "relative", width: "100%", height }}>
       <div ref={wrapRef} style={{ position: "absolute", inset: 0 }} />
-      {legend && (
-        <div
-          style={{
-            position: "absolute",
-            top: 4,
-            left: 6,
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            fontSize: 10.5,
-            fontWeight: 600,
-            fontVariantNumeric: "tabular-nums",
-            color: "var(--fg-secondary)",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        >
-          <span
-            style={{
-              color: legend.up ? "var(--status-danger-fg)" : "var(--fg-brand)",
-            }}
-          >
-            O {fmtPrice(legend.o)} H {fmtPrice(legend.h)} L {fmtPrice(legend.l)}{" "}
-            C {fmtPrice(legend.c)}
-          </span>
-          <span style={{ color: "var(--fg-tertiary)" }}>
-            VOL {fmtVol(legend.vol)}
-          </span>
-        </div>
-      )}
+      {legend && <StockChartLegend legend={legend} isUs={isUs} />}
     </div>
   );
 }

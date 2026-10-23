@@ -2055,7 +2055,7 @@ stocks,range.1w,1주,1W
 stocks,range.1m,1개월,1M
 stocks,range.3m,3개월,3M
 stocks,range.1y,1년,1Y
-stocks,embed.chartUnavailable,차트를 표시할 수 없어요,Chart unavailable
+stocks,embed.chartUnavailable,차트를 표시할 수 없어요.,Chart unavailable
 stocks,market.KOSPI,코스피,KOSPI
 stocks,market.KOSDAQ,코스닥,KOSDAQ
 stocks,market.KONEX,코넥스,KONEX
