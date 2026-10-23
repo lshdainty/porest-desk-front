@@ -441,11 +441,12 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
         : null;
 
   const focusRef = useRef<HTMLDivElement | null>(null);
+  // 줄이 그려진 뒤에 옮긴다 — 이체 목록이 늦게 와서 줄이 나중에 그려지면 거래 수는 그대로라 예전엔 한 번도 옮기지 못했다
   useEffect(() => {
-    if (focusTxId && focusRef.current) {
+    if (focusTxId && !isLoadingList && focusRef.current) {
       focusRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [focusTxId, expenses.length]);
+  }, [focusTxId, isLoadingList, expenses.length]);
 
   // 필터 활성 시 — 월선택/총액/캘린더/divider 숨기고 온전히 리스트만(사용자 결정).
   const filterActive = activeCount > 0 || !!asset;

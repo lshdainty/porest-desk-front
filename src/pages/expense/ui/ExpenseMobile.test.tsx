@@ -46,6 +46,8 @@ const st = vi.hoisted(() => ({
   /** 다른 달은 아직 받는 중이다 */
   otherMonthLoading: false,
   failed: false,
+  /** 이체 목록은 거래보다 늦게 온다 */
+  transfersLoading: false,
   incomeSum: 450_000,
   expenseSum: 12_000,
 }));
@@ -95,7 +97,7 @@ vi.mock("@/features/expense", () => ({
 vi.mock("@/features/asset", () => ({
   useAssets: () => ({ data: { assets: [] } }),
   useAsset: () => ({ data: { rowId: 1, assetName: "생활비 통장" } }),
-  useAssetTransfers: () => query({ transfers: [] }),
+  useAssetTransfers: () => query({ transfers: [] }, st.transfersLoading),
 }));
 vi.mock("@/widgets/add-tx", () => ({ AddTxSheet: () => null }));
 vi.mock("@/widgets/expense-detail/ui/TxDetailDialog", () => ({
@@ -158,6 +160,7 @@ beforeEach(async () => {
   ];
   st.otherMonthLoading = false;
   st.failed = false;
+  st.transfersLoading = false;
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -358,5 +361,30 @@ describe("비어 있음 · 실패 · 불러오기 (I-07 16)", () => {
     expect(
       container.querySelectorAll("[data-slot=list-header] h2").length,
     ).toBe(0);
+  });
+});
+
+describe("알림 · 검색에서 들어온 줄 (I-07 6 · ?txId=)", () => {
+  it("그 줄을 List 강조 바탕으로 알리고 가운데로 옮긴다 — 이체 목록이 늦게 와 줄이 나중에 그려져도", () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    st.search = "txId=2";
+    st.transfersLoading = true;
+    render();
+    // 아직 줄이 없다 — 옮길 곳이 없다
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    // 이체 목록이 도착한다 — 거래 수는 그대로지만 줄이 그려진다(예전엔 여기서 한 번도 옮기지 못했다)
+    st.transfersLoading = false;
+    render();
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+      block: "center",
+    });
+    const hl = container.querySelector(".bg-bg-brand-weak");
+    expect(hl?.textContent).toContain("가게2");
+    expect(container.innerHTML).not.toContain("brand-subtle");
   });
 });
