@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/shared/ds/button";
+import { ResultSection } from "@/shared/ds/result-section";
 
 /**
  * 해지 안내 화면.
@@ -19,30 +19,37 @@ export const WithdrawnPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-5 py-10">
-      <div className="grid w-full max-w-[420px] justify-items-center gap-5 text-center">
-        <CheckCircle2
-          size={40}
-          className="text-[var(--status-success-fg)]"
-          aria-hidden
+    // 셸 밖 화면은 흰 면 하나(bg-layer-default — Q11 11B, I-05 77). 폭 420 상자 안에 Result Section(완료) + Bottom CTA.
+    // 폰(768 미만)은 버튼이 화면 바닥 · 좌우 24 · 안전 영역 위, 768 이상은 Result Section 아래 가운데.
+    <div
+      data-slot="withdrawn-page"
+      className="flex min-h-svh flex-col items-center bg-bg-layer-default md:justify-center"
+    >
+      <div className="flex w-full max-w-[420px] grow flex-col md:grow-0">
+        <ResultSection
+          kind="done"
+          size="large"
+          as="h1"
+          title={t("withdrawn.title")}
+          description={
+            <>
+              <span className="block">{t("withdrawn.body")}</span>
+              <span className="mt-x2 block">{t("withdrawn.rejoin")}</span>
+            </>
+          }
+          className="md:grow-0"
         />
-        <h1 className="text-title-md text-[var(--fg-primary)]">
-          {t("withdrawn.title")}
-        </h1>
-        <div className="grid gap-2">
-          <p className="text-sm text-[var(--fg-secondary)]">
-            {t("withdrawn.body")}
-          </p>
-          <p className="text-sm text-[var(--fg-secondary)]">
-            {t("withdrawn.rejoin")}
-          </p>
+        <div className="flex justify-center px-x6 pb-[calc(var(--spacing-x6)+env(safe-area-inset-bottom))] md:pb-x6">
+          <Button
+            type="button"
+            variant="neutralSolid"
+            size="large"
+            className="w-full md:w-auto"
+            onClick={() => navigate("/login", { replace: true })}
+          >
+            {t("withdrawn.toLogin")}
+          </Button>
         </div>
-        <Button
-          variant="secondary"
-          onClick={() => navigate("/login", { replace: true })}
-        >
-          {t("withdrawn.toLogin")}
-        </Button>
       </div>
     </div>
   );
