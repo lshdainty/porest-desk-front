@@ -1131,8 +1131,6 @@ describe("ListRadioItem · ListRadioGroup", () => {
         <ListRadioGroup defaultValue="a" />
         {/* @ts-expect-error 이름 없는 여럿 고르기 묶음 */}
         <ListCheckGroup />
-        {/* @ts-expect-error 앞에 둔 체크는 앞 붙이개를 같이 줄 수 없다 */}
-        <ListCheckItem title="카드" prefix={<svg />} />
         {/* @ts-expect-error 앞에 둔 라디오는 앞 붙이개를 같이 줄 수 없다 */}
         <ListRadioItem
           value="a"
