@@ -203,6 +203,30 @@ export const NEEDS_DESKTOP_HEAD: SectionId[] = [
   "devices",
 ];
 
+/**
+ * 폰 껍데기는 여백이 0 이고 본문이 제 좌우 24 를 갖는다(I-16 13 · S2). 아직 본문을 옮기지 않은 섹션은
+ * 옛 껍데기의 사방 24 에 기대어 그려져 있어, 그 값 그대로를 여기서 임시로 둔다(설정 틀 I-16 — 본문 배치 전까지).
+ * 본문 지시서(I-05 · I-08 · I-09 · I-10 · I-12 · I-14 · I-15 · I-17 · I-20)가 자기 섹션을 옮기며 이 목록에서 그 id 를 걷는다.
+ * 금액 가리기는 제 껍데기를 직접 그려 여기 없다.
+ */
+export const TEMP_BODY_PADDING: SectionId[] = [
+  "categories",
+  "accounts",
+  "budget",
+  "goals",
+  "recurring",
+  "presets",
+  "calendar-share",
+  "calendar-labels",
+  "todo-tags",
+  "memo-tags",
+  "appearance",
+  "notifications",
+  "data",
+  "account",
+  "devices",
+];
+
 // 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다.
 // hidden 섹션은 목록에만 안 보일 뿐 화면이 있어 ?section= 딥링크로 들어올 수 있다.
 export const SECTION_IDS: SectionId[] = SECTIONS.filter(

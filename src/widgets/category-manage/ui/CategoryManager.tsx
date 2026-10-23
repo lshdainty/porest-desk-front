@@ -65,9 +65,12 @@ type EditingState =
 export function CategoryManager({
   mobile,
   reorderMode = false,
+  addRequest = 0,
 }: {
   mobile: boolean;
   reorderMode?: boolean;
+  /** 바깥(설정 폰 머리 "추가")이 올리면 새 카테고리 폼을 연다 */
+  addRequest?: number;
 }) {
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
@@ -168,6 +171,12 @@ export function CategoryManager({
 
   // 편집 모드 진입 시 검색 초기화 — 필터된 일부만 보며 정렬하는 혼란 방지(디자인은 검색행 자체가 숨음).
   // 모드가 **바뀐 순간**에만 본다. 렌더 중 조정이라 커밋을 한 번 더 태우지 않는다.
+  const [seenAddRequest, setSeenAddRequest] = useState(addRequest);
+  if (seenAddRequest !== addRequest) {
+    setSeenAddRequest(addRequest);
+    setEditing({ kind: "new" });
+  }
+
   const [wasReorder, setWasReorder] = useState(reorderMode);
   if (wasReorder !== reorderMode) {
     setWasReorder(reorderMode);

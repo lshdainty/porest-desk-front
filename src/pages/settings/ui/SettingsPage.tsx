@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { isEn } from "@/shared/lib/groo/format";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
 import { useOutletContext, useSearchParams } from "react-router-dom";
+import { focusScreenTitle, useScreenTitle } from "@/shared/ds/top-navigation";
 import {
   CalendarDays,
   ChevronRight,
@@ -76,9 +77,11 @@ import {
   MENU_GROUPS,
   SECTION_IDS,
   SECTIONS,
+  TEMP_BODY_PADDING,
   type SectionDef,
   type SectionId,
 } from "../model/sections";
+import { useSettingsBack } from "../model/use-settings-back";
 import { SettingsDesktopFrame } from "./SettingsDesktopFrame";
 import { SettingsSubpageMobile } from "./SettingsSubpageMobile";
 
@@ -90,8 +93,8 @@ const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: "Google" };
 export const SettingsPage = () => {
   const { t } = useTranslation("settings");
   const { mobile } = useOutletContext<OutletCtx>();
-  // 카테고리 순서 편집 모드 — 디자인 m-subhead 우측 '편집/완료' 토글(모바일 전용).
-  const [catReorder, setCatReorder] = useState(false);
+  // 폰 머리 오른쪽 "추가" 를 누른 횟수 — 카테고리 본문이 이 값이 바뀔 때 추가 폼을 연다.
+  const [categoryAddRequest, setCategoryAddRequest] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -99,19 +102,28 @@ export const SettingsPage = () => {
     const q = searchParams.get("section");
     return q && (SECTION_IDS as string[]).includes(q) ? (q as SectionId) : null;
   })();
-  const [section, setSection] = useState<SectionId | "menu">(
-    querySection ?? (mobile ? "menu" : "categories"),
-  );
+  // 섹션은 주소에서만 읽는다 — 기록을 남기므로(changeSection) 뒤로 · 앞으로 가기가 주소만 바꾸고,
+  // 상태를 따로 들면 화면과 주소가 어긋난다.
+  const section: SectionId | "menu" =
+    querySection ?? (mobile ? "menu" : "categories");
 
-  // URL 쿼리 변화를 섹션 상태에 반영 (외부에서 딥링크 들어오면 스위치).
-  //
-  // **쿼리가 바뀐 순간에만** 본다. 매 렌더 대조하면 화면에서 섹션을 바꾼 직후
-  // (아직 URL 이 안 따라온 찰나) 곧바로 되돌릴 수 있다.
-  const [prevQuerySection, setPrevQuerySection] = useState(querySection);
-  if (prevQuerySection !== querySection) {
-    setPrevQuerySection(querySection);
-    if (querySection && querySection !== section) setSection(querySection);
-  }
+  const activeSection =
+    section === "menu"
+      ? null
+      : (SECTIONS.find((s) => s.id === section) ?? null);
+
+  const goBack = useSettingsBack(activeSection);
+
+  // 문서 제목 "{섹션 이름} - 그루 담다"(메뉴는 "설정") — 셸 ScreenEffects 는 경로만 봐서 ?section= 은 여기서 쓴다.
+  useScreenTitle(activeSection ? t(activeSection.labelKey) : t("page.title"));
+  // 섹션이 바뀌면(앞으로 · 뒤로 모두) 본문 맨 위 · 새 제목에 초점 — 처음 열 때는 훔치지 않는다.
+  const lastFocused = useRef(section);
+  useEffect(() => {
+    if (lastFocused.current === section) return;
+    lastFocused.current = section;
+    const frame = requestAnimationFrame(() => focusScreenTitle());
+    return () => cancelAnimationFrame(frame);
+  }, [section]);
 
   // 소셜 연동 복귀 처리 — SSO→Google 연동 후 ?linked=<provider>(성공) / ?linkError=<msg>(실패) 를
   // 달고 이 페이지로 돌아온다. 알림 노출 + provider 상태 재조회 + 쿼리 제거.
@@ -138,17 +150,17 @@ export const SettingsPage = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("linked");
     url.searchParams.delete("linkError");
-    window.history.replaceState({}, "", url.toString());
+    window.history.replaceState(window.history.state, "", url.toString());
   }, [searchParams, queryClient, t]);
 
-  // 섹션 변경 시 URL 동기화 (뒤로가기 정합성).
+  // 섹션 바꾸기 = 기록을 남긴다(push) — 브라우저 뒤로 가기가 설정 안을 거슬러 간다.
+  // 같은 섹션을 다시 누르면 아무것도 하지 않는다.
   const changeSection = (next: SectionId | "menu") => {
-    setSection(next);
-    setCatReorder(false);
+    if (next === section) return;
     const p = new URLSearchParams(searchParams);
     if (next === "menu") p.delete("section");
     else p.set("section", next);
-    setSearchParams(p, { replace: true });
+    setSearchParams(p);
   };
 
   /**
@@ -163,16 +175,11 @@ export const SettingsPage = () => {
     changeSection(s.id);
   };
 
-  const activeSection =
-    section === "menu"
-      ? null
-      : (SECTIONS.find((s) => s.id === section) ?? null);
-
   const renderBody = (m: boolean) => {
     if (!activeSection) return null;
     switch (activeSection.id) {
       case "categories":
-        return <CategoryManager mobile={m} reorderMode={m && catReorder} />;
+        return <CategoryManager mobile={m} addRequest={categoryAddRequest} />;
       case "accounts":
         return <AccountManager mobile={m} />;
       case "budget":
@@ -232,19 +239,23 @@ export const SettingsPage = () => {
     // 금액 가리기는 헤더 액션(모두 선택)과 아래 고정 [저장] 이 있어 공용 서브페이지 셸을
     // 쓰지 않는다 — 앱 화면처럼 자기 셸을 직접 그린다.
     if (section === "hide-amounts") {
-      return (
-        <HideAmountsSection mobile onBack={() => changeSection("account")} />
-      );
+      return <HideAmountsSection mobile onBack={goBack} />;
     }
 
     return (
       <SettingsSubpageMobile
-        section={section}
         activeSection={activeSection}
-        changeSection={changeSection}
-        catReorder={catReorder}
-        setCatReorder={setCatReorder}
-        body={renderBody(true)}
+        goBack={goBack}
+        onHeadAction={(id) => {
+          if (id === "categories") setCategoryAddRequest((n) => n + 1);
+        }}
+        body={
+          activeSection && TEMP_BODY_PADDING.includes(activeSection.id) ? (
+            <div className="p-x6">{renderBody(true)}</div>
+          ) : (
+            renderBody(true)
+          )
+        }
       />
     );
   }
