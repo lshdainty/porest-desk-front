@@ -256,7 +256,7 @@ describe("폰 홈 띠 — 구역마다 따로(사용자 10-23)", () => {
         rowId: 7,
         expenseType: "EXPENSE",
         amount: 12345,
-        expenseDate: `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}T09:00:00`,
+        expenseDate: `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}T00:00:00`,
         merchant: "가게",
         categoryName: "식비",
         refundedAt: null,
