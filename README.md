@@ -133,7 +133,7 @@ VITE_SSO_URL="http://localhost:3000"    # SSO 프론트 base URL (OAuth2 Authori
 - `budget` — 예산
 - `asset` — 자산
 - `stocks` — 증권 (토스 연동, Pro)
-- `card` / `card-benefit` — 카드 상세 / 카드 혜택
+- `card-benefit` — 카드 혜택
 - `calendar` — 캘린더
 - `todo` — 할 일 (별자리 수집)
 - `memo` — 메모

@@ -7,13 +7,19 @@ import {
   getSavedState,
   clearPkce,
 } from "@/features/auth/lib/pkce";
-import { Spinner } from "@/shared/ui/spinner";
+import { ProgressCircle } from "@/shared/ds/progress-circle";
+import { useWaitPhase } from "@/shared/ds/skeleton";
+import { useDsText } from "@/shared/ds/i18n";
 import { takeLoginRedirect } from "@/shared/lib/groo/login-redirect";
 
 export const AuthCallbackPage = () => {
   const { t } = useTranslation("login");
   const navigate = useNavigate();
   const { exchangeCode } = useAuth();
+  const dsT = useDsText();
+  // 기다리는 시간표(progress-circle.md "기다리는 동안") — 1초 안에 끝나면 원이 보이지 않고, 1초에 원, 5초에 원 아래 16 안내 글.
+  // 10초 실패 화면은 두지 않는다 — 교환에 요청 제한이 생기는 배치(셸)에서 정한다.
+  const phase = useWaitPhase(true);
   // StrictMode/재렌더로 effect 가 2번 돌아도 일회용 code 를 단 한 번만 교환하도록 가드
   const calledRef = useRef(false);
 
@@ -68,9 +74,18 @@ export const AuthCallbackPage = () => {
   }, [exchangeCode, navigate]);
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-3">
-      <Spinner size="lg" />
-      <p className="text-sm text-muted-foreground">{t("authenticating")}</p>
+    <div
+      className="flex h-screen flex-col items-center justify-center"
+      aria-busy="true"
+    >
+      {phase !== "quiet" && (
+        <ProgressCircle size="40" aria-label={t("authenticating")} />
+      )}
+      {phase === "slow" && (
+        <p className="m-0 mt-x4 text-center text-t4 font-normal text-fg-neutral-muted break-keep [overflow-wrap:break-word]">
+          {dsT("skeleton.slow")}
+        </p>
+      )}
     </div>
   );
 };

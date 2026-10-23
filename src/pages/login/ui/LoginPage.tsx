@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useSearchParams } from "react-router-dom";
-import { Spinner } from "@/shared/ui/spinner";
 import { config } from "@/shared/config";
 import { hasToken } from "@/shared/api";
 import {
@@ -10,8 +9,8 @@ import {
   generateState,
   savePkce,
 } from "@/features/auth/lib/pkce";
-import { Button } from "@/shared/ui/button";
-import { BrandMark } from "@/shared/ui/brand-mark";
+import { Button } from "@/shared/ds/button";
+import { GrooTree } from "@/shared/ui/groo/groo-tree";
 
 export const LoginPage = () => {
   if (hasToken()) {
@@ -19,13 +18,10 @@ export const LoginPage = () => {
   }
 
   return (
-    // 앱 로그인 정합(사용자 결정) — 카드/이미지 패널 없이 통일 배경(bg-surface) 중앙 콘텐츠만.
-    <div
-      className="flex min-h-svh flex-col items-center justify-center p-6"
-      style={{ background: "var(--bg-surface)" }}
-    >
+    // 앱 로그인 정합(사용자 결정) — 카드/이미지 패널 없이 셸 밖 흰 면(bg-layer-default, 11B) 중앙 콘텐츠만.
+    <div className="flex min-h-svh flex-col items-center justify-center bg-bg-layer-default p-x6">
       {/* max-w-sm 금지 — groo --spacing-sm(8px) 이 Tailwind 스케일을 가려 8px 로 컴파일됨. */}
-      <div className="w-full max-w-[24rem]">
+      <div className="w-full max-w-[384px]">
         <LoginForm />
       </div>
     </div>
@@ -34,6 +30,7 @@ export const LoginPage = () => {
 
 const LoginForm = () => {
   const { t } = useTranslation("login");
+  const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
   // 세션 만료로 밀려난 진입(?expired=1)은 버튼 대기 없이 곧장 SSO 로 넘어간다 —
   // SSO 쪽 무음 재인증이 살아 있으면 사용자는 클릭도 입력도 없이 제자리로 돌아온다.
@@ -74,33 +71,38 @@ const LoginForm = () => {
   return (
     // 묶음 구조(사용자 결정) — [로고+타이틀+안내문] 한 묶음(내부 gap 8, 앱 x8) ↔ 버튼을
     // gap 32(앱 x32)로 분리.
-    <div className="flex w-full flex-col gap-8">
-      <div className="flex flex-col items-center gap-2 text-center">
-        {/* 마크(아이콘)만 좌측 + '그루 담다' 는 실제 텍스트(합성 이미지 금지). 마크 56 / gap 0. */}
-        <div className="flex items-center justify-center">
-          <BrandMark size={56} />
-          <span
+    <div className="flex w-full flex-col gap-x8">
+      <div className="flex flex-col items-center gap-x2 text-center">
+        {/* 나무(장식) 56 + 사이 8 + 이름 — 가로 묶음(로고 결정 5A, I-05 86). 이름은 실제 글(합성 이미지 금지)이고
+            화면 제목이다 — h1 하나(02W-002). 크기 · 자간은 지금 그대로(32 / 40 · 700) */}
+        <div className="flex items-center justify-center gap-x2">
+          <GrooTree size={56} />
+          <h1
+            className="m-0 font-bold text-fg-neutral"
             style={{
               fontSize: "var(--text-display-md)",
-              fontWeight: 700,
+              lineHeight: 1.25,
               letterSpacing: "-0.02em",
-              color: "var(--fg-primary)",
             }}
           >
-            그루 담다
-          </span>
+            {tc("app.title")}
+          </h1>
         </div>
-        <p className="text-muted-foreground">{t("sso.description")}</p>
+        {/* 화면 부제 R2 — t5 · 400 · fg-neutral-muted */}
+        <p className="m-0 text-t5 text-fg-neutral-muted">
+          {t("sso.description")}
+        </p>
       </div>
+      {/* 버튼 — ds Button large 48 · neutralSolid(일반 CTA) · 전체 폭. 대기는 누른 버튼의 로딩이다 */}
       <Button
         type="button"
+        variant="neutralSolid"
+        size="large"
         className="w-full"
-        size="lg"
         onClick={handleSsoRedirect}
-        disabled={isRedirecting}
+        loading={isRedirecting}
       >
-        {isRedirecting && <Spinner size="sm" className="mr-2" />}
-        {isRedirecting ? t("sso.redirecting") : t("sso.login")}
+        {t("sso.login")}
       </Button>
     </div>
   );

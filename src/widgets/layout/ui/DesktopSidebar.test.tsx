@@ -191,3 +191,23 @@ describe("DesktopSidebar 이동", () => {
     expect(topItem("home")?.getAttribute("aria-current")).toBeNull();
   });
 });
+
+describe("DesktopSidebar 머리 로고(I-05 87)", () => {
+  it("나무 24 + 이름 글 — 사각 4단 마크(rect)가 아니다", () => {
+    render("/desk");
+    const logo = container.querySelector("[data-slot=side-navigation-logo]")!;
+    const svg = logo.querySelector("svg")!;
+    expect(svg.getAttribute("viewBox")).toBe("147 183 154 166");
+    expect(svg.getAttribute("height")).toBe("24");
+    expect(svg.querySelectorAll("path")).toHaveLength(4);
+    expect(svg.querySelector("rect")).toBeNull();
+    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    expect(logo.textContent).toBe("app.title");
+  });
+
+  it("나무는 로고 슬롯의 직계 svg 가 아니다 — 슬롯의 24×24 고정이 폭 22.3 을 늘리지 않는다", () => {
+    render("/desk");
+    const logo = container.querySelector("[data-slot=side-navigation-logo]")!;
+    expect(logo.querySelector(":scope > svg")).toBeNull();
+  });
+});

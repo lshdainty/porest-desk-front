@@ -24,7 +24,6 @@ const SCREENS: [path: string, target: string, labelKey: string][] = [
   ["/desk", "tx", "layout:addTransaction"],
   ["/desk/more", "tx", "layout:addTransaction"],
   ["/desk/search", "tx", "layout:addTransaction"],
-  ["/desk/card/12", "tx", "layout:addTransaction"],
   ["/desk/calendar", "event", "calendar:addEvent"],
 ];
 

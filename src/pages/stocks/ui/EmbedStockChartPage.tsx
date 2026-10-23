@@ -203,7 +203,8 @@ export function EmbedStockChartPage() {
   if (!symbol || (!hasToken && waitedTooLong)) {
     return (
       <div style={fillCenter}>
-        <span style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
+        {/* 문장으로 된 상태 글 — t3 · 400 · fg-neutral-muted(D5). Result Section 은 두지 않는다 — 앱 카드가 그 자리를 감싼다 */}
+        <span className="text-t3 font-normal text-fg-neutral-muted">
           {t("embed.chartUnavailable")}
         </span>
       </div>
