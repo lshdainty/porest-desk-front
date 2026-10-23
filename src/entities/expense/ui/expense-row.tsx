@@ -84,7 +84,7 @@ export function ExpenseRow({
       {recordOnly && <TitleBadge label={t("recordOnly")} />}
       {/* 고정 수입·지출 — 환불된 거래는 합계에서 빠져 있어 표시할 이유가 없다. */}
       {expense.isFixed && !refunded && (
-        <TitleBadge label={t("fixed.badge")} tone="brand" />
+        <TitleBadge label={t("fixed.badge", { ns: "expense" })} tone="brand" />
       )}
       {splitCount > 0 && (
         <span className="ml-x1_5 inline-flex items-center gap-x0_5 align-middle text-t3 font-bold text-fg-brand">
