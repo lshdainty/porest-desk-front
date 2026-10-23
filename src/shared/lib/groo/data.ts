@@ -127,9 +127,9 @@ export const ACCOUNTS: Account[] = [
   },
   {
     id: "toss-main",
-    bank: "토스뱅크",
+    bank: "초록뱅크",
     type: "입출금",
-    name: "토스뱅크 통장",
+    name: "초록뱅크 통장",
     number: "100-***-4789",
     balance: 1_678_500,
     color: "#0064FF",
@@ -228,7 +228,7 @@ export const TX: Tx[] = [
     d: "2026-04-20",
     time: "09:12",
     cat: "cafe",
-    title: "스타벅스 강남R점",
+    title: "나무카페 강남점",
     account: "신한 Deep",
     amt: -5_500,
   },
@@ -417,7 +417,7 @@ export const TX: Tx[] = [
     d: "2026-04-08",
     time: "20:00",
     cat: "bill",
-    title: "넷플릭스 프리미엄",
+    title: "영상구독 프리미엄",
     account: "신한 Deep",
     amt: -17_000,
   },
@@ -559,7 +559,7 @@ export const TODOS: Todo[] = [
   },
   {
     id: "td3",
-    title: "신한카드 결제일 체크",
+    title: "새싹카드 결제일 체크",
     date: "내일",
     priority: "med",
     done: false,
@@ -586,7 +586,7 @@ export const TODOS: Todo[] = [
 export const RECURRING = [
   { title: "신한 Deep Dream 결제", due: "2026-04-28", amt: 842_500, d: 8 },
   { title: "현대 M Boost 결제", due: "2026-04-14", amt: 347_800, d: -6 },
-  { title: "넷플릭스 프리미엄", due: "2026-05-08", amt: 17_000, d: 18 },
+  { title: "영상구독 프리미엄", due: "2026-05-08", amt: 17_000, d: 18 },
   { title: "관리비", due: "2026-05-10", amt: 190_000, d: 20 },
 ];
 
