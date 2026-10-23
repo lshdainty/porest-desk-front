@@ -146,6 +146,8 @@ export function ExpenseRow({
       className={cn(
         // 한 줄만 든 목록 — 줄의 좌우 24 는 쓰는 자리가 정한다(gutter)
         !gutter && "[&_[data-slot=list-content]]:px-0",
+        // 설명(Tag Group 한 줄 말줄임)이 본문 폭을 밀지 않게 — 줄 폭에 min-width 만 걸고 내용 폭은 0 으로 센다
+        "[&_[data-slot=list-detail]]:w-0 [&_[data-slot=list-detail]]:min-w-full",
       )}
     >
       {onClick ? (
