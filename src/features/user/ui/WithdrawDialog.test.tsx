@@ -18,26 +18,33 @@ const state = vi.hoisted(() => ({
   verifiedPassword: null as string | null,
   withdrew: null as Record<string, unknown> | null,
   onWithdrawnCalls: 0,
+  verifiedCode: null as string | null,
+  withdrawHang: false,
+  isError: false,
 }));
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-vi.mock("@/shared/hooks", () => ({ useIsMobile: () => false }));
 vi.mock("sonner", () => ({ toast: { success: () => {}, error: () => {} } }));
 vi.mock("../model/useWithdrawal", () => ({
   useWithdrawalCheck: () => ({
     data: state.check,
-    isLoading: state.check === null,
-    isError: false,
+    isLoading: state.check === null && !state.isError,
+    isError: state.isError,
+    isFetching: false,
+    refetch: () => {},
   }),
   useSendReauthEmailCodeMutation: () => ({
     mutate: () => {},
     isPending: false,
   }),
   useVerifyReauthEmailCodeMutation: () => ({
-    mutateAsync: async () => "ticket",
+    mutateAsync: async (c: string) => {
+      state.verifiedCode = c;
+      return "ticket";
+    },
     isPending: false,
   }),
   useVerifyReauthPasswordMutation: () => ({
@@ -50,6 +57,7 @@ vi.mock("../model/useWithdrawal", () => ({
   }),
   useWithdrawMutation: () => ({
     mutateAsync: async (v: Record<string, unknown>) => {
+      if (state.withdrawHang) await new Promise(() => {});
       state.withdrew = v;
     },
     isPending: false,
@@ -70,6 +78,22 @@ const CLEAR = {
 
 let container: HTMLDivElement;
 let root: Root;
+
+/** 1280 이상(대화상자)인가 — jsdom 에는 matchMedia 가 없어 기본은 좁은 쪽(시트)이다. */
+function setWide(wide: boolean) {
+  // 대화상자의 본문 스크롤 감시가 ResizeObserver 를 쓴다(jsdom 에는 없다)
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+  window.matchMedia = ((query: string) => ({
+    matches: wide && query.includes("min-width: 1280px"),
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  })) as unknown as typeof window.matchMedia;
+}
 
 function render() {
   container = document.createElement("div");
@@ -133,6 +157,10 @@ beforeEach(() => {
   state.verifiedPassword = null;
   state.withdrew = null;
   state.onWithdrawnCalls = 0;
+  state.verifiedCode = null;
+  state.withdrawHang = false;
+  state.isError = false;
+  setWide(false);
   const proto = window.HTMLElement.prototype as unknown as Record<
     string,
     unknown
@@ -191,7 +219,20 @@ describe("구독이 막을 때", () => {
   it("진행 버튼을 아예 두지 않는다 — 눌러도 서버가 막는 버튼은 보여 줄 이유가 없다", () => {
     expect(buttonNamed("withdraw.next")).toBeUndefined();
     expect(buttonNamed("withdraw.confirm")).toBeUndefined();
-    expect(buttonNamed("close")).toBeDefined();
+  });
+
+  // 막힘은 안내 표면이다 — 시트는 위 ✕ 만(바닥 없음), 대화상자는 [닫기] 하나(I-05 32)
+  it("시트(1280 미만)는 위 ✕ 만 두고 바닥 버튼이 없다", () => {
+    expect(
+      document.body.querySelector('[data-slot="bottom-sheet-close"]'),
+    ).not.toBeNull();
+    expect(buttonNamed("close")).toBeUndefined();
+  });
+
+  it("막힘은 Callout warning 이다", () => {
+    expect(
+      document.body.querySelector('[data-slot="callout"][data-tone="warning"]'),
+    ).not.toBeNull();
   });
 
   it("언제부터 가능한지를 말한다 — 이 날짜가 없으면 기다릴지 말지 정할 수 없다", () => {
@@ -302,5 +343,211 @@ describe("막는 게 없을 때", () => {
       reason: undefined,
     });
     expect(state.onWithdrawnCalls).toBe(1);
+  });
+});
+
+describe("표면 — 1280 미만 시트 · 이상 대화상자(I-05 31 · 32)", () => {
+  it("1280 미만은 Bottom Sheet — 바닥에 [계속] 하나(취소 없음, 위 닫기가 닫는다)", () => {
+    state.check = CLEAR;
+    render();
+    expect(
+      document.body.querySelector('[data-slot="bottom-sheet-content"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-slot="dialog-content"]'),
+    ).toBeNull();
+    expect(buttonNamed("cancel")).toBeUndefined();
+    expect(buttonNamed("withdraw.next")).toBeDefined();
+  });
+
+  it("1280 이상은 Dialog — 바닥에 [취소] [계속], 머리 ✕ 없음(입력 폼)", () => {
+    setWide(true);
+    state.check = CLEAR;
+    render();
+    expect(
+      document.body.querySelector('[data-slot="dialog-content"]'),
+    ).not.toBeNull();
+    expect(buttonNamed("cancel")).toBeDefined();
+    expect(buttonNamed("withdraw.next")).toBeDefined();
+    expect(
+      document.body.querySelector('[data-slot="dialog-close"]'),
+    ).toBeNull();
+  });
+
+  it("1280 이상 막힘은 바닥에 [닫기] 하나 — 위 ✕ 도 있다", () => {
+    setWide(true);
+    state.check = { ...CLEAR, blocked: ["SUBSCRIPTION_ACTIVE"] };
+    render();
+    expect(buttonNamed("close")).toBeDefined();
+    expect(buttonNamed("withdraw.next")).toBeUndefined();
+  });
+
+  it("불러오기 실패는 Result Section failure + 다시 시도", () => {
+    state.isError = true;
+    render();
+    const rs = document.body.querySelector('[data-slot="result-section"]');
+    expect(rs?.getAttribute("data-kind")).toBe("failure");
+    expect(document.body.textContent).toContain("withdraw.loadFailed");
+  });
+
+  it("바닥 버튼은 [계속] · [해지하기] 가 criticalSolid, [뒤로] 는 neutralWeak", async () => {
+    state.check = CLEAR;
+    render();
+    expect(buttonNamed("withdraw.next")!.className).toContain(
+      "bg-bg-critical-solid",
+    );
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    expect(buttonNamed("withdraw.confirm")!.className).toContain(
+      "bg-bg-critical-solid",
+    );
+    expect(buttonNamed("back")!.className).toContain("bg-bg-neutral-weak");
+  });
+});
+
+describe("본인 확인 — 코드 칸(I-05 35)", () => {
+  const goToCode = async () => {
+    state.check = CLEAR;
+    render();
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    act(() => click("withdraw.useEmailCode"));
+  };
+  const codeInput = () =>
+    document.getElementById("withdraw-code") as HTMLInputElement;
+  const paste = (text: string) => {
+    const e = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(e, "clipboardData", {
+      value: { getData: () => text },
+    });
+    act(() => {
+      codeInput().dispatchEvent(e);
+    });
+  };
+
+  it("코드 칸은 one-time-code · numeric 이고 maxLength 로 먼저 자르지 않는다", async () => {
+    await goToCode();
+    expect(codeInput().getAttribute("autocomplete")).toBe("one-time-code");
+    expect(codeInput().getAttribute("inputmode")).toBe("numeric");
+    expect(codeInput().hasAttribute("maxlength")).toBe(false);
+  });
+
+  it.each([
+    ["123 456", "123456"],
+    ["인증 코드: 123456", "123456"],
+  ])("붙여넣기 %s → %s", async (pasted, digits) => {
+    await goToCode();
+    paste(pasted);
+    expect(codeInput().value).toBe(digits);
+  });
+
+  it("설명 줄에 유효 10분 · 5번 규칙이 늘 보인다", async () => {
+    await goToCode();
+    expect(document.body.textContent).toContain("withdraw.codeRule");
+  });
+
+  it("6자리 전에도 [해지하기] 는 켜져 있고 누르면 칸 오류로 알린다 — 서버로 가지 않는다", async () => {
+    await goToCode();
+    paste("123");
+    const confirm = buttonNamed("withdraw.confirm")!;
+    expect(confirm.disabled).toBe(false);
+    await act(async () => click("withdraw.confirm"));
+    expect(document.body.textContent).toContain("withdraw.codeIncomplete");
+    expect(codeInput().getAttribute("aria-invalid")).toBe("true");
+    expect(state.verifiedCode).toBeNull();
+    expect(state.withdrew).toBeNull();
+  });
+
+  it("6자리를 채우고 누르면 코드를 확인하고 해지가 나간다", async () => {
+    await goToCode();
+    paste("인증 코드: 123456");
+    await act(async () => click("withdraw.confirm"));
+    expect(state.verifiedCode).toBe("123456");
+    expect(state.withdrew).toEqual({
+      reauthToken: "ticket",
+      reason: undefined,
+    });
+  });
+
+  it("[코드 받기] 는 칸 아래에 있다 — 칸 옆(같은 줄)이 아니다", async () => {
+    await goToCode();
+    const send = [...document.body.querySelectorAll("button")].find(
+      (b) => b.getAttribute("data-slot") === "input-otp-resend",
+    )!;
+    expect(send).toBeDefined();
+    const field = codeInput().closest('[data-slot="field"]')!;
+    expect(field.contains(send)).toBe(false);
+  });
+});
+
+describe("해지하는 동안 — 덮개(I-05 37)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("요청 중 1초 전에는 원이 없고, 1초 뒤 원이 보이며 뒤 화면이 의미 트리에서 빠진다", async () => {
+    vi.useFakeTimers();
+    state.check = CLEAR;
+    state.withdrawHang = true;
+    render();
+    act(() => click("withdraw.next"));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+    const pw = document.getElementById("withdraw-password") as HTMLInputElement;
+    act(() => setValue(pw, "pw"));
+    await act(async () => click("withdraw.confirm"));
+    const overlay = () =>
+      document.body.querySelector('[data-slot="busy-overlay"]');
+    expect(overlay()).not.toBeNull();
+    expect(overlay()!.querySelector('[role="progressbar"]')).toBeNull();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    const circle = overlay()!.querySelector('[role="progressbar"]');
+    expect(circle?.getAttribute("aria-label")).toBe("withdraw.closing");
+    expect(container.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("실패하면 덮개가 걷히고 칸 오류가 남는다", async () => {
+    state.check = CLEAR;
+    state.verifyError = new Error("x");
+    render();
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    const pw = document.getElementById("withdraw-password") as HTMLInputElement;
+    act(() => setValue(pw, "pw"));
+    await act(async () => click("withdraw.confirm"));
+    expect(
+      document.body.querySelector('[data-slot="busy-overlay"]'),
+    ).toBeNull();
+    expect(document.body.textContent).toContain("withdraw.failed");
+  });
+});
+
+describe("바뀐 값이 있으면 닫기 전에 묻는다(I-05 31)", () => {
+  it("사유를 쓰고 위 ✕ 를 누르면 닫지 않고 되묻는다", async () => {
+    state.check = CLEAR;
+    let closed = 0;
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() =>
+      root.render(
+        <WithdrawDialog onClose={() => (closed += 1)} onWithdrawn={() => {}} />,
+      ),
+    );
+    const reason = document.getElementById(
+      "withdraw-reason",
+    ) as HTMLInputElement;
+    act(() => setValue(reason, "이사"));
+    const x = document.body.querySelector<HTMLButtonElement>(
+      '[data-slot="bottom-sheet-close"]',
+    )!;
+    await act(async () => {
+      x.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(closed).toBe(0);
+    expect(document.body.querySelector('[role="alertdialog"]')).not.toBeNull();
   });
 });
