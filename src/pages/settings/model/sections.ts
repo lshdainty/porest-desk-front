@@ -208,6 +208,10 @@ export const NEEDS_DESKTOP_HEAD: SectionId[] = [
  * 옛 껍데기의 사방 24 에 기대어 그려져 있어, 그 값 그대로를 여기서 임시로 둔다(설정 틀 I-16 — 본문 배치 전까지).
  * 본문 지시서(I-05 · I-08 · I-09 · I-10 · I-12 · I-14 · I-15 · I-17 · I-20)가 자기 섹션을 옮기며 이 목록에서 그 id 를 걷는다.
  * 금액 가리기는 제 껍데기를 직접 그려 여기 없다.
+ *
+ * **본문 PR 은 자기 섹션을 옮길 때 이 목록에서 자기 id 를 걷는다**(본문이 제 좌우 24 · 위아래를 갖게 한 뒤).
+ * 걷지 않으면 껍데기 24 + 본문 24 가 겹쳐 48 이 된다. 목록에 있는 id 만 24 가 된다는 것은
+ * `SettingsSubpageMobile.test.tsx` 가 잠근다. 남은 id 와 걷을 지시서는 I-16-1-web-result.md 표.
  */
 export const TEMP_BODY_PADDING: SectionId[] = [
   "categories",

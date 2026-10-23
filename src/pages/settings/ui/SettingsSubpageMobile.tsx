@@ -8,7 +8,11 @@ import {
 } from "@/shared/ds/top-navigation";
 import { useExpenseTemplates } from "@/features/expense";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
-import type { SectionDef, SectionId } from "../model/sections";
+import {
+  TEMP_BODY_PADDING,
+  type SectionDef,
+  type SectionId,
+} from "../model/sections";
 
 interface Props {
   activeSection: SectionDef | null;
@@ -78,7 +82,16 @@ export const SettingsSubpageMobile = ({
           button
         )}
       </TopNavigation>
-      <div className="min-h-0 flex-1 bg-bg-layer-default">{body}</div>
+      <div className="min-h-0 flex-1 bg-bg-layer-default">
+        {/* 임시 24 — TEMP_BODY_PADDING 에 있는 섹션만(없으면 본문이 제 24 를 갖는다) */}
+        {id && TEMP_BODY_PADDING.includes(id) ? (
+          <div data-temp-body-padding className="p-x6">
+            {body}
+          </div>
+        ) : (
+          body
+        )}
+      </div>
     </>
   );
 };

@@ -77,7 +77,6 @@ import {
   MENU_GROUPS,
   SECTION_IDS,
   SECTIONS,
-  TEMP_BODY_PADDING,
   type SectionDef,
   type SectionId,
 } from "../model/sections";
@@ -255,13 +254,7 @@ export const SettingsPage = () => {
         onHeadAction={(id) =>
           setAddRequests((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 }))
         }
-        body={
-          activeSection && TEMP_BODY_PADDING.includes(activeSection.id) ? (
-            <div className="p-x6">{renderBody(true)}</div>
-          ) : (
-            renderBody(true)
-          )
-        }
+        body={renderBody(true)}
       />
     );
   }
