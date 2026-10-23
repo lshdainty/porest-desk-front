@@ -50,7 +50,7 @@ export const isFullscreenPath = (pathname: string) =>
 
 /**
  * 폰 화면 바탕 종류(02-005 C · layout "화면 바탕") — 바닥은 늘 basement 이고 그 위에 놓는 것이 갈린다.
- *  bands = 구역마다 화면 폭 흰 띠, 띠 사이 8 만(시작 · 끝 틈 없음 — I-05 74) — 화면이 ScreenBands 로 직접 그린다(홈 · 자산 · 통계 · 예산 · 카드 상세,
+ *  bands = 구역마다 화면 폭 흰 띠, 띠 사이 8 만(시작 · 끝 틈 없음 — I-05 74) — 화면이 ScreenBands 로 직접 그린다(홈 · 자산 · 통계 · 예산,
  *          2026-10-21 I-01 결정 3 — 폰에는 카드 화면이 없다. 데스크톱은 같은 구역을 카드로)
  *  strip = 머리 바로 아래 화면 폭 흰 띠(캘린더 · 전체 · 검색 …) — 셸이 띠 하나를 깐다
  *  white = 화면 전체가 흰 층(가계부 거래 목록만)
@@ -59,7 +59,6 @@ export type ScreenFloor = "bands" | "strip" | "white";
 export function screenFloor(pathname: string): ScreenFloor {
   if (
     pathname === "/desk" ||
-    under(pathname, "/desk/card") ||
     under(pathname, "/desk/asset") ||
     under(pathname, "/desk/stats") ||
     under(pathname, "/desk/budget")
@@ -96,8 +95,6 @@ const TITLE_KEYS: Record<string, string> = {
 export function screenTitleKey(pathname: string): string {
   // 가계부 묶음 넷은 머리 제목이 모두 "가계부" — 칸 이름은 위 Line Tabs 가 말한다(17-1)
   if (isMoneyPath(pathname)) return "expense";
-  // 카드 상세는 자산에서 들어가는 화면이다 — 머리 제목이 "홈" 으로 떨어지지 않게
-  if (under(pathname, "/desk/card")) return "asset";
   if (TITLE_KEYS[pathname]) return TITLE_KEYS[pathname];
   const nav = NAV.find((n) => n.path !== "/desk" && under(pathname, n.path));
   return nav?.labelKey ?? "home";

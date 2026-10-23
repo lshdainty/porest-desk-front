@@ -69,9 +69,6 @@ const NotificationsPage = lazy(() =>
     default: m.NotificationsPage,
   })),
 );
-const CardDetailPage = lazy(() =>
-  import("@/pages/card").then((m) => ({ default: m.CardDetailPage })),
-);
 const CardBenefitPage = lazy(() =>
   import("@/pages/card-benefit").then((m) => ({ default: m.CardBenefitPage })),
 );
@@ -166,10 +163,6 @@ export const AppRouter = () => {
               <Route path="/desk/todo" element={<TodoPage />} />
               <Route path="/desk/dutch-pay" element={<DutchPayPage />} />
               <Route path="/desk/memo" element={<MemoPage />} />
-              <Route
-                path="/desk/card/:assetRowId"
-                element={<CardDetailPage />}
-              />
               <Route path="/desk/card-benefit" element={<CardBenefitPage />} />
               <Route path="/desk/settings" element={<SettingsPage />} />
               <Route path="/desk/more" element={<MorePage />} />
