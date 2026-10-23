@@ -101,10 +101,10 @@ describe("월 요약 지출 칸 — 부호는 값을 따른다", () => {
 });
 
 describe("부호를 붙이는 자리는 네 곳뿐이고 전부 minusOf 를 지난다", () => {
-  const SRC = readFileSync(
-    join(cwd(), "src/pages/expense/ui/ExpensePage.tsx"),
-    "utf8",
-  );
+  // 폰 화면은 ExpenseMobile.tsx 로 나뉘었다(I-07 10) — 두 파일을 함께 본다
+  const SRC = ["ExpensePage.tsx", "ExpenseMobile.tsx"]
+    .map((n) => readFileSync(join(cwd(), "src/pages/expense/ui", n), "utf8"))
+    .join("\n");
 
   it("`−{KRW(` · `−{wonPre()` 처럼 문자로 박은 부호가 남아 있지 않다", () => {
     expect(SRC).not.toContain(`${MINUS}{KRW(`);
