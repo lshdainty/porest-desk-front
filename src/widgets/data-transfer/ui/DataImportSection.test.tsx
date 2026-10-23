@@ -38,10 +38,14 @@ const analysis: ImportAnalyzeResult = {
 const state = vi.hoisted(() => ({
   analyze: null as unknown,
   execute: null as unknown,
+  analyzeSources: [] as string[],
 }));
 
 vi.mock("@/features/import/api/importApi", () => ({
-  analyzeImport: () => Promise.resolve(state.analyze),
+  analyzeImport: (_file: File, source: string) => {
+    state.analyzeSources.push(source);
+    return Promise.resolve(state.analyze);
+  },
   executeImport: () => Promise.resolve(state.execute),
 }));
 vi.mock("react-i18next", () => ({
@@ -63,6 +67,7 @@ beforeEach(() => {
   vi.spyOn(queryClient, "invalidateQueries");
   state.analyze = { ...analysis };
   state.execute = null;
+  state.analyzeSources = [];
   if (!window.matchMedia) {
     Object.defineProperty(window, "matchMedia", {
       writable: true,
@@ -292,5 +297,11 @@ describe("가져오기 성공 — 캐시 비우기 (QA #144)", () => {
       btn("import.doImport")!.click();
     });
     expect(queryClient.invalidateQueries).not.toHaveBeenCalled();
+  });
+
+  // 서버 ImportSource enum 이름(POREST · EASYBUDGET · …)이 그대로 가야 한다 — 문구처럼 바꾸면 400.
+  it("기본 출처는 서버 enum 이름 POREST 로 보낸다", async () => {
+    await toMapping();
+    expect(state.analyzeSources).toEqual(["POREST"]);
   });
 });

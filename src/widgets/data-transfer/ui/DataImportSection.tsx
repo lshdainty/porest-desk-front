@@ -43,7 +43,7 @@ import {
 
 const SOURCES: { v: ImportSource; nameKey: string; descKey: string }[] = [
   {
-    v: "그루",
+    v: "POREST",
     nameKey: "import.source.groo",
     descKey: "import.source.grooDesc",
   },
@@ -119,7 +119,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("export");
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("upload");
-  const [source, setSource] = useState<ImportSource>("그루");
+  const [source, setSource] = useState<ImportSource>("POREST");
   const [file, setFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ImportAnalyzeResult | null>(null);
