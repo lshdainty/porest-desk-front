@@ -13,6 +13,7 @@ export {
   useCancelRefund,
   useReplaceExpense,
   useDeleteExpense,
+  useBulkDeleteExpenses,
   useRangeSummary,
   useMonthlyTrend,
   useMerchantSummary,

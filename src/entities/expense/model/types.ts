@@ -285,3 +285,9 @@ export interface HeatmapCell {
 export interface DeleteExpenseResult {
   refundedAmount: number | null;
 }
+
+/** 일괄 삭제 결과 — 지운 건수와 결제계좌로 돌려준 금액 합 */
+export interface BulkDeleteExpenseResult {
+  deletedCount: number;
+  refundedAmount: number | null;
+}

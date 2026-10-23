@@ -154,3 +154,31 @@ describe("삭제는 환급액을 돌려준다", () => {
     });
   });
 });
+
+/** 일괄 삭제 — 고른 아이디를 한 요청으로 보내고 지운 건수 · 환급 합을 받는다(I-07 36). 서버가 전부 아니면 전무다 */
+describe("일괄 삭제", () => {
+  it("전용 경로로 POST 하고 지운 건수 · 환급 합을 돌려준다", async () => {
+    post.mockResolvedValue({
+      data: { deletedCount: 3, refundedAmount: 12_000 },
+    });
+
+    await expect(expenseApi.bulkDeleteExpenses([1, 2, 3])).resolves.toEqual({
+      deletedCount: 3,
+      refundedAmount: 12_000,
+    });
+    expect(post).toHaveBeenCalledWith("/v1/expenses/delete", {
+      expenseIds: [1, 2, 3],
+    });
+    // 단건 삭제 경로(DELETE)를 건수만큼 부르지 않는다
+    expect(del).not.toHaveBeenCalled();
+  });
+
+  it("응답에 본문이 없어도 객체를 돌려준다", async () => {
+    post.mockResolvedValue({ data: null });
+
+    await expect(expenseApi.bulkDeleteExpenses([1])).resolves.toEqual({
+      deletedCount: 0,
+      refundedAmount: null,
+    });
+  });
+});
