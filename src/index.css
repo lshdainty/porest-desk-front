@@ -380,7 +380,7 @@
   }
   h1,
   .h1 {
-    font-size: var(--text-display-md);
+    font-size: var(--text-t12);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.022em;
@@ -458,7 +458,7 @@
     line-height: 1.15;
   }
   .display-md {
-    font-size: var(--text-display-md);
+    font-size: var(--text-t12);
     font-weight: 700;
     letter-spacing: -0.012em;
     line-height: 1.15;

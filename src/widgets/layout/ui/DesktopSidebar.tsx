@@ -81,7 +81,7 @@ export function DesktopSidebar() {
       <SideNavigationHeader
         logo={
           <>
-            {/* 나무 24(폭 22.3) — 로고 슬롯이 직계 svg 를 24×24 로 고정해 감싼다. 사이 8 · 이름은 슬롯의 t5 · 700 */}
+            {/* 나무 24(폭 22.3) — span 으로 감싸 로고 슬롯의 직계 svg 24×24 고정 규칙은 걸리지 않는다(나무가 제 크기 22.3×24 로 그려진다). 사이 8 · 이름은 슬롯의 t5 · 700 */}
             <span className="flex shrink-0">
               <GrooTree size={24} />
             </span>

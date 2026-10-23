@@ -52,6 +52,11 @@ const circle = () => container.querySelector("[role=progressbar]");
 const tick = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
 
 describe("로그인 콜백 기다림(12)", () => {
+  it("바탕은 로그인과 같은 흰 면(bg-layer-default)이다 — 회색 콜백이 끼지 않는다", () => {
+    const root = container.firstElementChild!;
+    expect(root.className).toContain("bg-bg-layer-default");
+  });
+
   it("1초 전에는 원이 없다", () => {
     expect(circle()).toBeNull();
     tick(999);

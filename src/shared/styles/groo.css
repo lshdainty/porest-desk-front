@@ -27,7 +27,7 @@
   position: relative;
   overflow: hidden;
 }
-/* 탭 셸의 본문 바닥 = 페이지 바탕(bg-page = layer-basement). 머리 · 탭 바는 스스로 흰 면이다.
+/* 탭 셸의 본문 바닥 = 페이지 바탕(bg-layer-basement). 머리 · 탭 바는 스스로 흰 면이다.
    풀스크린 화면(옛 ← 머리)은 옛 모양대로 surface 를 그대로 둔다. */
 .m-app--page {
   background: var(--bg-canvas);
@@ -58,7 +58,7 @@
 }
 .screen-bands > :not(.contents, [data-slot="card"][data-variant="hero"]),
 .screen-bands > .contents > * {
-  background: var(--color-surface-default);
+  background: var(--color-bg-layer-default);
 }
 /* 순자산(ds Card hero)은 모서리 없는 화면 폭 띠 — 흰 띠로 칠하지 않는다(I-06 11) */
 .screen-bands > [data-slot="card"][data-variant="hero"] {
@@ -79,7 +79,7 @@
 /* 풀스크린 띠 화면 — 바닥 basement 위, ← 머리 바로 아래 화면 폭 흰 띠 한 장(I-01 결정 4B, 시작 틈 없음 — I-05 74).
    본문이 묶음마다 띠를 그리면(.screen-bands) 셸은 띠를 깔지 않는다 */
 .m-fullscreen > .m-back-header + :not(.screen-bands) {
-  background: var(--color-surface-default);
+  background: var(--color-bg-layer-default);
 }
 
 /* 플랫 섹션 헤드 — 모바일 카드 다이어트 (design app.css .sec-head 미러).
