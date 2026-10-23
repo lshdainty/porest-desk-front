@@ -19,12 +19,24 @@ const CSV = "i18n/translations.csv";
 /** 붙여 쓴 보조용언 — 왼쪽을 오른쪽으로 고친다. */
 const JOINED_AUXILIARY = /해주세요/;
 
+/**
+ * 디자인 시스템 Writing v106 은 보조 용언을 **붙인다**(`해주세요`) — 이 규범과 위 규범이 갈린다.
+ * I-05 지시서가 정한 문구(디자인시스템 세션 · 사용자 결정)는 지시대로 붙여 쓰므로 그 행만 예외로 둔다.
+ * 레포 전체를 어느 쪽으로 모을지는 사용자가 정한다(질문으로 올렸다) — 그때까지 예외를 늘리지 않는다.
+ * 키는 `namespace,key` 다.
+ */
+const WRITING_V106_JOINED = new Set(["login,sso.description"]);
+
 describe("한국어 문구 띄어쓰기", () => {
   it("보조용언 '주다' 는 띄어 쓴다 — `해주세요` 가 아니라 `해 주세요`", () => {
     const lines = readFileSync(CSV, "utf-8").split("\n");
     const offenders = lines
       .map((line, i) => ({ line, no: i + 1 }))
       .filter(({ line }) => JOINED_AUXILIARY.test(line))
+      .filter(
+        ({ line }) =>
+          !WRITING_V106_JOINED.has(line.split(",").slice(0, 2).join(",")),
+      )
       .map(({ line, no }) => `${CSV}:${no}  ${line.slice(0, 90)}`);
 
     expect(offenders).toEqual([]);
