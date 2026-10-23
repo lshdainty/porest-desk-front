@@ -40,7 +40,7 @@ export const useVerifyReauthPasswordMutation = () =>
   });
 
 /**
- * desk 이용 해지.
+ * 그루 담다 이용 해지.
  *
  * <p>성공하면 이 세션은 곧 끝난다 — 호출한 쪽이 로그아웃까지 책임진다.
  * 여기서 쿼리 캐시를 무효화하지 않는 것도 그래서다. 되살릴 화면이 없다.
