@@ -131,7 +131,7 @@ describe("기간 · 형식 Select Box (I-05 41 · 43)", () => {
     expect(format!.querySelectorAll('[role="radio"]')).toHaveLength(3);
   });
 
-  it("폰은 기간 · 형식 모두 1열, 데스크톱은 5열 · 3열이다(Q5 5B)", async () => {
+  it("기간은 모든 폭 1열, 형식은 폰 1열 · 데스크톱 3열이다(Q5 5B · 사용자 결정 Q1-A)", async () => {
     await render(true);
     for (const g of groups().slice(0, 2)) {
       expect(g.className).toContain("grid-cols-1");
@@ -140,7 +140,8 @@ describe("기간 · 형식 Select Box (I-05 41 · 43)", () => {
     root = createRoot(container);
     await render(false);
     const [period, format] = groups();
-    expect(period!.className).toContain("grid-cols-5");
+    expect(period!.className).toContain("grid-cols-1");
+    expect(period!.className).not.toContain("grid-cols-5");
     expect(format!.className).toContain("grid-cols-3");
   });
 
@@ -289,5 +290,30 @@ describe("검수 반영 — 카드 안 바닥 · 폰 바 · 오류 들임 · 형
     await render(false);
     const field = container.querySelector('[data-slot="field"][data-invalid]')!;
     expect(field.className).toContain("px-global-gutter");
+  });
+});
+
+describe("표기 한 벌(사용자 결정 · date-picker.md:181)", () => {
+  it("기간 구분은 물결표를 앞뒤에 붙여 쓴다 — ' — ' 가 아니다", async () => {
+    await render(false);
+    const text = groups()[0]!.textContent!;
+    expect(text).toMatch(/\d~/);
+    expect(text).not.toContain(" — ");
+  });
+
+  it("형식 이름은 'CSV (.csv)' 꼴이다", async () => {
+    await render(false);
+    expect(groups()[1]!.textContent).toContain("CSV (.csv)");
+  });
+
+  it("'직접' 기간 칸은 한 줄 값(말줄임) 그대로이고 달력 아이콘이 있다 — 줄바꿈으로 덮지 않는다", async () => {
+    await render(false);
+    const radios = groups()[0]!.querySelectorAll<HTMLElement>('[role="radio"]');
+    await click(radios[4]!);
+    const field = radios[4]!
+      .closest('[data-slot="select-box"]')!
+      .querySelector('[data-slot="input-button"]')!;
+    expect(field.className).not.toContain("break-keep");
+    expect(field.querySelector("svg")).not.toBeNull();
   });
 });

@@ -355,14 +355,12 @@ function ExportPane({ mobile }: { mobile: boolean }) {
 
   return (
     <div className={mobile ? "flex flex-col gap-x6" : "flex flex-col gap-x2"}>
-      {/* 1. 기간 — 폰은 1열 가로형(Q5 5B), 데스크톱 · 태블릿은 5열 */}
+      {/* 1. 기간 — 모든 폭 1열 가로형(Q5 5B + 사용자 결정 10-23 Q1-A — 데스크톱 · 태블릿도 폰과 같게, "직접" 칸 값이 잘리지 않는다) */}
       <DataSection mobile={mobile} title={t("section.periodSelect")}>
         {(titleId) => (
           <RadioSelectBoxGroup
             aria-labelledby={titleId}
             columns={1}
-            // ds 묶음은 1 ~ 3열까지다 — 데스크톱 · 태블릿 5열(지금 그대로, Q5 밖)은 열 수만 덮는다
-            className={mobile ? undefined : "auto-rows-fr grid-cols-5"}
             value={period}
             onValueChange={(v) => setPeriod(v as ExportPeriod)}
           >
@@ -371,14 +369,14 @@ function ExportPane({ mobile }: { mobile: boolean }) {
               const sub =
                 p.v === "CUSTOM"
                   ? t("section.customSelect")
-                  : `${krLabel(r.start)} — ${krLabel(r.end)}`;
+                  : `${krLabel(r.start)}~${krLabel(r.end)}`;
               return (
                 <RadioSelectBox
                   key={p.v}
                   value={p.v}
                   label={t(p.labelKey)}
                   description={sub}
-                  layout={mobile ? "horizontal" : "vertical"}
+                  layout="horizontal"
                   footer={
                     p.v === "CUSTOM" ? (
                       <PeriodField
@@ -494,7 +492,7 @@ function ExportPane({ mobile }: { mobile: boolean }) {
                   key={f.v}
                   value={f.v}
                   prefix={<IconComp />}
-                  label={`${f.label} ${f.ext}`}
+                  label={`${f.label} (${f.ext})`}
                   description={t(f.descKey)}
                   layout={mobile ? "horizontal" : "vertical"}
                   // 3열은 정보를 줄이고 컨트롤(라디오)을 뺀다(select-box.md:47 · 예제 :216 — 이 화면의 파일 형식)
