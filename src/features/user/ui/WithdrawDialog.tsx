@@ -18,7 +18,6 @@ import { List, ListItem } from "@/shared/ds/list";
 import { useWideSurface } from "@/shared/ds/overlay";
 import { ProgressCircle } from "@/shared/ds/progress-circle";
 import { ResultSection } from "@/shared/ds/result-section";
-import { serverErrorMessage } from "@/shared/api/error-message";
 import { toLocalDateKey } from "@/shared/lib/date";
 import { BusyOverlay } from "@/shared/ui/groo/busy-overlay";
 // 배럴(`@/features/user`)이 이 파일을 다시 내보내므로 거기서 가져오면 순환이 된다 —
@@ -164,20 +163,29 @@ export function WithdrawDialog({
     runningRef.current = true;
     setReauthError(null);
     setBusy(true);
+    // 본인 확인 실패는 그 칸의 문제다 — 토스트로 띄우면 어느 칸을 고쳐야 하는지 안 보인다. 칸 밑에 붙인다.
+    // 서버가 보낸 글을 그대로 보이지 않고 화면 글로 바꾼다(input-otp.md "서버가 보낸 글을 그대로 보이지 않고 화면 글로" ·
+    // Writing 오류) — 틀린 코드 · 틀린 비밀번호는 같은 한 문장이고, 해지 요청이 실패하면 해지 실패 문장이다.
+    let token: string;
     try {
-      const token =
+      token =
         method === "password"
           ? await verifyPassword.mutateAsync(password)
           : await verifyCode.mutateAsync(code);
+    } catch {
+      setReauthError(
+        method === "password"
+          ? t("currentPasswordInvalid")
+          : t("withdraw.codeWrong"),
+      );
+      setBusy(false);
+      runningRef.current = false;
+      return;
+    }
+    try {
       await doWithdraw(token);
-    } catch (e) {
-      // 본인 확인 실패는 그 칸의 문제다 — 토스트로 띄우면 어느 칸을 고쳐야 하는지
-      // 안 보인다. 칸 밑에 붙인다(PasswordChangeDialog 와 같은 규칙).
-      //
-      // `e.message` 를 쓰면 안 된다 — axios 가 감싼 "Request failed with status code 400"
-      // 이 그대로 나간다. 사용자에게 할 말("인증 코드가 올바르지 않아요")은 응답 본문에
-      // 들어 있다.
-      setReauthError(serverErrorMessage(e, t("withdraw.failed")));
+    } catch {
+      setReauthError(t("withdraw.failed"));
       setBusy(false);
     } finally {
       runningRef.current = false;
@@ -186,10 +194,10 @@ export function WithdrawDialog({
 
   const onSendCode = () => {
     sendCode.mutate(undefined, {
-      onError: (e) => {
+      onError: () => {
         // 확인 실패와 같은 자리에 붙인다 — 한쪽만 토스트로 띄우면 같은 흐름 안에서
-        // 오류가 두 가지 방식으로 나타난다.
-        setReauthError(serverErrorMessage(e, t("withdraw.failed")));
+        // 오류가 두 가지 방식으로 나타난다. 서버 글 대신 화면 글.
+        setReauthError(t("withdraw.sendCodeFailed"));
       },
       onSuccess: () => {
         setSentAt(Date.now());
@@ -216,7 +224,6 @@ export function WithdrawDialog({
         kind="failure"
         size="medium"
         title={t("withdraw.loadFailed")}
-        description={tc("apiError")}
         primaryAction={{
           label: dsT("common.retry"),
           onClick: () => void checkQ.refetch(),
@@ -242,9 +249,6 @@ export function WithdrawDialog({
   } else if (step === "impact") {
     body = (
       <div className="flex flex-col gap-x4">
-        <p className="m-0 text-t5 text-fg-neutral-muted">
-          {t("withdraw.intro")}
-        </p>
         <ImpactList counts={check!} t={t} />
         {/* 되돌릴 수 없는 것 둘 — 여기서 말하지 않으면 사용자가 알 길이 없다. */}
         <Callout tone="warning" title={t("withdraw.irreversibleTitle")}>
@@ -273,9 +277,6 @@ export function WithdrawDialog({
   } else {
     body = (
       <div className="flex flex-col gap-x4">
-        <p className="m-0 text-t5 text-fg-neutral-muted">
-          {t("withdraw.reauthIntro")}
-        </p>
         {method === "password" ? (
           <>
             <Field
@@ -307,31 +308,29 @@ export function WithdrawDialog({
           </>
         ) : (
           <>
-            <Field
-              label={t("withdraw.codeLabel")}
-              description={t("withdraw.codeRule")}
-              invalid={!!reauthError}
-              errorMessage={reauthError}
-            >
-              <InputOTP
-                id="withdraw-code"
-                value={code}
-                placeholder={t("withdraw.codePlaceholder")}
-                onValueChange={(v) => {
-                  setCode(v);
-                  setReauthError(null);
-                }}
-              />
-            </Field>
+            {/* 칸 → [코드 받기] 12(input-otp.md ⓓ · 예제 mt-x3) — 본문 쌓기(16)와 따로 묶는다 */}
             <div className="flex flex-col items-start gap-x3">
+              <Field
+                label={t("withdraw.codeLabel")}
+                description={t("withdraw.codeRule")}
+                invalid={!!reauthError}
+                errorMessage={reauthError}
+              >
+                <InputOTP
+                  id="withdraw-code"
+                  value={code}
+                  placeholder={t("withdraw.codePlaceholder")}
+                  onValueChange={(v) => {
+                    setCode(v);
+                    setReauthError(null);
+                  }}
+                />
+              </Field>
               <InputOTPResend
                 sentAt={sentAt}
                 codeInputId="withdraw-code"
                 onResend={onSendCode}
               />
-              <p className="m-0 text-t4 text-fg-neutral-subtle">
-                {t("withdraw.codeHint")}
-              </p>
             </div>
             <div className="flex justify-end">
               <Button
@@ -396,7 +395,17 @@ export function WithdrawDialog({
         form={form}
         dirty={dirty}
       >
-        <ResponsiveDialogContent title={t("withdraw.title")}>
+        <ResponsiveDialogContent
+          title={t("withdraw.title")}
+          // 안내 첫 문장은 표면 머리 설명(R7)이다 — 점검 · 막힘 · 실패 표면에는 두지 않는다
+          description={
+            form
+              ? step === "impact"
+                ? t("withdraw.intro")
+                : t("withdraw.reauthIntro")
+              : undefined
+          }
+        >
           <ResponsiveDialogBody>{body}</ResponsiveDialogBody>
           {footer}
         </ResponsiveDialogContent>

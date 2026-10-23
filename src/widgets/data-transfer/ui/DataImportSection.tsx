@@ -244,6 +244,25 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
       ]
     : [];
   const buttonSize = wide ? "medium" : "large";
+  const mappingBar = analysis ? (
+    <ActionBar mobile={mobile}>
+      <Button variant="neutralWeak" size={buttonSize} onClick={reset}>
+        {t("import.prev")}
+      </Button>
+      <Button
+        variant="neutralSolid"
+        size={buttonSize}
+        onClick={runImport}
+        disabled={!canExecute}
+      >
+        {t("import.doImport", {
+          count: dupSkip
+            ? analysis.validRows - analysis.duplicateCount
+            : analysis.validRows,
+        })}
+      </Button>
+    </ActionBar>
+  ) : null;
 
   return (
     <div className={mobile ? "flex flex-col gap-x6" : "flex flex-col gap-x2"}>
@@ -441,7 +460,12 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             )}
           </DataSection>
 
-          <DataSection mobile={mobile} title={t("import.optionsTitle")} list>
+          <DataSection
+            mobile={mobile}
+            title={t("import.optionsTitle")}
+            list
+            footer={mobile ? undefined : mappingBar}
+          >
             {(titleId) => (
               <>
                 <ListCheckGroup aria-labelledby={titleId}>
@@ -463,39 +487,21 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
                 {/* 오타가 그대로 새 카테고리가 되던 자리(QA #59) — 실행 전에 이름을 보여 주고,
                     마음에 안 들면 바로 위 체크를 끄면 미분류로 들어간다. */}
                 {autoCat && analysis.newCategoryCount > 0 && (
-                  <div className="px-global-gutter pt-x3 pb-x4">
-                    <CategoryNames
-                      t={t}
-                      title={t("import.newCatTitle", {
-                        count: analysis.newCategoryCount,
-                      })}
-                      names={analysis.newCategories ?? []}
-                      total={analysis.newCategoryCount}
-                      hint={t("import.newCatHint")}
-                    />
-                  </div>
+                  <CategoryList
+                    t={t}
+                    title={t("import.newCatTitle", {
+                      count: analysis.newCategoryCount,
+                    })}
+                    names={analysis.newCategories ?? []}
+                    total={analysis.newCategoryCount}
+                    hint={t("import.newCatHint")}
+                  />
                 )}
               </>
             )}
           </DataSection>
 
-          <ActionBar mobile={mobile}>
-            <Button variant="neutralWeak" size={buttonSize} onClick={reset}>
-              {t("import.prev")}
-            </Button>
-            <Button
-              variant="neutralSolid"
-              size={buttonSize}
-              onClick={runImport}
-              disabled={!canExecute}
-            >
-              {t("import.doImport", {
-                count: dupSkip
-                  ? analysis.validRows - analysis.duplicateCount
-                  : analysis.validRows,
-              })}
-            </Button>
-          </ActionBar>
+          {mobile && mappingBar}
         </>
       )}
 
@@ -505,33 +511,34 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             kind="done"
             size="large"
             as="h2"
-            title={t("import.doneTitle")}
-            description={
-              <>
-                <span className="block">
-                  {t("import.doneCount", { count: result.imported })}
-                </span>
-                <span className="block">
-                  {t("import.doneDetail", {
-                    skipped: result.skipped,
-                    failed: result.failed,
-                  })}
-                </span>
-              </>
-            }
+            title={t("import.doneTitle", {
+              count: result.imported.toLocaleString(),
+            })}
+            description={t("import.doneDetail", {
+              skipped: result.skipped.toLocaleString(),
+              failed: result.failed.toLocaleString(),
+            })}
             secondaryAction={{ label: t("import.another"), onClick: reset }}
           />
 
-          {/* 만들어진 카테고리 — 미리보기(매핑 단계)에서 본 것과 실제가 같은지 확인시킨다. */}
+          {/* 만들어진 카테고리 — 미리보기(매핑 단계)에서 본 것과 실제가 같은지 확인시킨다(ds List 줄, 지시서 50). */}
           {(result.createdCategories ?? []).length > 0 && (
-            <CategoryNames
-              t={t}
+            <DataSection
+              mobile={mobile}
               title={t("import.createdCatTitle", {
                 count: result.createdCategoryCount,
               })}
-              names={result.createdCategories ?? []}
-              total={result.createdCategoryCount}
-            />
+              heading="listHeader"
+              list
+            >
+              {() => (
+                <CategoryList
+                  t={t}
+                  names={result.createdCategories ?? []}
+                  total={result.createdCategoryCount}
+                />
+              )}
+            </DataSection>
           )}
 
           {/* 종전엔 "실패 2" 숫자뿐이라 CSV 를 고칠 수가 없었다(QA #61). */}
@@ -539,6 +546,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             <DataSection
               mobile={mobile}
               title={t("import.failuresTitle", { count: result.failed })}
+              heading="listHeader"
               list
             >
               {() => (
@@ -569,7 +577,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
           <ActionBar mobile={mobile}>
             <Button
               variant="neutralSolid"
-              size={mobile || !wide ? "large" : "medium"}
+              size="large"
               onClick={() => navigate("/desk/expense")}
             >
               {t("import.toLedger")}
@@ -605,7 +613,8 @@ function StepHeader({ step: current, t }: { step: Step; t: TFn }) {
   );
 }
 
-function CategoryNames({
+/** 카테고리 이름 줄 — ds List 줄(제목 하나씩). 서버가 상한까지만 줘서 나머지는 "외 N개" 로 센다. */
+function CategoryList({
   t,
   title,
   names,
@@ -613,27 +622,30 @@ function CategoryNames({
   hint,
 }: {
   t: TFn;
-  title: string;
+  /** 주면 목록 제목(R5 mediumWeak) — 목록 구역 머리가 따로 있으면 주지 않는다 */
+  title?: string;
   names: string[];
   total: number;
   hint?: string;
 }) {
   return (
-    <section className="flex flex-col gap-x2">
-      <ListHeader variant="boldSolid" className="px-0 py-x1">
-        {title}
-      </ListHeader>
-      <div className="flex flex-wrap items-center gap-x1_5">
+    <>
+      {title && <ListHeader>{title}</ListHeader>}
+      <List>
         {names.map((n) => (
-          <Badge key={n}>{n}</Badge>
+          <ListItem key={n} title={n} />
         ))}
-        {total > names.length && (
-          <span className="text-t3 text-fg-neutral-subtle">
-            {t("import.newCatMore", { count: total - names.length })}
-          </span>
-        )}
-      </div>
-      {hint && <p className="m-0 text-t4 text-fg-neutral-subtle">{hint}</p>}
-    </section>
+      </List>
+      {total > names.length && (
+        <p className="m-0 px-global-gutter pt-x3 text-t4 text-fg-neutral-subtle">
+          {t("import.newCatMore", { count: total - names.length })}
+        </p>
+      )}
+      {hint && (
+        <p className="m-0 px-global-gutter pt-x3 pb-x4 text-t4 text-fg-neutral-subtle">
+          {hint}
+        </p>
+      )}
+    </>
   );
 }

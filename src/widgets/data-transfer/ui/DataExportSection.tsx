@@ -323,6 +323,36 @@ function ExportPane({ mobile }: { mobile: boolean }) {
     preview?.find((tb) => tb.type === previewTab) ?? preview?.[0] ?? null;
   const buttonSize = wide ? "medium" : "large";
 
+  const maskCheckbox = (
+    <Checkbox
+      checked={mask}
+      onCheckedChange={(c) => setMask(c === true)}
+      label={t("section.maskSensitive")}
+    />
+  );
+  const actionBar = (
+    <ActionBar mobile={mobile}>
+      <Button
+        variant="neutralWeak"
+        size={buttonSize}
+        onClick={handlePreview}
+        loading={previewing}
+        disabled={!selected.length || customInvalid}
+      >
+        {t("preview")}
+      </Button>
+      <Button
+        variant="neutralSolid"
+        size={buttonSize}
+        onClick={handleExport}
+        loading={downloading}
+        disabled={!selected.length || customInvalid}
+      >
+        {t("export")}
+      </Button>
+    </ActionBar>
+  );
+
   return (
     <div className={mobile ? "flex flex-col gap-x6" : "flex flex-col gap-x2"}>
       {/* 1. 기간 — 폰은 1열 가로형(Q5 5B), 데스크톱 · 태블릿은 5열 */}
@@ -354,7 +384,6 @@ function ExportPane({ mobile }: { mobile: boolean }) {
                       <PeriodField
                         from={customFrom}
                         to={customTo}
-                        grow
                         label={t("section.customRangeLabel")}
                         invalid={customInvalid}
                         errorMessage={t("section.rangeIncomplete")}
@@ -381,9 +410,11 @@ function ExportPane({ mobile }: { mobile: boolean }) {
       >
         {(titleId) => (
           <>
+            {/* 오류 글 · [다시 시도] 는 줄과 같은 왼쪽 24(목록 구역은 여백 없는 카드 · 폰은 페이지 여백 밖까지 폄) */}
             <Field
               invalid={countsError}
               errorMessage={t("section.countsFailed")}
+              className="[&>[data-slot=field-footer]]:px-global-gutter"
             >
               <ListCheckGroup aria-labelledby={titleId}>
                 <ListCheckItem
@@ -421,10 +452,11 @@ function ExportPane({ mobile }: { mobile: boolean }) {
               </ListCheckGroup>
             </Field>
             {countsError && (
-              <div>
+              <div className="px-global-gutter pb-x3">
                 <Button
                   variant="ghost"
                   size="small"
+                  flush="left"
                   onClick={() => setCountsTry((n) => n + 1)}
                 >
                   {dsT("common.retry")}
@@ -436,7 +468,18 @@ function ExportPane({ mobile }: { mobile: boolean }) {
       </DataSection>
 
       {/* 3. 파일 형식 — 폰은 1열 가로형, 데스크톱 · 태블릿은 3열 */}
-      <DataSection mobile={mobile} title={t("fileFormat")}>
+      <DataSection
+        mobile={mobile}
+        title={t("fileFormat")}
+        footer={
+          mobile ? undefined : (
+            <>
+              {maskCheckbox}
+              {actionBar}
+            </>
+          )
+        }
+      >
         {(titleId) => (
           <RadioSelectBoxGroup
             aria-labelledby={titleId}
@@ -454,6 +497,8 @@ function ExportPane({ mobile }: { mobile: boolean }) {
                   label={`${f.label} ${f.ext}`}
                   description={t(f.descKey)}
                   layout={mobile ? "horizontal" : "vertical"}
+                  // 3열은 정보를 줄이고 컨트롤(라디오)을 뺀다(select-box.md:47 · 예제 :216 — 이 화면의 파일 형식)
+                  control={mobile ? "radio" : "none"}
                 />
               );
             })}
@@ -461,32 +506,13 @@ function ExportPane({ mobile }: { mobile: boolean }) {
         )}
       </DataSection>
 
-      {/* 민감 정보 가리기 + 액션 */}
-      <Checkbox
-        checked={mask}
-        onCheckedChange={(c) => setMask(c === true)}
-        label={t("section.maskSensitive")}
-      />
-      <ActionBar mobile={mobile}>
-        <Button
-          variant="neutralWeak"
-          size={buttonSize}
-          onClick={handlePreview}
-          loading={previewing}
-          disabled={!selected.length || customInvalid}
-        >
-          {t("preview")}
-        </Button>
-        <Button
-          variant="neutralSolid"
-          size={buttonSize}
-          onClick={handleExport}
-          loading={downloading}
-          disabled={!selected.length || customInvalid}
-        >
-          {t("export")}
-        </Button>
-      </ActionBar>
+      {/* 민감 정보 가리기 + 액션 — 데스크톱은 마지막 카드 안 바닥 오른쪽, 폰은 화면 바닥 고정 */}
+      {mobile && (
+        <>
+          {maskCheckbox}
+          {actionBar}
+        </>
+      )}
 
       {/* 미리보기 결과 — 모든 폭에서 표(0 ~ 767 은 표와 함께 가로 스크롤) */}
       {preview && activeTab && (

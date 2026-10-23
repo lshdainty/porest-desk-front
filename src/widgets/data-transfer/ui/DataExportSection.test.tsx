@@ -153,11 +153,6 @@ describe("기간 · 형식 Select Box (I-05 41 · 43)", () => {
     // 펼침은 고른 상자 안에 있고, 그 안에 기간 칸(Date Picker 기간)이 하나 있다
     const box = radios[4]!.closest('[data-slot="select-box"]')!;
     expect(box.textContent).toContain("section.customRangeLabel");
-    // 값은 말줄임이 아니라 keep-all 줄바꿈이고 칸이 글을 따라 커진다(1024 5열 상자)
-    const field = box.querySelector('[data-slot="input-button"]')!;
-    expect(field.className).toContain("break-keep");
-    expect(field.className).toContain("whitespace-normal");
-    expect(field.className).toContain("overflow-visible");
   });
 });
 
@@ -246,5 +241,53 @@ describe("내보내기 결과 알림 (I-05 47)", () => {
     expect(state.toastError).toHaveLength(1);
     expect(state.toastError[0]!.msg).toBe("section.exportStalled");
     expect(state.toastError[0]!.opts.action?.label).toBeTruthy();
+  });
+});
+
+describe("검수 반영 — 카드 안 바닥 · 폰 바 · 오류 들임 · 형식 컨트롤(I-05 42 · 43 · 45)", () => {
+  it("데스크톱 체크와 버튼 줄은 마지막 카드 안 바닥 오른쪽이다(회색 바닥 위가 아니다)", async () => {
+    await render(false);
+    const bar = container.querySelector('[data-slot="data-action-bar"]')!;
+    expect(bar.closest('[data-slot="card"]')).not.toBeNull();
+    expect(bar.className).toContain("justify-end");
+    const cards = [
+      ...container
+        .querySelector('[role="tabpanel"]')!
+        .querySelectorAll('[data-slot="card"]'),
+    ];
+    expect(cards[cards.length - 1]!.contains(bar)).toBe(true);
+  });
+
+  it("폰 바는 sticky 로 자기 높이만큼 자리를 차지한다 — 고정 자리 비움 숫자가 없다", async () => {
+    await render(true);
+    const bar = container.querySelector('[data-slot="data-action-bar"]')!;
+    expect(bar.className).toContain("sticky");
+    expect(bar.className).not.toContain("fixed");
+    expect(bar.closest('[data-slot="card"]')).toBeNull();
+    expect(container.innerHTML).not.toContain(
+      "spacing-x16)+var(--spacing-x12)",
+    );
+  });
+
+  it("데스크톱 3열 형식 상자는 라디오 컨트롤이 없고, 폰 1열은 있다(select-box.md:47)", async () => {
+    await render(false);
+    const marks = (g: HTMLElement) =>
+      g.querySelectorAll(
+        '[data-slot="select-box-control"], [data-slot="radiomark"]',
+      ).length;
+    const desktopFormat = groups()[1]!;
+    const desktopPeriod = groups()[0]!;
+    expect(marks(desktopFormat)).toBeLessThan(marks(desktopPeriod));
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render(true);
+    expect(marks(groups()[1]!)).toBe((marks(groups()[0]!) / 5) * 3);
+  });
+
+  it("건수 불러오기 실패 오류 글은 줄과 같은 왼쪽 24(px-global-gutter)다", async () => {
+    state.countsFail = true;
+    await render(false);
+    const field = container.querySelector('[data-slot="field"][data-invalid]')!;
+    expect(field.className).toContain("px-global-gutter");
   });
 });

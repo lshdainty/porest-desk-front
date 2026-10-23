@@ -15,6 +15,8 @@ declare global {
 const state = vi.hoisted(() => ({
   check: null as Record<string, unknown> | null,
   verifyError: null as unknown,
+  verifyCodeError: null as unknown,
+  withdrawError: null as unknown,
   verifiedPassword: null as string | null,
   withdrew: null as Record<string, unknown> | null,
   onWithdrawnCalls: 0,
@@ -43,6 +45,7 @@ vi.mock("../model/useWithdrawal", () => ({
   useVerifyReauthEmailCodeMutation: () => ({
     mutateAsync: async (c: string) => {
       state.verifiedCode = c;
+      if (state.verifyCodeError) throw state.verifyCodeError;
       return "ticket";
     },
     isPending: false,
@@ -58,6 +61,7 @@ vi.mock("../model/useWithdrawal", () => ({
   useWithdrawMutation: () => ({
     mutateAsync: async (v: Record<string, unknown>) => {
       if (state.withdrawHang) await new Promise(() => {});
+      if (state.withdrawError) throw state.withdrawError;
       state.withdrew = v;
     },
     isPending: false,
@@ -154,6 +158,8 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   state.check = null;
   state.verifyError = null;
+  state.verifyCodeError = null;
+  state.withdrawError = null;
   state.verifiedPassword = null;
   state.withdrew = null;
   state.onWithdrawnCalls = 0;
@@ -283,13 +289,13 @@ describe("막는 게 없을 때", () => {
   });
 
   /**
-   * 실패 문구는 **서버가 쓴 문장**이어야 한다.
+   * 실패 문구는 **화면 글**이어야 한다(input-otp.md "서버가 보낸 글을 그대로 보이지 않고 화면 글로").
    *
    * axios 는 실패를 Error 로 감싸는데 그 `message` 는 "Request failed with status code
-   * 400" 이다 — 그대로 붙이면 사용자가 영문 상태 코드를 읽게 된다(2026-09-17 QA 스크린샷).
-   * 정작 할 말은 응답 본문에 들어 있다.
+   * 400" 이다(2026-09-17 QA). 서버가 본문에 보낸 문장도 그대로 보이지 않는다 — 서버 글이
+   * 코드 이름 · 영문일 수 있고 웹 · 앱이 같은 말을 하게 하려는 것이다.
    */
-  it("확인에 실패하면 서버 문장을 칸 밑에 붙인다 — axios 원문이 나오면 안 된다", async () => {
+  it("비밀번호가 틀리면 서버 글 대신 화면 글을 칸 밑에 붙인다", async () => {
     state.verifyError = Object.assign(
       new Error("Request failed with status code 400"),
       { response: { data: { message: "비밀번호가 올바르지 않아요" } } },
@@ -302,14 +308,35 @@ describe("막는 게 없을 때", () => {
     await act(async () => click("withdraw.confirm"));
 
     const text = document.body.textContent ?? "";
-    expect(text).toContain("비밀번호가 올바르지 않아요");
+    expect(text).toContain("currentPasswordInvalid");
+    expect(text).not.toContain("비밀번호가 올바르지 않아요");
     expect(text).not.toContain("Request failed with status code");
     expect(state.withdrew).toBeNull();
   });
 
-  it("서버가 아무 말도 안 하면 이 화면의 문구를 쓴다", async () => {
-    state.verifyError = new Error("Network Error");
+  it("코드가 틀리면 서버 글 대신 '코드가 맞지 않거나 시간이 지났어요' 화면 글이다", async () => {
+    state.verifyCodeError = Object.assign(new Error("x"), {
+      response: { data: { message: "AUTH_031" } },
+    });
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    act(() => click("withdraw.useEmailCode"));
+    const input = document.getElementById("withdraw-code") as HTMLInputElement;
+    const e = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(e, "clipboardData", {
+      value: { getData: () => "123456" },
+    });
+    act(() => {
+      input.dispatchEvent(e);
+    });
+    await act(async () => click("withdraw.confirm"));
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("withdraw.codeWrong");
+    expect(text).not.toContain("AUTH_031");
+  });
 
+  it("해지 요청이 실패하면 해지 실패 문구를 쓴다", async () => {
+    state.withdrawError = new Error("Network Error");
     act(() => click("withdraw.next"));
     await flushClickGuard();
     const pw = document.getElementById("withdraw-password") as HTMLInputElement;
@@ -521,7 +548,7 @@ describe("해지하는 동안 — 덮개(I-05 37)", () => {
     expect(
       document.body.querySelector('[data-slot="busy-overlay"]'),
     ).toBeNull();
-    expect(document.body.textContent).toContain("withdraw.failed");
+    expect(document.body.textContent).toContain("currentPasswordInvalid");
   });
 });
 
@@ -549,5 +576,41 @@ describe("바뀐 값이 있으면 닫기 전에 묻는다(I-05 31)", () => {
     });
     expect(closed).toBe(0);
     expect(document.body.querySelector('[role="alertdialog"]')).not.toBeNull();
+  });
+});
+
+describe("머리 설명 · [코드 받기] 자리(I-05 33 · 35)", () => {
+  it("안내 첫 문장은 시트 머리 설명(R7) 자리다 — 본문 문단이 아니다", () => {
+    state.check = CLEAR;
+    render();
+    const desc = document.body.querySelector(
+      '[data-slot="bottom-sheet-description"]',
+    );
+    expect(desc?.textContent).toBe("withdraw.intro");
+    const body = document.body.querySelector('[data-slot="bottom-sheet-body"]');
+    expect(body?.textContent).not.toContain("withdraw.intro");
+  });
+
+  it("2 단계도 머리 설명이고, 막힘 · 실패 표면에는 머리 설명이 없다", async () => {
+    state.check = CLEAR;
+    render();
+    act(() => click("withdraw.next"));
+    expect(
+      document.body.querySelector('[data-slot="bottom-sheet-description"]')
+        ?.textContent,
+    ).toBe("withdraw.reauthIntro");
+  });
+
+  it("[코드 받기] 는 칸 묶음 바로 아래 12(gap-x3)이고 스팸함 줄은 없다", async () => {
+    state.check = CLEAR;
+    render();
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    act(() => click("withdraw.useEmailCode"));
+    const resend = document.body.querySelector(
+      '[data-slot="input-otp-resend"]',
+    )!;
+    expect(resend.parentElement!.className).toContain("gap-x3");
+    expect(document.body.textContent).not.toContain("withdraw.codeHint");
   });
 });

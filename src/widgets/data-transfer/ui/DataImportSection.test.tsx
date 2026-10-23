@@ -482,3 +482,41 @@ describe("가져오는 동안 덮개 (I-05 49)", () => {
     ).toBeNull();
   });
 });
+
+describe("검수 반영 — 완료 화면(I-05 50)", () => {
+  it("제목은 쉼표가 있는 건수 '{n}건을 가져왔어요' 이고 설명은 건너뛴 · 못 가져온 건수다", async () => {
+    await toDone({ ...baseResult, imported: 1234567 });
+    const text = container.querySelector(
+      '[data-slot="result-section"]',
+    )!.textContent!;
+    expect(text).toContain('import.doneTitle{"count":"1,234,567"}');
+    expect(text).toContain("import.doneDetail");
+    expect(text).not.toContain("import.doneCount");
+  });
+
+  it("만든 카테고리는 Badge 가 아니라 List 줄이다", async () => {
+    await toDone({
+      ...baseResult,
+      createdCategories: ["식비", "식비 > 커피"],
+      createdCategoryCount: 2,
+    });
+    const items = [
+      ...container.querySelectorAll('[data-slot="list-item"]'),
+    ].map((e) => e.textContent);
+    expect(items).toContain("식비");
+    expect(items).toContain("식비 > 커피");
+    expect(container.querySelectorAll('[data-slot="badge"]')).toHaveLength(0);
+  });
+
+  it("[가계부로 가기] 는 모든 폭에서 large 48 이다", async () => {
+    await toDone(baseResult);
+    expect(btn("import.toLedger")!.className).toContain("h-12");
+  });
+
+  it("목록 머리는 R5 mediumWeak 목록 제목이다(boldSolid 아님)", async () => {
+    await toDone(baseResult);
+    const header = container.querySelector('[data-slot="list-header"]')!;
+    expect(header.className).toContain("text-fg-neutral-subtle");
+    expect(header.className).not.toContain("text-fg-neutral ");
+  });
+});
