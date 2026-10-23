@@ -17,6 +17,8 @@ const FILES = [
   "side-navigation/side-navigation-item.tsx",
   "tabs/tabs-variants.ts",
   "tabs/tabs.tsx",
+  "toggle/toggle-variants.ts",
+  "toggle/toggle.tsx",
 ];
 
 const source = (file: string) =>
