@@ -308,7 +308,7 @@ describe("막는 게 없을 때", () => {
     await act(async () => click("withdraw.confirm"));
 
     const text = document.body.textContent ?? "";
-    expect(text).toContain("currentPasswordInvalid");
+    expect(text).toContain("withdraw.passwordWrong");
     expect(text).not.toContain("비밀번호가 올바르지 않아요");
     expect(text).not.toContain("Request failed with status code");
     expect(state.withdrew).toBeNull();
@@ -548,7 +548,7 @@ describe("해지하는 동안 — 덮개(I-05 37)", () => {
     expect(
       document.body.querySelector('[data-slot="busy-overlay"]'),
     ).toBeNull();
-    expect(document.body.textContent).toContain("currentPasswordInvalid");
+    expect(document.body.textContent).toContain("withdraw.passwordWrong");
   });
 });
 
@@ -601,7 +601,7 @@ describe("머리 설명 · [코드 받기] 자리(I-05 33 · 35)", () => {
     ).toBe("withdraw.reauthIntro");
   });
 
-  it("[코드 받기] 는 칸 묶음 바로 아래 12(gap-x3)이고 스팸함 줄은 없다", async () => {
+  it("[코드 받기] 는 칸 묶음 바로 아래 12(gap-x3)이고 스팸함 안내는 그 아래 한 줄이다", async () => {
     state.check = CLEAR;
     render();
     act(() => click("withdraw.next"));
@@ -611,6 +611,6 @@ describe("머리 설명 · [코드 받기] 자리(I-05 33 · 35)", () => {
       '[data-slot="input-otp-resend"]',
     )!;
     expect(resend.parentElement!.className).toContain("gap-x3");
-    expect(document.body.textContent).not.toContain("withdraw.codeHint");
+    expect(resend.nextElementSibling?.textContent).toBe("withdraw.codeHint");
   });
 });

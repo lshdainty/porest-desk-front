@@ -175,7 +175,7 @@ export function WithdrawDialog({
     } catch {
       setReauthError(
         method === "password"
-          ? t("currentPasswordInvalid")
+          ? t("withdraw.passwordWrong")
           : t("withdraw.codeWrong"),
       );
       setBusy(false);
@@ -224,6 +224,7 @@ export function WithdrawDialog({
         kind="failure"
         size="medium"
         title={t("withdraw.loadFailed")}
+        description={t("withdraw.loadFailedDesc")}
         primaryAction={{
           label: dsT("common.retry"),
           onClick: () => void checkQ.refetch(),
@@ -331,6 +332,10 @@ export function WithdrawDialog({
                 codeInputId="withdraw-code"
                 onResend={onSendCode}
               />
+              {/* 스팸함 안내 — 해부에는 없는 줄이지만 사용자 결정(10-23)으로 [코드 받기] 아래 R9 한 줄로 둔다 */}
+              <p className="m-0 text-t4 text-fg-neutral-subtle">
+                {t("withdraw.codeHint")}
+              </p>
             </div>
             <div className="flex justify-end">
               <Button

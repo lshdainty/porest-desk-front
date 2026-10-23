@@ -1295,16 +1295,18 @@ user,withdraw.reasonPlaceholder,알려주면 다음에 더 낫게 만들게요,T
 user,withdraw.next,계속,Continue
 user,withdraw.confirm,해지하기,Stop using 그루 담다
 user,withdraw.reauthIntro,본인이 맞는지 한 번만 더 확인할게요.,"Just once more, let us confirm it is you."
-user,withdraw.useEmailCode,비밀번호가 없나요? 메일로 코드 받기,No password? Get a code by email
+user,withdraw.useEmailCode,비밀번호가 없다면 메일로 코드 받기,No password? Get a code by email
 user,withdraw.usePassword,비밀번호로 확인하기,Use my password instead
 user,withdraw.codeLabel,인증 코드,Verification code
 user,withdraw.codePlaceholder,6자리 숫자,6 digits
+user,withdraw.codeHint,메일함에 코드가 안 보이면 스팸함도 확인해주세요.,"If you do not see it, check your spam folder."
 user,withdraw.sendCode,코드 받기,Send code
 user,withdraw.resendCode,다시 받기,Send again
 user,withdraw.codeSent,메일로 코드를 보냈어요.,We sent a code to your email.
 user,withdraw.codeRule,10분 안에 입력해주세요 · 5번 틀리면 다시 받아요.,"Enter it within 10 minutes · After 5 wrong tries, request a new code."
 user,withdraw.codeIncomplete,인증 코드 6자리를 입력해주세요.,Enter the 6-digit verification code.
 user,withdraw.codeWrong,코드가 맞지 않거나 시간이 지났어요. 확인하거나 다시 받아주세요.,The code is wrong or has expired. Check it or request a new one.
+user,withdraw.passwordWrong,비밀번호가 맞지 않아요. 다시 확인해주세요.,That password doesn't match. Please check it again.
 user,withdraw.sendCodeFailed,코드를 보내지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not send the code. Please try again shortly.
 user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not stop your 그루 담다 account. Please try again shortly.
 user,withdraw.blockedSubscription,구독이 남아 있어 아직 해지할 수 없어요.,"You still have an active subscription, so you cannot stop using 그루 담다 yet."
@@ -1312,6 +1314,7 @@ user,withdraw.blockedSubscriptionUntil,구독이 {{date}}까지 남아 있어 �
 user,withdraw.blockedOther,아직 해지할 수 없는 상태예요.,Your account cannot be stopped right now.
 user,withdraw.blockedHint,구독을 먼저 해지하면 남은 기간이 끝난 뒤에 이용 해지를 할 수 있어요.,Cancel your subscription first — you can stop using 그루 담다 once the paid period ends.
 user,withdraw.loadFailed,해지 정보를 불러오지 못했어요,Could not load your account details
+user,withdraw.loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again shortly.
 user,withdraw.closing,해지하는 중,Closing your account
 user,withdrawn.title,이용 해지가 끝났어요,Your 그루 담다 account is closed
 user,withdrawn.body,그동안 그루 담다를 써 주셔서 감사했습니다. 남은 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요.,Thank you for using 그루 담다. Remaining data is kept and then destroyed under our privacy policy.
@@ -2544,7 +2547,7 @@ export,import.failReason.amount,금액을 읽을 수 없어요,Couldn't read the
 export,import.failReason.type,수입 · 지출 구분을 읽을 수 없어요,Couldn't tell income from expense
 export,import.failReason.parentHasTx,이 카테고리에는 거래가 직접 달려 있어 하위 분류를 만들 수 없어요,This category has its own transactions so no subcategory can be created
 export,import.failReason.resolve,카테고리나 자산을 찾지 못했어요,Couldn't match the category or asset
-export,import.failReason.save,저장하는 중에 오류가 났어요,Something went wrong while saving
+export,import.failReason.save,저장하는 중에 오류가 나서 가져오지 못했어요,"Something went wrong while saving, so it could not be imported"
 export,import.failReason.unknown,알 수 없는 이유로 가져오지 못했어요,Couldn't import it for an unknown reason
 calendar,detail.start,시작,Start
 calendar,detail.end,종료,End
