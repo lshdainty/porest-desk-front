@@ -349,7 +349,7 @@ export function CategoryManager({
                 background: "var(--bg-surface)",
                 margin: "-24px -20px 0",
                 position: "sticky",
-                top: 56,
+                top: "calc(56px + env(safe-area-inset-top))",
                 zIndex: 5,
               }}
             >
@@ -381,27 +381,6 @@ export function CategoryManager({
                 gap: mobile ? 0 : 12,
               }}
             >
-              <div
-                className="flex items-center justify-between"
-                style={{ marginBottom: 8 }}
-              >
-                <h2 className="text-t4 font-medium text-fg-neutral-subtle">
-                  {t("listTitle", {
-                    kind:
-                      tab === "EXPENSE"
-                        ? t("expenseCategory")
-                        : t("incomeCategory"),
-                    count: tab === "EXPENSE" ? counts.expense : counts.income,
-                  })}
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setReorderOn((v) => !v)}
-                >
-                  {reorderMode ? t("reorderDone") : t("reorderEdit")}
-                </Button>
-              </div>
               {reorderMode ? (
                 // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
                 <div
@@ -431,13 +410,27 @@ export function CategoryManager({
                       className="w-full min-w-0 pl-9"
                     />
                   </div>
+                </div>
+              )}
+
+              {/* 목록 제목 — 불러오는 중 · 실패에는 개수가 없어 그리지 않는다 */}
+              {!isLoading && categories && (
+                <div className="mb-x2 flex items-center justify-between">
+                  <h2 className="text-t4 font-medium text-fg-neutral-subtle">
+                    {t("listTitle", {
+                      kind:
+                        tab === "EXPENSE"
+                          ? t("expenseCategory")
+                          : t("incomeCategory"),
+                      count: tab === "EXPENSE" ? counts.expense : counts.income,
+                    })}
+                  </h2>
                   <Button
-                    variant="accent"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setEditing({ kind: "new" })}
+                    onClick={() => setReorderOn((v) => !v)}
                   >
-                    <Plus size={14} strokeWidth={2.4} />
-                    {t("add")}
+                    {reorderMode ? t("reorderDone") : t("reorderEdit")}
                   </Button>
                 </div>
               )}

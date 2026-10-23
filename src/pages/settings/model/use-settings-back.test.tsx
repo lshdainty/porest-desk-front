@@ -25,6 +25,7 @@ afterEach(() => {
 });
 
 const devices = SECTIONS.find((s) => s.id === "devices")!;
+const hideAmounts = SECTIONS.find((s) => s.id === "hide-amounts")!;
 const categories = SECTIONS.find((s) => s.id === "categories")!;
 
 function Probe({ section }: { section: typeof devices | null }) {
@@ -81,6 +82,22 @@ describe("useSettingsBack", () => {
     });
     expect(router.state.location.pathname + router.state.location.search).toBe(
       "/desk/settings",
+    );
+    expect(router.state.historyAction).toBe("REPLACE");
+  });
+
+  it("금액 가리기를 새 탭으로 열고 ← 하면 계정으로 간다(parent: account)", async () => {
+    window.history.replaceState({ idx: 0 }, "", "/");
+    const router = mount(
+      ["/desk/settings?section=hide-amounts"],
+      0,
+      hideAmounts,
+    );
+    await act(async () => {
+      container.querySelector("button")!.click();
+    });
+    expect(router.state.location.pathname + router.state.location.search).toBe(
+      "/desk/settings?section=account",
     );
     expect(router.state.historyAction).toBe("REPLACE");
   });

@@ -172,6 +172,7 @@ export const SECTIONS: SectionDef[] = [
     icon: Eye,
     descKey: "hideAmounts.desc",
     hidden: true,
+    parent: "account",
   },
   // 계정 > 보안에서 들어온다. 목록에는 안 나온다.
   {
@@ -226,6 +227,8 @@ export const TEMP_BODY_PADDING: SectionId[] = [
   "memo-tags",
   "appearance",
   "notifications",
+  // data 는 걷지 않는다 — I-05 05-2 의 데이터 본문이 바깥 24 를 전제로 목록 · 바닥 바를 음수 여백으로 되돌려 쓴다.
+  // 걷으면 그 줄이 화면 밖으로 24 씩 나간다(디자인시스템 검수 10-23).
   "data",
   "account",
   "devices",
