@@ -399,7 +399,6 @@ expense,budget.exceeded,초과,Exceeded
 expense,budget.noBudget,설정된 예산이 없습니다,No budget set
 expense,categoryBreakdown,카테고리별 분석,Category Breakdown
 expense,deleteConfirm.title,거래 삭제,Delete transaction
-expense,deleteConfirm.message,이 거래를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.,Are you sure you want to delete this transaction? This action cannot be undone.
 expense,deleteConfirm.cancel,취소,Cancel
 expense,deleteConfirm.confirm,삭제,Delete
 expense,form.merchant,거래처,Merchant
@@ -1705,14 +1704,8 @@ expense,filter.title,필터,Filter
 expense,filter.reset,초기화,Reset
 expense,filter.apply,필터 적용,Apply filter
 expense,filter.period,기간,Period
-expense,filter.period.week,이번 주,This week
-expense,filter.period.month,이번 달,This month
-expense,filter.period.custom,직접 선택,Custom
-expense,filter.startDate,시작일,Start date
-expense,filter.endDate,종료일,End date
 expense,filter.dateError,시작일이 종료일보다 늦을 수 없습니다.,The start date cannot be later than the end date.
 expense,filter.txType,거래 종류,Transaction type
-expense,filter.countSelected,{{count}}개 선택,{{count}} selected
 expense,filter.amountRange,금액 범위,Amount range
 expense,filter.minAmount,최소 금액,Min amount
 expense,filter.maxAmount,최대 금액,Max amount
@@ -1720,11 +1713,10 @@ expense,filter.match,조건 맞추기,Condition matching
 expense,filter.matchAll,모두 일치,Match all
 expense,filter.matchAny,하나라도 일치,Match any
 expense,filter.matchHint,조건이 두 개 이상일 때 고를 수 있어요.,You can choose this once two or more conditions are set.
-expense,filter.addPeriod,+ 기간 추가,+ Add period
-expense,filter.addAmountRange,+ 구간 추가,+ Add range
+expense,filter.addPeriod,기간 추가,Add period
+expense,filter.addAmountRange,구간 추가,Add range
 expense,filter.periodAlwaysAnd,기간은 항상 함께 적용돼요.,Periods always apply on top of the other conditions.
 expense,filter.removeRow,이 줄 지우기,Remove this row
-expense,filter.chipLegend,한 번 더 누르면 '빼고'가 돼요.,Tap again to exclude it.
 expense,filter.excluded,{{count}}개 빼고,{{count}} excluded
 expense,filter.summaryFiltered,필터 적용,Filtered
 expense,filter.chipPeriods,기간 {{count}},{{count}} periods
@@ -2581,6 +2573,14 @@ expense,txm.loadFailedDesc,잠시 뒤에 다시 시도해주세요.,Please try a
 expense,txm.emptyFiltered,조건에 맞는 거래가 없어요,No transactions match
 expense,txm.emptyFilteredDesc,조건을 바꾸거나 지워 보세요.,Change or clear the filters.
 expense,filter.appliedGroup,적용한 필터,Applied filters
+expense,filter.matchAllDesc,걸린 조건을 모두 만족하는 거래만,Only transactions that meet all conditions
+expense,filter.matchAnyDesc,걸린 조건 중 하나라도 만족하면,Transactions that meet any condition
+expense,filter.modeGroup,고르는 방식,selection mode
+expense,filter.modeInclude,고른 것만,Only selected
+expense,filter.modeExclude,고른 것 빼고,All except selected
+expense,filter.amountUnit,원,KRW
+expense,filter.periodPick,기간 선택,Select period
+expense,filter.done,완료,Done
 expense,filter.chipMin,{{amount}} 이상,Min {{amount}}
 expense,filter.chipMax,{{amount}} 이하,Max {{amount}}
 todo,tdm.prevMonth,이전 달,Previous month
