@@ -1,4 +1,5 @@
-import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { chartColorOf, type ChartKey } from "@/shared/lib/groo/chart-palette";
+import { assignChartColors } from "@/shared/ds/chart";
 import type {
   ExpenseBudget,
   ExpenseCategory,
@@ -8,54 +9,52 @@ import { aggregateByParent } from "@/entities/expense";
 
 export type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-// groo chart palette 10색 — 카테고리 fallback (카테고리 자체 색이 없을 때만 사용).
-// `--color-chart-*` alias 사용 — 라이트/다크에서 base ↔ light variant 자동 swap.
-const CATEGORY_PALETTE = [
-  "var(--color-chart-blue)",
-  "var(--color-chart-green)",
-  "var(--color-chart-orange)",
-  "var(--color-chart-violet)",
-  "var(--color-chart-pink)",
-  "var(--color-chart-indigo)",
-  "var(--color-chart-red)",
-  "var(--color-chart-yellow)",
-  "var(--color-chart-brown)",
-  "var(--color-chart-gray)",
-];
-
 /**
- * 카테고리 지출 도넛 조각 — 부모 카테고리로 롤업 후 금액 내림차순.
- *
- * 데스크톱·모바일 대시보드가 같은 도넛을 그린다. 예전엔 두 컴포넌트가 같은
- * `useMemo` 를 통째로 복사해 갖고 있었는데, 둘 다 `t` 를 의존성에 안 적어
- * (언어를 바꿔도 라벨이 안 따라오는) 같은 결함을 나눠 갖고 있었다.
- * 메모이제이션은 컴파일러에 맡기고, 여기서는 계산만 한다.
+ * 카테고리 지출 도넛 조각 — 부모 카테고리로 롤업 후 금액 내림차순(큰 순서).
+ * 색은 여기서 정하지 않는다 — 저장된 hex 가 차트 10색의 기본 값이면 그 색 이름(`saved`), 아니면 null 로 두고
+ * ds `assignChartColors` 가 그 차트에서 쓰지 않은 색을 준다(I-06 18).
  */
-export function donutSegments(
+export type HomeSlice = {
+  id: string;
+  name: string;
+  amount: number;
+  saved: ChartKey | null;
+};
+
+export function categorySlices(
   breakdown: CategoryBreakdown[] | undefined,
   cats: ExpenseCategory[] | undefined,
-  t: (key: string) => string,
-): { value: number; color: string; label: string }[] {
+  uncategorizedLabel: string,
+): HomeSlice[] {
   const expenseOnly = (breakdown ?? []).filter(
     (c) => c.expenseType === "EXPENSE",
   );
   const catColorMap = new Map<number, string | null | undefined>();
   for (const cat of cats ?? []) catColorMap.set(cat.rowId, cat.color);
-  const items = aggregateByParent(expenseOnly)
+  return aggregateByParent(expenseOnly)
     .slice()
-    .sort((a, b) => b.totalAmount - a.totalAmount);
-  return items.map((c, i) => {
-    // 미분류는 카테고리 메타가 없어 색이 없다 — 팔레트 순번 색으로 떨어진다.
-    const raw =
-      c.categoryRowId != null ? catColorMap.get(c.categoryRowId) : undefined;
-    const color = raw
-      ? getPaletteByColor(raw).color
-      : (CATEGORY_PALETTE[i % CATEGORY_PALETTE.length] ?? "var(--bg-brand)");
-    return {
-      value: c.totalAmount,
-      color,
-      label: c.categoryName ?? t("uncategorized"),
-    };
+    .sort((a, b) => b.totalAmount - a.totalAmount)
+    .map((c, i) => ({
+      id: `${c.categoryRowId ?? "none"}-${i}`,
+      name: c.categoryName ?? uncategorizedLabel,
+      amount: c.totalAmount,
+      saved:
+        c.categoryRowId != null
+          ? chartColorOf(catColorMap.get(c.categoryRowId))
+          : null,
+    }));
+}
+
+/** 10개를 넘으면 상위 9 + 회색 "기타" — 색 배정까지 */
+export function colorSlices(slices: HomeSlice[], othersLabel: string) {
+  return assignChartColors(slices, {
+    colorOf: (s) => s.saved,
+    groupOthers: (rest) => ({
+      id: "others",
+      name: othersLabel,
+      amount: rest.reduce((a, c) => a + c.amount, 0),
+      saved: null,
+    }),
   });
 }
 
@@ -73,7 +72,6 @@ export function computeBudgetItems({
   budgets,
   cats,
   monthly,
-  warnThreshold,
   allLabel,
 }: {
   budgets: ExpenseBudget[];
@@ -81,7 +79,6 @@ export function computeBudgetItems({
   monthly:
     | { categoryBreakdown?: CategoryBreakdown[]; totalExpense?: number }
     | undefined;
-  warnThreshold: number;
   allLabel: string;
 }) {
   const catMap = new Map<number, ExpenseCategory>();
@@ -111,19 +108,14 @@ export function computeBudgetItems({
       b.categoryRowId == null
         ? totalExpense
         : (spentByCat.get(b.categoryRowId) ?? 0);
-    const pct = b.budgetAmount > 0 ? (spent / b.budgetAmount) * 100 : 0;
-    const state = pct > 100 ? "over" : pct > warnThreshold ? "warn" : "";
     const cat =
       b.categoryRowId != null ? catMap.get(b.categoryRowId) : undefined;
     return {
       rowId: b.rowId,
       categoryName: cat?.categoryName ?? b.categoryName ?? allLabel,
-      icon: cat?.icon ?? "tag",
-      color: cat?.color,
       budgetAmount: b.budgetAmount,
       spent,
-      pct,
-      state,
+      isAll: b.categoryRowId == null,
     };
   });
 }
