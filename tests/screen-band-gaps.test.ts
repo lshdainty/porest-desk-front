@@ -43,7 +43,7 @@ describe("띠 화면 시작 · 끝 틈", () => {
 
   it("셸의 띠 하나(strip)는 위 8 을 두지 않는다", () => {
     const layout = read("src/widgets/layout/ui/AppLayout.tsx");
-    expect(layout).toContain('floor === "strip" && "bg-surface-default"');
+    expect(layout).toContain('floor === "strip" && "bg-bg-layer-default"');
     expect(layout).not.toMatch(/mt-x2/);
   });
 });

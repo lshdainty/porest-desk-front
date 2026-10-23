@@ -116,7 +116,7 @@ const Shell = () => {
           <main
             id="main"
             tabIndex={-1}
-            className="m-scroll m-fullscreen flex flex-col bg-bg-page outline-none"
+            className="m-scroll m-fullscreen flex flex-col bg-bg-layer-basement outline-none"
           >
             <SwipeActionsProvider>
               <Outlet
@@ -144,7 +144,7 @@ const Shell = () => {
           ref={scrollRef}
           className={cn(
             "m-scroll flex flex-col outline-none",
-            floor === "white" ? "bg-surface-default" : "bg-bg-page",
+            floor === "white" ? "bg-bg-layer-default" : "bg-bg-layer-basement",
           )}
           data-floor={floor}
           style={{ paddingBottom: BOTTOM_NAVIGATION_INSET }}
@@ -156,7 +156,7 @@ const Shell = () => {
             <div
               className={cn(
                 "flex flex-1 flex-col",
-                floor === "strip" && "bg-surface-default",
+                floor === "strip" && "bg-bg-layer-default",
               )}
             >
               <Outlet
@@ -180,14 +180,14 @@ const Shell = () => {
       <div className="flex h-svh">
         <SkipLink />
         <DesktopSidebar />
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg-page">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg-layer-basement">
           <DesktopHeader onOpenAdd={() => setAddOpen(true)} />
           {/* flex flex-col — 페이지가 flex-1 로 scroll wrapper 전체 height 를 차지하도록
               (viewport fit 패턴 지원). 자식 페이지가 자연 height 면 동일 동작. */}
           <main
             id="main"
             tabIndex={-1}
-            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col bg-bg-page outline-none"
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col bg-bg-layer-basement outline-none"
           >
             <Outlet
               context={{ onAddTx: () => setAddOpen(true), mobile: false }}
