@@ -429,7 +429,8 @@ export function CategoryBody({
       )}
       <ChartDonutLegend
         id={legendId}
-        className="mt-x4"
+        // 큰 글자에서 이름이 글자 하나씩 서지 않게 — 이름 칸은 5rem 밑으로 줄지 않고, 모자라면 % · 금액이 아래 줄로 내려간다
+        className="mt-x4 [&_[data-slot=chart-donut-row]]:flex-wrap [&_[data-slot=chart-donut-label]]:min-w-[5rem] [&_[data-slot=chart-donut-amount]]:ml-auto"
         items={slices.map((s) => ({
           key: s.id,
           label: s.name,
@@ -490,6 +491,8 @@ export function BudgetBody({ items }: { items: BudgetItem[] }) {
           value={b.spent}
           max={b.budgetAmount}
           formatValue={(v) => m(won(v))}
+          // 큰 글자에서 이름이 글자 하나씩 서지 않게 — 이름 칸은 5rem 밑으로 줄지 않고, 모자라면 오른쪽 글이 아래 줄로 내려간다
+          className="[&_[data-slot=progress-header]]:flex-wrap [&_[data-slot=progress-label]]:min-w-[5rem] [&_[data-slot=progress-status]]:ml-auto"
         />
       ))}
     </div>
@@ -676,8 +679,8 @@ export function TodayRows({
 export function TodayTotal({ total }: { total: number }) {
   const m = useMasked("home.todaySpend");
   return (
-    <span className="whitespace-nowrap text-t5 font-bold tabular-nums text-fg-neutral">
-      {m(MINUS + dsMoney(total))}
+    <span className="min-w-0 max-w-full text-t5 font-bold tabular-nums text-fg-neutral">
+      {withCommaBreaks(m(MINUS + dsMoney(total)))}
     </span>
   );
 }

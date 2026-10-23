@@ -69,7 +69,9 @@ describe("거래 줄 — ds List", () => {
     expect(q("[data-slot=tag-group]")?.className).toContain(
       "whitespace-nowrap",
     );
-    expect(q("[data-slot=tag-group-item-label]")?.className).toContain("truncate");
+    expect(q("[data-slot=tag-group-item-label]")?.className).toContain(
+      "truncate",
+    );
   });
 
   it("앞 타일 40 · 모서리 r3 · 줄 전체가 버튼", () => {

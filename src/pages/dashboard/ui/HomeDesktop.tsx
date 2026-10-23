@@ -468,6 +468,8 @@ function IncomeExpenseChart({
     <>
       <ChartLegendTiles
         id={legendId}
+        // 큰 글자에서 타일 안 금액이 타일 밖으로 나가지 않게 — 타일은 내용 폭 밑으로 줄지 않고, 모자라면 다음 줄로 내려간다
+        className="[&_[data-slot=chart-legend-tile]]:min-w-max"
         items={[
           {
             key: "income",

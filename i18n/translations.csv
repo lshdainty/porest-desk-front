@@ -1034,8 +1034,6 @@ dashboard,budget.remainingAmount,잔여 {{amount}},{{amount}} left
 dashboard,budget.exceededAmount,{{amount}} 초과,{{amount}} over
 dashboard,budget.categoryBudget,카테고리별 예산,Budget by Category
 dashboard,asset.netAsset,순자산,Net Assets
-dashboard,asset.totalAsset,총 자산,Total Assets
-dashboard,asset.totalDebt,총 부채,Total Debt
 dashboard,asset.assetTab,자산,Assets
 dashboard,asset.debtTab,부채,Debts
 dashboard,payment.method,결제수단,Method
@@ -2209,15 +2207,12 @@ dashboard,chart.savings,저축,Savings
 dashboard,all,전체,All
 dashboard,manage,관리,Manage
 dashboard,detail,자세히,Details
-dashboard,manageBudget,예산 관리,Manage Budget
 dashboard,balance,잔액,Balance
 dashboard,showAmount,금액 표시,Show amount
 dashboard,hideAmount,금액 가리기,Hide amount
 dashboard,vsLastMonth,지난달 대비,vs. last month
 dashboard,noLastMonth,지난달 기록 없음,No record for last month
 dashboard,categoryTitle,카테고리,Category
-dashboard,categoryEmpty,카테고리 데이터가 없습니다,No category data
-dashboard,categoryEmptyMobile,카테고리 데이터가 없어요,No category data
 dashboard,budget.empty,등록된 예산이 없어요,No budget set
 dashboard,expense.todaySpent,오늘 쓴 돈,Today's Spending
 dashboard,expense.noTodaySpent,오늘은 아직 쓴 돈이 없어요,No spending today yet
