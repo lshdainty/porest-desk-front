@@ -4,39 +4,23 @@ import { describe, expect, it } from "vitest";
 /**
  * 한국어 문구의 띄어쓰기 규범을 CSV 한 곳에서 지킨다.
  *
- * QA #128 이 메모의 `제목을 입력해주세요` 를 집었는데, 그때 세어 보니 같은 자리가
- * 16 곳이었고 이미 **25 곳은 `~해 주세요`** 로 쓰고 있었다. 규범이 없어서 갈린 게
- * 아니라, 규범을 적어 둔 자리가 없어서 새로 쓰는 문구마다 반반으로 갈렸다.
- *
- * 보조용언 '주다' 는 붙여 써도 맞춤법에 어긋나지 않는다(제47항 허용). 여기서 하나로
- * 모으는 이유는 옳고 그름이 아니라 **한 화면 안에서 글자가 갈리지 않게** 하려는 것이다
- * — 같은 폼의 두 칸이 `입력해 주세요` 와 `입력해주세요` 로 나오면 읽는 사람이 먼저 안다.
+ * 디자인 시스템 Writing(DESIGN.md "띄어쓰기")은 보조 용언을 **붙인다** — `해주세요` · `해보세요`.
+ * 예전엔 `해 주세요` 로 모으는 규범이었으나(QA #128, 사용자 결정이 아니었다) 스펙이 붙임으로 정해
+ * 2026-10-23 문구 PR 에서 뒤집었다. 목적은 그대로다 — 한 화면 안에서 글자가 갈리지 않게 한다.
  *
  * 번역 원본은 CSV 하나다(`src/locales/**` 는 생성물). 그래서 여기만 본다.
  */
 const CSV = "i18n/translations.csv";
 
-/** 붙여 쓴 보조용언 — 왼쪽을 오른쪽으로 고친다. */
-const JOINED_AUXILIARY = /해주세요/;
-
-/**
- * 디자인 시스템 Writing v106 은 보조 용언을 **붙인다**(`해주세요`) — 이 규범과 위 규범이 갈린다.
- * I-05 지시서가 정한 문구(디자인시스템 세션 · 사용자 결정)는 지시대로 붙여 쓰므로 그 행만 예외로 둔다.
- * 레포 전체를 어느 쪽으로 모을지는 사용자가 정한다(질문으로 올렸다) — 그때까지 예외를 늘리지 않는다.
- * 키는 `namespace,key` 다.
- */
-const WRITING_V106_JOINED = new Set(["login,sso.description"]);
+/** 띄어 쓴 보조용언 — 한글 바로 뒤에 띄운 `주세요` · `보세요` · `주시` · `줘요`. */
+const SPACED_AUXILIARY = /[가-힣] (주세요|보세요|주시|줘요)/;
 
 describe("한국어 문구 띄어쓰기", () => {
-  it("보조용언 '주다' 는 띄어 쓴다 — `해주세요` 가 아니라 `해 주세요`", () => {
+  it("보조용언은 붙여 쓴다 — `해 주세요` 가 아니라 `해주세요`", () => {
     const lines = readFileSync(CSV, "utf-8").split("\n");
     const offenders = lines
       .map((line, i) => ({ line, no: i + 1 }))
-      .filter(({ line }) => JOINED_AUXILIARY.test(line))
-      .filter(
-        ({ line }) =>
-          !WRITING_V106_JOINED.has(line.split(",").slice(0, 2).join(",")),
-      )
+      .filter(({ line }) => SPACED_AUXILIARY.test(line))
       .map(({ line, no }) => `${CSV}:${no}  ${line.slice(0, 90)}`);
 
     expect(offenders).toEqual([]);
