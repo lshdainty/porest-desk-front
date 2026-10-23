@@ -1636,7 +1636,6 @@ expense,transferWithdrawn,출금 합계,Total withdrawn
 expense,transferDeleted,이체를 삭제했어요,Transfer deleted
 expense,addTx.optional,선택 사항,Optional
 expense,addTx.amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
-expense,addTx.deleteMessage,선택한 거래를 삭제하시겠어요? 연결된 자산 잔액이 함께 조정됩니다.,Delete the selected transaction? The linked asset balance will be adjusted too.
 expense,savePreset.title,프리셋으로 저장,Save as preset
 expense,savePreset.noMerchant,내역 없음,No details
 expense,savePreset.noCategory,카테고리 미선택,No category

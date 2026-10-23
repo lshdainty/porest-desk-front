@@ -992,6 +992,7 @@ function ExpenseDesktop() {
       {filterOpen && (
         <FilterDialog
           initial={filterValue}
+          defaultPeriod={viewPeriod}
           categories={categoriesQ.data ?? []}
           assets={assetsQ.data?.assets ?? []}
           onClose={() => setFilterOpen(false)}

@@ -1,16 +1,9 @@
 import type { ReactNode } from "react";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { withCommaBreaks } from "@/shared/ds/i18n";
-import { Button } from "@/shared/ds/button";
-import { ChartTooltipContent } from "@/shared/ds/chart";
 import { ChipGroup, InputChip } from "@/shared/ds/chip";
-import { List, ListHeader, ListItem } from "@/shared/ds/list";
+import { formatRangeValue, parseDayKey } from "@/shared/ds/date-picker";
+import { List, ListItem } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { cn } from "@/shared/lib/cn";
 import { KRW, minusOf } from "@/shared/lib/groo/format";
@@ -21,398 +14,73 @@ import {
   activeConditionCount,
   type FilterValue,
 } from "@/features/expense/model/filter";
+import { LedgerDayGroup, LedgerDayHead } from "@/shared/ui/groo/ledger";
 import { GUTTER_OFF } from "@/pages/expense/model/mobile-consts";
 
 /*
- * 폰 가계부의 조각들 — 옛 `shared/ui/groo/ledger` 부품(할 일 원장과 함께 쓴다)을 가계부만 ds 값으로 다시 짠 것이다(I-07 7 ~ 17).
- * 할 일 원장은 I-10 에서 따로 옮기므로 공용 부품은 그대로 두었다 — 거기서 걷는다.
+ * 폰 가계부만 쓰는 조각 — 원장 머리 · 달력 · 날짜 머리는 공용 `shared/ui/groo/ledger.tsx` 가 가진다(할 일 · 검색과 한 벌).
  */
-
-// ─── 월 이동 ────────────────────────────────────────────────
-
-/** 월 이동 · 거르기 · 추가 줄 — 단추는 Button ghost medium iconOnly(보이는 40 · 아이콘 18 · 누르는 44) */
-export function MonthNav({ children }: { children: ReactNode }) {
-  return <div className="flex items-center">{children}</div>;
-}
-
-export function NavIconButton({
-  label,
-  onClick,
-  disabled,
-  className,
-  children,
-}: {
-  label: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="medium"
-      layout="iconOnly"
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className={className}
-    >
-      {children}
-    </Button>
-  );
-}
-
-/** 달 이름 — t6 18 / 24 · 700 · 고정폭 숫자 */
-export function MonthLabel({ children }: { children: ReactNode }) {
-  return (
-    <span className="px-x1 text-t6 font-bold tabular-nums text-fg-neutral">
-      {children}
-    </span>
-  );
-}
-
-export function PrevMonthButton({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <NavIconButton label={label} onClick={onClick}>
-      <ChevronLeft />
-    </NavIconButton>
-  );
-}
-
-export function NextMonthButton({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <NavIconButton label={label} onClick={onClick}>
-      <ChevronRight />
-    </NavIconButton>
-  );
-}
-
-// ─── 합계 · 인사이트 · 소비 요약 ─────────────────────────────
-
-/** 머리 — 이달 지출 합계(지표 t9 24 / 32 · 700) + 인사이트 한 줄(t4 · 위 6) + 오른쪽 "소비 요약" */
-export function LedgerHeadRow({
-  total,
-  insight,
-  summaryLabel,
-  summaryOpen,
-  onToggleSummary,
-}: {
-  total: ReactNode;
-  insight?: ReactNode;
-  summaryLabel: string;
-  summaryOpen: boolean;
-  onToggleSummary: () => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-start gap-x3 pt-x2">
-      <div className="min-w-0 flex-auto">
-        <div className="num text-t9 font-bold tabular-nums text-fg-neutral">
-          {total}
-        </div>
-        {insight && (
-          <div className="mt-x1_5 text-t4 font-normal text-fg-neutral-muted">
-            {insight}
-          </div>
-        )}
-      </div>
-      <Button
-        type="button"
-        variant="neutralOutline"
-        size="small"
-        aria-expanded={summaryOpen}
-        onClick={onToggleSummary}
-        className="ml-auto shrink-0"
-      >
-        {summaryLabel}
-      </Button>
-    </div>
-  );
-}
 
 /** 펼친 소비 요약 — 카드 없이 보기만 하는 List 줄 셋(수입 · 지출 · 합계). 합계 줄 제목만 700 */
 export function SummaryRows({
+  loading,
   incomeLabel,
   expenseLabel,
   totalLabel,
   monthIn,
   monthOut,
 }: {
+  /** 요약을 받는 중 — 값 자리만 Skeleton(0 원으로 거짓말하지 않는다) */
+  loading?: boolean;
   incomeLabel: string;
   expenseLabel: string;
   totalLabel: string;
   monthIn: number;
   monthOut: number;
 }) {
+  const val = (node: ReactNode) =>
+    loading ? <Skeleton text="t5" className="w-x16" /> : node;
   return (
     <List className={cn("mt-x2", GUTTER_OFF)}>
       <ListItem
         title={incomeLabel}
-        suffix={
+        suffix={val(
           <span className="num font-bold tabular-nums text-fg-brand">
-            <MaskAmount card="ledger.txList" kind="income">
+            <MaskAmount card="ledger.monthSummary" kind="income">
               +{wonPre()}
               {withCommaBreaks(KRW(monthIn))}
             </MaskAmount>
-            <WonUnit card="ledger.txList" kind="income" />
-          </span>
-        }
+            <WonUnit card="ledger.monthSummary" kind="income" />
+          </span>,
+        )}
       />
       <ListItem
         title={expenseLabel}
-        suffix={
+        suffix={val(
           <span className="num font-bold tabular-nums text-fg-neutral">
-            <MaskAmount card="ledger.txList" kind="expense">
+            <MaskAmount card="ledger.monthSummary" kind="expense">
               {minusOf(monthOut)}
               {wonPre()}
               {withCommaBreaks(KRW(Math.abs(monthOut)))}
             </MaskAmount>
-            <WonUnit card="ledger.txList" kind="expense" />
-          </span>
-        }
+            <WonUnit card="ledger.monthSummary" kind="expense" />
+          </span>,
+        )}
       />
       <ListItem
         title={<span className="font-bold">{totalLabel}</span>}
-        suffix={
+        suffix={val(
           <span className="num font-bold tabular-nums text-fg-neutral">
-            <MaskAmount card="ledger.txList" kind="net">
+            <MaskAmount card="ledger.monthSummary" kind="net">
               {monthIn - monthOut >= 0 ? "+" : "−"}
               {wonPre()}
               {withCommaBreaks(KRW(Math.abs(monthIn - monthOut)))}
             </MaskAmount>
-            <WonUnit card="ledger.txList" kind="net" />
-          </span>
-        }
+            <WonUnit card="ledger.monthSummary" kind="net" />
+          </span>,
+        )}
       />
     </List>
-  );
-}
-
-// ─── 주 달력 · 월 달력 ───────────────────────────────────────
-
-/** 달력 영역 — 격자를 페이지 라인보다 8 바깥으로(셀 내용이 가운데 정렬이라 첫 · 끝 칸이 다른 요소와 같은 선에 선다) */
-export function CalendarFrame({
-  innerRef,
-  children,
-}: {
-  innerRef: React.Ref<HTMLDivElement>;
-  children: ReactNode;
-}) {
-  return (
-    <div ref={innerRef} className="relative -mx-x2 pt-x3">
-      {children}
-    </div>
-  );
-}
-
-/** 요일 줄 — t2 12 / 16 · 400 · fg-neutral-subtle, 일요일 fg-critical · 토요일 fg-brand */
-export function DowRow({ labels }: { labels: string[] }) {
-  return (
-    <div className="grid grid-cols-7">
-      {labels.map((d, i) => (
-        <span
-          key={i}
-          className={cn(
-            "pb-x2 pt-x1_5 text-center text-t2 font-normal",
-            i === 0
-              ? "text-fg-critical"
-              : i === 6
-                ? "text-fg-brand"
-                : "text-fg-neutral-subtle",
-          )}
-        >
-          {d}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-export function WeekRow({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-7">{children}</div>;
-}
-
-const CELL =
-  "group/cell flex min-h-x14 flex-col items-center gap-x1 rounded-r3 border-0 bg-transparent px-0 pb-x2 pt-x1 [-webkit-tap-highlight-color:transparent]";
-
-/** 날짜 칸 — 비면 자리만 채우고, 아니면 누르는 칸(고른 날로 옮기기) */
-export function CalendarCell({
-  empty,
-  selected,
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"button"> & { empty?: boolean; selected?: boolean }) {
-  if (empty) return <div className={cn(CELL, className)}>{children}</div>;
-  return (
-    <button
-      type="button"
-      data-sel={selected}
-      className={cn(
-        CELL,
-        "cursor-pointer active:bg-bg-layer-default-pressed",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
-
-/**
- * 날 숫자 — 지난 날 · 오늘 fg-neutral, **오는 날 fg-neutral-subtle**(불투명도로 흐리지 않는다 — v106),
- * 일요일 fg-critical · 토요일 fg-brand(캘린더 정합). 고른 날은 브랜드 채움 알약.
- */
-export function CellNumber({
-  day,
-  dow,
-  future,
-  selected,
-}: {
-  day: number;
-  dow: number;
-  future: boolean;
-  selected: boolean;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex min-h-x9 min-w-x9 items-center justify-center rounded-full px-x1 text-t5 tabular-nums",
-        selected
-          ? "bg-bg-brand-solid font-bold text-static-white"
-          : cn(
-              "font-medium",
-              future
-                ? "text-fg-neutral-subtle"
-                : dow === 0
-                  ? "text-fg-critical"
-                  : dow === 6
-                    ? "text-fg-brand"
-                    : "text-fg-neutral",
-            ),
-      )}
-    >
-      {day}
-    </span>
-  );
-}
-
-/** 칸 금액 — t1 11 · 700 · 고정폭(눈금 밖 10 을 눈금으로). 지출 fg-neutral · 수입 fg-brand */
-export function CellAmount({
-  tone,
-  children,
-}: {
-  tone?: "expense" | "income";
-  children?: ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "num min-h-3 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-t1 font-bold tabular-nums",
-        tone === "income" ? "text-fg-brand" : "text-fg-neutral",
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** 주 1줄 ↔ 월 전체 펼침 — Button ghost medium iconOnly, 이름은 늘 "월 달력" + aria-expanded */
-export function ExpandButton({
-  label,
-  expanded,
-  onClick,
-}: {
-  label: string;
-  expanded: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <div className="flex justify-center">
-      <Button
-        type="button"
-        variant="ghost"
-        size="medium"
-        layout="iconOnly"
-        aria-label={label}
-        aria-expanded={expanded}
-        onClick={onClick}
-      >
-        {expanded ? <ChevronUp /> : <ChevronDown />}
-      </Button>
-    </div>
-  );
-}
-
-/** 칸 툴팁 — chart 툴팁 값(머리 t2 · 줄 "■ 지출 …원" t3 · 떠 있는 표면 · 모서리 12 · s3) 그대로 */
-export function CellTooltip({
-  left,
-  top,
-  title,
-  rows,
-}: {
-  left: number;
-  top: number;
-  title: ReactNode;
-  rows: { name: string; color: string; value: number; node: ReactNode }[];
-}) {
-  return (
-    <div
-      className="pointer-events-none absolute z-20"
-      style={{ left, top, transform: "translate(-50%, calc(-100% - 8px))" }}
-    >
-      <ChartTooltipContent
-        active
-        label={title}
-        payload={rows.map((r) => ({
-          name: r.name,
-          dataKey: r.name,
-          value: r.value,
-          color: r.color,
-        }))}
-        valueFormatter={(_, key) =>
-          rows.find((r) => r.name === key)?.node ?? null
-        }
-      />
-    </div>
-  );
-}
-
-// ─── 날짜 묶음 ───────────────────────────────────────────────
-
-/**
- * 날짜 묶음 머리 — ds List Header mediumWeak(t4 14 / 19 · 500 · fg-neutral-subtle · 위아래 8). 오른쪽에 그날 합계가 있어
- * 머리는 div 로 두고 날짜 글만 h2 로 감싼다(합계가 머리말 이름에 섞이지 않게). 머리 위 12 · 첫 묶음 4.
- * 좌우 24 는 호스트가 쥐고 있어 걷는다(GUTTER_OFF 와 같은 까닭 · 같은 몫).
- */
-export function DayHeader({
-  first,
-  title,
-  sum,
-}: {
-  first: boolean;
-  title: ReactNode;
-  sum?: ReactNode;
-}) {
-  return (
-    <ListHeader as="div" className={cn("px-0", first ? "mt-x1" : "mt-x3")}>
-      <h2 className="m-0 font-[inherit] text-[length:inherit]">{title}</h2>
-      {sum}
-    </ListHeader>
   );
 }
 
@@ -467,7 +135,10 @@ export function FilterChipsRow({
       const p = v.periods[0];
       chips.push({
         key: "period",
-        label: `${p.start.slice(5).replace("-", ".")}~${p.end.slice(5).replace("-", ".")}`,
+        label: formatRangeValue(
+          { start: parseDayKey(p.start), end: parseDayKey(p.end) },
+          new Date(),
+        ),
         onRemove: () => onChange({ ...v, periods: [] }),
       });
     }
@@ -564,22 +235,16 @@ export function RowSkeleton() {
   );
 }
 
-/** 날짜 묶음 하나의 스켈레톤 — 머리 글 t4 + 줄 */
-export function DayGroupSkeleton({
-  rows,
-  first,
-}: {
-  rows: number;
-  first: boolean;
-}) {
+/** 날짜 묶음 하나의 스켈레톤 — 공용 날짜 묶음 · 머리(위 간격 · 머리 값은 실제 목록과 같다). `LedgerList` 안에 둔다 */
+export function DayGroupSkeleton({ rows }: { rows: number }) {
   return (
-    <div>
-      <ListHeader as="div" className={cn("px-0", first ? "mt-x1" : "mt-x3")}>
+    <LedgerDayGroup>
+      <LedgerDayHead>
         <Skeleton text="t4" className="w-x16" />
-      </ListHeader>
+      </LedgerDayHead>
       {Array.from({ length: rows }, (_, i) => (
         <RowSkeleton key={i} />
       ))}
-    </div>
+    </LedgerDayGroup>
   );
 }

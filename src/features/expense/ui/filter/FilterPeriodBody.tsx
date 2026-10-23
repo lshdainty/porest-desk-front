@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Plus, X } from "lucide-react";
+import { CalendarDays, CircleAlert, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   BottomSheet,
@@ -31,9 +31,9 @@ import {
   type FilterPeriodRange,
 } from "../../model/filter";
 
-// 빠른 기간 — 날짜 선택 스펙의 한 벌(date-picker.md "빠른 기간": 이름이 같으면 어디서나 같은 기간)에서 고른다
+// 빠른 기간 — 옛 필터에 있던 이번 주 · 이번 달 · 3개월만 둔다(날짜 선택 스펙의 한 벌에서 고른다). 새로 넓힌 지난 달 · 올해는 두지 않는다
 const PRESETS = DATE_PRESETS.filter((n) =>
-  ["thisWeek", "thisMonth", "lastMonth", "last3Months", "thisYear"].includes(n),
+  ["thisWeek", "thisMonth", "last3Months"].includes(n),
 );
 
 const toRange = (p: FilterPeriodRange | null): DateRange | undefined => {
@@ -43,7 +43,7 @@ const toRange = (p: FilterPeriodRange | null): DateRange | undefined => {
 
 /**
  * 기간 한 칸 — Input Button 하나를 누르면 Date Picker 기간 고르기가 열린다(date-picker.md "기간 — 칸 하나, 달력 하나").
- * 1280 미만은 시트 위 시트(이어지는 달 + 빠른 기간), 이상은 팝오버 두 달. 고르는 동안 칸 값은 그대로, "완료" 에서 넣는다.
+ * 1280 미만은 시트 위 시트(이어지는 달), 이상은 팝오버 두 달. 빠른 기간은 옛 필터 그대로(폰 · 데스크톱 같다). 고르는 동안 칸 값은 그대로, "완료" 에서 넣는다.
  * "초기화" 로 비우고 완료하면 이 칸이 사라진다(`onChange(null)`).
  */
 function PeriodPicker({
@@ -181,7 +181,10 @@ export function FilterPeriodBody({
         </div>
       ))}
       {badPeriod && (
-        <p className="m-0 text-t2 text-fg-critical">{t("filter.dateError")}</p>
+        <p className="m-0 flex items-start gap-x1_5 text-t4 font-normal text-fg-critical">
+          <CircleAlert aria-hidden className="mt-x0_5 size-4 shrink-0" />
+          {t("filter.dateError")}
+        </p>
       )}
       {value.length > 0 && value.length < MAX_PERIODS && (
         <Button

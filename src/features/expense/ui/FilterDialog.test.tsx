@@ -9,6 +9,7 @@ import type { ExpenseCategory } from "@/entities/expense";
 import {
   DEFAULT_FILTER,
   activeConditionCount,
+  type FilterPeriodRange,
   type FilterValue,
 } from "../model/filter";
 
@@ -110,11 +111,20 @@ afterEach(async () => {
   await new Promise((r) => setTimeout(r, 100));
 });
 
-const open = async (initial: FilterValue | null = null) => {
+const VIEW = {
+  preset: "custom",
+  start: "2026-10-01",
+  end: "2026-10-31",
+} as const;
+const open = async (
+  initial: FilterValue | null = null,
+  defaultPeriod?: FilterPeriodRange,
+) => {
   await act(async () =>
     root.render(
       <FilterDialog
         initial={initial}
+        defaultPeriod={defaultPeriod}
         categories={categories}
         assets={assets}
         onClose={() => {}}
@@ -212,16 +222,36 @@ describe("조건 맞추기 (19)", () => {
 });
 
 describe("기간 (20)", () => {
-  it("고르지 않은 기간은 조건이 아니다 — 보던 달을 미리 넣지 않는다", async () => {
-    await open();
+  it("처음 열면 보던 달로 채워져 있고, 적용하면 그 기간이 들어간다 — 폰은 옮기기라 옛 동작 그대로", async () => {
+    await open(null, VIEW);
     expect(
       all("[data-slot=input-button]").some((b) =>
-        b.textContent?.includes("기간 선택"),
+        /10월 1일~10월 31일|Oct 1.Oct 31/.test(b.textContent ?? ""),
       ),
     ).toBe(true);
 
     click(applyBtn());
-    expect(last().periods).toEqual([]);
+    expect(last().periods).toEqual([VIEW]);
+  });
+
+  it("기간 달력의 빠른 기간은 옛 필터 그대로(이번 주 · 이번 달 · 3개월)이고 새로 넓힌 지난 달 · 올해는 없다", async () => {
+    await open(null, VIEW);
+    click(
+      all("[data-slot=input-button-trigger]").find((b) =>
+        /10월 1일~10월 31일|Oct 1.Oct 31/.test(
+          b.parentElement?.textContent ?? "",
+        ),
+      ),
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    const text = document.body.textContent ?? "";
+    expect(text).toMatch(/이번 주|This week/);
+    expect(text).toMatch(/이번 달|This month/);
+    expect(text).toMatch(/최근 3개월|Last 3 months/);
+    expect(text).not.toMatch(/올해|This year/);
+    expect(text).not.toMatch(/지난 ?달|Last month/);
   });
 
   it("칸은 Input Button 하나이고 날짜를 치는 칸이 아니다", async () => {
@@ -369,17 +399,24 @@ describe("금액 (23)", () => {
 });
 
 describe("초기화", () => {
-  it("모든 조건을 비운다 — 기간도 보던 달이 아니라 빈 채로", async () => {
-    await open({
-      ...DEFAULT_FILTER,
-      match: "any",
-      periods: [{ preset: "custom", start: "2026-10-01", end: "2026-10-10" }],
-      types: ["EXPENSE"],
-      categories: { include: [1], exclude: [] },
-    });
+  it("모든 조건을 비운다 — 기간은 보던 달로 돌아간다", async () => {
+    await open(
+      {
+        ...DEFAULT_FILTER,
+        match: "any",
+        periods: [{ preset: "custom", start: "2026-10-01", end: "2026-10-10" }],
+        types: ["EXPENSE"],
+        categories: { include: [1], exclude: [] },
+      },
+      VIEW,
+    );
     click(named("button", "초기화"));
     click(applyBtn());
 
-    expect(last()).toEqual({ ...DEFAULT_FILTER, types: ["EXPENSE", "INCOME"] });
+    expect(last()).toEqual({
+      ...DEFAULT_FILTER,
+      periods: [VIEW],
+      types: ["EXPENSE", "INCOME"],
+    });
   });
 });

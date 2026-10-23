@@ -9,11 +9,13 @@ import {
   BottomSheetFooter,
 } from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
+import { ListHeader } from "@/shared/ds/list";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import {
   DEFAULT_FILTER,
   activeConditionCount,
+  resolvePeriod,
   type AmountRange,
   type FilterPeriodRange,
   type FilterValue,
@@ -33,10 +35,11 @@ import {
 function Section({ label, children }: { label: string; children: ReactNode }) {
   const id = useId();
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-x2">
-      <h3 id={id} className="m-0 text-t4 font-medium text-fg-neutral">
+    <section aria-labelledby={id} className="flex flex-col">
+      {/* 조건 이름 = List Header mediumWeak h3(시트 · 대화상자 안 — list.md "제목 태그"). 좌우 24 는 본문 여백이 쥔다 */}
+      <ListHeader as="h3" id={id} className="px-0">
         {label}
-      </h3>
+      </ListHeader>
       {children}
     </section>
   );
@@ -47,10 +50,12 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
  * 머리 ✕ 는 고른 것을 버리고 닫는다), 그 밖은 지금처럼 대화상자다(데스크톱 · 태블릿은 07-2 가 조건마다 팝오버 · 시트로 나눠 담는다).
  * 값은 `FilterValue` 그대로 — 모델 · `matchesFilter` 는 바꾸지 않는다.
  *
- * 고르지 않은 기간은 조건이 아니다 — 처음 열 때 보던 달을 기간 칸에 넣어 두지 않는다(그러면 계좌만 걸어도 그 달에 묶인다).
+ * 기간 칸은 처음 열 때 보던 달(`defaultPeriod`)로 채운다 — 폰은 "옮기기 = 기능 그대로"라 옛 동작을 지킨다. "고르지 않은 기간은
+ * 조건이 아니다"(Q5-C)는 짝 2(07-2)가 데스크톱 · 태블릿에서 적용한다.
  */
 export function FilterDialog({
   initial,
+  defaultPeriod,
   categories,
   assets,
   onClose,
@@ -58,6 +63,8 @@ export function FilterDialog({
   mobile,
 }: {
   initial?: FilterValue | null;
+  /** 보고 있는 달의 기간 — 처음 열 때와 초기화에 쓴다(`monthPeriodOf`). 없으면 이번 달. */
+  defaultPeriod?: FilterPeriodRange;
   categories: ExpenseCategory[];
   assets: Asset[];
   onClose: () => void;
@@ -68,7 +75,11 @@ export function FilterDialog({
   const start = initial ?? DEFAULT_FILTER;
 
   const [match, setMatch] = useState<MatchMode>(start.match);
-  const [periods, setPeriods] = useState<FilterPeriodRange[]>(start.periods);
+  const [periods, setPeriods] = useState<FilterPeriodRange[]>(
+    start.periods.length > 0
+      ? start.periods
+      : [defaultPeriod ?? resolvePeriod("month")],
+  );
   const [types, setTypes] = useState<ExpenseType[]>(start.types);
   const [cats, setCats] = useState<IncludeExclude>(start.categories);
   const [accs, setAccs] = useState<IncludeExclude>(start.assets);
@@ -87,7 +98,7 @@ export function FilterDialog({
 
   const reset = () => {
     setMatch("all");
-    setPeriods([]);
+    setPeriods([defaultPeriod ?? resolvePeriod("month")]);
     setTypes(DEFAULT_FILTER.types);
     setCats({ include: [], exclude: [] });
     setAccs({ include: [], exclude: [] });

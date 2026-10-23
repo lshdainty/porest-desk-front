@@ -77,8 +77,9 @@ export function ExpenseSwipeRow({
   const row = (
     <div
       className={cn(
-        "flex items-center rounded-r2_5 transition-colors",
-        highlighted && "bg-bg-brand-weak",
+        "flex items-center transition-colors",
+        // 강조 바탕만 모서리 10(list.yaml highlight.radius — 평소 0, 앱과 같다)
+        highlighted && "rounded-r2_5 bg-bg-brand-weak",
       )}
     >
       <div className="min-w-0 flex-1">

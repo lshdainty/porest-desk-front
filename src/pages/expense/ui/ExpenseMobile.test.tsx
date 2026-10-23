@@ -388,3 +388,43 @@ describe("알림 · 검색에서 들어온 줄 (I-07 6 · ?txId=)", () => {
     expect(container.innerHTML).not.toContain("brand-subtle");
   });
 });
+
+describe("검수 고침 — 요약 0 원 · 실패 틀 · 빼기 부호", () => {
+  it("요약을 펼친 채 달을 옮기면 받는 동안 0 원 줄을 그리지 않고 [소비 요약] 을 막는다", () => {
+    render();
+    click(byName("소비 요약"));
+    st.otherMonthLoading = true;
+    click(byName("이전 달"));
+
+    const summary = byName("소비 요약")!;
+    expect(summary.hasAttribute("disabled")).toBe(true);
+    // 펼친 줄이 보이므로 펼침 상태를 그대로 말한다(막힘은 disabled 가 말한다)
+    expect(summary.getAttribute("aria-expanded")).toBe("true");
+    const lists = Array.from(
+      container.querySelectorAll<HTMLElement>("ul[data-slot=list]"),
+    ).filter((l) => l.textContent?.includes("합계"));
+    for (const l of lists) expect(l.textContent).not.toMatch(/[+−]0원|0원/);
+  });
+
+  it("불러오지 못해도 머리 · 주 달력은 그대로 그린다(틀 먼저) — 합계는 비고 [소비 요약] 은 막힌다", () => {
+    st.failed = true;
+    render();
+
+    for (const name of ["이전 달", "다음 달", "필터", "거래 추가", "월 달력"])
+      expect(byName(name), name).toBeTruthy();
+    expect(byName("소비 요약")!.hasAttribute("disabled")).toBe(true);
+    expect(
+      container.querySelector("[data-slot=result-section]"),
+    ).not.toBeNull();
+  });
+
+  it("빼기는 U+2212 다 — 그날 합계 · 칸 금액", () => {
+    render();
+    const head = container.querySelector("[data-slot=list-header]")!;
+    expect(head.textContent).toContain("−12,000");
+    expect(head.textContent).not.toContain("-12,000");
+    const cell = container.querySelector("button[data-sel]")!;
+    expect(container.textContent).toContain("−5,000");
+    expect(cell).toBeTruthy();
+  });
+});
