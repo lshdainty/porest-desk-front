@@ -246,7 +246,7 @@ export function WeekRow({ children }: { children: ReactNode }) {
 }
 
 const CELL =
-  "group/cell flex min-h-14 flex-col items-center gap-x1 rounded-r3 border-0 bg-transparent px-0 pb-x2 pt-x1 [-webkit-tap-highlight-color:transparent]";
+  "group/cell flex min-h-x14 flex-col items-center gap-x1 rounded-r3 border-0 bg-transparent px-0 pb-x2 pt-x1 [-webkit-tap-highlight-color:transparent]";
 
 /** 날짜 칸 — 비면 자리만 채우고, 아니면 누르는 칸(고른 날로 옮기기) */
 export function CalendarCell({
@@ -536,7 +536,7 @@ export function FilterChipsRow({
       layout="scroll"
       bleed
       aria-label={t("filter.appliedGroup")}
-      className="pb-x2 pt-x1"
+      className="py-x2"
     >
       {chips.map((c) => (
         <InputChip key={c.key} size="medium" onRemove={c.onRemove}>
@@ -557,7 +557,7 @@ export function RowSkeleton() {
         align="top"
         prefix={<Skeleton radius="12" className="size-x10" />}
         title={<Skeleton text="t5" className="w-3/4" />}
-        detail={<Skeleton text="t3" className="mt-x0_5 w-1/3" />}
+        detail={<Skeleton text="t3" className="w-1/3" />}
         suffix={<Skeleton text="t5" className="w-x16" />}
       />
     </List>
