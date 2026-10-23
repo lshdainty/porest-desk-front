@@ -73,10 +73,7 @@ describe("데스크톱 두 칸 틀 (1280 이상)", () => {
   ) {
     act(() =>
       root.render(
-        <MemoryRouter
-          initialEntries={[`/desk/settings?section=${id}`]}
-          future={{ v7_startTransition: false }}
-        >
+        <MemoryRouter initialEntries={[`/desk/settings?section=${id}`]}>
           <SettingsDesktopFrame
             section={sec(id).id}
             activeSection={sec(id)}
@@ -243,7 +240,6 @@ describe("태블릿 한 단계 틀 (768 ~ 1279)", () => {
           initialEntries={[
             id ? `/desk/settings?section=${id}` : "/desk/settings",
           ]}
-          future={{ v7_startTransition: false }}
         >
           <SettingsTabletFrame
             activeSection={id ? sec(id) : null}
