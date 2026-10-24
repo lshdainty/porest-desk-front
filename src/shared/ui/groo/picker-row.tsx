@@ -33,6 +33,8 @@ export interface PickerRowProps {
   placeholder?: string;
   /** 값 앞 색 점(CSS 색) */
   dot?: string;
+  /** 점 크기 — 8(기본, 카테고리 줄) · 12(공용 색 줄) */
+  dotSize?: 8 | 12;
   /** 값 앞 아이콘 */
   glyph?: React.ReactNode;
   /** 읽는 이름 — 기본 "{title}, {value}" */
@@ -65,6 +67,7 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
       value,
       placeholder,
       dot,
+      dotSize = 8,
       glyph,
       ariaLabel,
       readOnly,
@@ -95,7 +98,10 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
           <span
             aria-hidden
             data-slot="picker-row-dot"
-            className="mr-x2 inline-block size-x2 rounded-full align-middle"
+            className={cn(
+              "mr-x2 inline-block rounded-full align-middle",
+              dotSize === 12 ? "size-x3" : "size-x2",
+            )}
             style={{ background: dot }}
           />
         )}

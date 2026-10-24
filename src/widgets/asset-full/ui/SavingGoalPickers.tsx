@@ -167,6 +167,7 @@ export function GoalColorRow({
       title={t("form.color")}
       value={name}
       dot={dot}
+      dotSize={12}
       surfaceTitle={t("form.color")}
       popoverClassName="w-fit"
     >
