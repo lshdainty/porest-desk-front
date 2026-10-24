@@ -86,7 +86,7 @@ layout,userFallback,사용자,User
 layout,expandSubmenu,{{name}} 하위 메뉴 펼치기,Expand {{name}} submenu
 layout,collapseSubmenu,{{name}} 하위 메뉴 접기,Collapse {{name}} submenu
 more,search,메뉴 검색,Search menu
-more,noResults,검색 결과가 없습니다,No search results
+more,noResults,검색 결과가 없어요,No search results
 more,group.money,돈 관리,Money
 more,group.daily,일상,Daily
 more,group.personal,개인화,Personalization
@@ -96,7 +96,7 @@ more,item.asset,자산,Assets
 more,item.stocks,증권,Stocks
 more,item.budget,예산,Budget
 more,item.savingGoal,저축 목표,Saving Goals
-more,item.stats,통계·분석,Stats & Analysis
+more,item.stats,통계,Stats
 more,item.recurring,반복 거래,Recurring
 more,item.accounts,계좌·카드 관리,Account & Card Management
 more,item.calendar,캘린더,Calendar
@@ -131,7 +131,7 @@ more,desc.presets,자주 쓰는 내역,Frequently used entries
 more,desc.appearance,테마 · 언어 · 통화,Theme · language · currency
 more,desc.settings,전체 설정 메뉴,All settings
 more,desc.notifications,푸시 · 이메일 · 방해 금지,Push · email · do not disturb
-more,desc.dataExport,CSV · Excel · PDF · 자동 백업,CSV · Excel · PDF · auto backup
+more,desc.dataExport,CSV · Excel · JSON,CSV · Excel · JSON
 more,desc.account,프로필 · 보안 · 구독,Profile · security · subscription
 todo,title,할일,Todo
 todo,createTodo,할일 추가,Add Todo
