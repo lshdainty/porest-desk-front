@@ -448,7 +448,7 @@ describe("옵션 · 완료 (I-05 48 · 50)", () => {
     await toDone(baseResult);
     const rs = container.querySelector('[data-slot="result-section"]');
     expect(rs?.getAttribute("data-kind")).toBe("done");
-    expect(rs?.getAttribute("data-size")).toBe("large");
+    expect(rs?.getAttribute("data-size")).toBe("medium"); // 데스크톱 = 카드 안 medium(Q2 A)
     await act(async () => {
       btn("import.toLedger")!.dispatchEvent(
         new MouseEvent("click", { bubbles: true }),
@@ -548,5 +548,33 @@ describe("검수 재반영 — 쉼표 · 실패 사유 자리(W5 · W6)", () => 
       row.querySelector('[data-slot="list-detail"]')?.textContent,
     ).toContain("import.failReason");
     expect(row.querySelector('[data-slot="list-suffix"]')).toBeNull();
+  });
+});
+
+describe("데스크톱 완료 = 한 카드(사용자 결정 10-24 05-2 Q2 A)", () => {
+  const big = {
+    ...baseResult,
+    createdCategories: ["식비", "식비 > 커피"],
+    createdCategoryCount: 63,
+  };
+
+  it("결과 · 만든 카테고리 · 실패 줄이 카드 하나 안에 있고 Result Section 은 medium 이다", async () => {
+    await toDone(big);
+    const cards = container.querySelectorAll('[data-slot="card"]');
+    expect(cards).toHaveLength(1);
+    const card = cards[0]!;
+    const rs = card.querySelector('[data-slot="result-section"]')!;
+    expect(rs.getAttribute("data-size")).toBe("medium");
+    expect(card.textContent).toContain("import.createdCatTitle");
+    expect(card.textContent).toContain("import.failuresTitle");
+  });
+
+  it("[가계부로 가기] 는 카드 바닥 오른쪽이다", async () => {
+    await toDone(big);
+    const card = container.querySelector('[data-slot="card"]')!;
+    const bar = card.querySelector('[data-slot="data-action-bar"]')!;
+    expect(bar.className).toContain("justify-end");
+    expect(bar.textContent).toContain("import.toLedger");
+    expect(card.lastElementChild).toBe(bar);
   });
 });

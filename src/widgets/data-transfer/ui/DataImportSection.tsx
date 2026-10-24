@@ -11,6 +11,7 @@ import type {
 import { Badge } from "@/shared/ds/badge";
 import { Button } from "@/shared/ds/button";
 import { Callout } from "@/shared/ds/callout";
+import { Card } from "@/shared/ds/card";
 import { Field } from "@/shared/ds/field";
 import {
   List,
@@ -269,6 +270,57 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
     </ActionBar>
   ) : null;
 
+  const createdTitle = result
+    ? t("import.createdCatTitle", { count: fmt(result.createdCategoryCount) })
+    : "";
+  const failuresTitle = result
+    ? t("import.failuresTitle", { count: fmt(result.failed) })
+    : "";
+  const doneResult = (size: "large" | "medium") =>
+    result ? (
+      <ResultSection
+        kind="done"
+        size={size}
+        as="h2"
+        title={t("import.doneTitle", {
+          count: result.imported.toLocaleString(),
+        })}
+        description={t("import.doneDetail", {
+          skipped: result.skipped.toLocaleString(),
+          failed: result.failed.toLocaleString(),
+        })}
+        secondaryAction={{ label: t("import.another"), onClick: reset }}
+      />
+    ) : null;
+  const createdList = result ? (
+    <CategoryList
+      t={t}
+      names={result.createdCategories ?? []}
+      total={result.createdCategoryCount}
+    />
+  ) : null;
+  const failuresList = result ? (
+    <>
+      <List>
+        {result.failures.map((f) => (
+          <ListItem
+            key={f.lineNo}
+            title={t("import.failureLine", { line: f.lineNo })}
+            detail={t(failReasonKey(f.reason))}
+          />
+        ))}
+      </List>
+      {(result.failuresTruncated || result.failed > result.failures.length) && (
+        <p className="m-0 px-global-gutter pt-x3 text-t4 text-fg-neutral-subtle">
+          {t("import.failuresCapped", {
+            shown: fmt(result.failures.length),
+            total: fmt(result.failed),
+          })}
+        </p>
+      )}
+    </>
+  ) : null;
+
   return (
     <div className={mobile ? "flex flex-col gap-x6" : "flex flex-col gap-x2"}>
       {step !== "done" && <StepHeader step={step} t={t} />}
@@ -510,75 +562,31 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
         </>
       )}
 
-      {step === "done" && result && (
+      {step === "done" && result && mobile && (
         <>
-          <ResultSection
-            kind="done"
-            size="large"
-            as="h2"
-            title={t("import.doneTitle", {
-              count: result.imported.toLocaleString(),
-            })}
-            description={t("import.doneDetail", {
-              skipped: result.skipped.toLocaleString(),
-              failed: result.failed.toLocaleString(),
-            })}
-            secondaryAction={{ label: t("import.another"), onClick: reset }}
-          />
-
+          {doneResult("large")}
           {/* 만들어진 카테고리 — 미리보기(매핑 단계)에서 본 것과 실제가 같은지 확인시킨다(ds List 줄, 지시서 50). */}
           {(result.createdCategories ?? []).length > 0 && (
             <DataSection
               mobile={mobile}
-              title={t("import.createdCatTitle", {
-                count: fmt(result.createdCategoryCount),
-              })}
+              title={createdTitle}
               heading="listHeader"
               list
             >
-              {() => (
-                <CategoryList
-                  t={t}
-                  names={result.createdCategories ?? []}
-                  total={result.createdCategoryCount}
-                />
-              )}
+              {() => createdList}
             </DataSection>
           )}
-
           {/* 종전엔 "실패 2" 숫자뿐이라 CSV 를 고칠 수가 없었다(QA #61). */}
           {result.failures.length > 0 && (
             <DataSection
               mobile={mobile}
-              title={t("import.failuresTitle", { count: fmt(result.failed) })}
+              title={failuresTitle}
               heading="listHeader"
               list
             >
-              {() => (
-                <>
-                  <List>
-                    {result.failures.map((f) => (
-                      <ListItem
-                        key={f.lineNo}
-                        title={t("import.failureLine", { line: f.lineNo })}
-                        detail={t(failReasonKey(f.reason))}
-                      />
-                    ))}
-                  </List>
-                  {(result.failuresTruncated ||
-                    result.failed > result.failures.length) && (
-                    <p className="m-0 px-global-gutter pt-x3 text-t4 text-fg-neutral-subtle">
-                      {t("import.failuresCapped", {
-                        shown: fmt(result.failures.length),
-                        total: fmt(result.failed),
-                      })}
-                    </p>
-                  )}
-                </>
-              )}
+              {() => failuresList}
             </DataSection>
           )}
-
           <ActionBar mobile={mobile}>
             <Button
               variant="neutralSolid"
@@ -589,6 +597,38 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
             </Button>
           </ActionBar>
         </>
+      )}
+
+      {/* 데스크톱 · 태블릿(768 이상) 완료 — 결과(medium) + 만든 카테고리 + 실패를 한 카드 안에, [가계부로 가기] 는 카드
+          바닥 오른쪽(1280 이상 medium 40 — 내보내기 버튼 줄과 같은 규칙). 사용자 결정 10-24 05-2 Q2 A. */}
+      {step === "done" && result && !mobile && (
+        <Card body="list" className="pt-x3">
+          {doneResult("medium")}
+          {(result.createdCategories ?? []).length > 0 && (
+            <section aria-label={createdTitle} className="pt-x4">
+              <ListHeader>{createdTitle}</ListHeader>
+              {createdList}
+            </section>
+          )}
+          {result.failures.length > 0 && (
+            <section aria-label={failuresTitle} className="pt-x4">
+              <ListHeader>{failuresTitle}</ListHeader>
+              {failuresList}
+            </section>
+          )}
+          <div
+            data-slot="data-action-bar"
+            className="flex justify-end px-global-gutter pt-x3 pb-x3"
+          >
+            <Button
+              variant="neutralSolid"
+              size={buttonSize}
+              onClick={() => navigate("/desk/expense")}
+            >
+              {t("import.toLedger")}
+            </Button>
+          </div>
+        </Card>
       )}
 
       <BusyOverlay busy={executing} label={t("import.importing")} />
