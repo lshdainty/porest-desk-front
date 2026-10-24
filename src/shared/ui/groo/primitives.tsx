@@ -260,8 +260,8 @@ export function MonthPicker({
   value: string;
   onChange: (v: string) => void;
   align?: "right" | "left";
-  /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만. */
-  variant?: "outline" | "borderless";
+  /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만(14 · 600 · 홈 데스크톱), bar: 예산 달 줄의 달 글(t5 · 700 · 꺾쇠 16 · 높이 44 — I-08 7). */
+  variant?: "outline" | "borderless" | "bar";
   /**
    * 다음 달 이후도 고를 수 있다 — 예산처럼 미리 정해 두는 화면(사용자 결정 2026-09-25).
    * 기본은 이번 달까지다(홈·통계처럼 지나간 달만 뜻이 있는 화면). 종전엔 데스크톱 예산 설정만
@@ -317,7 +317,7 @@ export function MonthPicker({
   };
 
   const trigger =
-    variant === "borderless" ? (
+    variant === "bar" ? (
       // 달 줄의 달 글(I-08 7) — t5 16/22 · 700 · fg-neutral + 아래 꺾쇠 16, 누르는 높이 44. ← 상자 끝에서 10 들인다
       <button
         ref={triggerRef}
@@ -341,12 +341,19 @@ export function MonthPicker({
         className="month-picker__trigger"
         style={{
           background: "transparent",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-tile)",
-          padding: "6px 12px",
-          fontSize: "var(--text-label-sm)",
-          fontWeight: "600",
-          color: "var(--fg-secondary)",
+          border:
+            variant === "borderless" ? 0 : "1px solid var(--border-subtle)",
+          borderRadius: variant === "borderless" ? 0 : "var(--radius-tile)",
+          padding: variant === "borderless" ? "4px 4px" : "6px 12px",
+          fontSize:
+            variant === "borderless"
+              ? "var(--text-body-sm)"
+              : "var(--text-label-sm)",
+          fontWeight: variant === "borderless" ? "700" : "600",
+          color:
+            variant === "borderless"
+              ? "var(--fg-primary)"
+              : "var(--fg-secondary)",
           display: "inline-flex",
           alignItems: "center",
           gap: 4,
@@ -354,7 +361,7 @@ export function MonthPicker({
           fontFamily: "inherit",
         }}
       >
-        <Calendar size={13} />
+        {variant !== "borderless" && <Calendar size={13} />}
         {label}
         <ChevronDown size={12} style={{ color: "var(--fg-tertiary)" }} />
       </button>

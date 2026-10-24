@@ -40,7 +40,7 @@ export function MonthControls({
       <MonthPicker
         value={monthKey}
         onChange={onChange}
-        variant="borderless"
+        variant="bar"
         align="left"
         allowFuture
       />
