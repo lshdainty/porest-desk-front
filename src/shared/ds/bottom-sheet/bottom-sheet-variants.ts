@@ -72,3 +72,8 @@ export const SHEET_BODY_FOG =
 // 짝 버튼은 ResponsivePair(03A-013 A): 한 라벨이 반 폭을 넘으면(min-content = 한 줄 라벨) 세로로 쌓고 뒤 버튼(주)이 위로 간다 — wrap-reverse
 // 짝 버튼 판정은 ResponsivePair(button 폴더)가 맡는다 — 여기는 바닥 자리 여백만(I-01 결정 6A)
 export const SHEET_FOOTER = "shrink-0 px-global-gutter pb-x4 pt-x3";
+
+// 시트 위의 시트(폼 시트 위 고르기 시트 — bottom-sheet.md "폼 시트 위에는 고르기 시트와 확인창만") — 같은 층(100 · 101)이면 딤이 아래 시트 뒤에 가려
+// 두 시트가 한 면처럼 붙어 보인다. 딤을 아래 시트(101) 바로 위로, 위 시트를 그 딤 위로 올린다(Popover 200 · Alert Dialog 300 보다 아래).
+export const SHEET_NESTED_OVERLAY = "z-[calc(var(--z-modal-content)+1)]";
+export const SHEET_NESTED_CONTENT = "z-[calc(var(--z-modal-content)+2)]";

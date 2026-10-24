@@ -232,4 +232,22 @@ describe("고르기", () => {
     const options = Array.from(document.querySelectorAll("[role=option]"));
     expect(options.length).toBeGreaterThan(10);
   });
+
+  it("겹친 고르기 시트는 딤이 폼 시트 위, 시트가 그 딤 위에서 위 모서리 시트 값으로 따로 뜬다", () => {
+    mount();
+    click(rows()[2]!);
+    const overlays = Array.from(
+      document.querySelectorAll("[data-slot=bottom-sheet-overlay]"),
+    );
+    const contents = Array.from(
+      document.querySelectorAll("[data-slot=bottom-sheet-content]"),
+    );
+    expect(overlays).toHaveLength(2);
+    expect(contents).toHaveLength(2);
+    // 폼 시트는 100 · 101, 겹친 고르기 시트는 딤 102 · 시트 103
+    expect(overlays[1]!.className).toContain("+1)]");
+    expect(contents[1]!.className).toContain("+2)]");
+    expect(overlays[0]!.className).not.toContain("+1)]");
+    expect(contents[1]!.className).toContain("rounded-t-r6");
+  });
 });
