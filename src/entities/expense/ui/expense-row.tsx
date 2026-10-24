@@ -21,9 +21,6 @@ import { Icon } from "@/shared/ui/groo/primitives";
 import type { Expense } from "../model/types";
 import { isRefundedTx } from "../lib/expense-aggregate";
 
-/** 금액 글자 수(부호 · 쉼표 · 원 포함)가 이 이상이면 값을 설명 아래로 내린다 — "−123,456,789원"(12)은 옆에, "−1,234,567,890원"(15)부터 아래 */
-const STACK_AMOUNT_CHARS = 13;
-
 /**
  * 거래 한 건 — 지출/수입. 목록 어디서든 같은 모양이어야 해서 entity 가 소유한다.
  *
@@ -39,6 +36,7 @@ export function ExpenseRow({
   maskCard = "ledger.txList",
   gutter = false,
   highlighted = false,
+  trailing,
 }: {
   expense: Expense;
   onClick?: (e: Expense) => void;
@@ -56,6 +54,8 @@ export function ExpenseRow({
   gutter?: boolean;
   /** 알림 · 검색에서 들어온 줄 — ds List 강조(brand-weak 바탕 · 누름 brand-weak-pressed · 설명 글 보정). 줄을 누를 수 있을 때만 의미가 있다 */
   highlighted?: boolean;
+  /** 금액 뒤에 같은 뒤 붙이개로 놓는 것 — 가계부의 ⋮(swipe-actions `suffixNode`, 오른쪽으로 8 내밀기는 호출자가 준다) · 빈 자리 */
+  trailing?: ReactNode;
 }) {
   const { t } = useTranslation("common");
   const isIncome = expense.expenseType === "INCOME";
@@ -103,22 +103,16 @@ export function ExpenseRow({
     </>
   );
 
-  // 큰 금액은 설명 줄에서 폭을 다 빼앗아 카테고리 · 자산 · 시각이 한 글자("주…")로 줄어든다(앱에서 확인된 회귀와 같은 값).
-  // 줄 안 폭이 16em 미만이면 값을 본문 아래로 내린다는 ds 규칙(CHANGELOG 03-D 결정 1 B)을 줄 폭이 아니라 금액 길이로도 건다 —
-  // 금액을 설명 아래 한 줄로 내리고 설명은 제 폭을 갖는다. 호출자가 `right` 를 주면 그대로 오른쪽에 둔다.
-  const amountChars =
-    (isEn() ? 1 : 0) +
-    1 +
-    KRW(expense.amount, { abs: true }).length +
-    (isEn() ? 0 : 1);
-  const stacked = !right && amountChars >= STACK_AMOUNT_CHARS;
+  // 설명이 줄어드는 정도는 tag-group.md "줄어드는 정도" 예 그대로(03-E 5 B) — 카테고리 · 시각은 줄지 않고(0) 긴 계좌 이름만 줄어든다(2).
+  // `shrink` 는 차례가 아니라 넘친 폭을 글 폭 × shrink 비율로 나누는 값이다. 모두 최소 폭이어도 넘치면 줄 끝이 잘린다(스펙이 받아들인 동작).
+  // 값은 늘 오른쪽이고, 줄 안 폭이 16em 미만이면 ds 가 값을 본문 아래로 내린다(CHANGELOG 03-D 결정 1 B) — 값 길이로 가르지 않는다.
   const detail = (
-    // 큰 금액 줄은 설명을 한 줄로 자르지 않고 줄을 바꿔 카테고리 · 자산 · 시각이 다 보이게 한다
-    <TagGroup size="t3" truncate={!stacked}>
-      <TagGroupItem>{expense.categoryName ?? t("others")}</TagGroupItem>
-      {/* 줄어드는 차례: 계좌 이름이 먼저 · 가장 많이, 카테고리가 그다음, 시각은 줄지 않는다 — 긴 계좌 이름이 카테고리를 한 글자로 만들지 않게 */}
+    <TagGroup size="t3" truncate>
+      <TagGroupItem shrink={0}>
+        {expense.categoryName ?? t("others")}
+      </TagGroupItem>
       {expense.assetName && (
-        <TagGroupItem shrink={4}>{expense.assetName}</TagGroupItem>
+        <TagGroupItem shrink={2}>{expense.assetName}</TagGroupItem>
       )}
       {expense.expenseDate &&
         (showDate ? (
@@ -154,15 +148,17 @@ export function ExpenseRow({
       </HideUnit>
     </span>
   );
-  const suffix = right ?? (stacked ? undefined : amountEl);
-  const detailNode = stacked ? (
-    <>
-      {detail}
-      <span className="mt-x0_5 block">{amountEl}</span>
-    </>
-  ) : (
-    detail
-  );
+  // 뒤 붙이개 — 금액, 호출자가 `trailing`(가계부의 ⋮)을 주면 금액 뒤에 같은 붙이개 안에 둔다(강조 · 누름 바탕이 줄 끝까지 덮는다)
+  const suffix =
+    right ??
+    (trailing ? (
+      <>
+        {amountEl}
+        {trailing}
+      </>
+    ) : (
+      amountEl
+    ));
 
   const prefix = (
     <ListTile
@@ -183,7 +179,7 @@ export function ExpenseRow({
       {onClick ? (
         <ListButtonItem
           title={title}
-          detail={detailNode}
+          detail={detail}
           prefix={prefix}
           suffix={suffix}
           align="top"
@@ -193,7 +189,7 @@ export function ExpenseRow({
       ) : (
         <ListItem
           title={title}
-          detail={detailNode}
+          detail={detail}
           prefix={prefix}
           suffix={suffix}
           align="top"

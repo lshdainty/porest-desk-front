@@ -77,17 +77,31 @@ describe("거래 줄 — ds List", () => {
     );
   });
 
-  it("큰 금액(−1,234,567,890원)은 설명 아래로 내려 카테고리 · 자산이 한 글자로 줄지 않는다 — 설명은 줄을 바꾼다", () => {
+  it("값은 금액 길이와 상관없이 늘 뒤 붙이개(오른쪽)에 둔다 — 값 길이로 내리지 않는다(list.md:136 · :146)", () => {
     render(base);
-    const detail = q("[data-slot=list-detail]")!;
-    expect(detail.textContent).toContain("1,234,567,890");
-    expect(q("[data-slot=list-suffix]")).toBeNull();
-    expect(q("[data-slot=tag-group]")?.className).not.toContain(
-      "whitespace-nowrap",
+    const suffix = q("[data-slot=list-suffix]");
+    expect(suffix?.textContent).toContain("1,234,567,890");
+    expect(q("[data-slot=list-detail]")?.textContent).not.toContain(
+      "1,234,567,890",
     );
     // 호출자가 right 를 주면 그대로 오른쪽
     render(base, { right: <b>R</b> });
     expect(q("[data-slot=list-suffix]")?.textContent).toBe("R");
+  });
+
+  it("설명이 줄어드는 정도는 스펙 예 그대로 — 카테고리 0 · 계좌 2 · 시각 0", () => {
+    render(base);
+    const shrinks = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-slot=tag-group-item]"),
+    ).map((e) => e.style.flexShrink);
+    expect(shrinks).toEqual(["0", "2", "0"]);
+  });
+
+  it("trailing(가계부 ⋮)은 금액 뒤 같은 뒤 붙이개 안에 들어 강조 바탕이 줄 끝까지 덮는다", () => {
+    render(base, { trailing: <button aria-label="더보기">⋮</button> });
+    const suffix = q("[data-slot=list-suffix]")!;
+    expect(suffix.querySelector("button[aria-label=더보기]")).not.toBeNull();
+    expect(suffix.textContent).toContain("1,234,567,890");
   });
 
   it("앞 타일 40 · 모서리 r3 · 줄 전체가 버튼", () => {

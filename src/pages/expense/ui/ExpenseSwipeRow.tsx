@@ -74,27 +74,25 @@ export function ExpenseSwipeRow({
       else void a.onSelect();
     },
   }));
+  // ⋮ 는 줄의 뒤 붙이개 안에 둔다(swipe-actions `suffixNode`) — 강조 · 누름 바탕이 줄 끝까지 이어진다. 금액 끝은 화면 끝에서 56 그대로
   const row = (
-    <div className="flex items-center pr-global-gutter">
-      {/* 줄이 제 좌우 24 를 갖는다. 오른쪽 24 는 ⋮ 자리 밑으로 겹쳐 금액 끝(화면 끝에서 56)을 지킨다 */}
-      <div className="-mr-global-gutter min-w-0 flex-1">
-        <ExpenseRow
-          gutter
-          highlighted={highlighted}
-          expense={expense}
-          onClick={onOpen}
-        />
-      </div>
-      {dsActions.length > 0 ? (
-        <SwipeActionsMenu
-          actions={dsActions}
-          rowLabel={rowLabel}
-          className="-mr-x2 shrink-0"
-        />
-      ) : (
-        <RowMoreSpacer />
-      )}
-    </div>
+    <ExpenseRow
+      gutter
+      highlighted={highlighted}
+      expense={expense}
+      onClick={onOpen}
+      trailing={
+        dsActions.length > 0 ? (
+          <SwipeActionsMenu
+            actions={dsActions}
+            rowLabel={rowLabel}
+            className="-ml-x1 -mr-x2 shrink-0"
+          />
+        ) : (
+          <span aria-hidden className={cn("-ml-x1 shrink-0", ROW_MORE_SPACE)} />
+        )
+      }
+    />
   );
   return (
     <div ref={rowRef}>
