@@ -1958,10 +1958,14 @@ settings,devices.lastUsed,마지막 사용 {{when}},Last used {{when}}
 settings,devices.empty,로그인된 기기가 없어요,No devices are signed in
 settings,devices.loadError,기기 목록을 불러오지 못했어요,Couldn't load your devices
 settings,devices.logout,로그아웃,Log out
-settings,devices.logoutTitle,이 기기에서 로그아웃,Log out this device
-settings,devices.logoutConfirm,{{device}} 에서 로그아웃할까요? 그 기기는 다시 로그인해야 해요.,Log out of {{device}}? It will need to sign in again.
+settings,devices.logoutTitle,{{device}}에서 로그아웃할까요?,Log out of {{device}}?
+settings,devices.logoutConfirm,그 기기는 다시 로그인해야 해요.,That device will need to sign in again.
 settings,devices.logoutAll,모든 기기에서 로그아웃,Log out all devices
-settings,devices.logoutAllConfirm,지금 쓰는 기기를 포함해 모두 로그아웃할까요? 다시 로그인해야 해요.,Log out everywhere including this device? You'll need to sign in again.
+settings,devices.logoutAllTitle,모든 기기에서 로그아웃할까요?,Log out of all devices?
+settings,devices.logoutAllConfirm,지금 쓰는 기기도 로그아웃돼요. 다시 로그인해야 해요.,This device will be logged out too. You'll need to sign in again.
+settings,devices.logoutLabel,{{device}} 로그아웃,Log out {{device}}
+settings,devices.loadErrorHint,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
+settings,devices.logoutFailed,로그아웃하지 못했어요. 잠시 뒤 다시 시도해주세요.,Couldn't log out. Please try again in a moment.
 settings,account.linked,연결됨,Connected
 settings,account.notLinked,연결 안 됨,Not connected
 settings,account.link,연결,Connect
@@ -2430,7 +2434,7 @@ subscription,apiToken.loadFailed,토큰 목록을 불러오지 못했어요,Coul
 subscription,gate.title,증권 구독이 필요해요,Securities needs a subscription
 subscription,gate.desc,"실시간 시세·종목 검색·관심종목은 Pro 구독에 들어 있어요. 구독하면 이 화면이 바로 열려요.","Real-time quotes, search and watchlists are part of Pro. Subscribe and this screen opens right away."
 subscription,gate.action,구독 보기,See plans
-date,justNow,방금,Just now
+date,justNow,방금 전,Just now
 date,minutesAgo,{{count}}분 전,{{count}} min ago
 date,hoursAgo,{{count}}시간 전,{{count}} hr ago
 date,daysAgo,{{count}}일 전,{{count}} days ago
