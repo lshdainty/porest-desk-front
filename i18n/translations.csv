@@ -3047,4 +3047,11 @@ expense,calendar.dayLabel,"{{date}}, 지출 {{amount}}","{{date}}, spent {{amoun
 expense,calendar.dayLabelNone,{{date}},{{date}}
 expense,calendar.legend,막대가 진할수록 많이 쓴 날 · 누르면 그 날로 옮겨요,Darker bars mean more spent · Tap a day to jump to it
 expense,list.count,거래 {{count}}건,{{count}} transactions
+expense,filter.barLabel,거래 거르기,Filter transactions
+expense,filter.clearAll,필터 지우기,Clear filters
+expense,filter.assetClear,{{name}} 지우기,Remove {{name}}
+expense,filter.amountChip,금액,Amount
+expense,filter.chipMore,{{first}} 외 {{count}}개,{{first}} +{{count}} more
+expense,filter.chipExcludeMore,{{first}} 외 {{count}}개 빼고,Excluding {{first}} +{{count}} more
+expense,filter.chipRange,{{min}} ~ {{max}},{{min}} – {{max}}
 expense,list.title,거래,Transactions

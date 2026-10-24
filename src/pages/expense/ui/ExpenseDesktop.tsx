@@ -9,8 +9,11 @@ import { formatMonthShort } from "@/shared/lib/date";
 import type { Expense } from "@/entities/expense";
 import type { AssetTransfer } from "@/entities/asset";
 import { useExpenseCategories } from "@/features/expense";
+import { useAssets } from "@/features/asset";
+import { FilterBar } from "@/features/expense/ui/FilterBar";
 import {
   hasActiveFilter,
+  monthPeriodOf,
   periodMonthBounds,
   type FilterValue,
 } from "@/features/expense/model/filter";
@@ -96,9 +99,10 @@ export function ExpenseDesktop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlMonth = monthFromQuery(searchParams.get("month"));
   const focusTxId = Number(searchParams.get("txId")) || null;
-  const [filterValue] = useState<FilterValue | null>(null);
-  const { assetId } = useAssetFilter();
+  const [filterValue, setFilterValue] = useState<FilterValue | null>(null);
+  const { assetId, asset, clear: clearAsset } = useAssetFilter();
   const categoriesQ = useExpenseCategories();
+  const assetsQ = useAssets();
 
   // 기간이 걸렸으면 달력은 그 기간 안의 달만 본다
   const bounds = periodMonthBounds(filterValue);
@@ -136,6 +140,20 @@ export function ExpenseDesktop() {
     goMonth(clampMonth(shiftMonth(month, delta), bounds));
   const canPrev = !bounds || month > bounds.first;
   const canNext = !bounds || month < bounds.last;
+  const changeFilter = (next: FilterValue | null) => {
+    setFilterValue(next);
+    const nb = periodMonthBounds(next);
+    // 기간을 새로 걸면 작은 달력은 기간의 첫 달로
+    if (nb && (nb.first !== bounds?.first || nb.last !== bounds?.last))
+      goMonth(nb.first);
+  };
+  const firstChip = useRef<HTMLButtonElement | null>(null);
+  const clearAll = () => {
+    setFilterValue(null);
+    clearAsset();
+    requestAnimationFrame(() => firstChip.current?.focus());
+  };
+
   // ── 날 누르기 · 들어온 거래로 옮기기 ──
   const listRef = useRef<HTMLDivElement | null>(null);
   const scrollToDay = (ds: string) => {
@@ -166,6 +184,8 @@ export function ExpenseDesktop() {
     null,
   );
 
+  const assets = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data]);
+
   const [y = 1970, m = 1] = month.split("-").map(Number);
   const monthLabel = formatMonthShort(new Date(y, m - 1, 1));
   const calendarProps = {
@@ -181,6 +201,20 @@ export function ExpenseDesktop() {
     summaryLoading: data.isLoadingSummary,
     onPickDay: scrollToDay,
   };
+  const filterBar = (
+    <FilterBar
+      value={filterValue}
+      onChange={changeFilter}
+      categories={categoriesQ.data ?? []}
+      assets={assets}
+      wide={wide}
+      viewPeriod={monthPeriodOf(month)}
+      assetName={asset?.assetName}
+      onClearAsset={clearAsset}
+      onClearAll={clearAll}
+      firstChipRef={firstChip}
+    />
+  );
   const listCard = (
     <div ref={listRef}>
       <ListCard
@@ -209,12 +243,18 @@ export function ExpenseDesktop() {
           <div className="[@media(min-height:720px)]:sticky [@media(min-height:720px)]:top-x5">
             <MiniCalendar {...calendarProps} />
           </div>
-          <div className="min-w-0">{listCard}</div>
+          <div className="flex min-w-0 flex-col gap-y-x3">
+            {filterBar}
+            {listCard}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-y-x4">
           <SummaryCard {...calendarProps} />
-          {listCard}
+          <div className="flex flex-col gap-y-x3">
+            {filterBar}
+            {listCard}
+          </div>
         </div>
       )}
 
