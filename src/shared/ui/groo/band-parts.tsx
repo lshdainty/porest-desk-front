@@ -200,7 +200,7 @@ export function KeyValueRows({
 
 /**
  * 목록 제목 — List Header boldSolid(t4 14/19 · 700 · 좌우 24 · 위아래 8) + 오른쪽 글 버튼(+ 아이콘 16, 보이는 36 · 누르는 44).
- * 앞 구역 아래 24 에 16 을 더해 보이는 40 이 되게 `first` 가 아니면 위 16 을 준다(공통 값).
+ * 앞 구역 아래 24 에 위 8 을 더해(머리 위 8 과 합쳐 16) 보이는 40 이 되게 `first` 가 아니면 위 8 을 준다(공통 값).
  */
 export function ListTitle({
   id,
@@ -220,7 +220,7 @@ export function ListTitle({
   first?: boolean;
 }) {
   return (
-    <ListHeader as="div" variant="boldSolid" className={cn(!first && "mt-x4")}>
+    <ListHeader as="div" variant="boldSolid" className={cn(!first && "mt-x2")}>
       <h2 id={id} className="m-0 tracking-normal [font:inherit]">
         {children}
       </h2>
@@ -326,5 +326,50 @@ export function MeterBar({
       })}
       aria-valuetext={text}
     />
+  );
+}
+
+/**
+ * 데스크톱 지표 칸 — 한 줄 세·두 칸 그대로(구조 유지, I-08 16). 칸은 minmax(0,1fr), 이름 R10 t3 · 500 · subtle,
+ * 값 t5 · 700 · 고정폭 · 원까지(쉼표 뒤 줄바꿈).
+ */
+export function StatGrid({
+  items,
+  className,
+}: {
+  items: KeyValue[];
+  className?: string;
+}) {
+  return (
+    <dl
+      className={cn(
+        "m-0 mt-x3 grid gap-x3",
+        items.length === 3 ? "grid-cols-3" : "grid-cols-2",
+        className,
+      )}
+      style={{
+        gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
+      }}
+    >
+      {items.map((it) => (
+        <div key={it.key} className="min-w-0">
+          <dt className="text-t3 font-medium text-fg-neutral-subtle">
+            {it.name}
+          </dt>
+          <dd
+            className={cn(
+              "m-0 mt-x0_5 text-t5 font-bold tabular-nums",
+              it.tone === "critical"
+                ? "text-fg-critical"
+                : it.tone === "brand"
+                  ? "text-fg-brand"
+                  : "text-fg-neutral",
+            )}
+          >
+            {withCommaBreaks(it.value)}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

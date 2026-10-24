@@ -1,14 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Copy, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   useExpenseBudgets,
   useExpenseCategories,
@@ -18,23 +10,37 @@ import {
   useDeleteExpenseBudget,
 } from "@/features/expense";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
-import { KRW, isEn } from "@/shared/lib/groo/format";
-import { HideUnit, MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
-import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
+import { MINUS } from "@/shared/lib/groo/format";
+import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon, MonthPicker } from "@/shared/ui/groo/primitives";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
-import { Button } from "@/shared/ui/button";
-import { MANAGE_ROW, manageRowClass } from "@/shared/ui/groo/manage-row-tokens";
+import { Button } from "@/shared/ds/button";
+import { Callout } from "@/shared/ds/callout";
+import { Card, CardContent } from "@/shared/ds/card";
+import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
+import { Skeleton } from "@/shared/ds/skeleton";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
+import { MonthBar } from "@/shared/ui/groo/month-bar";
+import {
+  BandEmpty,
+  BandFailure,
+  BigAmount,
+  Eyebrow,
+  KeyValueRows,
+  KeyValueSkeleton,
+  ListTitle,
+  MeterBar,
+  StatGrid,
+  type KeyValue,
+} from "@/shared/ui/groo/band-parts";
+import { cn } from "@/shared/lib/cn";
 import {
   BudgetEditDialog,
   MonthlyBudgetDialog,
   type BudgetDraft,
 } from "./BudgetEditDialog";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 
 /*
  * 빈 배열 상수 — `data ?? []` 는 로딩 중 매 렌더 **새 배열**이 되어, 이걸 의존성으로
@@ -63,20 +69,16 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const prevKey = prevMonthKey(monthKey);
   const [prevY, prevM] = prevKey.split("-").map(Number) as [number, number];
 
-  const { data: budgets, isLoading: loadingBudgets } = useExpenseBudgets({
-    year,
-    month,
-  });
+  const budgetsQ = useExpenseBudgets({ year, month });
+  const { data: budgets, isLoading: loadingBudgets } = budgetsQ;
   const prevBudgetsQ = useExpenseBudgets({ year: prevY, month: prevM });
-  const { data: categories, isLoading: loadingCategories } =
-    useExpenseCategories();
+  const categoriesQ = useExpenseCategories();
+  const { data: categories, isLoading: loadingCategories } = categoriesQ;
   const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
   const monthEndDate = new Date(year, month, 0).getDate();
   const monthEnd = `${year}-${String(month).padStart(2, "0")}-${String(monthEndDate).padStart(2, "0")}`;
-  const { data: monthlySummary, isLoading: loadingSummary } = useRangeSummary(
-    monthStart,
-    monthEnd,
-  );
+  const summaryQ = useRangeSummary(monthStart, monthEnd);
+  const { data: monthlySummary, isLoading: loadingSummary } = summaryQ;
 
   const createMut = useCreateExpenseBudget();
   const updateMut = useUpdateExpenseBudget();
@@ -153,6 +155,13 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   }, [categoryList]);
 
   const loading = loadingBudgets || loadingCategories || loadingSummary;
+  // 질의 하나라도 내용 없이 실패하면 0원 · 빈 목록으로 보이지 않게 실패 한 곳으로(I-08 23)
+  const failedQs = [budgetsQ, categoriesQ, summaryQ].filter(
+    (q) => q.isError && q.data === undefined,
+  );
+  const retryAll = () => {
+    for (const q of failedQs) void q.refetch();
+  };
 
   const saveCategoryBudget = (draft: BudgetDraft) => {
     const existing = editing !== "new" && editing ? editing : null;
@@ -261,60 +270,83 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     setMonthKey(`${ny}-${String(nm).padStart(2, "0")}`);
   };
 
+  const hasMonthly = monthlyBudget != null;
+  const overAllocated = hasMonthly && remaining < 0;
+
+  const copyButton = (
+    <Button
+      type="button"
+      variant="neutralWeak"
+      size="small"
+      onClick={() => setConfirmCopy(true)}
+      disabled={
+        prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0
+      }
+      title={
+        mobile
+          ? undefined
+          : (prevBudgetsQ.data?.length ?? 0) === 0
+            ? t("manager.noPrevBudget")
+            : t("manager.copyPrevTitle")
+      }
+    >
+      <Copy aria-hidden />
+      {t("copyLastMonth")}
+    </Button>
+  );
+
+  const body =
+    failedQs.length > 0 ? (
+      <div className={mobile ? "px-x6 pb-x6 pt-x3" : undefined}>
+        <BandFailure title={t("manager.loadFailed")} onRetry={retryAll} />
+      </div>
+    ) : loading ? (
+      <ManagerSkeleton mobile={mobile} />
+    ) : (
+      <>
+        <TotalArea
+          mobile={mobile}
+          month={month}
+          monthlyBudget={monthlyBudget}
+          monthlyLimit={monthlyLimit}
+          totalSpent={totalSpent}
+          totalAssigned={totalAssigned}
+          remaining={remaining}
+          overAllocated={overAllocated}
+          onEdit={() => setEditMonthly(true)}
+          disabled={loading}
+        />
+        <CategoryArea
+          mobile={mobile}
+          categoryBudgets={categoryBudgets}
+          categoryMap={categoryMap}
+          spentByCategory={spentByCategory}
+          allCategoriesBudgeted={allCategoriesBudgeted}
+          loading={loading}
+          deleting={deleteMut.isPending}
+          onAdd={() => setEditing("new")}
+          onEdit={setEditing}
+          onDelete={setConfirmDelete}
+          onDeleteConfirmed={(b) => deleteMut.mutateAsync(b.rowId)}
+        />
+      </>
+    );
+
   return (
     <>
-      {/* 월 바는 ManagerShell(flex-col gap-4=16px) 밖에 둬서 카드와의 간격을
-          marginBottom 12 로 직접 제어 — 앱 _MonthBar→카드 SizedBox(PSpace.x12) 정합.
-          (쉘 안에 두면 gap 16 + marginBottom 이 더해져 간격이 과하게 벌어짐) */}
-      {mobile && (
-        <div
-          style={{
-            display: "flex",
-            gap: 0,
-            alignItems: "center",
-            marginBottom: 12,
-          }}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            type="button"
-            aria-label={t("prevMonth")}
-            onClick={() => adjustMonth(-1)}
-          >
-            <ChevronLeft size={16} />
-          </Button>
-          <MonthPicker
-            value={monthKey}
+      {mobile ? (
+        // 폰 — 흰 면 하나(I-08 18). 달 줄이 맨 위, 카드 · 선 · 띠 없음. 좌우 24 는 구역이 갖는다
+        <div data-slot="budget-manager-phone">
+          <MonthBar
+            monthKey={monthKey}
             onChange={setMonthKey}
-            variant="borderless"
-            allowFuture
+            onStep={adjustMonth}
+            right={copyButton}
           />
-          <Button
-            variant="ghost"
-            size="icon"
-            type="button"
-            aria-label={t("nextMonth")}
-            onClick={() => adjustMonth(1)}
-          >
-            <ChevronRight size={16} />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            type="button"
-            style={{ marginLeft: "auto" }}
-            onClick={() => setConfirmCopy(true)}
-            disabled={
-              prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0
-            }
-          >
-            <Copy size={12} /> {t("copyLastMonth")}
-          </Button>
+          <div className="pt-x3">{body}</div>
         </div>
-      )}
-      <ManagerShell>
-        {!mobile && (
+      ) : (
+        <ManagerShell>
           <ManagerHead
             title={t("manager.title")}
             description={t("manager.description")}
@@ -325,489 +357,13 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                   onChange={setMonthKey}
                   allowFuture
                 />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  type="button"
-                  onClick={() => setConfirmCopy(true)}
-                  disabled={
-                    prevBudgetsQ.isLoading ||
-                    (prevBudgetsQ.data?.length ?? 0) === 0
-                  }
-                  title={
-                    (prevBudgetsQ.data?.length ?? 0) === 0
-                      ? t("manager.noPrevBudget")
-                      : t("manager.copyPrevTitle")
-                  }
-                >
-                  <Copy size={13} /> {t("copyLastMonth")}
-                </Button>
+                {copyButton}
               </div>
             }
           />
-        )}
-
-        {loading ? (
-          <BudgetManagerSkeleton mobile={mobile} />
-        ) : (
-          <>
-            <Card variant="raised">
-              <CardContent>
-                <div style={{ display: "flex", alignItems: "flex-start" }}>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "var(--text-badge)",
-                        color: "var(--fg-brand-strong)",
-                        fontWeight: "700",
-                        letterSpacing: "0.04em",
-                        textTransform: "uppercase",
-                        marginBottom: 6,
-                      }}
-                    >
-                      {t("manager.monthlyTotal", { month })}
-                    </div>
-                    {monthlyBudget ? (
-                      <div
-                        className="num"
-                        style={{
-                          fontSize: "var(--text-display-md)",
-                          fontWeight: "800",
-                          letterSpacing: "-0.022em",
-                        }}
-                      >
-                        <MaskAmount card="budget.manage">
-                          {wonPre()}
-                          {KRW(monthlyLimit)}
-                        </MaskAmount>
-                        {!isEn() && (
-                          <HideUnit>
-                            <span
-                              style={{
-                                fontSize: "var(--text-body-lg)",
-                                marginLeft: 3,
-                              }}
-                            >
-                              원
-                            </span>
-                          </HideUnit>
-                        )}
-                      </div>
-                    ) : (
-                      <div
-                        style={{
-                          fontSize: "var(--text-body-lg)",
-                          color: "var(--fg-tertiary)",
-                          fontWeight: "600",
-                        }}
-                      >
-                        {t("manager.notSet")}
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    style={{ marginLeft: "auto" }}
-                    onClick={() => setEditMonthly(true)}
-                    disabled={loading}
-                  >
-                    {monthlyBudget ? (
-                      <>
-                        <Pencil size={13} />
-                        {tCommon("edit")}
-                      </>
-                    ) : (
-                      <>
-                        <Plus size={13} />
-                        {t("manager.setBudget")}
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {monthlyBudget && (
-                  <div
-                    className="budget-bar"
-                    style={{ height: 10, marginTop: 12 }}
-                  >
-                    <div
-                      className="budget-bar__fill"
-                      style={{
-                        width: `${Math.min(100, monthlyLimit > 0 ? (totalSpent / monthlyLimit) * 100 : 0)}%`,
-                      }}
-                    />
-                  </div>
-                )}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    gap: 12,
-                    marginTop: 12,
-                    paddingTop: 12,
-                    borderTop: "1px solid var(--border-subtle)",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "var(--text-badge)",
-                        color: "var(--fg-tertiary)",
-                        fontWeight: "500",
-                        marginBottom: 2,
-                      }}
-                    >
-                      {t("manager.spent")}
-                    </div>
-                    {/* 앱(13)·웹(16) 중간 → 토큰 스냅 14(body-sm) — 앱 body(14)와 동값(사용자 결정). */}
-                    <div
-                      className="num"
-                      style={{
-                        fontSize: "var(--text-body-sm)",
-                        fontWeight: "700",
-                      }}
-                    >
-                      <MaskAmount card="budget.manage" mask="••••">
-                        {KRW(totalSpent)}
-                      </MaskAmount>
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "var(--text-badge)",
-                        color: "var(--fg-tertiary)",
-                        fontWeight: "500",
-                        marginBottom: 2,
-                      }}
-                    >
-                      {t("manager.assigned")}
-                    </div>
-                    <div
-                      className="num"
-                      style={{
-                        fontSize: "var(--text-body-sm)",
-                        fontWeight: "700",
-                      }}
-                    >
-                      <MaskAmount card="budget.manage" mask="••••">
-                        {KRW(totalAssigned)}
-                      </MaskAmount>
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "var(--text-badge)",
-                        color: "var(--fg-tertiary)",
-                        fontWeight: "500",
-                        marginBottom: 2,
-                      }}
-                    >
-                      {t("manager.assignable")}
-                    </div>
-                    <div
-                      className="num"
-                      style={{
-                        fontSize: "var(--text-body-sm)",
-                        fontWeight: "700",
-                        color:
-                          remaining < 0
-                            ? "var(--color-fg-critical)"
-                            : "var(--fg-income)",
-                      }}
-                    >
-                      <MaskAmount card="budget.manage" mask="••••">
-                        {remaining >= 0 ? "+" : ""}
-                        {KRW(remaining)}
-                      </MaskAmount>
-                    </div>
-                  </div>
-                </div>
-                {monthlyBudget != null && remaining < 0 && (
-                  <div
-                    style={{
-                      marginTop: 8,
-                      padding: "8px 12px",
-                      background: "var(--status-danger-subtle)",
-                      border:
-                        "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
-                      borderRadius: "var(--radius-md)",
-                      fontSize: "var(--text-caption)",
-                      color: "var(--status-danger-fg)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <AlertTriangle size={13} />
-                    {t("manager.overCapPre")}{" "}
-                    <MaskAmount card="budget.manage" mask="••••">
-                      {wonPre()}
-                      {KRW(Math.abs(remaining))}
-                    </MaskAmount>
-                    <WonUnit card="budget.manage" /> {t("manager.overCapPost")}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* 헤더+리스트를 한 그룹으로 묶어 ManagerShell gap-4 영향에서 분리, 내부 간격은 여기서 제어 */}
-            {/* 카테고리별 예산 label↔list — 한 묶음 유지(사용자 결정). 사이 간격은 모바일 0(플랫
-            리스트라 밀착) / 데스크톱 8 — 아래가 카드라 라벨이 붙으면 답답함. */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: mobile ? 0 : 12,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div
-                  style={{
-                    fontSize: "var(--text-label-sm)",
-                    fontWeight: "700",
-                  }}
-                >
-                  {t("manager.categoryBudgets", {
-                    count: categoryBudgets.length,
-                  })}
-                </div>
-                <Button
-                  variant="accent"
-                  size="sm"
-                  style={{ marginLeft: "auto" }}
-                  onClick={() => setEditing("new")}
-                  disabled={loading || allCategoriesBudgeted}
-                  title={
-                    allCategoriesBudgeted
-                      ? t("manager.allBudgetedTooltip")
-                      : undefined
-                  }
-                >
-                  <Plus size={14} /> {t("addBudget")}
-                </Button>
-              </div>
-
-              {/* 카드 다이어트 — 모바일은 카드(.cat-list) 벗기고 플랫 리스트(앱·카테고리/계좌 관리 정합). */}
-              <div
-                className={mobile ? undefined : "cat-list"}
-                style={
-                  mobile
-                    ? { display: "flex", flexDirection: "column" }
-                    : undefined
-                }
-              >
-                {categoryBudgets.length === 0 ? (
-                  <div className="cat-list__empty">
-                    <span>{t("manager.emptyCategory")}</span>
-                  </div>
-                ) : (
-                  categoryBudgets.map((b) => {
-                    const catId = b.categoryRowId as number;
-                    const cat = categoryMap.get(catId);
-                    const palette = getPaletteByColor(cat?.color);
-                    const spent = spentByCategory.get(catId) ?? 0;
-                    const limitAmt = b.budgetAmount;
-                    const p = limitAmt > 0 ? (spent / limitAmt) * 100 : 0;
-                    const state = p > 100 ? "over" : p > 85 ? "warn" : "";
-                    const label =
-                      cat?.categoryName ??
-                      b.categoryName ??
-                      t("manager.categoryFallback", { id: catId });
-                    // 행 레이아웃 — 앱 _CategoryRow 정합:
-                    // [icon | 이름+상태(좌) | 사용액 위·/한도 아래(우)] + 하단 풀폭 진행바.
-                    // 밀면 수정·삭제가 바로 나온다. 탭은 그대로 수정으로 — 스와이프는
-                    // 지름길이지 유일한 경로가 아니다(spec swipe-actions.md · WCAG 2.1.1).
-                    // 데스크톱은 행에 인라인 편집·삭제 아이콘이 있어 통과시킨다.
-                    const swipeActions: SwipeAction[] = [
-                      {
-                        label: tCommon("edit"),
-                        icon: <Pencil />,
-                        kind: "primary",
-                        onSelect: () => setEditing(b),
-                      },
-                      {
-                        label: tCommon("delete"),
-                        icon: <Trash2 />,
-                        kind: "destructive",
-                        // 아래 ConfirmDialog 와 같은 키를 쓴다 — 같은 삭제인데 문구가 갈리면
-                        // 어느 경로로 들어왔는지에 따라 다른 말이 나온다.
-                        confirm: {
-                          title: t("deleteTitle"),
-                          message: t("deleteMessage", { name: `"${label}"` }),
-                          loading: deleteMut.isPending,
-                        },
-                        onSelect: () => deleteMut.mutateAsync(b.rowId),
-                      },
-                    ];
-                    return (
-                      <SwipeActions
-                        key={b.rowId}
-                        rowId={`budget-${b.rowId}`}
-                        groupTag="budget-manager-list"
-                        rowLabel={label}
-                        enabled={mobile}
-                        actions={swipeActions}
-                      >
-                        <div
-                          className={manageRowClass(mobile)}
-                          style={{
-                            flexDirection: "column",
-                            alignItems: "stretch",
-                            gap: 8,
-                            paddingTop: 14,
-                            paddingBottom: 14,
-                            cursor: mobile ? "pointer" : undefined,
-                          }}
-                          onClick={mobile ? () => setEditing(b) : undefined}
-                          role={mobile ? "button" : undefined}
-                        >
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <span
-                              style={{
-                                ...MANAGE_ROW.iconStyle,
-                                background: palette.bg,
-                                color: palette.color,
-                                marginRight: 12,
-                              }}
-                            >
-                              <Icon
-                                name={cat?.icon ?? "tag"}
-                                size={18}
-                                strokeWidth={1.9}
-                              />
-                            </span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              {/* 앱 PTypo.body(14px)/caption(12px·w500) 정합 */}
-                              <div
-                                style={{
-                                  fontSize: "var(--text-body-sm)",
-                                  fontWeight: "600",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {label}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: "var(--text-caption)",
-                                  fontWeight: "500",
-                                  color:
-                                    state === "over"
-                                      ? "var(--color-fg-critical)"
-                                      : "var(--fg-tertiary)",
-                                  marginTop: 2,
-                                }}
-                              >
-                                {state === "over" ? (
-                                  <>
-                                    {t("manager.overLimit")}{" "}
-                                    <MaskAmount
-                                      card="budget.manage"
-                                      mask="••••"
-                                    >
-                                      {wonPre()}
-                                      {KRW(spent - limitAmt)}
-                                    </MaskAmount>
-                                    <WonUnit card="budget.manage" />
-                                  </>
-                                ) : (
-                                  <>
-                                    {t("manager.remaining")}{" "}
-                                    <MaskAmount
-                                      card="budget.manage"
-                                      mask="••••"
-                                    >
-                                      {wonPre()}
-                                      {KRW(Math.max(0, limitAmt - spent))}
-                                    </MaskAmount>
-                                    <WonUnit card="budget.manage" />
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <div
-                              style={{
-                                textAlign: "right",
-                                flexShrink: 0,
-                                marginLeft: 8,
-                              }}
-                            >
-                              <div
-                                className="num"
-                                style={{
-                                  fontSize: "var(--text-body-sm)",
-                                  fontWeight: "700",
-                                  color:
-                                    state === "over"
-                                      ? "var(--color-fg-critical)"
-                                      : "var(--fg-primary)",
-                                }}
-                              >
-                                <MaskAmount card="budget.manage" mask="••••">
-                                  {KRW(spent)}
-                                </MaskAmount>
-                              </div>
-                              <div
-                                className="num"
-                                style={{
-                                  fontSize: "var(--text-badge)",
-                                  fontWeight: "500",
-                                  color: "var(--fg-tertiary)",
-                                }}
-                              >
-                                /{" "}
-                                <MaskAmount card="budget.manage" mask="••••">
-                                  {KRW(limitAmt)}
-                                </MaskAmount>
-                              </div>
-                            </div>
-                            {!mobile && (
-                              <div
-                                className={MANAGE_ROW.actionsClassName}
-                                style={{ marginLeft: 8 }}
-                              >
-                                <Button
-                                  aria-label={tCommon("edit")}
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setEditing(b)}
-                                >
-                                  <Pencil size={13} />
-                                </Button>
-                                <Button
-                                  aria-label={tCommon("delete")}
-                                  variant="ghost"
-                                  size="icon"
-                                  className={MANAGE_ROW.delClassName}
-                                  onClick={() => setConfirmDelete(b)}
-                                >
-                                  <Trash2 size={13} />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="budget-bar" style={{ height: 7 }}>
-                            <div
-                              className={`budget-bar__fill ${state}`}
-                              style={{ width: `${Math.min(100, p)}%` }}
-                            />
-                          </div>
-                        </div>
-                      </SwipeActions>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </ManagerShell>
+          {body}
+        </ManagerShell>
+      )}
 
       {editing && (
         <BudgetEditDialog
@@ -867,90 +423,369 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   );
 }
 
-/** BudgetManager skeleton — 월 총 예산 카드(기본 카드) + 카테고리별 예산 row 리스트. */
-function BudgetManagerSkeleton({ mobile }: { mobile: boolean }) {
+// ── 총 예산 ─────────────────────────────────────────────────────
+function TotalArea({
+  mobile,
+  month,
+  monthlyBudget,
+  monthlyLimit,
+  totalSpent,
+  totalAssigned,
+  remaining,
+  overAllocated,
+  onEdit,
+  disabled,
+}: {
+  mobile: boolean;
+  month: number;
+  monthlyBudget: ExpenseBudget | null;
+  monthlyLimit: number;
+  totalSpent: number;
+  totalAssigned: number;
+  remaining: number;
+  overAllocated: boolean;
+  onEdit: () => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation("budget");
+  const { t: tCommon } = useTranslation("common");
+  const mask = useMasked("budget.manage");
+  const stats: KeyValue[] = [
+    { key: "spent", name: t("manager.spent"), value: mask(won(totalSpent)) },
+    {
+      key: "assigned",
+      name: t("manager.assigned"),
+      value: mask(won(totalAssigned)),
+    },
+    {
+      key: "assignable",
+      name: t("manager.assignable"),
+      value: mask((remaining < 0 ? MINUS : "+") + won(Math.abs(remaining))),
+      tone: remaining < 0 ? "critical" : "brand",
+    },
+  ];
+  const content = (
+    <>
+      <div className="flex items-center justify-between gap-x2">
+        <Eyebrow>{t("manager.monthlyTotal", { month })}</Eyebrow>
+        <Button
+          type="button"
+          variant="ghost"
+          ghostColor="neutralMuted"
+          size="small"
+          className="-my-x2 -mr-x3_5"
+          onClick={onEdit}
+          disabled={disabled}
+        >
+          {monthlyBudget ? (
+            <>
+              <Pencil aria-hidden />
+              {tCommon("edit")}
+            </>
+          ) : (
+            <>
+              <Plus aria-hidden />
+              {t("manager.setBudget")}
+            </>
+          )}
+        </Button>
+      </div>
+      {monthlyBudget ? (
+        <>
+          <BigAmount className="mt-x3" value={mask(won(monthlyLimit))} />
+          <MeterBar
+            className="mt-x4"
+            label={t("manager.monthlyTotal", { month })}
+            value={totalSpent}
+            max={monthlyLimit}
+            formatValue={(n) => mask(won(n))}
+          />
+        </>
+      ) : (
+        <p className="m-0 mt-x3 text-t5 text-fg-neutral-subtle">
+          {t("manager.notSet")}
+        </p>
+      )}
+    </>
+  );
+  const alert = overAllocated ? (
+    <Callout tone="critical">
+      {t("manager.overCap", { amount: mask(won(Math.abs(remaining))) })}
+    </Callout>
+  ) : null;
+  if (mobile) {
+    return (
+      <section data-section="total">
+        <div className="px-x6">{content}</div>
+        <KeyValueRows
+          className="mt-x3 [&_[data-slot=list-content]]:py-x2"
+          items={stats}
+        />
+        {alert && <div className="px-x6 pt-x3">{alert}</div>}
+        <div className={alert ? "pb-x6" : "pb-x4"} />
+      </section>
+    );
+  }
+  return (
+    <Card>
+      <CardContent className="gap-0">
+        {content}
+        <StatGrid items={stats} />
+        {alert && <div className="pt-x3">{alert}</div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── 카테고리별 예산 ─────────────────────────────────────────────
+function CategoryArea({
+  mobile,
+  categoryBudgets,
+  categoryMap,
+  spentByCategory,
+  allCategoriesBudgeted,
+  loading,
+  deleting,
+  onAdd,
+  onEdit,
+  onDelete,
+  onDeleteConfirmed,
+}: {
+  mobile: boolean;
+  categoryBudgets: ExpenseBudget[];
+  categoryMap: Map<number, ExpenseCategory>;
+  spentByCategory: Map<number, number>;
+  allCategoriesBudgeted: boolean;
+  loading: boolean;
+  deleting: boolean;
+  onAdd: () => void;
+  onEdit: (b: ExpenseBudget) => void;
+  onDelete: (b: ExpenseBudget) => void;
+  onDeleteConfirmed: (b: ExpenseBudget) => Promise<unknown>;
+}) {
+  const { t } = useTranslation("budget");
+  const { t: tCommon } = useTranslation("common");
+  const mask = useMasked("budget.manage");
+  const title = (
+    <ListTitle
+      id="budget-manage-list-title"
+      first={!mobile}
+      action={{
+        label: t("addBudget"),
+        icon: <Plus aria-hidden />,
+        onClick: onAdd,
+        disabled: loading || allCategoriesBudgeted,
+        title: allCategoriesBudgeted
+          ? t("manager.allBudgetedTooltip")
+          : undefined,
+      }}
+    >
+      {t("manager.categoryBudgets", { count: categoryBudgets.length })}
+    </ListTitle>
+  );
+  const rows =
+    categoryBudgets.length === 0 ? (
+      <div className="px-x6 pb-x3">
+        <BandEmpty>{t("manager.emptyCategory")}</BandEmpty>
+      </div>
+    ) : (
+      <div role="list" aria-labelledby="budget-manage-list-title">
+        {categoryBudgets.map((b) => {
+          const catId = b.categoryRowId as number;
+          const cat = categoryMap.get(catId);
+          const palette = getPaletteByColor(cat?.color);
+          const spent = spentByCategory.get(catId) ?? 0;
+          const limitAmt = b.budgetAmount;
+          const over = spent > limitAmt;
+          const label =
+            cat?.categoryName ??
+            b.categoryName ??
+            t("manager.categoryFallback", { id: catId });
+          // 밀면 수정 · 삭제가 바로 나온다. 탭은 그대로 수정으로 — 스와이프는 지름길이지 유일한 경로가 아니다(swipe-actions.md · WCAG 2.1.1).
+          // 데스크톱은 줄 끝에 수정 · 삭제 아이콘이 있어 통과시킨다.
+          const swipeActions: SwipeAction[] = [
+            {
+              label: tCommon("edit"),
+              icon: <Pencil />,
+              kind: "primary",
+              onSelect: () => onEdit(b),
+            },
+            {
+              label: tCommon("delete"),
+              icon: <Trash2 />,
+              kind: "destructive",
+              // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 문구가 갈리면 경로에 따라 다른 말이 나온다
+              confirm: {
+                title: t("deleteTitle"),
+                message: t("deleteMessage", { name: `"${label}"` }),
+                loading: deleting,
+              },
+              onSelect: () => onDeleteConfirmed(b),
+            },
+          ];
+          const common = {
+            prefix: (
+              <ListTile
+                style={{ background: palette.bg, color: palette.color }}
+              >
+                <Icon name={cat?.icon ?? "tag"} size={20} />
+              </ListTile>
+            ),
+            title: label,
+            detail: (
+              <span className={over ? "text-fg-critical" : undefined}>
+                {over
+                  ? `${t("manager.overLimit")} ${mask(won(spent - limitAmt))}`
+                  : t("remainingAmt", {
+                      amount: mask(won(Math.max(0, limitAmt - spent))),
+                    })}
+              </span>
+            ),
+          };
+          const values = (
+            <>
+              <span
+                className={cn(
+                  "block whitespace-nowrap text-end text-t5 font-bold tabular-nums",
+                  over ? "text-fg-critical" : "text-fg-neutral",
+                )}
+              >
+                {mask(won(spent))}
+              </span>
+              <span className="block whitespace-nowrap text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
+                / {mask(won(limitAmt))}
+              </span>
+            </>
+          );
+          return (
+            <SwipeActions
+              key={b.rowId}
+              rowId={`budget-${b.rowId}`}
+              groupTag="budget-manager-list"
+              rowLabel={label}
+              enabled={mobile}
+              actions={swipeActions}
+            >
+              <div role="listitem">
+                <List>
+                  {mobile ? (
+                    <ListButtonItem
+                      {...common}
+                      suffix={values}
+                      onClick={() => onEdit(b)}
+                    />
+                  ) : (
+                    <ListItem
+                      {...common}
+                      suffix={
+                        <>
+                          {values}
+                          <span className="inline-flex shrink-0 items-center">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              layout="iconOnly"
+                              size="small"
+                              aria-label={t("manager.editNamed", {
+                                name: label,
+                              })}
+                              onClick={() => onEdit(b)}
+                            >
+                              <Pencil aria-hidden />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              layout="iconOnly"
+                              size="small"
+                              ghostColor="critical"
+                              aria-label={t("manager.deleteNamed", {
+                                name: label,
+                              })}
+                              onClick={() => onDelete(b)}
+                            >
+                              <Trash2 aria-hidden />
+                            </Button>
+                          </span>
+                        </>
+                      }
+                    />
+                  )}
+                </List>
+                <div className="px-x6 pb-x3 pt-x1">
+                  <MeterBar
+                    label={t("budgetName", { name: label })}
+                    value={spent}
+                    max={limitAmt}
+                    formatValue={(n) => mask(won(n))}
+                  />
+                </div>
+              </div>
+            </SwipeActions>
+          );
+        })}
+      </div>
+    );
+  if (mobile) {
+    return (
+      <section data-section="list" className="pb-x3">
+        {title}
+        {rows}
+      </section>
+    );
+  }
+  return (
+    <Card body="list">
+      {title}
+      {rows}
+    </Card>
+  );
+}
+
+/** 불러오는 중 — 달 줄 · 틀은 그대로, 값 자리만 스켈레톤(총 예산 구역 + 목록 줄) */
+function ManagerSkeleton({ mobile }: { mobile: boolean }) {
+  const total = (
+    <div aria-hidden>
+      <Skeleton text="t3" className="w-1/4" />
+      <Skeleton text="t9" radius="8" className="mt-x3 w-1/2" />
+      <Skeleton className="mt-x4 h-2 w-full" radius="full" />
+    </div>
+  );
+  const rows = (
+    <div aria-hidden>
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i}>
+          <div className="flex items-center gap-x3 px-x6 py-x3">
+            <Skeleton radius="12" className="size-x10 shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
+              <Skeleton text="t5" className="w-1/2" />
+              <Skeleton text="t3" className="w-1/3" />
+            </div>
+            <Skeleton text="t5" className="w-x10 shrink-0" />
+          </div>
+          <div className="px-x6 pb-x3 pt-x1">
+            <Skeleton className="h-2 w-full" radius="full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+  if (mobile) {
+    return (
+      <>
+        <div className="px-x6">{total}</div>
+        <KeyValueSkeleton rows={3} />
+        <div className="pb-x4" />
+        {rows}
+      </>
+    );
+  }
   return (
     <>
-      <Card variant="raised">
-        <CardContent>
-          <div style={{ display: "flex", alignItems: "flex-start" }}>
-            <div>
-              <SkeletonBase className="h-3 w-20 mb-2" />
-              <SkeletonBase className="h-10 w-48" />
-            </div>
-            <SkeletonBase className="h-8 w-16 rounded-md ml-auto" />
-          </div>
-          <SkeletonBase className="h-2.5 w-full rounded-full mt-3" />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 12,
-              marginTop: 12,
-              paddingTop: 12,
-              borderTop: "1px solid var(--border-subtle)",
-            }}
-          >
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i}>
-                <SkeletonBase className="h-3 w-12 mb-1.5" />
-                <SkeletonBase className="h-5 w-20" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
+      <Card>
+        <CardContent className="gap-0">{total}</CardContent>
       </Card>
-
-      <div style={{ display: "flex", alignItems: "center", margin: "4px 0" }}>
-        <SkeletonBase className="h-4 w-36" />
-      </div>
-
-      <div
-        className={mobile ? undefined : "cat-list"}
-        style={
-          mobile ? { display: "flex", flexDirection: "column" } : undefined
-        }
-      >
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className={manageRowClass(mobile)}
-            style={{
-              flexDirection: "column",
-              alignItems: "stretch",
-              gap: 8,
-              paddingTop: 14,
-              paddingBottom: 14,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <SkeletonBase className="h-9 w-9 rounded-md shrink-0 mr-3" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-24" />
-                <SkeletonBase className="h-3 w-32 mt-1" />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  marginLeft: 8,
-                }}
-              >
-                <SkeletonBase className="h-4 w-20" />
-                <SkeletonBase className="h-3 w-14 mt-1" />
-              </div>
-              {!mobile && (
-                <div className="flex gap-1 ml-2">
-                  <SkeletonBase className="h-7 w-7 rounded-md" />
-                  <SkeletonBase className="h-7 w-7 rounded-md" />
-                </div>
-              )}
-            </div>
-            <SkeletonBase className="h-[7px] w-full rounded-full" />
-          </div>
-        ))}
-      </div>
+      <Card body="list">{rows}</Card>
     </>
   );
 }
