@@ -64,10 +64,13 @@ type EditingState =
 /** reorderMode — 모바일 순서 편집(디자인 editMode): 켜야만 grip 노출·드래그 가능, 하위 강제 표시. */
 export function CategoryManager({
   mobile,
-  reorderMode = false,
+  reorderMode: reorderProp = false,
+  addRequest = 0,
 }: {
   mobile: boolean;
   reorderMode?: boolean;
+  /** 바깥(설정 폰 머리 "추가")이 올리면 새 카테고리 폼을 연다 */
+  addRequest?: number;
 }) {
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
@@ -77,6 +80,10 @@ export function CategoryManager({
   const updateMut = useUpdateExpenseCategory();
   const deleteMut = useDeleteExpenseCategory();
   const reorderMut = useReorderExpenseCategories();
+
+  // 폰 목록 제목의 "순서 바꾸기" ↔ "완료"(I-16 · I-20 B 5) — 켜면 순서 모드.
+  const [reorderOn, setReorderOn] = useState(false);
+  const reorderMode = reorderProp || (mobile && reorderOn);
 
   const [tab, setTab] = useState<ExpenseType>("EXPENSE");
   const [query, setQuery] = useState("");
@@ -168,6 +175,12 @@ export function CategoryManager({
 
   // 편집 모드 진입 시 검색 초기화 — 필터된 일부만 보며 정렬하는 혼란 방지(디자인은 검색행 자체가 숨음).
   // 모드가 **바뀐 순간**에만 본다. 렌더 중 조정이라 커밋을 한 번 더 태우지 않는다.
+  const [seenAddRequest, setSeenAddRequest] = useState(addRequest);
+  if (seenAddRequest !== addRequest) {
+    setSeenAddRequest(addRequest);
+    setEditing({ kind: "new" });
+  }
+
   const [wasReorder, setWasReorder] = useState(reorderMode);
   if (wasReorder !== reorderMode) {
     setWasReorder(reorderMode);
@@ -327,16 +340,15 @@ export function CategoryManager({
 
         {mobile ? (
           <>
-            {/* header 바로 아래 full-width 흰띠 underline 탭 — 컨테이너 padding(24/20) 상쇄해 full-bleed flush.
-                sticky 기준은 컨테이너 content box(=padding-top 24 아래)라, 시각 최상단에 딱 붙여 고정하려면
-                top 도 padding-top 만큼 음수(-24) 여야 함. top:0 이면 24px 떠 보임.
-                margin/top 은 SettingsPage 모바일 스크롤 padding('24px 20px')과 반드시 일치. */}
+            {/* 머리 바로 아래 화면 폭 밑줄 탭. 스크롤은 설정 껍데기의 main 하나이고 ds 머리(높이 56 + 위 안전 영역)가
+                위에 붙어 있어 sticky top 은 머리 높이다(I-16). 음수 margin 은 껍데기 임시 24(TEMP_BODY_PADDING —
+                model/sections.ts)를 상쇄해 탭을 화면 끝까지 편다 — categories 가 그 목록에서 빠지면 함께 걷는다. */}
             <div
               style={{
                 background: "var(--bg-surface)",
                 margin: "-24px -20px 0",
                 position: "sticky",
-                top: -24,
+                top: "calc(56px + env(safe-area-inset-top))",
                 zIndex: 5,
               }}
             >
@@ -369,7 +381,7 @@ export function CategoryManager({
               }}
             >
               {reorderMode ? (
-                // 편집 모드 — 검색·추가 대신 드래그 안내문(디자인 editMode).
+                // 순서 모드 — 검색 대신 드래그 안내문(디자인 editMode).
                 <div
                   style={{
                     fontSize: "var(--text-label-sm)",
@@ -397,13 +409,27 @@ export function CategoryManager({
                       className="w-full min-w-0 pl-9"
                     />
                   </div>
+                </div>
+              )}
+
+              {/* 목록 제목 — 불러오는 중 · 실패에는 개수가 없어 그리지 않는다 */}
+              {!isLoading && categories && (
+                <div className="mb-x2 flex items-center justify-between">
+                  <h2 className="text-t4 font-medium text-fg-neutral-subtle">
+                    {t("listTitle", {
+                      kind:
+                        tab === "EXPENSE"
+                          ? t("expenseCategory")
+                          : t("incomeCategory"),
+                      count: tab === "EXPENSE" ? counts.expense : counts.income,
+                    })}
+                  </h2>
                   <Button
-                    variant="accent"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setEditing({ kind: "new" })}
+                    onClick={() => setReorderOn((v) => !v)}
                   >
-                    <Plus size={14} strokeWidth={2.4} />
-                    {t("add")}
+                    {reorderMode ? t("reorderDone") : t("reorderEdit")}
                   </Button>
                 </div>
               )}

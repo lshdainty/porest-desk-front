@@ -1314,7 +1314,7 @@ budget,nextMonth,다음 달,Next month
 budget,addBudget,예산 추가,Add Budget
 budget,deleteTitle,예산 삭제,Delete budget
 budget,manager.title,예산 설정,Budget settings
-budget,manager.description,월간 총 예산과 카테고리별 한도를 설정합니다. 예산의 85% 이상 사용하면 알림을 보내드려요.,Set your total monthly budget and per-category limits. We'll notify you when you use 85% or more of a budget.
+budget,manager.description,달마다 총 예산과 카테고리별 한도를 정해요. 예산의 85% 이상을 쓰면 알림을 보내요.,Set your total monthly budget and per-category limits. We'll notify you when you use 85% or more of a budget.
 budget,manager.noPrevBudget,복사할 지난달 예산이 없어요,No previous month budget to copy
 budget,manager.copyPrevTitle,지난달 한도를 이번 달로 복사,Copy last month's limits to this month
 budget,manager.monthlyTotal,{{month}}월 총 예산,Month {{month}} Total Budget
@@ -1410,7 +1410,7 @@ card,benefitType.cashback,캐시백,Cashback
 card,benefitType.mileage,마일리지,Mileage
 category,add,추가,Add
 category,editOf,{{name}} 수정,Edit {{name}}
-category,manager.description,"지출·수입 내역을 분류할 카테고리를 관리합니다. 드래그로 순서를 바꾸고, 부모 행 하위에 세부 카테고리를 둘 수 있어요.","Manage categories to classify your spending and income. Drag to reorder, and nest detailed categories under a parent row."
+category,manager.description,지출 · 수입을 나눌 카테고리예요.,Categories that sort your spending and income.
 category,searchPlaceholder,카테고리 검색,Search categories
 category,empty,카테고리가 없어요,No categories yet
 category,noSearchResults,검색 결과가 없습니다.,No results found.
@@ -1451,6 +1451,7 @@ category,editTitle,카테고리 수정,Edit category
 category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category
 category,incomeCategory,수입 카테고리,Income category
+category,listTitle,{{kind}} {{count}}개,{{kind}} · {{count}}
 category,preview,미리보기,Preview
 category,type,구분,Type
 category,parentCategory,상위 카테고리,Parent category
@@ -1879,7 +1880,7 @@ settings,sections.budget.label,예산 설정,Budget settings
 settings,sections.budget.desc,월간 예산 및 카테고리별 한도,Monthly budget and per-category limits
 settings,sections.goals.label,저축 목표,Saving goals
 settings,sections.goals.desc,목표 추가·수정·삭제 및 진행률 관리,Manage goals and track progress
-settings,sections.goals.managerDescription,목표를 추가하고 진행률을 관리합니다. 자산 화면에서는 진행 상황을 확인할 수 있어요.,Add goals and manage progress — view status on the Assets screen.
+settings,sections.goals.managerDescription,목표를 추가하고 진행률을 관리해요. 자산 화면에서는 진행 상황을 확인할 수 있어요.,Add goals and manage progress — view status on the Assets screen.
 settings,sections.recurring.label,반복 거래 관리,Manage recurring
 settings,sections.recurring.desc,구독·고정 결제·정기 수입 일괄 관리,Manage subscriptions · fixed payments · regular income
 settings,sections.presets.label,프리셋 관리,Manage presets
@@ -2532,7 +2533,7 @@ calendar,detail.durationH,{{h}}시간,{{h}}h
 calendar,detail.durationHM,{{h}}시간 {{m}}분,{{h}}h {{m}}m
 calendar,detail.durationM,{{m}}분,{{m}}m
 calendar,detail.memo,메모,Memo
-category,reorderEdit,편집,Edit
+category,reorderEdit,순서 바꾸기,Reorder
 category,reorderDone,완료,Done
 category,reorderHint,핸들을 잡고 위·아래로 끌어 순서를 바꿔요. 상위 카테고리끼리·하위 카테고리끼리 이동돼요.,Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
 expense,txm.spendSummary,소비 요약,Spending summary

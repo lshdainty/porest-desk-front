@@ -4,33 +4,18 @@ import { useTranslation } from "react-i18next";
 import { isEn } from "@/shared/lib/groo/format";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
 import { useOutletContext, useSearchParams } from "react-router-dom";
+import { focusScreenTitle, useScreenTitle } from "@/shared/ds/top-navigation";
 import {
-  Bell,
-  Bookmark,
   CalendarDays,
-  CalendarCog,
-  ChevronLeft,
   ChevronRight,
   Link2,
-  Download,
   Eye,
   EyeOff,
   Key,
   LogOut,
   Monitor,
-  Palette,
-  PiggyBank,
-  Repeat,
-  ShieldCheck,
-  BookOpen,
-  Tag,
-  Tags,
   Trash2,
-  User,
-  CreditCard,
-  FilePen,
   Sparkles,
-  NotebookTabs,
 } from "lucide-react";
 import { BudgetManager } from "@/widgets/budget-manage";
 import { CategoryManager } from "@/widgets/category-manage";
@@ -51,7 +36,6 @@ import {
 } from "@/widgets/account-settings";
 import { AccountManager, SavingGoalManager } from "@/widgets/asset-full";
 import { Card, CardContent } from "@/shared/ui/card";
-import { useTheme } from "@/shared/ui/theme-context";
 import { useCurrentUser, WithdrawDialog } from "@/features/user";
 import { useAuth } from "@/features/auth";
 import { SubscriptionDialog } from "@/features/subscription/ui/SubscriptionDialog";
@@ -65,14 +49,13 @@ import {
   useOAuthProviders,
   useUnlinkOAuth,
 } from "@/features/oauth-link";
-import { config, oauthKeys } from "@/shared/config";
+import { oauthKeys } from "@/shared/config";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { ALL_HIDE_CARDS } from "@/shared/lib/groo/hide-amounts-cards";
 import { useHiddenCards } from "@/shared/lib/groo/hide-amounts-core";
-import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 /*
  * 비밀번호 변경 다이얼로그만 지연 로딩한다.
  *
@@ -90,253 +73,29 @@ const PasswordChangeDialog = lazy(() =>
 );
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
-import { PageHead } from "@/shared/ui/groo/page-head";
+import {
+  MENU_GROUPS,
+  SECTION_IDS,
+  SECTIONS,
+  type SectionDef,
+  type SectionId,
+} from "../model/sections";
+import { useSettingsBack } from "../model/use-settings-back";
+import { SettingsDesktopFrame } from "./SettingsDesktopFrame";
+import { SettingsSubpageMobile } from "./SettingsSubpageMobile";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
-type SectionId =
-  | "categories"
-  | "accounts"
-  | "budget"
-  | "goals"
-  | "recurring"
-  | "presets"
-  | "calendar-share"
-  | "calendar-labels"
-  | "todo-tags"
-  | "memo-tags"
-  | "appearance"
-  | "notifications"
-  | "data"
-  | "account"
-  | "privacy"
-  | "guide"
-  | "hide-amounts"
-  | "devices";
-
-interface SectionDef {
-  id: SectionId;
-  labelKey: string;
-  icon: React.ComponentType<{
-    size?: number;
-    strokeWidth?: number;
-    color?: string;
-  }>;
-  descKey: string;
-  /**
-   * 값이 있으면 내부 섹션을 여는 대신 이 주소를 새 탭으로 연다.
-   * 처리방침은 계정 단위 문서라 SSO 에 한 벌만 두고 여기서는 가리키기만 한다.
-   */
-  externalUrl?: string;
-  /**
-   * 목록(데스크톱 nav · 모바일 메뉴)에 내보내지 않는 섹션 — 다른 화면에서만 들어온다.
-   * 금액 가리기는 계정 > 보안 아래 있어 설정 목록에 두 번 나오면 안 된다.
-   */
-  hidden?: boolean;
-  /**
-   * 되돌아갈 자리 — 목록이 아니라 다른 섹션에서 들어오는 화면용.
-   * 없으면 메뉴로 나간다. 계정 > 보안에서 들어온 화면이 메뉴로 튀면 한 단계를 건너뛴다.
-   */
-  parent?: SectionId;
-}
-
-const SECTIONS: SectionDef[] = [
-  {
-    id: "categories",
-    labelKey: "sections.categories.label",
-    icon: Tag,
-    descKey: "sections.categories.desc",
-  },
-  {
-    id: "accounts",
-    labelKey: "sections.accounts.label",
-    icon: CreditCard,
-    descKey: "sections.accounts.desc",
-  },
-  {
-    id: "budget",
-    labelKey: "sections.budget.label",
-    icon: FilePen,
-    descKey: "sections.budget.desc",
-  },
-  {
-    id: "goals",
-    labelKey: "sections.goals.label",
-    icon: PiggyBank,
-    descKey: "sections.goals.desc",
-  },
-  {
-    id: "recurring",
-    labelKey: "sections.recurring.label",
-    icon: Repeat,
-    descKey: "sections.recurring.desc",
-  },
-  {
-    id: "presets",
-    labelKey: "sections.presets.label",
-    icon: Bookmark,
-    descKey: "sections.presets.desc",
-  },
-  {
-    id: "calendar-share",
-    labelKey: "sections.calendarShare.label",
-    icon: CalendarCog,
-    descKey: "sections.calendarShare.desc",
-  },
-  {
-    id: "calendar-labels",
-    labelKey: "sections.calendarLabels.label",
-    icon: Tag,
-    descKey: "sections.calendarLabels.desc",
-  },
-  {
-    id: "todo-tags",
-    labelKey: "sections.todoTags.label",
-    icon: Tags,
-    descKey: "sections.todoTags.desc",
-  },
-  {
-    id: "memo-tags",
-    labelKey: "sections.memoTags.label",
-    icon: NotebookTabs,
-    descKey: "sections.memoTags.desc",
-  },
-  {
-    id: "appearance",
-    labelKey: "sections.appearance.label",
-    icon: Palette,
-    descKey: "sections.appearance.desc",
-  },
-  {
-    id: "notifications",
-    labelKey: "sections.notifications.label",
-    icon: Bell,
-    descKey: "sections.notifications.desc",
-  },
-  {
-    id: "data",
-    labelKey: "sections.data.label",
-    icon: Download,
-    descKey: "sections.data.desc",
-  },
-  {
-    id: "account",
-    labelKey: "sections.account.label",
-    icon: User,
-    descKey: "sections.account.desc",
-  },
-  // 설명서(porest-desk-guide)는 desk 와 같은 호스트의 /guide/ 에 떠 있다 — 상대 경로라 dev·prod 모두 맞다.
-  {
-    id: "guide",
-    labelKey: "sections.guide.label",
-    icon: BookOpen,
-    descKey: "sections.guide.desc",
-    externalUrl: "/guide/",
-  },
-  {
-    id: "privacy",
-    labelKey: "sections.privacy.label",
-    icon: ShieldCheck,
-    descKey: "sections.privacy.desc",
-    externalUrl: `${config.ssoUrl}/privacy`,
-  },
-  // 계정 > 보안에서 들어오는 화면(화면의 눈 버튼도 여기로 온다). 목록에는 안 나온다.
-  {
-    id: "hide-amounts",
-    labelKey: "hideAmounts.label",
-    icon: Eye,
-    descKey: "hideAmounts.desc",
-    hidden: true,
-  },
-  // 계정 > 보안에서 들어온다. 목록에는 안 나온다.
-  {
-    id: "devices",
-    labelKey: "sections.devices.label",
-    icon: Monitor,
-    descKey: "sections.devices.desc",
-    hidden: true,
-    parent: "account",
-  },
-];
-
-/**
- * 데스크톱 우측 패널 제목을 여기서 그려 주는 섹션.
- *
- * 나머지 섹션은 각자 `ManagerHead` 를 갖고 있는데(카테고리·계좌·예산·저축목표·
- * 캘린더 공유·캘린더 라벨·할일 태그·알림) 이 다섯은 없어서, 같은 자리에서 어떤
- * 섹션은 제목+설명으로 시작하고 어떤 섹션은 본문이 바로 시작했다. 좌측 nav 로 위치는
- * 알 수 있지만 패널 첫 줄의 리듬이 섹션마다 달랐다.
- *
- * 금액 가리기는 자기 뒤로가기 줄을 갖고 있어 제외한다.
- */
-const NEEDS_DESKTOP_HEAD: SectionId[] = [
-  "recurring",
-  "presets",
-  "appearance",
-  "data",
-  "account",
-  "devices",
-];
-
-// 외부 링크 항목은 열 내부 화면이 없으므로 URL 로 직접 접근 가능한 섹션에서 제외한다.
-// hidden 섹션은 목록에만 안 보일 뿐 화면이 있어 ?section= 딥링크로 들어올 수 있다.
-const SECTION_IDS: SectionId[] = SECTIONS.filter((s) => !s.externalUrl).map(
-  (s) => s.id,
-);
-
-// ─── 모바일 메뉴 그룹 정의 ─────────────────────────────────────
-interface GroupDef {
-  labelKey: string;
-  sectionIds: SectionId[];
-}
-
-const MENU_GROUPS: GroupDef[] = [
-  {
-    labelKey: "groups.dataManage",
-    sectionIds: [
-      "categories",
-      "accounts",
-      "budget",
-      "goals",
-      "recurring",
-      "presets",
-    ],
-  },
-  {
-    labelKey: "groups.tagsLabels",
-    sectionIds: ["todo-tags", "memo-tags", "calendar-labels"],
-  },
-  {
-    labelKey: "groups.share",
-    sectionIds: ["calendar-share"],
-  },
-  {
-    labelKey: "groups.appEnv",
-    sectionIds: ["appearance", "notifications"],
-  },
-  {
-    labelKey: "groups.data",
-    sectionIds: ["data"],
-  },
-  {
-    labelKey: "groups.account",
-    sectionIds: ["account", "privacy"],
-  },
-  {
-    labelKey: "groups.help",
-    sectionIds: ["guide"],
-  },
-];
 
 // 소셜 연동 provider → 표시 이름. 서버 미지원 provider 는 원문(소문자) 그대로 노출.
 const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: "Google" };
 
 export const SettingsPage = () => {
   const { t } = useTranslation("settings");
-  const { t: tCat } = useTranslation("category");
   const { mobile } = useOutletContext<OutletCtx>();
-  // 카테고리 순서 편집 모드 — 디자인 m-subhead 우측 '편집/완료' 토글(모바일 전용).
-  const [catReorder, setCatReorder] = useState(false);
-  const { resolvedTheme } = useTheme();
+  // 폰 머리 오른쪽 "추가" 를 누른 횟수 — 카테고리 본문이 이 값이 바뀔 때 추가 폼을 연다.
+  const [addRequests, setAddRequests] = useState<
+    Partial<Record<SectionId, number>>
+  >({});
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -344,19 +103,28 @@ export const SettingsPage = () => {
     const q = searchParams.get("section");
     return q && (SECTION_IDS as string[]).includes(q) ? (q as SectionId) : null;
   })();
-  const [section, setSection] = useState<SectionId | "menu">(
-    querySection ?? (mobile ? "menu" : "categories"),
-  );
+  // 섹션은 주소에서만 읽는다 — 기록을 남기므로(changeSection) 뒤로 · 앞으로 가기가 주소만 바꾸고,
+  // 상태를 따로 들면 화면과 주소가 어긋난다.
+  const section: SectionId | "menu" =
+    querySection ?? (mobile ? "menu" : "categories");
 
-  // URL 쿼리 변화를 섹션 상태에 반영 (외부에서 딥링크 들어오면 스위치).
-  //
-  // **쿼리가 바뀐 순간에만** 본다. 매 렌더 대조하면 화면에서 섹션을 바꾼 직후
-  // (아직 URL 이 안 따라온 찰나) 곧바로 되돌릴 수 있다.
-  const [prevQuerySection, setPrevQuerySection] = useState(querySection);
-  if (prevQuerySection !== querySection) {
-    setPrevQuerySection(querySection);
-    if (querySection && querySection !== section) setSection(querySection);
-  }
+  const activeSection =
+    section === "menu"
+      ? null
+      : (SECTIONS.find((s) => s.id === section) ?? null);
+
+  const goBack = useSettingsBack(activeSection);
+
+  // 문서 제목 "{섹션 이름} - 그루 담다"(메뉴는 "설정") — 셸 ScreenEffects 는 경로만 봐서 ?section= 은 여기서 쓴다.
+  useScreenTitle(activeSection ? t(activeSection.labelKey) : t("page.title"));
+  // 섹션이 바뀌면(앞으로 · 뒤로 모두) 본문 맨 위 · 새 제목에 초점 — 처음 열 때는 훔치지 않는다.
+  const lastFocused = useRef(section);
+  useEffect(() => {
+    if (lastFocused.current === section) return;
+    lastFocused.current = section;
+    const frame = requestAnimationFrame(() => focusScreenTitle());
+    return () => cancelAnimationFrame(frame);
+  }, [section]);
 
   // 소셜 연동 복귀 처리 — SSO→Google 연동 후 ?linked=<provider>(성공) / ?linkError=<msg>(실패) 를
   // 달고 이 페이지로 돌아온다. 알림 노출 + provider 상태 재조회 + 쿼리 제거.
@@ -383,17 +151,17 @@ export const SettingsPage = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("linked");
     url.searchParams.delete("linkError");
-    window.history.replaceState({}, "", url.toString());
+    window.history.replaceState(window.history.state, "", url.toString());
   }, [searchParams, queryClient, t]);
 
-  // 섹션 변경 시 URL 동기화 (뒤로가기 정합성).
+  // 섹션 바꾸기 = 기록을 남긴다(push) — 브라우저 뒤로 가기가 설정 안을 거슬러 간다.
+  // 같은 섹션을 다시 누르면 아무것도 하지 않는다.
   const changeSection = (next: SectionId | "menu") => {
-    setSection(next);
-    setCatReorder(false);
+    if (next === section) return;
     const p = new URLSearchParams(searchParams);
     if (next === "menu") p.delete("section");
     else p.set("section", next);
-    setSearchParams(p, { replace: true });
+    setSearchParams(p);
   };
 
   /**
@@ -408,16 +176,13 @@ export const SettingsPage = () => {
     changeSection(s.id);
   };
 
-  const activeSection =
-    section === "menu"
-      ? null
-      : (SECTIONS.find((s) => s.id === section) ?? null);
-
   const renderBody = (m: boolean) => {
     if (!activeSection) return null;
     switch (activeSection.id) {
       case "categories":
-        return <CategoryManager mobile={m} reorderMode={m && catReorder} />;
+        return (
+          <CategoryManager mobile={m} addRequest={addRequests.categories} />
+        );
       case "accounts":
         return <AccountManager mobile={m} />;
       case "budget":
@@ -425,9 +190,11 @@ export const SettingsPage = () => {
       case "goals":
         return <SavingGoalManager mobile={m} />;
       case "recurring":
-        return <RecurringManager mobile={m} />;
+        return (
+          <RecurringManager mobile={m} addRequest={addRequests.recurring} />
+        );
       case "presets":
-        return <PresetManager mobile={m} />;
+        return <PresetManager mobile={m} addRequest={addRequests.presets} />;
       case "calendar-share":
         return <CalendarShareSection mobile={m} />;
       case "calendar-labels":
@@ -477,185 +244,28 @@ export const SettingsPage = () => {
     // 금액 가리기는 헤더 액션(모두 선택)과 아래 고정 [저장] 이 있어 공용 서브페이지 셸을
     // 쓰지 않는다 — 앱 화면처럼 자기 셸을 직접 그린다.
     if (section === "hide-amounts") {
-      return (
-        <HideAmountsSection mobile onBack={() => changeSection("account")} />
-      );
+      return <HideAmountsSection mobile onBack={goBack} />;
     }
 
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: "var(--z-modal)",
-          // 카드 다이어트 — 서브페이지도 surface 배경 위 플랫 콘텐츠 (design .m-subpage).
-          background: "var(--bg-surface)",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            padding: "12px 8px",
-            background: "var(--bg-surface)",
-            flexShrink: 0,
-          }}
-        >
-          <button
-            type="button"
-            aria-label={t("common:back")}
-            onClick={() => changeSection(activeSection?.parent ?? "menu")}
-            style={{
-              border: 0,
-              background: "transparent",
-              padding: 6,
-              display: "inline-flex",
-              cursor: "pointer",
-              color: "var(--fg-primary)",
-              borderRadius: "var(--radius-md)",
-            }}
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <h2
-            style={{
-              flex: 1,
-              margin: 0,
-              fontSize: "var(--text-title-md)",
-              fontWeight: "600",
-              letterSpacing: "-0.012em",
-            }}
-          >
-            {activeSection ? t(activeSection.labelKey) : ""}
-          </h2>
-          {/* 카테고리 순서 편집 토글 — 디자인 m-subhead__action-btn ('편집'↔'완료') */}
-          {section === "categories" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCatReorder((v) => !v)}
-              // 편집 글씨 흰색(fg-primary) — 앱 PButton ghost(fgPrimary) 정합. brand(파랑) 아님.
-              style={{
-                color: "var(--fg-primary)",
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              {catReorder ? tCat("reorderDone") : tCat("reorderEdit")}
-            </Button>
-          )}
-        </div>
-        {/* 모바일 섹션 본문 스크롤 — scrollbar 숨김(스크롤 기능 유지). 데스크톱/태블릿은 별도 분기라 무관. */}
-        {/* 앱 설정 계열 화면(ListView x20/x24) 정합 — 상하 24 / 좌우 20 */}
-        <div
-          className="scrollbar-hide"
-          style={{
-            padding: "var(--spacing-xl)",
-            flex: 1,
-            overflowY: "auto",
-            minHeight: 0,
-          }}
-        >
-          {renderBody(true)}
-        </div>
-      </div>
+      <SettingsSubpageMobile
+        activeSection={activeSection}
+        goBack={goBack}
+        onHeadAction={(id) =>
+          setAddRequests((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 }))
+        }
+        body={renderBody(true)}
+      />
     );
   }
 
   return (
-    <div style={{ padding: 0 }}>
-      <PageHead
-        title={t("page.title")}
-        description={t("page.subtitle")}
-        style={{ padding: "20px 32px 0", margin: 0, maxWidth: 1320 }}
-      />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "220px 1fr",
-          gap: 24,
-          padding: "20px 32px",
-          maxWidth: 1320,
-          alignItems: "start",
-        }}
-      >
-        <aside
-          style={{
-            position: "sticky",
-            top: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            padding: 8,
-            background: "var(--bg-surface)",
-            boxShadow: "var(--shadow-sm)",
-            borderRadius: "var(--radius-lg)",
-          }}
-        >
-          {SECTIONS.filter((s) => !s.hidden).map((s) => {
-            const IconComp = s.icon;
-            const active = section === s.id;
-            // inactive 는 회색(fg-secondary) 그대로 유지. 선택 탭만 다크에서 brand light variant 로.
-            // DESIGN.desk.md: 어두운 표면 위 브랜드 텍스트·아이콘 = primary-light(#5fa0e5) — spec 정합.
-            const dark = resolvedTheme === "dark";
-            const navColor = active
-              ? dark
-                ? "var(--color-fg-brand)"
-                : "var(--fg-brand-strong)"
-              : "var(--fg-secondary)";
-            return (
-              <button
-                key={s.id}
-                onClick={() => openSection(s)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "9px 12px",
-                  border: 0,
-                  // 설정 nav 한정: 다크에선 배경 틴트도 primary-light(#5fa0e5) 15% mix — 텍스트와 같은 light 톤.
-                  // (라이트는 글로벌 bg-brand-subtle = primary 8% 유지.)
-                  background: active
-                    ? dark
-                      ? "var(--color-bg-brand-weak)"
-                      : "var(--bg-brand-subtle)"
-                    : "transparent",
-                  color: navColor,
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "var(--text-label-sm)",
-                  fontWeight: active ? 600 : 500,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontFamily: "inherit",
-                }}
-              >
-                <IconComp size={16} strokeWidth={1.9} />
-                <span>{t(s.labelKey)}</span>
-              </button>
-            );
-          })}
-        </aside>
-        <div style={{ minWidth: 0 }}>
-          {activeSection && NEEDS_DESKTOP_HEAD.includes(activeSection.id) ? (
-            <ManagerShell>
-              <ManagerHead
-                title={t(activeSection.labelKey)}
-                description={t(activeSection.descKey)}
-              />
-              {renderBody(false)}
-            </ManagerShell>
-          ) : (
-            renderBody(false)
-          )}
-        </div>
-      </div>
-    </div>
+    <SettingsDesktopFrame
+      section={section}
+      activeSection={activeSection}
+      openSection={openSection}
+      renderBody={renderBody}
+    />
   );
 };
 
