@@ -235,6 +235,7 @@ export const SettingsPage = () => {
         <SettingsMobileMenu
           changeSection={changeSection}
           openSection={openSection}
+          goBack={goBack}
         />
       );
     }

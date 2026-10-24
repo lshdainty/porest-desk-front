@@ -1,7 +1,18 @@
 import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
-import { ScreenBands } from "@/shared/ui/groo/screen-bands";
-import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
+import { Avatar } from "@/shared/ds/avatar";
+import {
+  List,
+  ListButtonItem,
+  ListHeader,
+  ListLinkItem,
+} from "@/shared/ds/list";
+import { Skeleton } from "@/shared/ds/skeleton";
+import {
+  TopNavigation,
+  TopNavigationBackButton,
+  TopNavigationTitle,
+} from "@/shared/ds/top-navigation";
 import { useCurrentUser } from "@/features/user";
 import {
   MENU_GROUPS,
@@ -10,156 +21,112 @@ import {
   type SectionId,
 } from "../model/sections";
 
-// ─── 모바일 메뉴 뷰 ────────────────────────────────────────────
+/**
+ * 설정 메뉴(폰) — 흰 면 하나(I-12 1-B). 상단 바(← 설정) → 계정 줄 → 묶음 일곱(목록 제목 + 줄) → 끝 여백.
+ * 띠 없이 목록 제목(boldSolid) + 위 16 으로 묶음을 가른다. 줄 앞 아이콘 22 는 데스크톱 왼쪽 목록과 같은 표(SECTIONS)다.
+ */
 export function SettingsMobileMenu({
   changeSection,
   openSection,
+  goBack,
 }: {
   changeSection: (id: SectionId | "menu") => void;
   /** 메뉴 항목 클릭 — 외부 링크 항목은 새 탭으로 열린다 */
   openSection: (s: SectionDef) => void;
+  /** ← — 들어온 화면으로(History), 앞 화면이 없으면 전체로 */
+  goBack: () => void;
 }) {
   const { t } = useTranslation("settings");
-  const { data: user } = useCurrentUser();
+  const { t: tCommon } = useTranslation("common");
+  const { data: user, isLoading } = useCurrentUser();
 
   return (
     <>
-      {/* 풀스크린 페이지 — 앱처럼 ← 설정 헤더, 뒤로가면 '전체' */}
-      <MobileBackHeader title={t("page.title")} />
-      <ScreenBands list>
-        {/* 내 정보 — 이름 헤더 행 하나가 첫 띠(design MobileSettingsList). 버튼의 인라인 바탕 · 여백이 띠 규칙을 덮지 않게 한 겹 감싼다 */}
-        <div>
-          <button
-            onClick={() => changeSection("account")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              width: "100%",
-              padding: "10px 0",
-              background: "transparent",
-              border: 0,
-              cursor: "pointer",
-              textAlign: "left",
-              fontFamily: "inherit",
-            }}
-          >
-            <div
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: "50%",
-                background: "var(--bg-brand)",
-                color: "var(--fg-on-brand)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 17,
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              {user?.userName ? user.userName.charAt(0) : "?"}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: 17,
-                  fontWeight: 800,
-                  color: "var(--fg-primary)",
-                  letterSpacing: "-0.015em",
-                }}
-              >
-                {user?.userName ?? t("account.defaultName")}
-              </div>
-              <div
-                style={{
-                  fontSize: "var(--text-label-sm)",
-                  color: "var(--fg-tertiary)",
-                  marginTop: 2,
-                }}
-              >
-                {t("account.profileMeta")}
-              </div>
-            </div>
-            <ChevronRight
-              size={18}
-              style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" onClick={goBack} />
+        <TopNavigationTitle>{t("page.title")}</TopNavigationTitle>
+      </TopNavigation>
+      {/* 흰 면 하나 — 화면 아래 끝까지(셸 바닥은 회색이라 이 면이 직접 채운다). 끝 여백 24 + 안전 영역은 면 안 */}
+      <div className="flex-1 bg-bg-layer-default pb-[calc(var(--spacing-x6)+env(safe-area-inset-bottom))]">
+        {/* 계정 줄 — 받는 동안은 Skeleton 줄 하나, 정보가 없거나 실패면 줄을 숨긴다 */}
+        {isLoading ? (
+          <AccountRowSkeleton />
+        ) : user ? (
+          <List>
+            <ListButtonItem
+              prefix={<Avatar name={user.userName} size={42} />}
+              title={user.userName || t("account.defaultName")}
+              detail={user.userEmail}
+              suffix={<ChevronRight aria-hidden />}
+              onClick={() => changeSection("account")}
             />
-          </button>
-        </div>
+          </List>
+        ) : null}
 
-        {/* 그룹 — 묶음마다 화면 폭 흰 띠(I-01 결정 4B), 라벨 + 텍스트 행(터치 dim) */}
         {MENU_GROUPS.map((group) => {
           const groupSections = group.sectionIds
             .map((id) => SECTIONS.find((s) => s.id === id))
             .filter((s): s is SectionDef => s !== undefined);
+          const headId = `settings-group-${group.labelKey}`;
 
           return (
-            <div key={group.labelKey}>
-              <div
-                style={{
-                  fontSize: "var(--text-body-lg)",
-                  fontWeight: 700,
-                  color: "var(--fg-primary)",
-                  letterSpacing: "-0.01em",
-                  padding: "10px 0 4px",
-                }}
-              >
+            <section key={group.labelKey}>
+              <ListHeader id={headId} variant="boldSolid" className="mt-x4">
                 {t(group.labelKey)}
-              </div>
-              <div>
-                {groupSections.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => openSection(s)}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "13px 0",
-                      background: "transparent",
-                      border: 0,
-                      cursor: "pointer",
-                      textAlign: "left",
-                      fontFamily: "inherit",
-                    }}
-                    onTouchStart={(e) => {
-                      e.currentTarget.style.opacity = "0.55";
-                    }}
-                    onTouchEnd={(e) => {
-                      e.currentTarget.style.opacity = "1";
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = "0.7";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = "1";
-                    }}
-                  >
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: "var(--text-body-md)",
-                        fontWeight: 500,
-                        color: "var(--fg-primary)",
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      {t(s.labelKey)}
-                    </span>
-                    <ChevronRight
-                      size={15}
-                      style={{ color: "var(--fg-tertiary)", flexShrink: 0 }}
+              </ListHeader>
+              <List aria-labelledby={headId}>
+                {groupSections.map((s) => {
+                  const Icon = s.icon;
+                  return s.externalUrl ? (
+                    <ListLinkItem
+                      key={s.id}
+                      href={s.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      prefix={<Icon />}
+                      title={
+                        <>
+                          {t(s.labelKey)}
+                          <span className="sr-only">
+                            {" "}
+                            ({tCommon("newTab")})
+                          </span>
+                        </>
+                      }
+                      suffix={<ChevronRight aria-hidden />}
                     />
-                  </button>
-                ))}
-              </div>
-            </div>
+                  ) : (
+                    <ListButtonItem
+                      key={s.id}
+                      prefix={<Icon />}
+                      title={t(s.labelKey)}
+                      suffix={<ChevronRight aria-hidden />}
+                      onClick={() => openSection(s)}
+                    />
+                  );
+                })}
+              </List>
+            </section>
           );
         })}
-      </ScreenBands>
+      </div>
     </>
+  );
+}
+
+/** 계정 줄 자리 — 원 42 + 제목 · 설명 막대(줄 값 그대로: 위아래 12 · 좌우 24 · 앞 붙이개 뒤 12) */
+function AccountRowSkeleton() {
+  return (
+    <div
+      aria-hidden
+      data-account-skeleton
+      className="flex items-center gap-x3 px-global-gutter py-x3"
+    >
+      <Skeleton radius="full" className="size-[42px] shrink-0" />
+      <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
+        <Skeleton radius="4" text="t5" className="w-2/5" />
+        <Skeleton radius="4" text="t3" className="w-1/4" />
+      </div>
+    </div>
   );
 }

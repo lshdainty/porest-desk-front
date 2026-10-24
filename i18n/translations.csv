@@ -1,6 +1,7 @@
 namespace,key,ko,en
 common,app.title,그루 담다,그루 담다
 common,save,저장,Save
+common,newTab,새 탭,new tab
 common,cancel,취소,Cancel
 common,delete,삭제,Delete
 common,edit,수정,Edit
@@ -1934,7 +1935,6 @@ settings,groups.appEnv,앱 환경,App Preferences
 settings,groups.data,데이터,Data
 settings,groups.account,계정,Account
 settings,account.defaultName,사용자,User
-settings,account.profileMeta,내 정보 · 보안 · 연결된 계정,Profile · security · linked accounts
 settings,account.edit,수정,Edit
 settings,account.joined,가입 {{date}},Joined {{date}}
 settings,account.group.security,보안,Security
