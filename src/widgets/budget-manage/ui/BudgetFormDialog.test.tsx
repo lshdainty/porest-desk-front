@@ -164,6 +164,11 @@ describe("카테고리 예산", () => {
     click(byText("add"));
     expect(onSave).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain("edit.errCategory");
+    const described = row.getAttribute("aria-describedby");
+    expect(described).toBeTruthy();
+    expect(document.getElementById(described!)?.textContent).toContain(
+      "edit.errCategory",
+    );
     click(row);
     const items = Array.from(
       document.querySelectorAll<HTMLButtonElement>(
