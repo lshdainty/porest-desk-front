@@ -3,7 +3,7 @@ import type { ApiResponse } from "@/shared/types";
 import type { AxiosRequestConfig } from "axios";
 
 /**
- * 끊기 실패는 전역 오류 알림 대신 화면이 한 번 알린다(I-12 31) — 서버 글 대신 "로그아웃하지 못했어요" 하나만 뜬다.
+ * 목록 불러오기 · 끊기 실패는 전역 오류 알림 대신 화면이 알린다(I-12 29 · 31) — 서버 글 대신 "로그아웃하지 못했어요" 하나만 뜬다.
  * 전역 핸들러의 `silent` 확장은 base.ts 의 QuietRequestConfig 다.
  */
 const QUIET = { silent: true } as AxiosRequestConfig & { silent: boolean };
@@ -36,6 +36,7 @@ export const sessionApi = {
   list: async (): Promise<DeviceSession[]> => {
     const resp: ApiResponse<DeviceSession[]> = await apiClient.get(
       "/v1/users/me/sessions",
+      QUIET,
     );
     return resp.data ?? [];
   },

@@ -139,6 +139,15 @@ describe("DevicesSection", () => {
     expect(sessions.q.refetch).toHaveBeenCalled();
     expect(container.textContent).not.toContain("devices.logoutAll");
 
+    // 카드 안 Result Section 은 카드의 바로 아래 자식 — 좌우 24 규칙이 걸리고, 바닥 여백은 pb-0 이 아니다
+    sessions.q = { ...sessions.q, isError: true, data: [] };
+    mount(false);
+    const card = container.querySelector("[data-slot=card]")!;
+    expect(card.firstElementChild?.getAttribute("data-slot")).toBe(
+      "result-section",
+    );
+    expect(card.className).not.toContain("pb-0");
+
     sessions.q = { ...sessions.q, isError: false, data: [] };
     mount(false);
     expect(container.textContent).toContain("devices.empty");

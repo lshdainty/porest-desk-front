@@ -174,8 +174,8 @@ export function DevicesSection({ mobile }: { mobile: boolean }) {
           )}
         </div>
       ) : (
-        <Card body="list" className="pb-0">
-          <div className={hasList ? "pb-x3" : undefined}>{content}</div>
+        <Card body="list" className={hasList ? "pb-0" : undefined}>
+          {hasList ? <div className="pb-x3">{content}</div> : content}
           {hasList && (
             <>
               <Divider />
