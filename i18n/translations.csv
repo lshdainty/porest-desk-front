@@ -1331,7 +1331,6 @@ budget,manager.categoryBudgets,카테고리별 예산 · {{count}}개,Category B
 budget,manager.allBudgetedTooltip,모든 카테고리에 이미 예산이 설정되어 있어요,All categories already have a budget set
 budget,manager.emptyCategory,설정된 카테고리 예산이 없어요,No category budgets set
 budget,manager.categoryFallback,카테고리 #{{id}},Category #{{id}}
-budget,manager.overLimit,한도 초과,Over limit by
 budget,manager.overLimitAmt,한도 초과 {{amount}},Over limit by {{amount}}
 budget,manager.remaining,남은 예산,Remaining
 budget,deleteMessage,"""{{name}}"" 카테고리 예산을 삭제할까요?","Delete the budget for the ""{{name}}"" category?"
@@ -1394,7 +1393,7 @@ budget,loadFailed.pace,지출 페이스를 불러오지 못했어요,Couldn't lo
 budget,loadFailed.status,예산 현황을 불러오지 못했어요,Couldn't load the budget status
 budget,loadFailed.categories,카테고리별 예산을 불러오지 못했어요,Couldn't load the category budgets
 budget,loadFailed.compliance,예산 이행률을 불러오지 못했어요,Couldn't load the budget compliance
-budget,manager.loadFailed,예산을 불러오지 못했어요,Couldn't load the budgets
+budget,manager.loadFailed,예산을 불러오지 못했어요,Couldn't load budgets
 budget,manager.editNamed,{{name}} 예산 수정,Edit {{name}} budget
 budget,manager.deleteNamed,{{name}} 예산 삭제,Delete {{name}} budget
 card,benefit.headerTitle,카드 혜택,Card benefits
