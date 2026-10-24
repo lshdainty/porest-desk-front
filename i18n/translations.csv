@@ -3047,6 +3047,16 @@ expense,calendar.dayLabel,"{{date}}, 지출 {{amount}}","{{date}}, spent {{amoun
 expense,calendar.dayLabelNone,{{date}},{{date}}
 expense,calendar.legend,막대가 진할수록 많이 쓴 날 · 누르면 그 날로 옮겨요,Darker bars mean more spent · Tap a day to jump to it
 expense,list.count,거래 {{count}}건,{{count}} transactions
+expense,list.select,고르기,Select
+expense,list.selectDone,완료,Done
+expense,bulk.sum,합계,Total
+expense,bulk.markFixed,고정으로 표시,Mark as fixed
+expense,bulk.delete,삭제,Delete
+expense,bulk.limit,한 번에 500건까지 할 수 있어요,Up to 500 at a time
+expense,bulk.fixedDone,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
+expense,bulk.deleteTitle,거래 {{count}}건을 삭제할까요?,Delete {{count}} transactions?
+expense,bulk.deleteMessage,지운 거래는 되돌릴 수 없어요. 합계 {{amount}}이 {{month}}에서 빠져요.,Deleted transactions can't be restored. The total {{amount}} will be removed from {{month}}.
+expense,bulk.deleted,{{count}}건을 삭제했어요,Deleted {{count}} transactions
 expense,filter.barLabel,거래 거르기,Filter transactions
 expense,filter.clearAll,필터 지우기,Clear filters
 expense,filter.assetClear,{{name}} 지우기,Remove {{name}}
