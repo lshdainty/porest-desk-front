@@ -478,7 +478,6 @@ export function CategoryManager({
         <CategoryMoveTxDialog
           source={movingTx}
           categories={list}
-          mobile={mobile}
           onClose={() => setMovingTx(null)}
         />
       )}
