@@ -83,11 +83,12 @@ export function TransferRow({
 
   const detail = (
     <TagGroup size="t3" truncate>
-      <TagGroupItem>
+      {/* 줄어드는 건 "A → B"(계좌 이름)뿐 — 수수료 · 날짜 · 시각은 줄지 않는다(tag-group.md 예 · 앱 transfer_row 와 같다) */}
+      <TagGroupItem shrink={2}>
         {transfer.fromAssetName} → {transfer.toAssetName}
       </TagGroupItem>
       {fee > 0 && (
-        <TagGroupItem>
+        <TagGroupItem shrink={0}>
           {t("transferFeePrefix")}{" "}
           {/* 수수료도 금액이다 — 위 이체 금액은 가려지는데 여기만 그대로 남아
               있었다(2026-09-17 설계 조사). 같은 카드·같은 종류로 판정한다. */}
@@ -97,9 +98,11 @@ export function TransferRow({
         </TagGroupItem>
       )}
       {showDate ? (
-        <TagGroupItem>{txDateFull(transfer.transferDate)}</TagGroupItem>
+        <TagGroupItem shrink={0}>
+          {txDateFull(transfer.transferDate)}
+        </TagGroupItem>
       ) : (
-        time && <TagGroupItem>{time}</TagGroupItem>
+        time && <TagGroupItem shrink={0}>{time}</TagGroupItem>
       )}
     </TagGroup>
   );

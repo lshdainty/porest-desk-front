@@ -112,6 +112,17 @@ describe("이체 줄 — ds List 줄", () => {
     expect(suffix.textContent).toContain("120,000");
   });
 
+  it("좁은 폭에서도 줄어드는 건 계좌 이름뿐이다 — 이체 줄 시각 · 수수료 글은 줄지 않는다(shrink 2 · 0 · 0)", () => {
+    render({ transfer: { ...base, fee: 500 } });
+    const items = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-slot=tag-group-item]"),
+    );
+    expect(items.map((i) => i.style.flexShrink)).toEqual(["2", "0", "0"]);
+    expect(items[2]!.textContent).toMatch(/\d{1,2}:\d{2}/);
+    // 줄지 않는 항목의 글 칸은 말줄임을 걸지 않을 만큼 — 최소 폭이 max-content 가 아니면 flex-shrink 0 이 폭을 지킨다
+    expect(items[2]!.style.flexShrink).toBe("0");
+  });
+
   it("누를 수 있으면 버튼 줄이고, 누르면 이체를 넘긴다", () => {
     const seen: number[] = [];
     render({ onClick: (t) => seen.push(t.rowId) });
