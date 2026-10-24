@@ -173,7 +173,7 @@ describe("월 이동 단추 — 켜짐 틴트(할 일 거르기)", () => {
     const on = container.querySelector("[aria-label=켜짐]")!;
     const off = container.querySelector("[aria-label=꺼짐]")!;
     expect(on.className).toContain("bg-bg-brand-weak");
-    expect(on.className).toContain("text-fg-brand");
+    expect(on.className).toContain("text-fg-brand-contrast");
     expect(off.className).not.toContain("bg-bg-brand-weak");
   });
 });

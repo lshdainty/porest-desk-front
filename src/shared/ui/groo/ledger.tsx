@@ -119,7 +119,10 @@ export function LedgerNavBtn({
       size="medium"
       layout="iconOnly"
       data-active={active || undefined}
-      className={cn(active && "bg-bg-brand-weak text-fg-brand", className)}
+      className={cn(
+        active && "bg-bg-brand-weak text-fg-brand-contrast",
+        className,
+      )}
       {...props}
     />
   );
