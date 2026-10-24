@@ -47,7 +47,7 @@ common,themeSystem,시스템,System
 common,goToday,오늘로,Today
 common,none,없음,None
 common,noSearchResults,검색 결과가 없습니다,No results found
-common,amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
+common,amountTooLarge,금액은 100억원까지 입력할 수 있어요.,Amount can be up to 10 billion won.
 common,recordOnly,기록만,Record only
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
@@ -1351,12 +1351,18 @@ budget,copyMessage,{{prevYear}}년 {{prevMonth}}월 예산 한도({{count}}개)�
 budget,edit.addTitle,카테고리 예산 추가,Add category budget
 budget,edit.editTitle,카테고리 예산 수정,Edit category budget
 budget,edit.selectCategory,카테고리 선택,Select Category
-budget,edit.monthlyLimitPreview,월 한도,Monthly limit
+budget,edit.totalTitle,{{month}}월 총 예산,Month {{month}} total budget
+budget,edit.totalField,총 예산,Total budget
+budget,edit.categoryAmountField,예산,Budget
+budget,edit.quickAmounts,빠른 금액,Quick amounts
+budget,edit.errCategory,카테고리를 골라주세요.,Choose a category.
+budget,edit.errTotal,총 예산을 입력해주세요.,Enter the total budget.
+budget,edit.errAmount,예산을 입력해주세요.,Enter a budget.
+budget,edit.hasBudget,이번 달 예산이 있어요,Already has a budget this month
+budget,edit.noCategories,예산을 줄 지출 카테고리가 없어요.,There are no expense categories to budget.
+budget,edit.noneSelected,선택 안 함,Not selected
 budget,edit.categoryLabel,카테고리,Category
-budget,edit.allBudgeted,모든 지출 카테고리에 이미 예산이 설정되어 있어요.,All expense categories already have a budget set.
-budget,edit.monthlyLimitField,월 한도 (원),Monthly limit (KRW)
-budget,edit.monthlyTitle,월 전체 상한 수정,Edit overall monthly cap
-budget,edit.monthlyTotalField,월 총 예산 (원),Total monthly budget (KRW)
+budget,edit.allBudgeted,모든 지출 카테고리에 이미 예산이 있어요.,All expense categories already have a budget.
 budget,pageTitle,예산,Budget
 budget,subtitle,카테고리별 한도 관리,Manage per-category limits
 budget,complianceRate,이행률,Compliance rate

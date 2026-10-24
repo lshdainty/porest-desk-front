@@ -36,11 +36,7 @@ import {
   StatGrid,
   type KeyValue,
 } from "@/shared/ui/groo/band-parts";
-import {
-  BudgetEditDialog,
-  MonthlyBudgetDialog,
-  type BudgetDraft,
-} from "./BudgetEditDialog";
+import { BudgetFormDialog, type BudgetDraft } from "./BudgetFormDialog";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 
 /*
@@ -109,7 +105,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     [budgetList],
   );
 
-  // 예산 추가 가능 카테고리 = EXPENSE top-level(BudgetEditDialog 의 selectable 과 동일).
+  // 예산 추가 가능 카테고리 = EXPENSE top-level(BudgetFormDialog 의 selectable 과 동일).
   // 전부 예산 보유 시 "예산 추가" 버튼 비활성화.
   const allCategoriesBudgeted = useMemo(() => {
     const top = categoryList.filter(
@@ -368,22 +364,26 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       )}
 
       {editing && (
-        <BudgetEditDialog
+        <BudgetFormDialog
+          kind="category"
           budget={editing === "new" ? null : editing}
+          month={month}
           categories={categoryList}
           existing={categoryBudgets}
           onClose={() => setEditing(null)}
           onSave={saveCategoryBudget}
-          mobile={mobile}
           submitting={submitting}
         />
       )}
       {editMonthly && (
-        <MonthlyBudgetDialog
-          value={monthlyLimit}
+        <BudgetFormDialog
+          kind="total"
+          budget={monthlyBudget}
+          month={month}
+          categories={categoryList}
+          existing={categoryBudgets}
           onClose={() => setEditMonthly(false)}
-          onSave={saveMonthlyBudget}
-          mobile={mobile}
+          onSave={(draft) => saveMonthlyBudget(draft.budgetAmount)}
           submitting={submitting}
         />
       )}
