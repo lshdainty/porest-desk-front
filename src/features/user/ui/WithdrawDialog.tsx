@@ -1,16 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle } from "lucide-react";
-import { serverErrorMessage } from "@/shared/api/error-message";
+import { Button } from "@/shared/ds/button";
+import { Callout } from "@/shared/ds/callout";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogCancel,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+} from "@/shared/ds/dialog";
+import { Field } from "@/shared/ds/field";
+import { useDsText } from "@/shared/ds/i18n";
+import { Input } from "@/shared/ds/input";
+import { InputOTP, InputOTPResend } from "@/shared/ds/input-otp";
+import { List, ListItem } from "@/shared/ds/list";
+import { useWideSurface } from "@/shared/ds/overlay";
+import { ProgressCircle } from "@/shared/ds/progress-circle";
+import { ResultSection } from "@/shared/ds/result-section";
 import { toLocalDateKey } from "@/shared/lib/date";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Spinner } from "@/shared/ui/spinner";
-import { useIsMobile } from "@/shared/hooks";
+import { BusyOverlay } from "@/shared/ui/groo/busy-overlay";
 // 배럴(`@/features/user`)이 이 파일을 다시 내보내므로 거기서 가져오면 순환이 된다 —
 // ESM 이 버티긴 해도 초기화 순서에 따라 undefined 가 잡힌다. 상대 경로로 간다.
 import { WITHDRAW_BLOCK_SUBSCRIPTION } from "../api/userApi";
@@ -30,10 +39,19 @@ import {
  */
 type Step = "impact" | "reauth";
 
+/** 서버 `REAUTH_FAILED`(AUTH_021) — 비밀번호 · 코드가 틀렸거나 지났다. */
+const REAUTH_FAILED = "AUTH_021";
+/** 서버 `REAUTH_LOCKED`(AUTH_022, 429) — 5번 틀려 잠겼다. 코드를 다시 받아야 풀린다. */
+const REAUTH_LOCKED = "AUTH_022";
+const errorCode = (e: unknown) =>
+  (e as { response?: { data?: { code?: string } } } | null)?.response?.data
+    ?.code;
+const isReauthFailed = (e: unknown) => errorCode(e) === REAUTH_FAILED;
+
 /** 본인 확인 방법. 비밀번호가 없는 소셜 전용 계정은 코드 말고 길이 없다. */
 type ReauthMethod = "password" | "emailCode";
 
-/** 해지하면 없어지는 것들 — 개수가 0 이면 줄을 아예 안 보여 준다. */
+/** 해지하면 없어지는 것들 — 개수가 0 이면 줄을 아예 안 보여 준다. ds List 의 누르지 않는 줄. */
 function ImpactList({
   counts,
   t,
@@ -59,31 +77,26 @@ function ImpactList({
   if (rows.length === 0) return null;
 
   return (
-    <ul className="grid gap-1.5">
+    <List>
       {rows.map((r) => (
-        <li
-          key={r.key}
-          className="flex items-start gap-2 text-sm text-[var(--fg-secondary)]"
-        >
-          <span
-            aria-hidden
-            className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[var(--fg-tertiary)]"
-          />
-          <span>{t(r.key, { count: r.n })}</span>
-        </li>
+        <ListItem key={r.key} title={t(r.key, { count: r.n })} />
       ))}
-    </ul>
+    </List>
   );
 }
 
 /**
- * desk 이용 해지.
+ * 그루 담다 이용 해지.
  *
  * <p>세 번 확인한다 — ① 무엇을 잃는지 개수로 보여 주고 ② 본인 확인을 다시 받고
  * ③ 마지막 버튼이 빨갛다. 되돌릴 수 없는 일이라 한 번의 오조작으로 끝나면 안 된다.
  *
  * <p>성공하면 이 세션은 끝난다. `onWithdrawn` 이 로그아웃까지 책임진다 — 여기서
  * 화면을 갱신하려 들면 이미 없는 계정으로 API 를 부르게 된다.
+ *
+ * <p>표면은 ds ResponsiveDialog — 1280 미만 Bottom Sheet · 이상 Dialog. 입력 폼이라 바깥을
+ * 눌러도 닫히지 않고, 바뀐 값(사유 · 비밀번호 · 코드)이 있으면 닫기 전에 묻는다.
+ * 해지가 나가는 동안은 화면 전체를 덮는다(BusyOverlay, I-05 37).
  */
 export function WithdrawDialog({
   onClose,
@@ -95,7 +108,8 @@ export function WithdrawDialog({
 }) {
   const { t } = useTranslation("user");
   const { t: tc } = useTranslation("common");
-  const mobile = useIsMobile();
+  const dsT = useDsText();
+  const wide = useWideSurface();
 
   const [step, setStep] = useState<Step>("impact");
   const [reason, setReason] = useState("");
@@ -103,7 +117,9 @@ export function WithdrawDialog({
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [reauthError, setReauthError] = useState<string | null>(null);
-  const [codeSent, setCodeSent] = useState(false);
+  const [sentAt, setSentAt] = useState<number | null>(null);
+  // 본인 확인 요청이 시작될 때 켠다. 성공하면 걷지 않는다 — 안내 화면으로 떠나며 사라진다.
+  const [busy, setBusy] = useState(false);
 
   const checkQ = useWithdrawalCheck(true);
   const sendCode = useSendReauthEmailCodeMutation();
@@ -133,8 +149,9 @@ export function WithdrawDialog({
     setReauthError(null);
   }, [method]);
 
-  const reauthPending =
-    verifyCode.isPending || verifyPassword.isPending || withdraw.isPending;
+  // 입력 폼인 때 — 점검이 끝났고 막히지 않았을 때만. 아니면 안내 표면(위 ✕ 하나).
+  const form = !checkQ.isLoading && !checkQ.isError && !blocked;
+  const dirty = reason.trim() !== "" || password !== "" || code !== "";
 
   const doWithdraw = async (reauthToken: string) => {
     await withdraw.mutateAsync({
@@ -146,22 +163,44 @@ export function WithdrawDialog({
 
   const onConfirm = async () => {
     if (runningRef.current) return;
+    // 6자리가 안 되면 칸 오류로 알린다(input-otp.md "6자리 전 확인 막힘") — 서버에 보내지 않는다.
+    if (method === "emailCode" && !/^\d{6}$/.test(code)) {
+      setReauthError(t("withdraw.codeIncomplete"));
+      document.getElementById("withdraw-code")?.focus();
+      return;
+    }
     runningRef.current = true;
     setReauthError(null);
+    setBusy(true);
+    // 본인 확인 실패는 그 칸의 문제다 — 토스트로 띄우면 어느 칸을 고쳐야 하는지 안 보인다. 칸 밑에 붙인다.
+    // 서버가 보낸 글을 그대로 보이지 않고 화면 글로 바꾼다(input-otp.md "서버가 보낸 글을 그대로 보이지 않고 화면 글로" ·
+    // Writing 오류) — 틀린 코드 · 틀린 비밀번호는 같은 한 문장이고, 해지 요청이 실패하면 해지 실패 문장이다.
+    let token: string;
     try {
-      const token =
+      token =
         method === "password"
           ? await verifyPassword.mutateAsync(password)
           : await verifyCode.mutateAsync(code);
-      await doWithdraw(token);
     } catch (e) {
-      // 본인 확인 실패는 그 칸의 문제다 — 토스트로 띄우면 어느 칸을 고쳐야 하는지
-      // 안 보인다. 칸 밑에 붙인다(PasswordChangeDialog 와 같은 규칙).
-      //
-      // `e.message` 를 쓰면 안 된다 — axios 가 감싼 "Request failed with status code 400"
-      // 이 그대로 나간다. 사용자에게 할 말("인증 코드가 올바르지 않아요")은 응답 본문에
-      // 들어 있다.
-      setReauthError(serverErrorMessage(e, t("withdraw.failed")));
+      // 틀림 · 지남(서버 AUTH_021 REAUTH_FAILED)만 그 칸의 글이고, 네트워크 · 서버 오류는 해지 실패 글이다(앱과 한 벌).
+      setReauthError(
+        errorCode(e) === REAUTH_LOCKED
+          ? t("withdraw.locked")
+          : isReauthFailed(e)
+            ? method === "password"
+              ? t("withdraw.passwordWrong")
+              : t("withdraw.codeWrong")
+            : t("withdraw.failed"),
+      );
+      setBusy(false);
+      runningRef.current = false;
+      return;
+    }
+    try {
+      await doWithdraw(token);
+    } catch {
+      setReauthError(t("withdraw.failed"));
+      setBusy(false);
     } finally {
       runningRef.current = false;
     }
@@ -169,82 +208,77 @@ export function WithdrawDialog({
 
   const onSendCode = () => {
     sendCode.mutate(undefined, {
-      onError: (e) => {
+      onError: () => {
         // 확인 실패와 같은 자리에 붙인다 — 한쪽만 토스트로 띄우면 같은 흐름 안에서
-        // 오류가 두 가지 방식으로 나타난다.
-        setReauthError(serverErrorMessage(e, t("withdraw.failed")));
+        // 오류가 두 가지 방식으로 나타난다. 서버 글 대신 화면 글.
+        setReauthError(t("withdraw.sendCodeFailed"));
       },
       onSuccess: () => {
-        setCodeSent(true);
+        setSentAt(Date.now());
         setReauthError(null);
+        // 알림 띠는 셸 PR 까지 옛 길(sonner) — 문구만 Writing 대로(Q7 7A)
         toast.success(t("withdraw.codeSent"), { id: "withdraw-code-sent" });
       },
     });
   };
 
-  const canConfirm =
-    method === "password" ? password.length > 0 : /^\d{6}$/.test(code);
+  const canConfirm = method === "password" ? password.length > 0 : true;
 
   // ── 본문 ────────────────────────────────────────────────────────────────
   let body;
   if (checkQ.isLoading) {
     body = (
-      <div className="flex justify-center py-8">
-        <Spinner size="md" />
+      <div className="flex justify-center py-x8">
+        <ProgressCircle size="40" aria-label={dsT("common.loading")} />
       </div>
     );
   } else if (checkQ.isError) {
     body = (
-      <p className="text-sm text-[var(--fg-secondary)]">{tc("apiError")}</p>
+      <ResultSection
+        kind="failure"
+        size="medium"
+        title={t("withdraw.loadFailed")}
+        description={t("withdraw.loadFailedDesc")}
+        primaryAction={{
+          label: dsT("common.retry"),
+          onClick: () => void checkQ.refetch(),
+          loading: checkQ.isFetching,
+        }}
+      />
     );
   } else if (blocked) {
     body = (
-      <div className="grid gap-3">
-        <div className="flex items-start gap-2">
-          <AlertTriangle
-            size={18}
-            className="mt-0.5 shrink-0 text-[var(--status-warning-fg)]"
-            aria-hidden
-          />
-          <p className="text-sm text-[var(--fg-primary)]">
-            {blockedBySubscription
-              ? unblockDate
-                ? t("withdraw.blockedSubscriptionUntil", { date: unblockDate })
-                : t("withdraw.blockedSubscription")
-              : t("withdraw.blockedOther")}
-          </p>
-        </div>
-        <p className="text-sm text-[var(--fg-secondary)]">
-          {t("withdraw.blockedHint")}
-        </p>
-      </div>
+      <Callout
+        tone="warning"
+        title={
+          blockedBySubscription
+            ? unblockDate
+              ? t("withdraw.blockedSubscriptionUntil", { date: unblockDate })
+              : t("withdraw.blockedSubscription")
+            : t("withdraw.blockedOther")
+        }
+      >
+        {t("withdraw.blockedHint")}
+      </Callout>
     );
   } else if (step === "impact") {
     body = (
-      <div className="grid gap-4">
-        <p className="text-sm text-[var(--fg-primary)]">
-          {t("withdraw.intro")}
-        </p>
+      <div className="flex flex-col gap-x4">
         <ImpactList counts={check!} t={t} />
         {/* 되돌릴 수 없는 것 둘 — 여기서 말하지 않으면 사용자가 알 길이 없다. */}
-        <div className="grid gap-1.5 rounded-[var(--radius-md)] bg-[var(--bg-muted)] p-3">
-          <p className="text-sm font-medium text-[var(--fg-primary)]">
-            {t("withdraw.irreversibleTitle")}
-          </p>
-          <p className="text-sm text-[var(--fg-secondary)]">
-            {t("withdraw.irreversibleRejoin")}
-          </p>
-          <p className="text-sm text-[var(--fg-secondary)]">
-            {t("withdraw.irreversibleData")}
-          </p>
-        </div>
+        <Callout tone="warning" title={t("withdraw.irreversibleTitle")}>
+          <span className="block">{t("withdraw.irreversibleRejoin")}</span>
+          <span className="block">{t("withdraw.irreversibleData")}</span>
+        </Callout>
         {/* 데이터가 어떻게 되는지 — "사라진다" 가 아니라 보관 뒤 파기다. 내보내기
             권유는 해지 전에만 할 수 있는 말이라 여기 둔다(설계서 결정 12). */}
-        <p className="text-sm text-[var(--fg-secondary)]">
+        <p className="m-0 text-t4 text-fg-neutral-subtle">
           {t("withdraw.dataRetention")}
         </p>
-        <div className="grid gap-1.5">
-          <Label htmlFor="withdraw-reason">{t("withdraw.reasonLabel")}</Label>
+        <Field
+          label={t("withdraw.reasonLabel")}
+          indicator={t("withdraw.optional")}
+        >
           <Input
             id="withdraw-reason"
             value={reason}
@@ -252,126 +286,153 @@ export function WithdrawDialog({
             placeholder={t("withdraw.reasonPlaceholder")}
             onChange={(e) => setReason(e.target.value)}
           />
-        </div>
+        </Field>
       </div>
     );
   } else {
     body = (
-      <div className="grid gap-4">
-        <p className="text-sm text-[var(--fg-primary)]">
-          {t("withdraw.reauthIntro")}
-        </p>
+      <div className="flex flex-col gap-x4">
         {method === "password" ? (
-          <div className="grid gap-1.5">
-            <Label htmlFor="withdraw-password">{t("currentPassword")}</Label>
-            <Input
-              id="withdraw-password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              placeholder={t("currentPasswordPlaceholder")}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setReauthError(null);
-              }}
-            />
-            {reauthError && (
-              <p className="text-sm text-fg-critical">{reauthError}</p>
-            )}
-            <Button
-              variant="link"
-              size="sm"
-              className="justify-self-start px-0"
-              onClick={() => setMethod("emailCode")}
+          <>
+            <Field
+              label={t("currentPassword")}
+              invalid={!!reauthError}
+              errorMessage={reauthError}
             >
-              {t("withdraw.useEmailCode")}
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-1.5">
-            <Label htmlFor="withdraw-code">{t("withdraw.codeLabel")}</Label>
-            <div className="flex gap-2">
               <Input
-                id="withdraw-code"
-                inputMode="numeric"
-                maxLength={6}
-                value={code}
-                placeholder={t("withdraw.codePlaceholder")}
+                id="withdraw-password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                placeholder={t("currentPasswordPlaceholder")}
                 onChange={(e) => {
-                  setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
+                  setPassword(e.target.value);
                   setReauthError(null);
                 }}
               />
+            </Field>
+            <div className="flex justify-end">
               <Button
-                variant="secondary"
-                className="shrink-0"
-                loading={sendCode.isPending}
-                onClick={onSendCode}
+                variant="ghost"
+                size="small"
+                onClick={() => setMethod("emailCode")}
               >
-                {codeSent ? t("withdraw.resendCode") : t("withdraw.sendCode")}
+                {t("withdraw.useEmailCode")}
               </Button>
             </div>
-            {reauthError && (
-              <p className="text-sm text-fg-critical">{reauthError}</p>
-            )}
-            <p className="text-sm text-[var(--fg-secondary)]">
-              {t("withdraw.codeHint")}
-            </p>
-            <Button
-              variant="link"
-              size="sm"
-              className="justify-self-start px-0"
-              onClick={() => setMethod("password")}
-            >
-              {t("withdraw.usePassword")}
-            </Button>
-          </div>
+          </>
+        ) : (
+          <>
+            {/* 칸 → [코드 받기] 12(input-otp.md ⓓ · 예제 mt-x3) — 본문 쌓기(16)와 따로 묶는다 */}
+            <div className="flex flex-col items-start gap-x3">
+              <Field
+                label={t("withdraw.codeLabel")}
+                description={t("withdraw.codeRule")}
+                invalid={!!reauthError}
+                errorMessage={reauthError}
+              >
+                <InputOTP
+                  id="withdraw-code"
+                  value={code}
+                  placeholder={t("withdraw.codePlaceholder")}
+                  onValueChange={(v) => {
+                    setCode(v);
+                    setReauthError(null);
+                  }}
+                />
+              </Field>
+              <InputOTPResend
+                sentAt={sentAt}
+                codeInputId="withdraw-code"
+                onResend={onSendCode}
+              />
+              {/* 스팸함 안내 — input-otp.md 해부에 없는 줄이지만 사용자 결정(10-24) 05-2 Q1 A 로 남긴다. 코드를 보낸 뒤에만 보인다
+                  (보내기 전에는 확인할 메일이 없다). 오류 때도 남는다 */}
+              {sentAt != null && (
+                <p className="m-0 text-t4 text-fg-neutral-subtle">
+                  {t("withdraw.codeHint")}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={() => setMethod("password")}
+              >
+                {t("withdraw.usePassword")}
+              </Button>
+            </div>
+          </>
         )}
       </div>
     );
   }
 
-  // ── footer ──────────────────────────────────────────────────────────────
+  // ── 바닥 ────────────────────────────────────────────────────────────────
+  // 점검 중 · 불러오기 실패 · 막힘은 안내 표면이다 — 시트는 위 ✕ 만(바닥 없음), 대화상자는 [닫기] 하나.
   let footer;
-  if (checkQ.isLoading) {
-    footer = undefined;
-  } else if (blocked || checkQ.isError) {
-    // 막힌 자리에는 진행 버튼을 두지 않는다 — 누를 수 없는 버튼을 보여 주는 것보다
-    // 아예 없는 편이 낫다.
-    footer = <ModalFooter onSave={onClose} saveLabel={tc("close")} />;
+  if (!form) {
+    footer =
+      checkQ.isLoading || !wide ? null : (
+        <ResponsiveDialogFooter>
+          <Button variant="neutralWeak" onClick={onClose}>
+            {tc("close")}
+          </Button>
+        </ResponsiveDialogFooter>
+      );
   } else if (step === "impact") {
     footer = (
-      <ModalFooter
-        onCancel={onClose}
-        cancelLabel={tc("cancel")}
-        onSave={() => setStep("reauth")}
-        saveLabel={t("withdraw.next")}
-        saveVariant="destructive"
-      />
+      <ResponsiveDialogFooter>
+        <ResponsiveDialogCancel>{tc("cancel")}</ResponsiveDialogCancel>
+        <Button variant="criticalSolid" onClick={() => setStep("reauth")}>
+          {t("withdraw.next")}
+        </Button>
+      </ResponsiveDialogFooter>
     );
   } else {
     footer = (
-      <ModalFooter
-        onCancel={() => setStep("impact")}
-        cancelLabel={tc("back")}
-        onSave={onConfirm}
-        saveLabel={t("withdraw.confirm")}
-        saveVariant="destructive"
-        saving={reauthPending}
-        saveDisabled={!canConfirm}
-      />
+      <ResponsiveDialogFooter>
+        <Button variant="neutralWeak" onClick={() => setStep("impact")}>
+          {tc("back")}
+        </Button>
+        <Button
+          variant="criticalSolid"
+          onClick={onConfirm}
+          disabled={!canConfirm}
+        >
+          {t("withdraw.confirm")}
+        </Button>
+      </ResponsiveDialogFooter>
     );
   }
 
   return (
-    <ModalShell
-      title={t("withdraw.title")}
-      onClose={onClose}
-      mobile={mobile}
-      size="sm"
-      footer={footer}
-    >
-      {body}
-    </ModalShell>
+    <>
+      <ResponsiveDialog
+        open
+        onOpenChange={(next) => {
+          if (!next) onClose();
+        }}
+        form={form}
+        dirty={dirty}
+      >
+        <ResponsiveDialogContent
+          title={t("withdraw.title")}
+          // 안내 첫 문장은 표면 머리 설명(R7)이다 — 점검 · 막힘 · 실패 표면에는 두지 않는다
+          description={
+            form
+              ? step === "impact"
+                ? t("withdraw.intro")
+                : t("withdraw.reauthIntro")
+              : undefined
+          }
+        >
+          <ResponsiveDialogBody>{body}</ResponsiveDialogBody>
+          {footer}
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+      <BusyOverlay busy={busy} label={t("withdraw.closing")} />
+    </>
   );
 }

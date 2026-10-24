@@ -1262,7 +1262,7 @@ notification,popover.empty,아직 알림이 없어요,No notifications yet
 user,passwordChange,비밀번호 변경,Change password
 user,passwordChangeDescription,현재 비밀번호를 확인한 뒤 새 비밀번호로 바꿔요,Verify your current password and set a new one
 user,currentPassword,현재 비밀번호,Current Password
-user,currentPasswordPlaceholder,현재 비밀번호를 입력하세요,Enter your current password
+user,currentPasswordPlaceholder,현재 비밀번호를 입력해주세요,Enter your current password
 user,currentPasswordRequired,현재 비밀번호를 입력해주세요,Current password is required
 user,currentPasswordInvalid,현재 비밀번호가 맞지 않아요,That current password doesn't match
 user,newPassword,새 비밀번호,New Password
@@ -1279,8 +1279,8 @@ user,passwordPolicyUnmet,비밀번호 조건을 모두 충족해주세요,Passwo
 user,passwordSameAsCurrent,현재 비밀번호와 다른 비밀번호를 입력해주세요,New password must be different from the current one
 user,passwordChangeSuccess,비밀번호를 바꿨어요,Password changed successfully
 user,passwordChangeError,비밀번호를 바꾸지 못했어요. 잠시 뒤 다시 시도해주세요,Couldn't change your password. Please try again shortly
-user,withdraw.title,desk 이용 해지,Stop using desk
-user,withdraw.intro,"이용을 해지하면 바로 로그인이 막히고 되돌릴 수 없어요.","Stopping desk signs you out immediately and cannot be undone."
+user,withdraw.title,그루 담다 이용 해지,Stop using 그루 담다
+user,withdraw.intro,이용을 해지하면 바로 로그인이 막히고 되돌릴 수 없어요.,Stopping 그루 담다 signs you out immediately and cannot be undone.
 user,impact.calendarsOwned,내가 만든 공유 캘린더 {{count}}개가 삭제되고 멤버도 볼 수 없어요,{{count}} shared calendar(s) you created will be deleted — members lose access too
 user,impact.calendarMemberships,참여 중인 캘린더 {{count}}개에서 빠져요,You will be removed from {{count}} calendar(s) you joined
 user,impact.dutchPaysOwned,내가 만든 정산 {{count}}개가 삭제돼요,{{count}} settlement(s) you created will be deleted
@@ -1289,26 +1289,36 @@ user,withdraw.irreversibleTitle,되돌릴 수 없어요,This cannot be undone
 user,withdraw.irreversibleRejoin,같은 아이디와 이메일로는 다시 가입할 수 없어요.,You cannot sign up again with the same ID or email address.
 user,withdraw.irreversibleData,해지한 뒤에는 기록을 다시 볼 수 없어요.,You will not be able to see your records again.
 user,withdraw.dataRetention,"가계부 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요. 필요한 자료는 해지 전에 내보내주세요.","Your records are kept and then destroyed under our privacy policy. Export anything you need before you stop."
-user,withdraw.reasonLabel,떠나시는 이유 (선택),Why are you leaving? (optional)
-user,withdraw.reasonPlaceholder,알려주시면 다음에 더 낫게 만들게요,Tell us and we will do better next time
+user,withdraw.reasonLabel,떠나는 이유,Why are you leaving?
+user,withdraw.optional,선택,Optional
+user,withdraw.reasonPlaceholder,알려주면 다음에 더 낫게 만들게요,Tell us and we will do better next time
 user,withdraw.next,계속,Continue
-user,withdraw.confirm,해지하기,Stop using desk
+user,withdraw.confirm,해지하기,Stop using 그루 담다
 user,withdraw.reauthIntro,본인이 맞는지 한 번만 더 확인할게요.,"Just once more, let us confirm it is you."
-user,withdraw.useEmailCode,비밀번호가 없으신가요? 메일로 코드 받기,No password? Get a code by email
+user,withdraw.useEmailCode,비밀번호가 없다면 메일로 코드 받기,No password? Get a code by email
 user,withdraw.usePassword,비밀번호로 확인하기,Use my password instead
 user,withdraw.codeLabel,인증 코드,Verification code
 user,withdraw.codePlaceholder,6자리 숫자,6 digits
+user,withdraw.codeHint,메일함에 코드가 안 보이면 스팸함도 확인해주세요.,"If you do not see it, check your spam folder."
 user,withdraw.sendCode,코드 받기,Send code
 user,withdraw.resendCode,다시 받기,Send again
-user,withdraw.codeSent,메일로 코드를 보냈어요,We sent a code to your email
-user,withdraw.codeHint,메일함에 코드가 안 보이면 스팸함도 확인해주세요.,"If you do not see it, check your spam folder."
-user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해주세요,Could not stop your desk account. Please try again shortly
-user,withdraw.blockedSubscription,구독이 남아 있어 아직 해지할 수 없어요,"You still have an active subscription, so you cannot stop desk yet"
-user,withdraw.blockedSubscriptionUntil,구독이 {{date}} 까지 남아 있어 아직 해지할 수 없어요,"Your subscription runs until {{date}}, so you cannot stop desk yet"
-user,withdraw.blockedOther,아직 해지할 수 없는 상태예요,Your account cannot be stopped right now
-user,withdraw.blockedHint,구독을 먼저 해지하시면 남은 기간이 끝난 뒤에 이용 해지를 할 수 있어요.,Cancel your subscription first — you can stop desk once the paid period ends.
-user,withdrawn.title,이용 해지가 끝났어요,Your desk account is closed
-user,withdrawn.body,"그동안 desk 를 써 주셔서 감사했습니다. 남은 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요.","Thank you for using desk. Remaining data is kept and then destroyed under our privacy policy."
+user,withdraw.codeSent,메일로 코드를 보냈어요.,We sent a code to your email.
+user,withdraw.codeRule,10분 안에 입력해주세요 · 5번 틀리면 다시 받아요.,"Enter it within 10 minutes · After 5 wrong tries, request a new code."
+user,withdraw.codeIncomplete,인증 코드 6자리를 입력해주세요.,Enter the 6-digit verification code.
+user,withdraw.codeWrong,코드가 맞지 않거나 시간이 지났어요. 확인하거나 다시 받아주세요.,The code is wrong or has expired. Check it or request a new one.
+user,withdraw.passwordWrong,비밀번호가 맞지 않아요. 다시 확인해주세요.,That password doesn't match. Please check it again.
+user,withdraw.locked,5번 틀렸어요. 코드를 다시 받아주세요.,You got it wrong 5 times. Please request a new code.
+user,withdraw.sendCodeFailed,코드를 보내지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not send the code. Please try again shortly.
+user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not stop your 그루 담다 account. Please try again shortly.
+user,withdraw.blockedSubscription,구독이 남아 있어 아직 해지할 수 없어요.,"You still have an active subscription, so you cannot stop using 그루 담다 yet."
+user,withdraw.blockedSubscriptionUntil,구독이 {{date}}까지 남아 있어 아직 해지할 수 없어요.,"Your subscription runs until {{date}}, so you cannot stop using 그루 담다 yet."
+user,withdraw.blockedOther,아직 해지할 수 없는 상태예요.,Your account cannot be stopped right now.
+user,withdraw.blockedHint,구독을 먼저 해지하면 남은 기간이 끝난 뒤에 이용 해지를 할 수 있어요.,Cancel your subscription first — you can stop using 그루 담다 once the paid period ends.
+user,withdraw.loadFailed,해지 정보를 불러오지 못했어요,Could not load your account details
+user,withdraw.loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again shortly.
+user,withdraw.closing,해지하는 중,Closing your account
+user,withdrawn.title,이용 해지가 끝났어요,Your 그루 담다 account is closed
+user,withdrawn.body,그동안 그루 담다를 써 주셔서 감사했습니다. 남은 데이터는 개인정보 처리방침에 따라 보관 후 파기돼요.,Thank you for using 그루 담다. Remaining data is kept and then destroyed under our privacy policy.
 user,withdrawn.rejoin,같은 아이디와 이메일로는 다시 가입할 수 없어요.,You cannot sign up again with the same ID or email address.
 user,withdrawn.toLogin,로그인 화면으로,Go to sign in
 budget,add,추가,Add
@@ -1765,53 +1775,39 @@ expense,preset.lockAmountLabel,고정 금액,Fixed amount
 export,export,내보내기,Export
 export,fileFormat,파일 형식,File format
 export,preview,미리보기,Preview
-export,dialog.title,내보내기,Export
-export,dialog.exportAs,{{format}} 내보내기,Export {{format}}
-export,dialog.period,기간,Period
-export,dialog.includeLabel,포함할 내용,What to include
-export,dialog.noticePre,약,About
-export,dialog.noticePost,건의 거래가 내보내집니다., transactions will be exported.
-export,dialog.format.csv.d,Excel·Google 시트,Excel · Google Sheets
-export,dialog.format.xlsx.d,xlsx 형식,xlsx format
-export,dialog.format.pdf.d,요약 보고서,Summary report
-export,dialog.period.week,주간,Weekly
-export,dialog.period.month,이번 달,This month
-export,dialog.period.quarter,분기,Quarter
-export,dialog.period.year,올해,This year
-export,dialog.period.custom,직접 선택,Custom
-export,dialog.include.tx.l,거래 내역,Transactions
-export,dialog.include.tx.d,모든 수입·지출·이체,"All income, expenses & transfers"
-export,dialog.include.cat.l,카테고리 요약,Category summary
-export,dialog.include.cat.d,카테고리별 합계와 비율,Totals and ratios by category
-export,dialog.include.budget.l,예산 진행 상황,Budget progress
-export,dialog.include.budget.d,할당·사용·초과 현황,Allocated · used · over status
-export,dialog.include.asset.l,자산 스냅샷,Asset snapshot
-export,dialog.include.asset.d,기간 말일 기준 잔액,Balance as of period end
-export,section.exportDone,내보내기를 완료했어요,Export complete
+export,section.exportDone,내보냈어요.,Exported.
+export,section.exportFailed,내보내지 못했어요.,Could not export.
+export,section.exportStalled,파일을 받는 중에 멈췄어요.,The download stopped.
+export,section.tabsLabel,데이터 내보내기 · 가져오기,Export and import data
 export,section.periodSelect,기간 선택,Select period
 export,section.customSelect,직접 선택,Custom
-export,section.dateError,시작일이 종료일보다 늦을 수 없어요.,The start date cannot be later than the end date.
+export,section.rangeIncomplete,시작일과 종료일을 골라주세요.,Choose a start and end date.
+export,section.customRangeLabel,직접 고른 기간,Custom range
 export,section.dataTypeTitle,데이터 종류 — {{count}}개 선택됨,Data types — {{count}} selected
-export,section.dataTypeDesc,내보낼 데이터를 골라주세요. 여러 종류는 ZIP으로 묶입니다.,Choose the data to export. Multiple types are bundled into a ZIP.
+export,section.dataTypeDesc,내보낼 데이터를 골라주세요. 여러 종류는 ZIP으로 묶어요.,Choose the data to export. Multiple types are bundled into a ZIP.
+export,section.dataTypeAll,모두,All
+export,section.countsFailed,건수를 불러오지 못했어요.,Could not load the counts.
 export,section.countGeon,{{count}}건,{{count}}
-export,section.maskSensitive,민감 정보 가리기 (잔액·금액·기관),"Mask sensitive info (balances, amounts, institutions)"
+export,section.maskSensitive,민감 정보 가리기 (잔액 · 금액 · 기관),"Mask sensitive info (balances, amounts, institutions)"
 export,section.noData,이 기간에 내보낼 데이터가 없어요.,No data to export for this period.
-export,section.previewFooter,상위 {{rows}}행 미리보기 · 선택 {{types}}종 합계 약 {{total}}건,"Top {{rows}} rows · {{types}} types, about {{total}} total"
+export,section.previewEmptyTitle,미리볼 데이터가 없어요,Nothing to preview
+export,section.previewFooter,상위 {{rows}}행 미리보기 · 선택한 {{types}}종 합계 약 {{total}}건,"Top {{rows}} rows · {{types}} selected types, about {{total}} in total"
+export,section.previewTabs,미리보기 데이터 종류,Preview data type
 export,section.period.thisMonth,이번 달,This month
 export,section.period.lastMonth,지난 달,Last month
 export,section.period.last3m,최근 3개월,Last 3 months
 export,section.period.thisYear,올해,This year
 export,section.period.custom,사용자 지정,Custom
 export,section.dataType.EXPENSE,거래 내역,Transactions
-export,section.dataType.ASSET,자산·계좌,Assets & Accounts
+export,section.dataType.ASSET,자산 · 계좌,Assets & Accounts
 export,section.dataType.BUDGET,예산 설정,Budget
 export,section.dataType.CATEGORY,카테고리,Categories
 export,section.dataType.MEMO,메모,Memos
 export,section.dataType.CALENDAR,캘린더 일정,Calendar events
 export,section.dataType.TODO,할 일,To-dos
-export,section.format.csv.desc,엑셀·구글시트,Excel · Google Sheets
+export,section.format.csv.desc,엑셀 · 구글 시트,Excel · Google Sheets
 export,section.format.excel.desc,Microsoft Excel,Microsoft Excel
-export,section.format.json.desc,개발자·백업,Developer · Backup
+export,section.format.json.desc,개발자 · 백업,Developer · Backup
 settings,theme.label,테마,Theme
 settings,language.label,언어,Language
 settings,language.ko,한국어,한국어
@@ -1975,7 +1971,7 @@ settings,account.provider.naver,네이버,Naver
 settings,account.logout.label,로그아웃,Log Out
 settings,account.logout.desc,이 기기에서만,This device only
 settings,account.logout.confirmMessage,정말 로그아웃 하시겠어요?,Log out of this device?
-settings,account.withdraw.label,desk 이용 해지,Stop using desk
+settings,account.withdraw.label,그루 담다 이용 해지,Stop using 그루 담다
 settings,account.withdraw.desc,복구할 수 없어요,Cannot be undone
 settings,account.comingSoon,다음 단계에서 구현,Coming in a future update
 settings,account.sub.proActiveBill,다음 결제 {{date}} · Pro 이용 중,Next billing {{date}} · On Pro
@@ -2483,73 +2479,78 @@ stats,compare.metricPerTx,건당 평균,Per transaction
 stats,compare.unitCount,건,
 export,import.tab,가져오기,Import
 export,import.sourceTitle,어떤 앱에서 가져오나요?,Which app are you importing from?
-export,import.sourceDesc,기존에 쓰던 가계부를 고르면 열 구조를 자동으로 맞춰드려요,Pick your previous app and we'll auto-map the columns
-export,import.source.groo,담다 백업,담다 백업
-export,import.source.grooDesc,내보내기 파일 다시 가져오기,Re-import an export file
+export,import.sourceDesc,기존에 쓰던 가계부를 고르면 열 구조를 자동으로 맞춰요.,Pick your previous app and we'll auto-map the columns.
+export,import.source.groo,그루 담다,그루 담다
+export,import.source.grooDesc,그루 담다에서 내보낸 파일,File exported from 그루 담다
 export,import.source.easybudget,편한가계부·머니매니저,EasyBudget · Money Manager
 export,import.source.easybudgetDesc,Excel 백업,Excel backup
 export,import.source.banksalad,뱅크샐러드,Banksalad
-export,import.source.banksaladDesc,가계부 내역 파일,Ledger export file
+export,import.source.banksaladDesc,가계부 내역,Ledger export file
 export,import.source.toss,토스,Toss
-export,import.source.tossDesc,거래내역 파일,Transaction history
+export,import.source.tossDesc,거래내역,Transaction history
 export,import.source.custom,직접 매핑,Custom
-export,import.source.customDesc,CSV·Excel 직접 연결,Map CSV/Excel yourself
+export,import.source.customDesc,CSV · Excel 직접 연결,Map CSV / Excel yourself
 export,import.uploadTitle,파일 업로드,Upload file
-export,import.uploadDesc,"CSV(.csv) 또는 Excel(.xlsx, .xls) 파일을 올려주세요. 최대 10MB.","Upload a CSV (.csv) or Excel (.xlsx, .xls) file. Up to 10MB."
-export,import.dropTitle,파일을 끌어다 놓거나 클릭해서 선택,Drag & drop or click to choose a file
-export,import.dropHint,.csv · .xlsx · .xls 지원,.csv · .xlsx · .xls supported
-export,import.analyzing,파일 분석 중…,Analyzing file…
-export,import.notice,가져온 데이터는 기존 거래에 추가되며 덮어쓰지 않아요. 미리보기에서 중복·오류를 확인할 수 있어요.,Imported data is added to existing transactions without overwriting. Check duplicates and errors in the preview.
+export,import.uploadDesc,"CSV 또는 Excel(.xlsx, .xls) 파일을 올려주세요. 최대 10MB.","Upload a CSV or Excel (.xlsx, .xls) file. Up to 10MB."
+export,import.errorType,CSV 또는 Excel 파일만 올릴 수 있어요.,Only CSV or Excel files can be uploaded.
+export,import.errorSize,파일은 10MB까지 올릴 수 있어요.,Files up to 10MB can be uploaded.
+export,import.notice,가져온 데이터는 기존 거래에 추가되며 덮어쓰지 않아요. 미리보기에서 중복 · 오류를 확인할 수 있어요.,Imported data is added to existing transactions without overwriting. Check duplicates and errors in the preview.
 export,import.fileTitle,가져올 파일,File to import
 export,import.rowsDetected,{{total}}개 행 · 유효 {{valid}}건,{{total}} rows · {{valid}} valid
 export,import.change,변경,Change
 export,import.mapTitle,열 매핑,Column mapping
-export,import.mapDesc,파일의 열을 가계부 항목에 연결하세요. 자동 감지값을 확인하고 바꿀 수 있어요.,Connect file columns to ledger fields. Review auto-detected values and adjust.
+export,import.mapDesc,파일의 열을 가계부 항목에 연결해요. 자동으로 찾은 값을 확인하고 바꿀 수 있어요.,Connect file columns to ledger fields. Review auto-detected values and adjust.
 export,import.notMapped,— 가져오지 않음 —,— Don't import —
 export,import.field.date,날짜,Date
-export,import.field.type,수입/지출,Income/Expense
+export,import.field.type,수입 · 지출,Income / Expense
 export,import.field.amount,금액,Amount
 export,import.field.category,카테고리,Category
-export,import.field.asset,자산·결제수단,Asset/Method
+export,import.field.asset,자산 · 결제수단,Asset / Method
 export,import.field.memo,메모,Memo
 export,import.field.subcategory,소분류,Subcategory
 export,import.field.time,시간,Time
 export,import.field.merchant,거래처,Merchant
 export,import.field.paymentMethod,결제수단,Payment method
-export,import.previewDesc,처음 몇 행 미리보기 · 중복 의심 {{dup}}건,Preview of first rows · {{dup}} possible duplicates
+export,import.previewDesc,중복 의심 {{dup}}건,{{dup}} possible duplicates
 export,import.income,수입,Income
 export,import.expense,지출,Expense
-export,import.dupBadge,중복?,Dup?
+export,import.dupBadge,중복,Duplicate
+export,import.errorBadge,오류,Error
+export,import.statusCol,상태,Status
 export,import.optionsTitle,가져오기 옵션,Import options
 export,import.optDupSkip,중복 거래 건너뛰기,Skip duplicate transactions
-export,import.optDupSkipDesc,날짜·금액·내용이 같은 {{dup}}건을 제외해요,"Excludes {{dup}} rows with same date, amount & content"
+export,import.optDupSkipDesc,날짜 · 금액 · 내용이 같은 {{dup}}건을 제외해요.,"Excludes {{dup}} rows with same date, amount & content."
 export,import.blockedTitle,{{names}} 카테고리에 거래가 직접 등록돼 있어 하위 분류를 만들 수 없어요,Cannot create subcategories under {{names}} — it already has transactions
-export,import.blockedDesc,해당 대분류를 쓰는 행은 저장에 실패해요. 그 카테고리의 거래를 하위로 옮기거나 파일의 분류를 바꿔주세요,Rows using it will fail. Move its transactions into a subcategory or change the category in the file
+export,import.blockedDesc,해당 대분류를 쓰는 행은 저장에 실패해요. 그 카테고리의 거래를 하위로 옮기거나 파일의 분류를 바꿔주세요.,Rows using it will fail. Move its transactions into a subcategory or change the category in the file.
 export,import.optAutoCat,새 카테고리 자동 생성,Auto-create new categories
-export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요,Missing categories are created automatically
+export,import.optAutoCatDesc,없는 카테고리는 자동으로 만들어요.,Missing categories are created automatically.
 export,import.prev,이전,Back
 export,import.doImport,{{count}}건 가져오기,Import {{count}}
-export,import.doneTitle,가져오기 완료,Import complete
-export,import.doneCount,{{count}}건을 가져왔어요,Imported {{count}} transactions
-export,import.doneDetail,건너뜀 {{skipped}} · 실패 {{failed}},{{skipped}} skipped · {{failed}} failed
+export,import.doneTitle,{{count}}건을 가져왔어요,Imported {{count}} transactions
+export,import.doneDetail,건너뛴 거래 {{skipped}}건 · 못 가져온 거래 {{failed}}건.,{{skipped}} skipped · {{failed}} not imported.
 export,import.another,다른 파일 가져오기,Import another file
+export,import.toLedger,가계부로 가기,Go to ledger
+export,import.importing,가져오는 중,Importing
 export,import.stepUpload,파일 선택,Choose file
 export,import.stepMapping,열 매핑,Map columns
 export,import.stepDone,완료,Done
+export,import.stepMeta,{{current}} / {{total}}단계,Step {{current}} of {{total}}
+export,import.stepUploadDesc,가져올 앱과 파일을 골라주세요.,Choose the app and the file to import.
+export,import.stepMappingDesc,열이 맞는지 확인하고 가져올 거래를 점검해주세요.,Check the columns and review the transactions before importing.
 export,import.newCatTitle,새로 만들 카테고리 {{count}}개,{{count}} categories will be created
 export,import.newCatMore,외 {{count}}개,+{{count}} more
-export,import.newCatHint,"자동 감지된 카테고리 열 기준이에요. 오타가 있으면 파일을 고치거나 위 옵션을 꺼서 미분류로 넣으세요","Based on the auto-detected category column. Fix the file or turn the option off to file them as Uncategorized"
+export,import.newCatHint,자동 감지된 카테고리 열 기준이에요. 오타가 있으면 파일을 고치거나 위 옵션을 꺼서 미분류로 넣어주세요.,Based on the auto-detected category column. Fix the file or turn the option off to file them as Uncategorized.
 export,import.createdCatTitle,새로 만든 카테고리 {{count}}개,{{count}} categories created
 export,import.failuresTitle,실패한 행 {{count}}건,{{count}} failed rows
 export,import.failureLine,{{line}}행,Line {{line}}
-export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여줘요,Showing the first {{shown}} of {{total}} failures
+export,import.failuresCapped,실패 {{total}}건 중 앞의 {{shown}}건만 보여줘요.,Showing the first {{shown}} of {{total}} failures.
 export,import.failReason.date,날짜를 읽을 수 없어요,Couldn't read the date
 export,import.failReason.amount,금액을 읽을 수 없어요,Couldn't read the amount
-export,import.failReason.type,수입/지출 구분을 읽을 수 없어요,Couldn't tell income from expense
+export,import.failReason.type,수입 · 지출 구분을 읽을 수 없어요,Couldn't tell income from expense
 export,import.failReason.parentHasTx,이 카테고리에는 거래가 직접 달려 있어 하위 분류를 만들 수 없어요,This category has its own transactions so no subcategory can be created
 export,import.failReason.resolve,카테고리나 자산을 찾지 못했어요,Couldn't match the category or asset
-export,import.failReason.save,저장하는 중에 오류가 났어요,Something went wrong while saving
-export,import.failReason.unknown,알 수 없는 이유로 실패했어요,Failed for an unknown reason
+export,import.failReason.save,저장하는 중에 오류가 나서 가져오지 못했어요,"Something went wrong while saving, so it could not be imported"
+export,import.failReason.unknown,알 수 없는 이유로 가져오지 못했어요,Couldn't import it for an unknown reason
 calendar,detail.start,시작,Start
 calendar,detail.end,종료,End
 calendar,detail.dday,D-DAY,D-DAY

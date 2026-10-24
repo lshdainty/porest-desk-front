@@ -7,6 +7,7 @@
 // 캐시가 실제로 비워진다는 것이다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
@@ -56,6 +57,11 @@ vi.mock("react-i18next", () => ({
 }));
 
 const { DataImportSection } = await import("./DataImportSection");
+
+/** 지금 주소 — 가져오기 뒤 가계부로 가는지 본다 */
+function Where() {
+  return <output data-testid="where">{useLocation().pathname}</output>;
+}
 
 let container: HTMLDivElement;
 let root: Root;
@@ -107,18 +113,24 @@ const invalidatedKeys = () =>
     .mock.calls.map((c) => JSON.stringify(c[0]?.queryKey));
 
 /** 파일 선택 → 분석까지. 매핑 단계에 선다. */
-async function toMapping() {
+async function toMapping(file?: File) {
   await act(async () => {
     root.render(
       <QueryClientProvider client={queryClient}>
-        <DataImportSection mobile={false} />
+        <MemoryRouter initialEntries={["/desk/settings"]}>
+          <DataImportSection mobile={false} />
+          <Where />
+        </MemoryRouter>
       </QueryClientProvider>,
     );
   });
   const input =
     container.querySelector<HTMLInputElement>('input[type="file"]')!;
-  const file = new File(["a"], "qa.csv", { type: "text/csv" });
-  Object.defineProperty(input, "files", { value: [file] });
+  const picked = file ?? new File(["a"], "qa.csv", { type: "text/csv" });
+  Object.defineProperty(input, "files", {
+    value: [picked],
+    configurable: true,
+  });
   await act(async () => {
     input.dispatchEvent(new Event("change", { bubbles: true }));
   });
@@ -180,7 +192,7 @@ describe("가져오기 완료 화면 — 실패한 행 (QA #61)", () => {
       failuresTruncated: true,
     });
     expect(container.textContent).toContain(
-      'import.failuresCapped{"shown":50,"total":120}',
+      'import.failuresCapped{"shown":"50","total":"120"}',
     );
   });
 
@@ -201,7 +213,7 @@ describe("가져오기 완료 화면 — 실패한 행 (QA #61)", () => {
       failuresTruncated: false,
     });
     expect(container.textContent).toContain(
-      'import.failuresCapped{"shown":50,"total":120}',
+      'import.failuresCapped{"shown":"50","total":"120"}',
     );
   });
 
@@ -229,7 +241,7 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       newCategoryCount: 2,
     };
     await toMapping();
-    expect(container.textContent).toContain('import.newCatTitle{"count":2}');
+    expect(container.textContent).toContain('import.newCatTitle{"count":"2"}');
     expect(container.textContent).toContain("싟비");
     expect(container.textContent).toContain("식비 > 커피");
   });
@@ -241,7 +253,7 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       newCategoryCount: 60,
     };
     await toMapping();
-    expect(container.textContent).toContain('import.newCatMore{"count":58}');
+    expect(container.textContent).toContain('import.newCatMore{"count":"58"}');
   });
 
   it("새로 생길 게 없으면 블록이 없다", async () => {
@@ -256,7 +268,7 @@ describe("가져오기 매핑 단계 — 새로 만들 카테고리 (QA #59)", (
       newCategoryCount: 1,
     };
     await toMapping();
-    const autoCat = container.querySelectorAll('[role="switch"]')[1]!;
+    const autoCat = container.querySelectorAll('[role="checkbox"]')[1]!;
     await act(async () => {
       (autoCat as HTMLElement).click();
     });
@@ -303,5 +315,266 @@ describe("가져오기 성공 — 캐시 비우기 (QA #144)", () => {
   it("기본 출처는 서버 enum 이름 POREST 로 보낸다", async () => {
     await toMapping();
     expect(state.analyzeSources).toEqual(["POREST"]);
+  });
+});
+
+describe("가져오기 단계 머리 (Q6 6B · I-05 48)", () => {
+  it("1 단계는 '1 / 3단계' + 단계 이름 + 한 줄 설명이고 단계 원은 없다", async () => {
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <DataImportSection mobile={false} />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+    const text = container.textContent ?? "";
+    expect(text).toContain('import.stepMeta{"current":1,"total":3}');
+    expect(text).toContain("import.stepUpload");
+    expect(text).toContain("import.stepUploadDesc");
+    expect(text).not.toContain("import.stepDone");
+    expect(text).not.toContain("✓");
+  });
+
+  it("2 단계는 '2 / 3단계' + 열 매핑", async () => {
+    await toMapping();
+    const text = container.textContent ?? "";
+    expect(text).toContain('import.stepMeta{"current":2,"total":3}');
+    expect(text).toContain("import.stepMappingDesc");
+  });
+
+  it("완료 화면에는 단계 머리가 없다", async () => {
+    await toDone(baseResult);
+    expect(container.textContent).not.toContain("import.stepMeta");
+  });
+});
+
+describe("파일 고르기 (I-05 48)", () => {
+  const bigFile = new File([new Uint8Array(10 * 1024 * 1024 + 1)], "big.csv", {
+    type: "text/csv",
+  });
+
+  it("10MB 가 넘으면 분석하지 않고 칸 아래 오류 글로 알린다", async () => {
+    await toMapping(bigFile);
+    expect(state.analyzeSources).toEqual([]);
+    expect(container.textContent).toContain("import.errorSize");
+  });
+
+  it("형식이 다르면 칸 아래 오류 글로 알린다", async () => {
+    await toMapping(new File(["a"], "memo.pdf", { type: "application/pdf" }));
+    expect(state.analyzeSources).toEqual([]);
+    expect(container.textContent).toContain("import.errorType");
+  });
+
+  it("파일 선택은 키보드로 닿는 버튼이다 — 점선 div 가 아니다", async () => {
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <DataImportSection mobile={false} />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+    const pick = container.querySelector('[data-slot="attachment-input-pick"]');
+    expect(pick?.tagName).toBe("BUTTON");
+  });
+});
+
+describe("미리보기 표 (I-05 46 · 48)", () => {
+  const rows = [
+    {
+      lineNo: 2,
+      date: "2026-10-01",
+      type: "EXPENSE",
+      amount: 1000,
+      category: "식비",
+      asset: "현금",
+      memo: "",
+      duplicate: false,
+      error: null,
+    },
+    {
+      lineNo: 3,
+      date: "2026-10-02",
+      type: "EXPENSE",
+      amount: 2000,
+      category: "식비",
+      asset: "현금",
+      memo: "",
+      duplicate: true,
+      error: null,
+    },
+    {
+      lineNo: 4,
+      date: null,
+      type: null,
+      amount: null,
+      category: null,
+      asset: null,
+      memo: "",
+      duplicate: false,
+      error: "date",
+    },
+  ];
+
+  it("ds Table 이고, 오류 · 중복 줄은 흐리지 않고 상태 배지로 가른다", async () => {
+    state.analyze = { ...analysis, preview: rows };
+    await toMapping();
+    expect(container.querySelector('[data-slot="table"]')).not.toBeNull();
+    const trs = [...container.querySelectorAll("tbody tr")] as HTMLElement[];
+    expect(trs).toHaveLength(3);
+    for (const tr of trs) {
+      expect(tr.style.opacity).toBe("");
+      expect(tr.className).not.toMatch(/opacity/);
+    }
+    expect(trs[1]!.textContent).toContain("import.dupBadge");
+    expect(trs[2]!.textContent).toContain("import.errorBadge");
+    expect(trs[0]!.textContent).not.toContain("import.dupBadge");
+  });
+});
+
+describe("옵션 · 완료 (I-05 48 · 50)", () => {
+  it("중복 건너뛰기 · 새 카테고리 자동 생성은 Checkbox 이고 스위치가 아니다", async () => {
+    await toMapping();
+    expect(container.querySelectorAll('[role="switch"]')).toHaveLength(0);
+    expect(
+      container.querySelectorAll('[role="checkbox"]').length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it("완료 화면은 Result Section done 이고 [가계부로 가기] 가 가계부로 간다", async () => {
+    await toDone(baseResult);
+    const rs = container.querySelector('[data-slot="result-section"]');
+    expect(rs?.getAttribute("data-kind")).toBe("done");
+    expect(rs?.getAttribute("data-size")).toBe("medium"); // 데스크톱 = 카드 안 medium(Q2 A)
+    await act(async () => {
+      btn("import.toLedger")!.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      );
+    });
+    expect(container.querySelector('[data-testid="where"]')?.textContent).toBe(
+      "/desk/expense",
+    );
+  });
+
+  it("[다른 파일 가져오기] 는 글 버튼(ghost)이다", async () => {
+    await toDone(baseResult);
+    expect(btn("import.another")!.className).toContain("bg-transparent");
+  });
+});
+
+describe("가져오는 동안 덮개 (I-05 49)", () => {
+  it("실행 중 덮개가 서고 걷힌다", async () => {
+    let finish!: (r: ImportExecuteResult) => void;
+    state.execute = new Promise<ImportExecuteResult>((r) => (finish = r));
+    await toMapping();
+    await act(async () => {
+      btn("import.doImport")!.click();
+    });
+    expect(
+      document.body.querySelector('[data-slot="busy-overlay"]'),
+    ).not.toBeNull();
+    await act(async () => finish(baseResult));
+    expect(
+      document.body.querySelector('[data-slot="busy-overlay"]'),
+    ).toBeNull();
+  });
+});
+
+describe("검수 반영 — 완료 화면(I-05 50)", () => {
+  it("제목은 쉼표가 있는 건수 '{n}건을 가져왔어요' 이고 설명은 건너뛴 · 못 가져온 건수다", async () => {
+    await toDone({ ...baseResult, imported: 1234567 });
+    const text = container.querySelector(
+      '[data-slot="result-section"]',
+    )!.textContent!;
+    expect(text).toContain('import.doneTitle{"count":"1,234,567"}');
+    expect(text).toContain("import.doneDetail");
+    expect(text).not.toContain("import.doneCount");
+  });
+
+  it("만든 카테고리는 Badge 가 아니라 List 줄이다", async () => {
+    await toDone({
+      ...baseResult,
+      createdCategories: ["식비", "식비 > 커피"],
+      createdCategoryCount: 2,
+    });
+    const items = [
+      ...container.querySelectorAll('[data-slot="list-item"]'),
+    ].map((e) => e.textContent);
+    expect(items).toContain("식비");
+    expect(items).toContain("식비 > 커피");
+    expect(container.querySelectorAll('[data-slot="badge"]')).toHaveLength(0);
+  });
+
+  it("[가계부로 가기] 는 모든 폭에서 large 48 이다", async () => {
+    await toDone(baseResult);
+    expect(btn("import.toLedger")!.className).toContain("h-12");
+  });
+
+  it("목록 머리는 R5 mediumWeak 목록 제목이다(boldSolid 아님)", async () => {
+    await toDone(baseResult);
+    const header = container.querySelector('[data-slot="list-header"]')!;
+    expect(header.className).toContain("text-fg-neutral-subtle");
+    expect(header.className).not.toContain("text-fg-neutral ");
+  });
+});
+
+describe("검수 재반영 — 쉼표 · 실패 사유 자리(W5 · W6)", () => {
+  it("건수에 천 단위 쉼표가 붙는다", async () => {
+    await toDone({
+      ...baseResult,
+      failed: 1200,
+      failures: [{ lineNo: 5, reason: "date" }],
+      failuresTruncated: true,
+      createdCategories: ["a"],
+      createdCategoryCount: 1234,
+    });
+    const text = container.textContent ?? "";
+    expect(text).toContain('import.failuresTitle{"count":"1,200"}');
+    expect(text).toContain('import.createdCatTitle{"count":"1,234"}');
+    expect(text).toContain(
+      'import.failuresCapped{"shown":"1","total":"1,200"}',
+    );
+  });
+
+  it("실패 사유는 줄 뒤 값이 아니라 설명(detail) 자리다 — 긴 문장도 줄바꿈된다", async () => {
+    await toDone(baseResult);
+    const row = [...container.querySelectorAll('[data-slot="list-item"]')].find(
+      (e) => e.textContent?.includes("import.failureLine"),
+    )!;
+    expect(
+      row.querySelector('[data-slot="list-detail"]')?.textContent,
+    ).toContain("import.failReason");
+    expect(row.querySelector('[data-slot="list-suffix"]')).toBeNull();
+  });
+});
+
+describe("데스크톱 완료 = 한 카드(사용자 결정 10-24 05-2 Q2 A)", () => {
+  const big = {
+    ...baseResult,
+    createdCategories: ["식비", "식비 > 커피"],
+    createdCategoryCount: 63,
+  };
+
+  it("결과 · 만든 카테고리 · 실패 줄이 카드 하나 안에 있고 Result Section 은 medium 이다", async () => {
+    await toDone(big);
+    const cards = container.querySelectorAll('[data-slot="card"]');
+    expect(cards).toHaveLength(1);
+    const card = cards[0]!;
+    const rs = card.querySelector('[data-slot="result-section"]')!;
+    expect(rs.getAttribute("data-size")).toBe("medium");
+    expect(card.textContent).toContain("import.createdCatTitle");
+    expect(card.textContent).toContain("import.failuresTitle");
+  });
+
+  it("[가계부로 가기] 는 카드 바닥 오른쪽이다", async () => {
+    await toDone(big);
+    const card = container.querySelector('[data-slot="card"]')!;
+    const bar = card.querySelector('[data-slot="data-action-bar"]')!;
+    expect(bar.className).toContain("justify-end");
+    expect(bar.textContent).toContain("import.toLedger");
+    expect(card.lastElementChild).toBe(bar);
   });
 });
