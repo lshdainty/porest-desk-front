@@ -1,21 +1,31 @@
-import { useId, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "@/shared/ui/groo/primitives";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
-import { IconPicker } from "@/shared/ui/icon-picker";
-import { Input } from "@/shared/ui/input";
-import { Field, FieldLabel } from "@/shared/ui/field";
+import { Folder, Palette, Tag, Tags } from "lucide-react";
+import { Button } from "@/shared/ds/button";
+import { firstUnusedColor } from "@/shared/ds/color-swatch";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { CAT_PALETTE } from "@/shared/lib/groo/chart-palette";
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogCancel,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+} from "@/shared/ds/dialog";
+import { Field } from "@/shared/ds/field";
+import { Input } from "@/shared/ds/input";
+import { ListTile } from "@/shared/ds/list";
+import { PickList } from "@/shared/ui/groo/pick-list";
+import { PickerRow } from "@/shared/ui/groo/picker-row";
+import { Icon } from "@/shared/ui/groo/primitives";
+import {
+  ColorPickerRow,
+  IconPickerRow,
+} from "@/shared/ui/groo/icon-color-rows";
+import {
+  CHART_PAIRS,
+  chartColorOf,
+  getPaletteByColor,
+} from "@/shared/lib/groo/chart-palette";
+import { nameIssue } from "@/shared/lib/groo/name-policy";
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,
@@ -33,15 +43,36 @@ export interface CategoryItem {
   count: number;
 }
 
+/** 카테고리 이름 상한 — 목록 줄 한 칸에 들어가는 길이(서버 상한은 더 넓다) */
+export const CATEGORY_NAME_MAX = 12;
+
+const ROOT = "root";
+
+const baseOf = (key: ReturnType<typeof firstUnusedColor>) =>
+  CHART_PAIRS.find((p) => p.key === key)!.base;
+
+/** 같은 종류 카테고리가 아직 쓰지 않은 첫 색(color-swatch.md:98) — 늘 빨강으로 시작하지 않는다 */
+function nextColor(existing: ExpenseCategory[], kind: ExpenseType) {
+  return baseOf(
+    firstUnusedColor(
+      existing
+        .filter((c) => c.expenseType === kind)
+        .map((c) => chartColorOf(c.color)),
+    ),
+  );
+}
+
+/**
+ * 카테고리 추가 · 수정 폼(D21, I-20 B 12) — 맨 위 한 줄에 미리보기 타일 + 이름 칸, 그 아래 고르는 값 넷(종류 · 상위 · 색상 · 아이콘)은 줄이다.
+ * 1280 이상 대화상자 480 · 미만 Bottom Sheet. 주 버튼은 켜 두고 누를 때 칸 아래에 오류를 보인다.
+ * 삭제 · 거래 옮기기는 목록 줄 ⋮ 에 있고 이 폼에 두지 않는다. 저장 본문 · 순서(`sortOrder`)는 그대로다.
+ */
 export function CategoryEditDialog({
   cat,
   defaultKind,
   defaultParentRowId,
   onClose,
   onSave,
-  onDelete,
-  onMoveTx,
-  mobile,
   existing,
   submitting,
 }: {
@@ -50,15 +81,6 @@ export function CategoryEditDialog({
   defaultParentRowId?: number | null;
   onClose: () => void;
   onSave: (values: ExpenseCategoryFormValues) => void;
-  /**
-   * 삭제 — **모바일 footer 에서만 쓴다**. 데스크탑·태블릿은 관리 목록 행에 삭제
-   * 아이콘이 있지만 모바일 목록엔 없고 행을 탭하면 바로 이 시트로 들어와,
-   * 여기에 없으면 지울 방법이 사라진다.
-   */
-  onDelete?: () => void;
-  /** 거래를 다른 카테고리로 옮기기 — 거래가 달려 하위를 만들 수 없을 때의 탈출구. */
-  onMoveTx?: () => void;
-  mobile: boolean;
   existing: ExpenseCategory[];
   submitting?: boolean;
 }) {
@@ -66,304 +88,246 @@ export function CategoryEditDialog({
   const { t: tc } = useTranslation("common");
   const { t: te } = useTranslation("expense");
   const isNew = !cat;
-  const uid = useId();
-  const [label, setLabel] = useState(cat?.categoryName || "");
-  const [kind, setKind] = useState<ExpenseType>(
-    cat?.expenseType || defaultKind,
-  );
-  const [icon, setIcon] = useState(cat?.icon || "tag");
-  const [paletteIdx, setPaletteIdx] = useState(() => {
-    if (!cat?.color) return 0;
-    const idx = CAT_PALETTE.findIndex((p) => p.baseHex === cat.color);
-    return idx >= 0 ? idx : 0;
+
+  const [initial] = useState(() => {
+    const kind = cat?.expenseType ?? defaultKind;
+    return {
+      name: cat?.categoryName ?? "",
+      kind,
+      parentRowId: cat?.parentRowId ?? defaultParentRowId ?? null,
+      // 고치는 카테고리는 저장된 색을 그대로 — 팔레트 밖 색도 빨강으로 바꾸지 않는다
+      color: cat?.color ?? nextColor(existing, kind),
+      icon: cat?.icon || "tag",
+    };
   });
+  const [label, setLabel] = useState(initial.name);
+  const [kind, setKind] = useState<ExpenseType>(initial.kind);
   const [parentRowId, setParentRowId] = useState<number | null>(
-    cat?.parentRowId ?? defaultParentRowId ?? null,
+    initial.parentRowId,
   );
-  const [touched, setTouched] = useState(false);
+  // 새 카테고리는 색을 고르기 전까지 고른 종류의 첫 안 쓴 색을 따라간다
+  const [pickedColor, setPickedColor] = useState<string | null>(null);
+  const [icon, setIcon] = useState(initial.icon);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
-  const palette = CAT_PALETTE[paletteIdx]!;
+  const color =
+    pickedColor ?? (isNew ? nextColor(existing, kind) : initial.color);
   const labelTrim = label.trim();
-  // 이름 중복 — 서버 규칙과 동일 범위: 같은 상위(부모) · 같은 타입 안에서만 금지.
-  // (지출 '이자'와 수입 '이자', '생활>관리비'와 '주거>관리비' 처럼 위치·타입이 다르면 허용)
-  const duplicate = existing.some(
-    (c) =>
-      c.categoryName === labelTrim &&
-      c.rowId !== cat?.rowId &&
-      c.expenseType === kind &&
-      (c.parentRowId ?? null) === parentRowId,
-  );
-  const valid = labelTrim.length > 0 && labelTrim.length <= 12 && !duplicate;
-  const err =
-    touched && !valid
-      ? labelTrim.length === 0
-        ? t("nameRequired")
-        : labelTrim.length > 12
-          ? t("nameTooLong")
-          : duplicate
-            ? t("nameDuplicate")
-            : null
-      : null;
 
-  // 상위 카테고리 후보: 같은 expenseType의 최상위(parentRowId=null)이고 본인 자신 제외.
-  // (자식 보유 부모는 애초에 '상위 카테고리' 필드를 숨기므로 여기서 따로 막지 않음.)
+  // 상위 후보: 같은 종류의 최상위, 본인 제외
   const parentOptions = existing.filter(
     (c) =>
       c.expenseType === kind && c.parentRowId == null && c.rowId !== cat?.rowId,
   );
+  const parent = existing.find((c) => c.rowId === parentRowId);
 
-  const save = () => {
-    setTouched(true);
-    if (!valid) return;
-    const values: ExpenseCategoryFormValues = {
+  const dirty =
+    label !== initial.name ||
+    kind !== initial.kind ||
+    parentRowId !== initial.parentRowId ||
+    (isNew ? pickedColor != null : color !== initial.color) ||
+    icon !== initial.icon;
+
+  const palette = getPaletteByColor(color);
+
+  const submit = () => {
+    if (submitting) return;
+    // 같은 상위 · 같은 종류 안에서만 이름이 겹치면 안 된다(서버 규칙과 같다)
+    const taken = existing
+      .filter(
+        (c) =>
+          c.rowId !== cat?.rowId &&
+          c.expenseType === kind &&
+          (c.parentRowId ?? null) === parentRowId,
+      )
+      .map((c) => c.categoryName);
+    const issue = nameIssue(label, CATEGORY_NAME_MAX, taken);
+    if (issue) {
+      setNameError(
+        issue === "required"
+          ? t("nameRequired")
+          : issue === "tooLong"
+            ? t("nameTooLong")
+            : t("nameDuplicate"),
+      );
+      nameRef.current?.focus();
+      return;
+    }
+    onSave({
       categoryName: labelTrim,
       icon,
-      color: palette.baseHex,
+      color,
       expenseType: kind,
       sortOrder: cat?.sortOrder,
-      parentRowId: parentRowId,
-    };
-    onSave(values);
+      parentRowId,
+    });
   };
 
-  const Footer = (
-    <ModalFooter
-      onSave={save}
-      saveLabel={isNew ? t("add") : tc("save")}
-      saving={submitting}
-      saveDisabled={touched && !valid}
-      // 모바일은 [삭제][저장] — 목록에 삭제가 없어 여기가 유일한 경로다.
-      // 데스크탑·태블릿은 목록 행에 삭제 아이콘이 있어 [취소][저장] 그대로 둔다.
-      onCancel={mobile ? undefined : onClose}
-      onDelete={mobile ? onDelete : undefined}
-      deleteLabel={tc("delete")}
-      deleting={submitting}
-    />
-  );
+  const tile = (c: ExpenseCategory) => {
+    const p = getPaletteByColor(c.color);
+    return (
+      <ListTile style={{ background: p.bg, color: p.color }}>
+        <Icon name={c.icon ?? "tag"} size={20} />
+      </ListTile>
+    );
+  };
+
+  const kindText = kind === "EXPENSE" ? te("expense") : te("income");
+  // 최상위의 수정: 강등 금지 — 보기만 "최상위". 하위의 수정: 다른 최상위로만(승격 금지)
+  const parentReadOnly = !isNew && cat?.parentRowId == null;
 
   return (
-    <ModalShell
-      title={isNew ? te("addCategory") : t("editTitle")}
-      onClose={onClose}
-      size="md"
-      footer={Footer}
-      mobile={mobile}
+    <ResponsiveDialog
+      open
+      form
+      dirty={dirty}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: 14,
-          background: "var(--bg-muted)",
-          borderRadius: "var(--radius-tile)",
-          marginBottom: 20,
+      <ResponsiveDialogContent
+        title={isNew ? te("addCategory") : t("editTitle")}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          nameRef.current?.focus({ preventScroll: true });
         }}
       >
-        <span
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: "var(--radius-lg)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            background: palette.bg,
-            color: palette.color,
-          }}
-        >
-          <Icon name={icon} size={20} strokeWidth={1.9} />
-        </span>
-        <div>
-          <div
-            style={{
-              font: "700 15px/1.3 var(--font-sans)",
-              color: "var(--fg-primary)",
-              letterSpacing: "-0.012em",
-            }}
-          >
-            {labelTrim || t("newCategory")}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-caption)",
-              color: "var(--fg-tertiary)",
-              marginTop: 2,
-            }}
-          >
-            {kind === "EXPENSE" ? t("expenseCategory") : t("incomeCategory")} ·{" "}
-            {t("preview")}
-          </div>
-        </div>
-      </div>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("type")}</FieldLabel>
-        <Tabs
-          value={kind}
-          onValueChange={(v) => v && setKind(v as ExpenseType)}
-        >
-          <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="EXPENSE" className="flex-1">
-              {te("expense")}
-            </TabsTrigger>
-            <TabsTrigger value="INCOME" className="flex-1">
-              {te("income")}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </Field>
-
-      {/* 상위 카테고리 정책:
-          - 신규: 최상위 또는 특정 부모 아래로 생성 가능(루트 옵션 포함).
-          - 자식 편집: 다른 부모로만 이동(승격='최상위로 두기' 금지 → 루트 옵션 제거).
-          - 최상위 편집: 강등 불가 → 필드 자체를 숨김. */}
-      {(isNew || cat?.parentRowId != null) && (
-        <Field style={{ marginBottom: 14 }}>
-          <FieldLabel id={`${uid}parent-label`}>
-            {t("parentCategory")}
-            {isNew && (
-              <span
-                style={{
-                  color: "var(--fg-tertiary)",
-                  fontWeight: "400",
-                  marginLeft: 4,
+        <ResponsiveDialogBody>
+          <div className="mb-x2 flex items-start gap-x3">
+            <span
+              aria-hidden
+              data-slot="category-preview-tile"
+              className="inline-grid size-x13 shrink-0 place-items-center rounded-r4 [&>svg]:size-5"
+              style={{ background: palette.bg, color: palette.color }}
+            >
+              <Icon name={icon} size={20} />
+            </span>
+            <Field
+              className="min-w-0 flex-1"
+              maxGraphemeCount={CATEGORY_NAME_MAX}
+              invalid={nameError != null}
+              errorMessage={nameError}
+            >
+              <Input
+                ref={nameRef}
+                size="large"
+                aria-label={t("name")}
+                value={label}
+                placeholder={t("namePlaceholder")}
+                autoComplete="off"
+                onChange={(e) => {
+                  setLabel(e.target.value);
+                  setNameError(null);
                 }}
-              >
-                {t("optional")}
-              </span>
-            )}
-          </FieldLabel>
-          <Select
-            value={parentRowId == null ? "__root__" : String(parentRowId)}
-            onValueChange={(v) =>
-              setParentRowId(v === "__root__" ? null : Number(v))
-            }
-            disabled={parentOptions.length === 0}
-          >
-            <SelectTrigger
-              id={`${uid}parent`}
-              aria-labelledby={`${uid}parent-label ${uid}parent`}
-            >
-              <SelectValue
-                placeholder={isNew ? t("rootOption") : t("selectParent")}
               />
-            </SelectTrigger>
-            <SelectContent>
-              {isNew && (
-                <SelectItem value="__root__">{t("rootOption")}</SelectItem>
-              )}
-              {parentOptions.map((p) => (
-                <SelectItem key={p.rowId} value={String(p.rowId)}>
-                  {p.categoryName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {!isNew && (
-            <div
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-                marginTop: 4,
-              }}
-            >
-              {t("parentMoveHint")}
-            </div>
-          )}
-        </Field>
-      )}
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("name")}</FieldLabel>
-        <Input
-          aria-invalid={!!err}
-          value={label}
-          onChange={(e) => {
-            setLabel(e.target.value);
-            setTouched(true);
-          }}
-          placeholder={t("namePlaceholder")}
-          maxLength={14}
-          autoFocus
-        />
-        <div
-          style={{
-            fontSize: "var(--text-badge)",
-            color: "var(--fg-tertiary)",
-            marginTop: 4,
-            textAlign: "right",
-          }}
-        >
-          {err ? (
-            <span style={{ color: "var(--color-fg-critical)" }}>{err}</span>
-          ) : (
-            <span>{labelTrim.length}/12</span>
-          )}
-        </div>
-      </Field>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{te("form.color")}</FieldLabel>
-        <ColorSwatchGroup
-          columns={5}
-          value={String(paletteIdx)}
-          onValueChange={(v) => setPaletteIdx(Number(v))}
-          options={CAT_PALETTE.map((p, i) => ({
-            value: String(i),
-            bg: p.bg,
-            fg: p.color,
-            label: t("colorN", { n: i + 1 }),
-          }))}
-        />
-      </Field>
-
-      <Field style={{ marginBottom: 4 }}>
-        <FieldLabel>{te("form.icon")}</FieldLabel>
-        <IconPicker value={icon} onChange={setIcon} />
-      </Field>
-
-      {/* 거래 옮기기 — 거래가 직접 달린 카테고리는 하위 분류를 만들 수 없다.
-          그걸 푸는 유일한 방법이라 편집 화면에서 바로 갈 수 있게 둔다. */}
-      {onMoveTx && (
-        <div
-          style={{
-            marginTop: 18,
-            paddingTop: 14,
-            borderTop: "1px solid var(--border-subtle)",
-          }}
-        >
-          <button
-            type="button"
-            onClick={onMoveTx}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              color: "var(--fg-brand)",
-              fontSize: "var(--text-label-sm)",
-              fontWeight: 600,
-            }}
-          >
-            <Icon name="arrow-right-left" size={14} />
-            {t("moveTx.entry")}
-          </button>
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              color: "var(--fg-tertiary)",
-              marginTop: 4,
-            }}
-          >
-            {t("moveTx.entryDesc")}
+            </Field>
           </div>
-        </div>
-      )}
-    </ModalShell>
+          <div className="-mx-x6">
+            {isNew ? (
+              <PickerRow
+                title={t("kindLabel")}
+                prefix={<Folder />}
+                value={kindText}
+                surfaceTitle={t("kindLabel")}
+              >
+                {({ close }) => (
+                  <PickList
+                    label={t("kindLabel")}
+                    selected={kind}
+                    items={[
+                      { value: "EXPENSE", title: te("expense") },
+                      { value: "INCOME", title: te("income") },
+                    ]}
+                    onPick={(v) => {
+                      const next = v as ExpenseType;
+                      if (next !== kind) {
+                        setKind(next);
+                        // 다른 종류의 상위가 남으면 서버가 거절한다 — 최상위로 되돌린다
+                        setParentRowId(null);
+                      }
+                      close();
+                    }}
+                  />
+                )}
+              </PickerRow>
+            ) : (
+              <PickerRow
+                readOnly
+                title={t("kindLabel")}
+                prefix={<Folder />}
+                value={kindText}
+                surfaceTitle={t("kindLabel")}
+              />
+            )}
+            {parentReadOnly ? (
+              <PickerRow
+                readOnly
+                title={t("parentCategory")}
+                prefix={<Tags />}
+                value={t("rootOption")}
+                surfaceTitle={t("parentCategory")}
+              />
+            ) : (
+              <PickerRow
+                title={t("parentCategory")}
+                prefix={<Tags />}
+                value={parent ? parent.categoryName : t("rootOption")}
+                dot={parent ? getPaletteByColor(parent.color).color : undefined}
+                surfaceTitle={t("parentCategory")}
+              >
+                {({ close }) => (
+                  <>
+                    {!isNew && (
+                      <p className="m-0 py-x3 font-sans text-t4 text-fg-neutral-subtle">
+                        {t("parentMoveHint")}
+                      </p>
+                    )}
+                    <PickList
+                      label={t("parentCategory")}
+                      selected={
+                        parentRowId == null ? ROOT : String(parentRowId)
+                      }
+                      items={[
+                        ...(isNew
+                          ? [{ value: ROOT, title: t("rootOption") }]
+                          : []),
+                        ...parentOptions.map((c) => ({
+                          value: String(c.rowId),
+                          title: c.categoryName,
+                          prefix: tile(c),
+                        })),
+                      ]}
+                      onPick={(v) => {
+                        setParentRowId(v === ROOT ? null : Number(v));
+                        close();
+                      }}
+                    />
+                  </>
+                )}
+              </PickerRow>
+            )}
+            <ColorPickerRow
+              title={t("color")}
+              prefix={<Palette />}
+              value={color}
+              onChange={setPickedColor}
+            />
+            <IconPickerRow
+              title={t("iconLabel")}
+              prefix={<Tag />}
+              value={icon}
+              onChange={setIcon}
+            />
+          </div>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCancel>{tc("cancel")}</ResponsiveDialogCancel>
+          <Button loading={submitting} onClick={submit}>
+            {isNew ? t("submitAdd") : tc("save")}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

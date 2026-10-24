@@ -35,11 +35,14 @@ function Glyph({ id, fallback }: { id: string; fallback: React.ReactNode }) {
 /** 아이콘 줄 → Icon Picker 패널(시트 6열 · 팝오버 408). 세트 밖 저장 아이콘은 "지금 아이콘" 으로 보이고 고르지 않으면 바뀌지 않는다 */
 export function IconPickerRow({
   title,
+  prefix,
   value,
   onChange,
   fallbackGlyph = <Tag aria-hidden />,
 }: {
   title: string;
+  /** 줄 앞 아이콘 22 */
+  prefix?: React.ReactNode;
   value: string;
   onChange: (next: string) => void;
   /** 이름을 그릴 수 없는 저장 값일 때 줄 값 앞에 놓을 그림 */
@@ -69,6 +72,7 @@ export function IconPickerRow({
   return (
     <PickerRow
       title={title}
+      prefix={prefix}
       value={name}
       glyph={<Glyph id={shownId} fallback={fallbackGlyph} />}
       surfaceTitle={dsT("iconPicker.label")}
@@ -100,10 +104,13 @@ const BASE_OF = Object.fromEntries(CHART_PAIRS.map((p) => [p.key, p.base]));
 /** 색 줄 → Color Swatch(원 40 · 5 × 2). 팔레트 밖 저장 색은 "지금 색" 칸이 골라져 열리고 고르지 않으면 바꾸지 않는다 */
 export function ColorPickerRow({
   title,
+  prefix,
   value,
   onChange,
 }: {
   title: string;
+  /** 줄 앞 아이콘 22 */
+  prefix?: React.ReactNode;
   value: string;
   onChange: (hex: string) => void;
 }) {
@@ -116,6 +123,7 @@ export function ColorPickerRow({
   return (
     <PickerRow
       title={title}
+      prefix={prefix}
       value={name}
       dot={dot}
       dotSize={12}

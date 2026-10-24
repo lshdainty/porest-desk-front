@@ -12,9 +12,12 @@ import { describe, expect, it } from "vitest";
  * 한쪽만 바뀌면 그쪽 테스트가 깨진다.
  *
  * 번역 원본은 CSV 하나다(`src/locales/**` 는 생성물).
+ *
+ * I-20 B 12(2026-10-23): 상위 줄을 고르기 시트로 옮기면서 안내는 고르기 맨 위 한 문장이 됐다 — 앞 문장
+ * "다른 상위 카테고리로 이동할 수 있어요." 는 고르는 목록이 말하므로 걷었다. 앱 몫이 같은 전문으로 맞춘다.
  */
 const LINE =
-  'category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."';
+  'category,parentMoveHint,최상위로 올리려면 새 최상위를 만들어 거래를 옮겨주세요.,"To make it top level, create a new top-level category and move its transactions."';
 
 describe("카테고리 상위 이동 안내", () => {
   it("웹·앱·서버가 같은 길을 말한다 — 전문 그대로", () => {

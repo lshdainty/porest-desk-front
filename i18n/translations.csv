@@ -1467,32 +1467,23 @@ card,benefitType.discount,할인,Discount
 card,benefitType.point,적립,Points
 card,benefitType.cashback,캐시백,Cashback
 card,benefitType.mileage,마일리지,Mileage
-category,add,추가,Add
-category,editOf,{{name}} 수정,Edit {{name}}
 category,manager.description,지출 · 수입을 나눌 카테고리예요.,Categories that sort your spending and income.
 category,searchPlaceholder,카테고리 검색,Search categories
-category,empty,카테고리가 없어요,No categories yet
-category,noSearchResults,검색 결과가 없습니다.,No results found.
+category,empty,카테고리가 없어요.,No categories yet.
+category,noSearchResults,찾는 카테고리가 없어요.,No matching categories.
 category,parentFallback,상위 카테고리,Parent category
-category,deleteTitle,카테고리 삭제,Delete category
-category,deleteBlockedTitle,삭제 불가,Cannot delete
+category,deleteBlockedTitle,삭제할 수 없어요,Can't delete
 category,deleteHasChildren,"""{{name}}"" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해주세요.","The ""{{name}}"" category has subcategories and cannot be deleted. Clear them first."
-category,deleteWithBudget,"예산이 설정되어 있는 카테고리입니다. 삭제하면 예산도 함께 삭제됩니다. ""{{name}}"" 카테고리를 삭제할까요?","This category has a budget set. Deleting it will also delete the budget. Delete the ""{{name}}"" category?"
 category,deleteConfirm,"""{{name}}"" 카테고리를 삭제할까요?","Delete the ""{{name}}"" category?"
 category,overBudgetTitle,예산 초과 확인,Budget exceeded
-category,overBudgetMessage,"이동하면 ""{{parent}}"" 예산을 {{amount}}원 초과합니다. 그래도 이동할까요?","Moving it will exceed the ""{{parent}}"" budget by {{amount}}원. Move anyway?"
+category,overBudgetMessage,"옮기면 ""{{parent}}"" 예산을 {{amount}}원 넘어요. 그래도 옮길까요?","Moving it will put ""{{parent}}"" {{amount}}원 over budget. Move anyway?"
 category,move,이동,Move
-category,dragReorder,드래그로 순서 변경,Drag to reorder
-category,expand,펼치기,Expand
-category,collapse,접기,Collapse
-category,hasSubcategories,하위 카테고리 있음,Has subcategories
-category,addSub,하위 추가,Add subcategory
+category,addSub,하위 카테고리 추가,Add subcategory
 category,edit,수정,Edit
 category,nameRequired,이름을 입력해주세요.,Please enter a name.
 category,nameTooLong,이름은 12자 이내로 입력해주세요.,Name must be 12 characters or fewer.
-category,nameDuplicate,같은 위치에 같은 이름의 카테고리가 있습니다.,A category with this name already exists in this location.
+category,nameDuplicate,같은 자리에 같은 이름의 카테고리가 있어요.,A category with this name already exists in this spot.
 category,moveTx.entry,거래 옮기기,Move transactions
-category,moveTx.entryDesc,거래가 달린 카테고리는 하위 분류를 만들 수 없어요. 거래를 옮기면 만들 수 있어요,A category with transactions cannot have subcategories. Move them to enable it
 category,moveTx.title,거래 옮기기,Move transactions
 category,moveTx.desc,{{name}}에 달린 거래 · 반복 거래 · 나눈 거래를 모두 옮겨요.,"Moves all transactions, recurring transactions and split transactions from {{name}}."
 category,moveTx.target,옮길 카테고리,Target category
@@ -1507,20 +1498,14 @@ category,moveTx.childName,만들 하위 이름,New subcategory name
 category,moveTx.childPlaceholder,예: 강의,e.g. Lectures
 category,moveTx.newHint,{{name}} 아래에 만들고 거래를 모두 그리로 옮겨요. 그러면 다른 하위도 만들 수 있어요.,"Creates it under {{name}} and moves all transactions there, so you can add more subcategories."
 category,editTitle,카테고리 수정,Edit category
-category,newCategory,새 카테고리,New category
 category,expenseCategory,지출 카테고리,Expense category
 category,incomeCategory,수입 카테고리,Income category
 category,listTitle,{{kind}} {{count}}개,{{kind}} · {{count}}
-category,preview,미리보기,Preview
-category,type,구분,Type
 category,parentCategory,상위 카테고리,Parent category
-category,optional,(선택),(optional)
-category,rootOption,— 최상위 카테고리로 두기 —,— Keep as top-level —
-category,selectParent,상위 카테고리 선택,Select parent category
-category,parentMoveHint,다른 상위 카테고리로 이동할 수 있어요. 최상위로 올리려면 새 최상위를 만들어 거래를 옮겨주세요.,"You can move it under a different parent. To make it top-level, create a new top-level category and move the transactions."
+category,rootOption,최상위,Top level
+category,parentMoveHint,최상위로 올리려면 새 최상위를 만들어 거래를 옮겨주세요.,"To make it top level, create a new top-level category and move its transactions."
 category,name,이름,Name
 category,namePlaceholder,"예: 반려동물, 부수입","e.g. Pets, Side income"
-category,colorN,색상 {{n}},Color {{n}}
 dutchPay,fromTx.title,더치페이 시작,Start Dutch Pay
 dutchPay,detailTitle,정산 상세,Settlement details
 dutchPay,fromTx.description,"이 거래를 기준으로 더치페이 정산을 만듭니다. 참여자에게 송금 요청을 보내고, 정산 진행 상황을 추적할 수 있어요.",Create a Dutch Pay settlement based on this transaction. Send payment requests to participants and track settlement progress.
@@ -2568,10 +2553,20 @@ calendar,detail.durationM,{{m}}분,{{m}}m
 calendar,detail.memo,메모,Memo
 category,reorderEdit,순서 바꾸기,Reorder
 category,reorderDone,완료,Done
-category,reorderHint,핸들을 잡고 위·아래로 끌어 순서를 바꿔요. 상위 카테고리끼리·하위 카테고리끼리 이동돼요.,Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
+category,reorderHint,"손잡이를 끌어 순서를 바꿔요. 상위는 상위끼리, 하위는 같은 상위 안에서 옮겨요.",Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
 category,moveTx.mode,옮기는 방법,How to move
 category,moveTx.errChildName,만들 하위 이름을 입력해주세요.,Please enter a name for the new subcategory.
 category,moveTx.errTarget,옮길 카테고리를 골라주세요.,Please choose a category to move to.
+category,loadFailed,카테고리를 불러오지 못했어요,Couldn't load the categories
+category,deleteMessage,이미 기록된 거래는 지워지지 않고 그대로 남아요. 이 카테고리에 걸린 예산은 함께 지워져요.,Recorded transactions stay as they are. Budgets set for this category are deleted too.
+category,deleteRecurring,이 카테고리를 쓰는 반복 거래 {{count}}개는 계속 이 카테고리로 기록돼요.,{{count}} recurring transactions that use this category keep being recorded under it.
+category,expandOf,{{name}} 하위 카테고리,{{name}} subcategories
+category,moreOf,{{name}} 더보기,More for {{name}}
+category,dragReorderOf,{{name}} 순서 바꾸기,Reorder {{name}}
+category,kindLabel,종류,Type
+category,color,색상,Color
+category,iconLabel,아이콘,Icon
+category,submitAdd,추가,Add
 expense,txm.spendSummary,소비 요약,Spending summary
 expense,txm.insightLess,지난달보다 <hl>{{amount}} 덜</hl> 쓰는 중,Spending <hl>{{amount}} less</hl> than last month
 expense,txm.insightMore,지난달보다 <hl>{{amount}} 더</hl> 쓰는 중,Spending <hl>{{amount}} more</hl> than last month

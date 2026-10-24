@@ -28,6 +28,8 @@ import {
 
 export interface PickerRowProps {
   title: string;
+  /** 줄 앞 아이콘 22(`fg-neutral`) — 폼 줄 칸이 값의 종류를 아이콘으로 돕는다(I-20 B 12) */
+  prefix?: React.ReactNode;
   /** 고른 값의 글 — 비면 placeholder */
   value?: string | null;
   placeholder?: string;
@@ -65,6 +67,7 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
   (
     {
       title,
+      prefix,
       value,
       placeholder,
       dot,
@@ -136,6 +139,11 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
         valueNode
       );
 
+    const prefixNode = prefix ? (
+      <span aria-hidden className="text-fg-neutral [&>svg]:size-[22px]">
+        {prefix}
+      </span>
+    ) : undefined;
     const label = ariaLabel ?? `${title}, ${has ? value : (placeholder ?? "")}`;
     const rowError = errorMessage ? (
       <p
@@ -157,6 +165,7 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
           <List>
             <ListItem
               title={title}
+              prefix={prefixNode}
               suffix={valueNode}
               suffixText
               aria-label={label}
@@ -178,6 +187,7 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
       <ListButtonItem
         ref={ref}
         title={title}
+        prefix={prefixNode}
         suffix={suffix}
         suffixText
         aria-label={label}
