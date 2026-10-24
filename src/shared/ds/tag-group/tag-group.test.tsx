@@ -282,6 +282,37 @@ describe("TagGroup", () => {
     );
   });
 
+  it("줄어든 항목은 줄어든 폭 그대로다 — 줄어들기 전 폭(flex-basis · width)을 붙잡지 않고, 구분은 항목 바로 뒤에 붙는다(말줄임 뒤 빈칸 0)", () => {
+    const group = render(
+      <TagGroup size="t3" truncate>
+        <TagGroupItem shrink={0}>식비</TagGroupItem>
+        <TagGroupItem shrink={2}>
+          주거래 월급통장 아주아주 긴 이름의 통장 별칭입니다
+        </TagGroupItem>
+        <TagGroupItem shrink={0}>13:15</TagGroupItem>
+      </TagGroup>,
+    );
+    for (const item of items(group)) {
+      // 폭은 flex(shrink · 최소 폭)만 정한다 — 고정 폭 · 기준 폭이 있으면 줄어든 뒤 항목 오른쪽에 빈칸이 남는다
+      expect(item.style.width).toBe("");
+      expect(item.style.flexBasis).toBe("");
+      expect(item.style.flexGrow).toBe("");
+      const label = item.querySelector("[data-slot=tag-group-item-label]")!;
+      expect(label.className).toContain("truncate");
+    }
+    // 항목 · 구분이 번갈아 한 줄에 바로 이어진다(사이에 다른 칸 · 여백 없음)
+    const seq = Array.from(group.querySelectorAll("[data-slot=tag-group-unit]"))
+      .flatMap((u) => Array.from(u.children))
+      .map((c) => c.getAttribute("data-slot"));
+    expect(seq).toEqual([
+      "tag-group-item",
+      "tag-group-separator",
+      "tag-group-item",
+      "tag-group-separator",
+      "tag-group-item",
+    ]);
+  });
+
   it("쓰는 쪽의 className · style · ref 를 받는다", () => {
     const groupRef = createRef<HTMLSpanElement>();
     const itemRef = createRef<HTMLSpanElement>();
