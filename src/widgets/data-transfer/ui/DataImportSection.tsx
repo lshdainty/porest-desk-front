@@ -602,7 +602,7 @@ export function DataImportSection({ mobile }: { mobile: boolean }) {
       {/* 데스크톱 · 태블릿(768 이상) 완료 — 결과(medium) + 만든 카테고리 + 실패를 한 카드 안에, [가계부로 가기] 는 카드
           바닥 오른쪽(1280 이상 medium 40 — 내보내기 버튼 줄과 같은 규칙). 사용자 결정 10-24 05-2 Q2 A. */}
       {step === "done" && result && !mobile && (
-        <Card body="list" className="pt-x3">
+        <Card body="list">
           {doneResult("medium")}
           {(result.createdCategories ?? []).length > 0 && (
             <section aria-label={createdTitle} className="pt-x4">

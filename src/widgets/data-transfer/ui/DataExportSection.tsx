@@ -4,7 +4,6 @@ import { formatMonthDay } from "@/shared/lib/date";
 import {
   Braces,
   Calendar,
-  FileSearch,
   FileText,
   Receipt,
   SquareCheckBig,
@@ -542,7 +541,7 @@ function ExportPane({ mobile }: { mobile: boolean }) {
                         <TableStatusRow>
                           <ResultSection
                             size="medium"
-                            icon={<FileSearch />}
+                            icon={<FileText />}
                             title={t("section.previewEmptyTitle")}
                             description={t("section.noData")}
                           />
@@ -563,7 +562,8 @@ function ExportPane({ mobile }: { mobile: boolean }) {
               <p className="m-0 text-t4 text-fg-neutral-subtle">
                 {t("section.previewFooter", {
                   rows: activeTab.rows.length.toLocaleString(),
-                  types: preview.length.toLocaleString(),
+                  // 고른 종류 수 — 서버가 빈 종류의 표를 빼도 바뀌지 않는다(앱과 같은 셈). 합계는 고른 종류 건수 합(빈 종류 0)
+                  types: selected.length.toLocaleString(),
                   total: totalSelectedCount.toLocaleString(),
                 })}
               </p>

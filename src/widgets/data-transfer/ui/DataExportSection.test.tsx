@@ -12,6 +12,7 @@ declare global {
 const state = vi.hoisted(() => ({
   countsFail: false,
   download: null as null | (() => Promise<Blob>),
+  preview: [] as unknown[],
   toastError: [] as { msg: string; opts: { action?: { label: string } } }[],
   toastSuccess: [] as string[],
 }));
@@ -27,7 +28,7 @@ vi.mock("@/features/export/api/exportApi", () => {
             { type: "expense", displayName: "거래", count: 123456 },
             { type: "asset", displayName: "자산", count: 3 },
           ]),
-    fetchExportPreview: () => Promise.resolve([]),
+    fetchExportPreview: () => Promise.resolve(state.preview),
     downloadExport: () => state.download!(),
   };
 });
@@ -331,5 +332,44 @@ describe("검수 재반영 — 폰 바닥 바 · 목록 카드 바닥 · 빈 미
   it("목록 카드의 바닥 아래 여백은 카드 몫 하나다(36 이 아니라 24)", async () => {
     await render(false);
     expect(container.innerHTML).not.toContain('pb-x6"');
+  });
+});
+
+describe("미리보기 바닥 글의 셈(재검수 B2)", () => {
+  it("N 은 고른 종류 수라 서버가 빈 종류의 표를 빼도 바뀌지 않고, 합계는 고른 종류 건수 합(빈 종류 0)이다", async () => {
+    // 고른 종류 셋(거래 · 자산 · 예산) 중 서버가 표 하나만 돌려준다 — 둘은 비어 빠졌다
+    state.preview = [
+      {
+        type: "expense",
+        displayName: "거래 내역",
+        totalCount: 123456,
+        headers: ["날짜"],
+        rows: [["2026-10-01"]],
+      },
+    ];
+    await render(false);
+    await click(btnExact("preview"));
+    const text = container.textContent ?? "";
+    expect(text).toContain(
+      'section.previewFooter{"rows":"1","types":"3","total":"123,459"}',
+    );
+  });
+
+  it("빈 표의 안내 아이콘은 FileText 다(앱과 같은 아이콘)", async () => {
+    state.preview = [
+      {
+        type: "memo",
+        displayName: "메모",
+        totalCount: 0,
+        headers: ["제목"],
+        rows: [],
+      },
+    ];
+    await render(false);
+    await click(btnExact("preview"));
+    const asset = container.querySelector(
+      '[data-slot="result-section-asset"] svg',
+    )!;
+    expect(asset.getAttribute("class")).toContain("lucide-file-text");
   });
 });
