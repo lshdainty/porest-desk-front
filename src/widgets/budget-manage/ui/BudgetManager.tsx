@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Copy, Pencil, Plus, Trash2 } from "lucide-react";
+import { Copy, Pencil, Trash2 } from "lucide-react";
 import {
   useExpenseBudgets,
   useExpenseCategories,
@@ -19,7 +19,6 @@ import { Callout } from "@/shared/ds/callout";
 import { Card, CardContent } from "@/shared/ds/card";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
-import { withCommaBreaks } from "@/shared/ds/i18n";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import { MonthBar } from "@/shared/ui/groo/month-bar";
@@ -29,13 +28,14 @@ import {
   BigAmount,
   Eyebrow,
   KeyValueRows,
+  BarredItem,
   KeyValueSkeleton,
   ListTitle,
+  StackedAmount,
   MeterBar,
   StatGrid,
   type KeyValue,
 } from "@/shared/ui/groo/band-parts";
-import { cn } from "@/shared/lib/cn";
 import {
   BudgetEditDialog,
   MonthlyBudgetDialog,
@@ -279,7 +279,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       type="button"
       variant="neutralWeak"
       size="small"
-      className="[&_svg]:size-4"
       onClick={() => setConfirmCopy(true)}
       disabled={
         prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0
@@ -475,21 +474,11 @@ function TotalArea({
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-my-x2 -mr-x3_5 [&_svg]:size-4"
+          className="-my-x2 -mr-x3_5"
           onClick={onEdit}
           disabled={disabled}
         >
-          {monthlyBudget ? (
-            <>
-              <Pencil aria-hidden />
-              {tCommon("edit")}
-            </>
-          ) : (
-            <>
-              <Plus aria-hidden />
-              {t("manager.setBudget")}
-            </>
-          )}
+          {monthlyBudget ? tCommon("edit") : t("manager.setBudget")}
         </Button>
       </div>
       {monthlyBudget ? (
@@ -574,7 +563,6 @@ function CategoryArea({
       first={!mobile}
       action={{
         label: t("addBudget"),
-        icon: <Plus aria-hidden />,
         onClick: onAdd,
         disabled: loading || allCategoriesBudgeted,
         title: allCategoriesBudgeted
@@ -591,7 +579,7 @@ function CategoryArea({
         <BandEmpty>{t("manager.emptyCategory")}</BandEmpty>
       </div>
     ) : (
-      <div role="list" aria-labelledby="budget-manage-list-title">
+      <List aria-labelledby="budget-manage-list-title">
         {categoryBudgets.map((b) => {
           const catId = b.categoryRowId as number;
           const cat = categoryMap.get(catId);
@@ -637,7 +625,9 @@ function CategoryArea({
             detail: (
               <span className={over ? "text-fg-critical" : undefined}>
                 {over
-                  ? `${t("manager.overLimit")} ${mask(won(spent - limitAmt))}`
+                  ? t("manager.overLimitAmt", {
+                      amount: mask(won(spent - limitAmt)),
+                    })
                   : t("remainingAmt", {
                       amount: mask(won(Math.max(0, limitAmt - spent))),
                     })}
@@ -645,88 +635,87 @@ function CategoryArea({
             ),
           };
           const values = (
-            <>
-              <span
-                className={cn(
-                  "block text-end text-t5 font-bold tabular-nums",
-                  over ? "text-fg-critical" : "text-fg-neutral",
-                )}
-              >
-                {withCommaBreaks(mask(won(spent)))}
-              </span>
-              <span className="block text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
-                / {withCommaBreaks(mask(won(limitAmt)))}
-              </span>
-            </>
+            <StackedAmount
+              main={mask(won(spent))}
+              sub={mask(won(limitAmt))}
+              critical={over}
+            />
           );
           return (
-            <SwipeActions
+            <BarredItem
               key={b.rowId}
-              rowId={`budget-${b.rowId}`}
-              groupTag="budget-manager-list"
-              rowLabel={label}
-              enabled={mobile}
-              actions={swipeActions}
-            >
-              <div role="listitem">
-                <List>
-                  {mobile ? (
-                    <ListButtonItem
-                      {...common}
-                      suffix={values}
-                      onClick={() => onEdit(b)}
-                    />
-                  ) : (
-                    <ListItem
-                      {...common}
-                      suffix={
-                        <>
-                          {values}
-                          <span className="inline-flex shrink-0 items-center">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              layout="iconOnly"
-                              size="small"
-                              aria-label={t("manager.editNamed", {
-                                name: label,
-                              })}
-                              onClick={() => onEdit(b)}
-                            >
-                              <Pencil aria-hidden />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              layout="iconOnly"
-                              size="small"
-                              ghostColor="critical"
-                              aria-label={t("manager.deleteNamed", {
-                                name: label,
-                              })}
-                              onClick={() => onDelete(b)}
-                            >
-                              <Trash2 aria-hidden />
-                            </Button>
-                          </span>
-                        </>
-                      }
-                    />
-                  )}
-                </List>
-                <div className="px-x6 pb-x3 pt-x1">
-                  <MeterBar
-                    label={t("budgetName", { name: label })}
-                    value={spent}
-                    max={limitAmt}
-                    formatValue={(n) => mask(won(n))}
+              wrap={(inner) => (
+                <SwipeActions
+                  rowId={`budget-${b.rowId}`}
+                  groupTag="budget-manager-list"
+                  rowLabel={label}
+                  enabled={mobile}
+                  actions={swipeActions}
+                >
+                  {inner}
+                </SwipeActions>
+              )}
+              row={
+                mobile ? (
+                  <ListButtonItem
+                    as="div"
+                    align="top"
+                    {...common}
+                    suffix={values}
+                    onClick={() => onEdit(b)}
                   />
-                </div>
-              </div>
-            </SwipeActions>
+                ) : (
+                  <ListItem
+                    as="div"
+                    align="top"
+                    {...common}
+                    suffix={
+                      <>
+                        {values}
+                        <span className="inline-flex shrink-0 items-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            layout="iconOnly"
+                            size="small"
+                            aria-label={t("manager.editNamed", {
+                              name: label,
+                            })}
+                            onClick={() => onEdit(b)}
+                          >
+                            <Pencil aria-hidden />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            layout="iconOnly"
+                            size="small"
+                            ghostColor="critical"
+                            aria-label={t("manager.deleteNamed", {
+                              name: label,
+                            })}
+                            onClick={() => onDelete(b)}
+                          >
+                            <Trash2 aria-hidden />
+                          </Button>
+                        </span>
+                      </>
+                    }
+                  />
+                )
+              }
+              bar={
+                <MeterBar
+                  label={t("budgetName", { name: label })}
+                  value={spent}
+                  max={limitAmt}
+                  formatValue={(n) => mask(won(n))}
+                />
+              }
+            />
           );
         })}
-      </div>
+      </List>
     );
   if (mobile) {
     return (
