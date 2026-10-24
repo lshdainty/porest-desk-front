@@ -351,7 +351,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             title={t("manager.title")}
             description={t("manager.description")}
             actions={
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div className="flex items-center gap-x2">
                 <MonthPicker
                   value={monthKey}
                   onChange={setMonthKey}
