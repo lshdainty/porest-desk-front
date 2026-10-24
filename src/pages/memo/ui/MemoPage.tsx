@@ -599,7 +599,7 @@ const MemoPageInner = ({ mobile }: { mobile: boolean }) => {
     <div>
       {items.map((m, i) => (
         <Fragment key={m.rowId}>
-          {i > 0 && <LedgerDivider inset subtle />}
+          {i > 0 && <LedgerDivider inset />}
           {/* 고정/전체 두 섹션이 같은 groupTag 를 쓴다 — 섹션을 넘나들어도 하나만 열린다. */}
           <SwipeActions
             rowId={`memo-${m.rowId}`}

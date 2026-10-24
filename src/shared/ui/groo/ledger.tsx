@@ -74,12 +74,9 @@ LedgerPin.displayName = "LedgerPin";
 export function LedgerDivider({
   className,
   inset,
-  subtle: _subtle,
   ...props
 }: React.ComponentProps<typeof Divider> & {
   inset?: boolean;
-  /** 예전 옅은 선 구분 — 이제 선은 한 색이다(받기만 한다) */
-  subtle?: boolean;
 }) {
   return (
     <Divider
@@ -102,17 +99,27 @@ export function LedgerMonthNav({
   return <div className={cn("flex items-center", className)} {...props} />;
 }
 
-/** 월 이동 · 필터 · 추가 아이콘 단추 — Button ghost medium iconOnly(보이는 40 · 아이콘 18 · 누르는 44). 이름은 aria-label. */
+/**
+ * 월 이동 · 필터 · 추가 아이콘 단추 — Button ghost medium iconOnly(보이는 40 · 아이콘 18 · 누르는 44). 이름은 aria-label.
+ * `active` 는 켜짐 틴트(bg-brand-weak · fg-brand + aria-pressed 아님 — 거르기가 걸렸음을 눈으로만 알린다). 할 일 거르기만 넘긴다(I-10 이
+ * 알림 점으로 바꿀 때까지) — 가계부는 칩 줄이 걸림을 말해 넘기지 않는다.
+ */
 export function LedgerNavBtn({
   type = "button",
+  active = false,
+  className,
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "variant" | "size" | "layout">) {
+}: Omit<React.ComponentProps<typeof Button>, "variant" | "size" | "layout"> & {
+  active?: boolean;
+}) {
   return (
     <Button
       type={type}
       variant="ghost"
       size="medium"
       layout="iconOnly"
+      data-active={active || undefined}
+      className={cn(active && "bg-bg-brand-weak text-fg-brand", className)}
       {...props}
     />
   );
@@ -186,20 +193,14 @@ export function LedgerSumBtn({
   className,
   type = "button",
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "variant" | "size"> & {
-  /** 예전 켜짐 틴트 — 이제 없다(받기만 한다) */
-  active?: boolean;
-}) {
-  const { active: _active, ...rest } = props as typeof props & {
-    active?: boolean;
-  };
+}: Omit<React.ComponentProps<typeof Button>, "variant" | "size">) {
   return (
     <Button
       type={type}
       variant="neutralOutline"
       size="small"
       className={cn("ml-auto shrink-0", className)}
-      {...rest}
+      {...props}
     />
   );
 }

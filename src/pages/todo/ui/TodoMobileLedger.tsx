@@ -335,6 +335,7 @@ export function TodoMobileLedger({
           </LedgerNavBtn>
           <LedgerNavBtn
             className="ml-auto"
+            active={filterActive}
             onClick={() => setFilterOpen(true)}
             aria-label={t("tdm.filter")}
           >
@@ -342,7 +343,7 @@ export function TodoMobileLedger({
           </LedgerNavBtn>
         </LedgerMonthNav>
 
-        {/* 오늘 상태 + 별빛 인사이트 + [밤하늘] 토글 — 스크롤 시 접힘 */}
+        {/* 오늘 상태 + 별빛 인사이트 + [밤하늘] 토글 — 머리 전체가 Scroll Auto Hide 로 숨는다 */}
         <>
           <LedgerHead>
             <div className="min-w-0 flex-auto">
@@ -486,7 +487,7 @@ export function TodoMobileLedger({
                     <Fragment key={td.rowId}>
                       {/* 구분선을 행 안쪽 border 로 두면 행이 밀릴 때 선도 함께 밀려
                           트레이 위를 지나간다 — 행 사이 형제로 뺀다. */}
-                      {i > 0 && <LedgerDivider inset subtle />}
+                      {i > 0 && <LedgerDivider inset />}
                       <SwipeActions
                         rowId={`todo-${td.rowId}`}
                         groupTag="todo-list"
