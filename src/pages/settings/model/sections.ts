@@ -218,8 +218,6 @@ export const NEEDS_DESKTOP_HEAD: SectionId[] = [
 export const TEMP_BODY_PADDING: SectionId[] = [
   "categories",
   "accounts",
-  "budget",
-  "goals",
   "recurring",
   "presets",
   "calendar-share",

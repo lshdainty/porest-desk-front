@@ -1,21 +1,29 @@
 import { useState } from "react";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Pencil, Plus, Target, Trash2 } from "lucide-react";
+import { Pencil, Target, Trash2 } from "lucide-react";
 import { SwipeActions } from "@/shared/ui/swipe-actions";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { isIconName, tileRadius } from "@/shared/lib";
+import { isIconName } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
-import { KRW, isEn } from "@/shared/lib/groo/format";
+import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { useDeleteSavingGoal, useSavingGoals } from "@/features/savingGoal";
 import type { SavingGoal } from "@/entities/savingGoal";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Badge } from "@/shared/ds/badge";
+import { Button } from "@/shared/ds/button";
+import { Card, CardContent } from "@/shared/ds/card";
+import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
+import { Skeleton } from "@/shared/ds/skeleton";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
-import { MANAGE_ROW } from "@/shared/ui/groo/manage-row-tokens";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
+import {
+  BandEmpty,
+  BarredItem,
+  BandFailure,
+  ListTitle,
+  MeterBar,
+} from "@/shared/ui/groo/band-parts";
 import { SavingGoalAddDialog } from "./SavingGoalAddDialog";
-import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { parseLocalDate } from "@/shared/lib/date";
 
 const formatDeadline = (deadline: string | null): string | null => {
@@ -24,57 +32,15 @@ const formatDeadline = (deadline: string | null): string | null => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-// 모바일 카드 다이어트 — 항목 셸: 모바일은 카드 없이 행(위쪽 divider), 데스크톱은 Card.
-function FlatItem({
-  mobile,
-  idx,
-  onTap,
-  children,
-}: {
-  mobile: boolean;
-  idx: number;
-  onTap?: () => void;
-  children: ReactNode;
-}) {
-  if (!mobile) return <Card>{children}</Card>;
-
-  return (
-    <div
-      onClick={onTap}
-      style={{
-        // 좌우 0 — 페이지가 24 를 쥔다. 행이 더 얹으면 위 '목표 목록 · N개' 와 어긋난다.
-        padding: "12px 0",
-        borderTop: idx > 0 ? "1px solid var(--border-subtle)" : "none",
-        cursor: onTap ? "pointer" : undefined,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// 모바일 카드 다이어트 — CardContent 조건부: 모바일은 패딩 없는 평문, 데스크톱은 CardContent.
-function MaybeContent({
-  mobile,
-  children,
-}: {
-  mobile: boolean;
-  children: ReactNode;
-}) {
-  return mobile ? <div>{children}</div> : <CardContent>{children}</CardContent>;
-}
-
-function GoalCard({
+function GoalRow({
   goal,
   mobile,
-  idx,
   onEdit,
   onDelete,
   onDeleteConfirmed,
 }: {
   goal: SavingGoal;
   mobile: boolean;
-  idx: number;
   onEdit: (g: SavingGoal) => void;
   /** 확인창을 연다 — 데스크톱 삭제 버튼. */
   onDelete: (g: SavingGoal) => void;
@@ -83,229 +49,206 @@ function GoalCard({
 }) {
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
+  const mask = useMasked("asset.savingGoals");
   const pct =
     goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
-  // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다.
-  // raw goal.color 를 그대로 쓰면 다크 모드에서 앱(resolveChartColor)과 색이 어긋난다.
+  // 다크에서 light variant 로 스왑되도록 팔레트 헬퍼를 통과시킨다(타일 바탕 · 아이콘 색만 목표 색, 막대 · % 는 fg-brand 한 색).
   const palette = getPaletteByColor(goal.color);
-  const color = palette.color;
-  // 저장된 이름이 lucide 카탈로그에 없을 수 있다(API 로 이모지도 들어온다) —
-  // 검사 없이 넘기면 렌더마다 console.error 가 쌓인다(QA #95).
+  // 저장된 이름이 lucide 카탈로그에 없을 수 있다(API 로 이모지도 들어온다) — 검사 없이 넘기면 렌더마다 console.error 가 쌓인다(QA #95).
   const iconName =
     goal.icon && goal.icon.trim().length > 0 ? goal.icon : "piggy-bank";
-  const tile = mobile ? 40 : 36;
-
+  const common = {
+    prefix: (
+      <ListTile style={{ background: palette.bg, color: palette.color }}>
+        {isIconName(iconName) ? (
+          <DynamicIcon name={iconName} size={20} />
+        ) : (
+          <Target size={20} />
+        )}
+      </ListTile>
+    ),
+    // 달성 배지가 이름 뒤에 함께 줄바꿈된다
+    title: (
+      <>
+        {goal.title}
+        {goal.isAchieved === "Y" && (
+          <>
+            {" "}
+            <Badge variant="weak" tone="positive" size="medium">
+              {t("achieved")}
+            </Badge>
+          </>
+        )}
+      </>
+    ),
+    detail: formatDeadline(goal.deadlineDate) ?? t("savingGoal.noDeadline"),
+  };
   return (
-    // 모바일 = 카드 탭이 곧 편집(디자인 GoalManager), 데스크톱 = 우측 편집/삭제 아이콘 버튼.
-    // 모바일 카드 다이어트(RecurringManager 정합) — 항목마다 카드를 두지 않고 행 사이 divider 로만
-    // 구분한다. 페이지 배경 위에 카드가 겹겹이 쌓이면 keep 카드(요약)의 위계가 죽는다.
-    // 밀면 수정·삭제가 바로 나온다. 탭은 그대로 수정으로 — 스와이프는 지름길이지
-    // 유일한 경로가 아니다(spec swipe-actions.md · WCAG 2.1.1).
-    <SwipeActions
-      rowId={`saving-goal-${goal.rowId}`}
-      groupTag="saving-goal-list"
-      rowLabel={goal.title}
-      enabled={mobile}
-      actions={[
-        {
-          label: tc("edit"),
-          icon: <Pencil />,
-          kind: "primary",
-          onSelect: () => onEdit(goal),
-        },
-        {
-          label: tc("delete"),
-          icon: <Trash2 />,
-          kind: "destructive",
-          // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
-          confirm: {
-            title: t("savingGoal.deleteTitle"),
-            message: t("savingGoal.deleteConfirm", { title: goal.title }),
-          },
-          onSelect: () => onDeleteConfirmed(goal),
-        },
-      ]}
-    >
-      <FlatItem mobile={mobile} idx={idx} onTap={() => onEdit(goal)}>
-        <MaybeContent mobile={mobile}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 10,
-            }}
-          >
-            <span
-              style={{
-                width: tile,
-                height: tile,
-                borderRadius: tileRadius(tile),
-                background: palette.bg,
-                color,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              {isIconName(iconName) ? (
-                <DynamicIcon name={iconName} size={mobile ? 19 : 17} />
-              ) : (
-                <Target size={mobile ? 19 : 17} />
-              )}
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: mobile
-                    ? "var(--text-body-md)"
-                    : "var(--text-body-sm)",
-                  fontWeight: "700",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {goal.title}
-                {goal.isAchieved === "Y" && (
-                  <span
-                    style={{
-                      marginLeft: 8,
-                      padding: "1px 6px",
-                      background: "var(--bg-brand-subtle)",
-                      color: "var(--fg-brand-strong)",
-                      fontSize: "var(--text-badge)",
-                      fontWeight: "600",
-                      borderRadius: "var(--radius-sm)",
-                    }}
-                  >
-                    {t("achieved")}
-                  </span>
-                )}
-              </div>
-              <div
-                style={{
-                  fontSize: mobile
-                    ? "var(--text-caption)"
-                    : "var(--text-badge)",
-                  color: "var(--fg-tertiary)",
-                  marginTop: 1,
-                }}
-              >
-                {formatDeadline(goal.deadlineDate) ??
-                  t("savingGoal.noDeadline")}
-              </div>
-            </div>
-            {/* 모바일은 chevron 을 두지 않는다 — 밀면 수정·삭제가 나오고 탭하면 수정으로
-              가는데, 화살표가 있으면 '들어가서 보는 상세'가 따로 있는 것처럼 읽힌다
-              (사용자 결정). 데스크톱·태블릿은 인라인 편집·삭제 아이콘 그대로. */}
-            {mobile ? null : (
-              <div
-                className={MANAGE_ROW.actionsClassName}
-                style={{ flexShrink: 0 }}
-              >
+    // 모바일 = 줄을 누르면 수정, 밀면 수정 · 삭제(지름길). 데스크톱 = 줄 끝 수정 · 삭제 아이콘.
+    <BarredItem
+      className="pt-0"
+      wrap={(inner) => (
+        <SwipeActions
+          rowId={`saving-goal-${goal.rowId}`}
+          groupTag="saving-goal-list"
+          rowLabel={goal.title}
+          enabled={mobile}
+          actions={[
+            {
+              label: tc("edit"),
+              icon: <Pencil />,
+              kind: "primary",
+              onSelect: () => onEdit(goal),
+            },
+            {
+              label: tc("delete"),
+              icon: <Trash2 />,
+              kind: "destructive",
+              // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
+              confirm: {
+                title: t("savingGoal.deleteTitle"),
+                message: t("savingGoal.deleteConfirm", { title: goal.title }),
+              },
+              onSelect: () => onDeleteConfirmed(goal),
+            },
+          ]}
+        >
+          {inner}
+        </SwipeActions>
+      )}
+      row={
+        mobile ? (
+          <ListButtonItem
+            as="div"
+            align="top"
+            {...common}
+            onClick={() => onEdit(goal)}
+          />
+        ) : (
+          <ListItem
+            as="div"
+            align="top"
+            {...common}
+            suffix={
+              <span className="inline-flex shrink-0 items-center">
                 <Button
-                  aria-label={tc("edit")}
+                  type="button"
                   variant="ghost"
-                  size="icon"
+                  layout="iconOnly"
+                  size="small"
+                  aria-label={t("savingGoal.editNamed", {
+                    name: goal.title,
+                  })}
                   onClick={() => onEdit(goal)}
                 >
-                  <Pencil size={13} />
+                  <Pencil aria-hidden />
                 </Button>
                 <Button
-                  aria-label={tc("delete")}
+                  type="button"
                   variant="ghost"
-                  size="icon"
-                  className={MANAGE_ROW.delClassName}
+                  layout="iconOnly"
+                  size="small"
+                  ghostColor="critical"
+                  aria-label={t("savingGoal.deleteNamed", {
+                    name: goal.title,
+                  })}
                   onClick={() => onDelete(goal)}
                 >
-                  <Trash2 size={13} />
+                  <Trash2 aria-hidden />
                 </Button>
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              marginBottom: 6,
-            }}
-          >
-            <span
-              className="num"
-              style={{
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-secondary)",
-                fontWeight: "600",
-              }}
-            >
-              {KRW(goal.currentAmount)} / {KRW(goal.targetAmount)}
-              {!isEn() && "원"}
+              </span>
+            }
+          />
+        )
+      }
+      bar={
+        <>
+          {/* 줄 아래 12 에 한 줄(좌우 24) — 왼쪽 금액(줄바꿈 허용), 오른쪽 %. 그 아래 6 에 막대 8 */}
+          <div className="flex items-baseline justify-between gap-x3">
+            <span className="min-w-0 text-t3 font-medium tabular-nums text-fg-neutral-subtle">
+              {withCommaBreaks(mask(won(goal.currentAmount)))} /{" "}
+              {withCommaBreaks(mask(won(goal.targetAmount)))}
             </span>
-            <span
-              className="num"
-              style={{
-                marginLeft: "auto",
-                fontSize: "var(--text-label-sm)",
-                fontWeight: "700",
-                color,
-              }}
-            >
+            <span className="shrink-0 text-t4 font-bold tabular-nums text-fg-brand">
               {pct.toFixed(0)}%
             </span>
           </div>
-          <div
-            style={{
-              height: 6,
-              background: "var(--bg-sunken)",
-              borderRadius: "var(--radius-pill)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${Math.min(100, pct)}%`,
-                height: "100%",
-                background: color,
-                borderRadius: "var(--radius-pill)",
-              }}
-            />
-          </div>
-        </MaybeContent>
-      </FlatItem>
-    </SwipeActions>
+          <MeterBar
+            className="mt-x1_5"
+            meaning="goal"
+            label={goal.title}
+            value={goal.currentAmount}
+            max={goal.targetAmount}
+            formatValue={(n) => mask(won(n))}
+          />
+        </>
+      }
+    />
   );
 }
 
-function SavingGoalManagerSkeleton({ mobile }: { mobile: boolean }) {
+function GoalsSkeleton() {
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", gap: mobile ? 0 : 10 }}
-    >
+    <div aria-hidden>
       {[0, 1, 2].map((i) => (
-        <FlatItem key={i} mobile={mobile} idx={i}>
-          <MaybeContent mobile={mobile}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 10,
-              }}
-            >
-              <SkeletonBase className="h-9 w-9 rounded-[10px] shrink-0" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <SkeletonBase className="h-4 w-1/3 mb-1.5" />
-                <SkeletonBase className="h-3 w-1/4" />
-              </div>
+        <div key={i}>
+          <div className="flex items-center gap-x3 px-x6 py-x3">
+            <Skeleton radius="12" className="size-x10 shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
+              <Skeleton text="t5" className="w-1/2" />
+              <Skeleton text="t3" className="w-1/4" />
             </div>
-            <SkeletonBase className="h-1.5 w-full rounded-full" />
-          </MaybeContent>
-        </FlatItem>
+          </div>
+          <div className="px-x6 pb-x3 pt-x1">
+            <Skeleton text="t3" className="w-1/2" />
+            <Skeleton className="mt-x1_5 h-2 w-full" radius="full" />
+          </div>
+        </div>
       ))}
     </div>
+  );
+}
+
+/** 전체 진행률 — 라벨 t3 · 500 · subtle, 아래 4 에 큰 숫자 + 오른쪽 끝 % (t9 · 700 · fg-brand). 막대 없음 */
+function SummaryArea({
+  mobile,
+  totalCurrent,
+  totalTarget,
+  totalPct,
+}: {
+  mobile: boolean;
+  totalCurrent: number;
+  totalTarget: number;
+  totalPct: number;
+}) {
+  const { t } = useTranslation("asset");
+  const mask = useMasked("asset.savingGoals");
+  const inner = (
+    <>
+      <p className="m-0 text-t3 font-medium text-fg-neutral-subtle">
+        {t("savingGoal.overallProgress")}
+      </p>
+      <div className="mt-x1 flex items-baseline justify-between gap-x3">
+        <p className="m-0 flex min-w-0 flex-wrap items-baseline gap-x-x1_5">
+          <span className="min-w-0 text-t9 font-bold tabular-nums text-fg-neutral">
+            {withCommaBreaks(mask(won(totalCurrent)))}
+          </span>
+          <span className="text-t4 tabular-nums text-fg-neutral-subtle">
+            / {withCommaBreaks(mask(won(totalTarget)))}
+          </span>
+        </p>
+        <span className="shrink-0 text-t9 font-bold tabular-nums text-fg-brand">
+          {totalPct.toFixed(0)}%
+        </span>
+      </div>
+    </>
+  );
+  // 위 20(띠 안 위 4 + 16) · 아래 24
+  if (mobile) return <section className="px-x6 pb-x6 pt-x5">{inner}</section>;
+  return (
+    <Card>
+      <CardContent className="gap-0">{inner}</CardContent>
+    </Card>
   );
 }
 
@@ -328,140 +271,94 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
   const totalCurrent = goals.reduce((s, g) => s + g.currentAmount, 0);
   const totalPct = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
 
-  return (
-    <ManagerShell>
-      {!mobile && (
-        <ManagerHead
-          title={t("savingGoals")}
-          description={tSettings("sections.goals.managerDescription")}
+  const failed = goalsQ.isError && goalsQ.data === undefined;
+  const loading = goalsQ.data === undefined && !goalsQ.isError;
+  const title = (
+    <ListTitle
+      id="saving-goal-list-title"
+      first={!mobile || goals.length === 0}
+      action={{
+        label: t("addGoal"),
+        onClick: () => setEditing("new"),
+      }}
+    >
+      {t("savingGoal.goalCount", { n: goals.length })}
+    </ListTitle>
+  );
+  const list = loading ? (
+    <GoalsSkeleton />
+  ) : goals.length === 0 ? (
+    // 빈 목록 — R9 가운데 한 줄. 버튼은 목록 제목의 "목표 추가" 가 있어 두지 않는다
+    <div className="px-x6 pb-x3">
+      <BandEmpty>{t("savingGoal.emptyManager")}</BandEmpty>
+    </div>
+  ) : (
+    <List aria-labelledby="saving-goal-list-title">
+      {goals.map((g) => (
+        <GoalRow
+          key={g.rowId}
+          goal={g}
+          mobile={mobile}
+          onEdit={setEditing}
+          onDelete={setConfirmDelete}
+          onDeleteConfirmed={(goal) => deleteMut.mutateAsync(goal.rowId)}
         />
-      )}
+      ))}
+    </List>
+  );
+  const summary =
+    !failed && !loading && goals.length > 0 ? (
+      <SummaryArea
+        mobile={mobile}
+        totalCurrent={totalCurrent}
+        totalTarget={totalTarget}
+        totalPct={totalPct}
+      />
+    ) : null;
 
-      {goals.length > 0 && (
-        <Card variant="raised">
-          <CardContent>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: "var(--text-caption)",
-                    color: "var(--fg-tertiary)",
-                    fontWeight: "500",
-                    marginBottom: 3,
-                  }}
-                >
-                  {t("savingGoal.overallProgress")}
-                </div>
-                <div
-                  className="num"
-                  style={{
-                    fontSize: "var(--text-title-md)",
-                    fontWeight: "800",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  {KRW(totalCurrent)}{" "}
-                  <span
-                    style={{
-                      fontSize: "var(--text-label-sm)",
-                      fontWeight: "600",
-                      color: "var(--fg-tertiary)",
-                    }}
-                  >
-                    / {KRW(totalTarget)}
-                    {!isEn() && "원"}
-                  </span>
-                </div>
-              </div>
-              <div
-                className="num"
-                style={{
-                  fontSize: "var(--text-title-lg)",
-                  fontWeight: "800",
-                  color: "var(--fg-brand)",
-                  flexShrink: 0,
-                }}
-              >
-                {totalPct.toFixed(0)}%
-              </div>
-            </div>
-          </CardContent>
+  const content = failed ? (
+    <div className={mobile ? "px-x6 pb-x6 pt-x2" : undefined}>
+      <BandFailure
+        title={t("savingGoal.loadFailed")}
+        onRetry={() => void goalsQ.refetch()}
+      />
+    </div>
+  ) : (
+    <>
+      {summary}
+      {mobile ? (
+        <section className="pb-x3">
+          {title}
+          {list}
+        </section>
+      ) : (
+        <Card body="list">
+          {title}
+          {list}
         </Card>
       )}
+    </>
+  );
 
-      {/* 목록 라벨 + 목록은 한 묶음 — 부모 shell gap 이 라벨을 쪼개지 않도록. */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ fontSize: "var(--text-label-sm)", fontWeight: "700" }}>
-            {t("savingGoal.goalCount", { n: goals.length })}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            style={{
-              marginLeft: "auto",
-              color: "var(--fg-brand)",
-              fontWeight: 700,
-            }}
-            onClick={() => setEditing("new")}
-          >
-            <Plus size={14} strokeWidth={2.6} /> {t("addGoal")}
-          </Button>
+  return (
+    <>
+      {mobile ? (
+        // 폰 — 흰 면 하나(I-08 24). 카드 · 줄 사이 선 없음, 구역 · 줄이 제 좌우 24 를 갖는다
+        <div
+          data-slot="saving-goal-phone"
+          className={summary || failed ? undefined : "pt-x4"}
+        >
+          {content}
         </div>
-
-        {goalsQ.isLoading ? (
-          <SavingGoalManagerSkeleton mobile={mobile} />
-        ) : goals.length === 0 ? (
-          // 모바일 카드 다이어트 — 빈 상태도 카드를 두지 않는다(RecurringManager 빈 상태 정합).
-          mobile ? (
-            <div
-              style={{
-                padding: 40,
-                textAlign: "center",
-                color: "var(--fg-tertiary)",
-                fontSize: "var(--text-label-sm)",
-              }}
-            >
-              {t("savingGoal.emptyManager")}
-            </div>
-          ) : (
-            <Card>
-              <CardContent>
-                <div
-                  style={{
-                    padding: "20px 0",
-                    textAlign: "center",
-                    color: "var(--fg-tertiary)",
-                    fontSize: "var(--text-label-sm)",
-                  }}
-                >
-                  {t("savingGoal.emptyManager")}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: mobile ? 0 : 10,
-            }}
-          >
-            {goals.map((g, i) => (
-              <GoalCard
-                key={g.rowId}
-                goal={g}
-                mobile={mobile}
-                idx={i}
-                onEdit={setEditing}
-                onDelete={setConfirmDelete}
-                onDeleteConfirmed={(g) => deleteMut.mutateAsync(g.rowId)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      ) : (
+        <ManagerShell>
+          <ManagerHead
+            title={t("savingGoals")}
+            description={tSettings("sections.goals.managerDescription")}
+          />
+          {content}
+        </ManagerShell>
+      )}
 
       {editing != null && (
         <SavingGoalAddDialog
@@ -487,6 +384,6 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           }
         />
       )}
-    </ManagerShell>
+    </>
   );
 }

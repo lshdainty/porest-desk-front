@@ -290,14 +290,24 @@ List.displayName = "List";
 export interface ListItemProps
   extends
     ItemBase,
-    Omit<React.LiHTMLAttributes<HTMLLIElement>, "title" | "prefix"> {}
+    Omit<React.LiHTMLAttributes<HTMLLIElement>, "title" | "prefix"> {
+  /**
+   * 줄 요소 — 기본 li. 한 줄 아래에 막대 같은 것을 덧붙여 li 하나로 묶을 때(부르는 쪽이 li 를 감싼다) div 로 둔다.
+   * 목록이 줄 수만큼 열리지 않게 ul 하나 · li 하나를 지키려는 것이다.
+   */
+  as?: "li" | "div";
+}
 
 // 보기만 하는 줄 — 누르지 않는다(호버 · 누름 · 포커스가 없다). 키-값 · 안내 줄
 const ListItem = React.forwardRef<HTMLLIElement, ListItemProps>(
-  ({ title, detail, prefix, suffix, align, highlighted, ...props }, ref) => {
+  (
+    { title, detail, prefix, suffix, align, highlighted, as, ...props },
+    ref,
+  ) => {
     const nest = React.useContext(ListNestContext);
     return (
       <Row
+        as={as}
         itemRef={ref as React.Ref<HTMLElement>}
         itemProps={props}
         prefix={prefix}
@@ -323,6 +333,8 @@ export interface ListButtonItemProps
       "title" | "prefix" | "children"
     > {
   rootProps?: React.LiHTMLAttributes<HTMLLIElement>;
+  /** 줄 요소 — 기본 li. 막대 같은 것을 덧붙여 li 하나로 묶을 때 div(ListItem 과 같다) */
+  as?: "li" | "div";
 }
 
 // 누르는 줄 — 줄 전체가 버튼. 화면을 옮기면 suffix 에 오른쪽 화살표를 둔다
@@ -338,6 +350,7 @@ const ListButtonItem = React.forwardRef<HTMLButtonElement, ListButtonItemProps>(
       highlighted,
       disabled,
       rootProps,
+      as,
       type = "button",
       ...props
     },
@@ -346,6 +359,7 @@ const ListButtonItem = React.forwardRef<HTMLButtonElement, ListButtonItemProps>(
     const nest = React.useContext(ListNestContext);
     return (
       <Row
+        as={as}
         itemProps={rootProps}
         prefix={prefix}
         suffix={suffix}

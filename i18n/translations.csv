@@ -17,6 +17,7 @@ common,add,추가,Add
 common,next,다음,Next
 common,prev,이전,Previous
 common,prevYear,이전 해,Previous year
+common,loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
 common,nextYear,다음 해,Next year
 common,searchPlaceholder,검색...,Search...
 common,searchEmpty,검색 결과가 없어요,No results found
@@ -653,6 +654,9 @@ asset,savingGoal.deleteConfirm,"""{{title}}"" 목표를 삭제할까요? 이 작
 asset,savingGoal.overallProgress,전체 진행률,Overall progress
 asset,savingGoal.goalCount,목표 목록 · {{n}}개,Goals · {{n}}
 asset,savingGoal.emptyManager,아직 저축 목표가 없어요. ‘목표 추가’로 시작해보세요.,No saving goals yet. Start with ‘Add goal’.
+asset,savingGoal.loadFailed,저축 목표를 불러오지 못했어요,Couldn't load the saving goals
+asset,savingGoal.editNamed,{{name}} 목표 수정,Edit {{name}} goal
+asset,savingGoal.deleteNamed,{{name}} 목표 삭제,Delete {{name}} goal
 asset,savingGoal.remaining,남은 금액,Remaining
 asset,savingGoal.achievedAt,달성일,Achieved on
 asset,savingGoal.errName,목표 이름을 입력해주세요,Enter a goal name
@@ -1318,18 +1322,16 @@ budget,manager.description,달마다 총 예산과 카테고리별 한도를 정
 budget,manager.noPrevBudget,복사할 지난달 예산이 없어요,No previous month budget to copy
 budget,manager.copyPrevTitle,지난달 한도를 이번 달로 복사,Copy last month's limits to this month
 budget,manager.monthlyTotal,{{month}}월 총 예산,Month {{month}} Total Budget
-budget,manager.notSet,설정되지 않음,Not set
+budget,manager.notSet,설정 안 됨,Not set
 budget,manager.setBudget,예산 설정,Set Budget
 budget,manager.spent,사용,Spent
 budget,manager.assigned,할당됨,Assigned
 budget,manager.assignable,할당 가능,Assignable
-budget,manager.overCapPre,카테고리 한도 합이 전체 상한을,Category limits exceed the total cap by
-budget,manager.overCapPost,초과했어요. 전체 상한을 올리거나 카테고리 한도를 줄여주세요.,— raise the total cap or lower category limits.
 budget,manager.categoryBudgets,카테고리별 예산 · {{count}}개,Category Budgets · {{count}}
 budget,manager.allBudgetedTooltip,모든 카테고리에 이미 예산이 설정되어 있어요,All categories already have a budget set
 budget,manager.emptyCategory,설정된 카테고리 예산이 없어요,No category budgets set
 budget,manager.categoryFallback,카테고리 #{{id}},Category #{{id}}
-budget,manager.overLimit,한도 초과,Over limit by
+budget,manager.overLimitAmt,한도 초과 {{amount}},Over limit by {{amount}}
 budget,manager.remaining,남은 예산,Remaining
 budget,deleteMessage,"""{{name}}"" 카테고리 예산을 삭제할까요?","Delete the budget for the ""{{name}}"" category?"
 budget,thisFallback,이,this
@@ -1351,13 +1353,10 @@ budget,vsLimit,한도 대비,vs limit
 budget,spent,지출,Spent
 budget,limit,한도,Limit
 budget,over,초과,Over
-budget,monthlyCap,{{month}}월 전체 상한,Month {{month}} total cap
+budget,monthlyCap,{{month}}월 총 예산,Month {{month}} total budget
 budget,capHint,이번 달 전체 지출의 상한이에요 (카테고리 예산이 없는 지출도 포함).,This is the cap for all spending this month (including uncategorized).
-budget,totalCap,전체 상한,Total cap
+budget,totalCap,총 예산,Total budget
 budget,categoryAllocated,카테고리 할당,Category allocated
-budget,capUnsetPre,전체 상한이 아직 설정되지 않았어요. 우측 상단,The total cap isn't set yet. Use the top-right
-budget,capUnsetPost,버튼으로 이번 달 최대 지출 한도를 지정할 수 있어요.,button to set this month's max spending limit.
-budget,currentCategorySum,현재 카테고리 한도 합계,Current category limit sum
 budget,spendingPace,지출 페이스,Spending pace
 budget,paceNormal,정상 속도,On pace
 budget,paceFast,빠른 속도,Fast pace
@@ -1372,8 +1371,31 @@ budget,noComplianceData,아직 이행률 데이터가 없어요,No compliance da
 budget,categoryBudgets,카테고리별 예산,Category budgets
 budget,countSet,{{count}}개 설정됨,{{count}} set
 budget,noCategoryBudgets,카테고리별 예산이 없어요,No category budgets
-budget,goSetBudget,예산 설정하러 가기 →,Go set a budget →
+budget,goSetBudget,예산 설정하러 가기,Go set a budget
 budget,settings,설정,Settings
+budget,capUnset,"총 예산이 아직 없어요. 설정에서 이번 달 최대 지출 한도를 정할 수 있어요.",There is no total budget yet. You can set this month's spending limit in settings.
+budget,categorySumNow,현재 카테고리 한도 합계: {{amount}},Current category limit total: {{amount}}
+budget,manager.overCap,카테고리 한도 합이 총 예산을 {{amount}} 초과했어요. 총 예산을 올리거나 카테고리 한도를 줄여주세요.,Category limits exceed the total budget by {{amount}}. Raise the total budget or lower the category limits.
+budget,usedPct,{{percent}}% 사용,{{percent}}% used
+budget,remainingAmt,남은 예산 {{amount}},{{amount}} left
+budget,overAmt,한도 {{amount}} 초과,Over the limit by {{amount}}
+budget,categoryCount,{{count}} 카테고리,{{count}} categories
+budget,budgetName,{{name}} 예산,{{name}} budget
+budget,paceName,이번 달 지출 페이스,Spending pace this month
+budget,paceValue,{{used}}% 사용 · 이번 달 {{elapsed}}% 지남,{{used}}% used · {{elapsed}}% of the month passed
+budget,complianceName,최근 6개월 예산 이행률,Budget compliance over the last 6 months
+budget,complianceTable.month,달,Month
+budget,complianceTable.percent,한도 대비,Vs limit
+budget,emptyMonthTitle,{{month}}월 예산이 아직 없어요,No budget for month {{month}} yet
+budget,emptyMonthDesc,예산을 정하면 쓴 돈과 남은 돈을 한눈에 볼 수 있어요.,Set a budget to see what you spent and what is left at a glance.
+budget,loadFailed.header,총 예산을 불러오지 못했어요,Couldn't load the total budget
+budget,loadFailed.pace,지출 페이스를 불러오지 못했어요,Couldn't load the spending pace
+budget,loadFailed.status,예산 현황을 불러오지 못했어요,Couldn't load the budget status
+budget,loadFailed.categories,카테고리별 예산을 불러오지 못했어요,Couldn't load the category budgets
+budget,loadFailed.compliance,예산 이행률을 불러오지 못했어요,Couldn't load the budget compliance
+budget,manager.loadFailed,예산을 불러오지 못했어요,Couldn't load budgets
+budget,manager.editNamed,{{name}} 예산 수정,Edit {{name}} budget
+budget,manager.deleteNamed,{{name}} 예산 삭제,Delete {{name}} budget
 card,benefit.headerTitle,카드 혜택,Card benefits
 card,benefit.headerSub,신용·체크 카드의 혜택을 한 번에,Credit & check card benefits in one place
 card,benefit.heroTitle,카드 혜택 라이브러리,Card Benefits Library
