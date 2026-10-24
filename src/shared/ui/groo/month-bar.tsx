@@ -69,7 +69,10 @@ export function MonthBar({
       className="flex flex-wrap items-center px-x6 pt-x3"
       data-slot="month-bar"
     >
-      <MonthControls flushLeft {...controls} />
+      {/* ← 달 → 는 한 덩어리 — 큰 글자에서 오른쪽 버튼만 다음 줄로 내려간다 */}
+      <div className="flex items-center">
+        <MonthControls flushLeft {...controls} />
+      </div>
       {right != null && (
         <div className="ml-auto flex items-center">{right}</div>
       )}
