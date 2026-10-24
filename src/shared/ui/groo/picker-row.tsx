@@ -50,8 +50,9 @@ export interface PickerRowProps {
   /** 고르기 안 — close() 로 닫는다 */
   children?:
     React.ReactNode | ((api: { close: () => void }) => React.ReactNode);
-  /** 바닥 버튼(날짜의 "완료") — 없으면 바닥 없음 */
-  footer?: React.ReactNode | ((api: { close: () => void }) => React.ReactNode);
+  /** 고르기 표면 바닥 버튼(날짜의 "완료"), 없으면 바닥 없음. 이름이 footer 가 아닌 까닭: tests/dialog-footers 는 footer prop 안의 Button 을 막는다 */
+  pickerActions?:
+    React.ReactNode | ((api: { close: () => void }) => React.ReactNode);
   /** 시트 높이 같은 모양 */
   sheetClassName?: string;
   popoverClassName?: string;
@@ -77,7 +78,7 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
       surfaceTitle,
       onOpen,
       children,
-      footer,
+      pickerActions,
       sheetClassName,
       popoverClassName,
       bodyless,
@@ -168,7 +169,10 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
 
     const body =
       typeof children === "function" ? children({ close }) : children;
-    const foot = typeof footer === "function" ? footer({ close }) : footer;
+    const foot =
+      typeof pickerActions === "function"
+        ? pickerActions({ close })
+        : pickerActions;
 
     const row = (
       <ListButtonItem

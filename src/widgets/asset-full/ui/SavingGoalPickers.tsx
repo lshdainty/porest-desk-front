@@ -55,7 +55,7 @@ export function GoalDeadlineRow({
       clearLabel={t("savingGoal.deadlineClear")}
       onOpen={() => setDraft(date)}
       popoverClassName="w-[336px]"
-      footer={({ close }) => (
+      pickerActions={({ close }) => (
         <Button
           disabled={!draft}
           onClick={() => {
