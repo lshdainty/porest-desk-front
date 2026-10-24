@@ -21,6 +21,9 @@ import { Icon } from "@/shared/ui/groo/primitives";
 import type { Expense } from "../model/types";
 import { isRefundedTx } from "../lib/expense-aggregate";
 
+/** 금액 글자 수(부호 · 쉼표 · 원 포함)가 이 이상이면 값을 설명 아래로 내린다 — "−123,456,789원"(12)은 옆에, "−1,234,567,890원"(15)부터 아래 */
+const STACK_AMOUNT_CHARS = 13;
+
 /**
  * 거래 한 건 — 지출/수입. 목록 어디서든 같은 모양이어야 해서 entity 가 소유한다.
  *
@@ -35,6 +38,7 @@ export function ExpenseRow({
   showDate,
   maskCard = "ledger.txList",
   gutter = false,
+  highlighted = false,
 }: {
   expense: Expense;
   onClick?: (e: Expense) => void;
@@ -50,6 +54,8 @@ export function ExpenseRow({
    * 이 인자를 지운다. 띠 · 카드 안 목록(홈)은 true.
    */
   gutter?: boolean;
+  /** 알림 · 검색에서 들어온 줄 — ds List 강조(brand-weak 바탕 · 누름 brand-weak-pressed · 설명 글 보정). 줄을 누를 수 있을 때만 의미가 있다 */
+  highlighted?: boolean;
 }) {
   const { t } = useTranslation("common");
   const isIncome = expense.expenseType === "INCOME";
@@ -97,8 +103,18 @@ export function ExpenseRow({
     </>
   );
 
+  // 큰 금액은 설명 줄에서 폭을 다 빼앗아 카테고리 · 자산 · 시각이 한 글자("주…")로 줄어든다(앱에서 확인된 회귀와 같은 값).
+  // 줄 안 폭이 16em 미만이면 값을 본문 아래로 내린다는 ds 규칙(CHANGELOG 03-D 결정 1 B)을 줄 폭이 아니라 금액 길이로도 건다 —
+  // 금액을 설명 아래 한 줄로 내리고 설명은 제 폭을 갖는다. 호출자가 `right` 를 주면 그대로 오른쪽에 둔다.
+  const amountChars =
+    (isEn() ? 1 : 0) +
+    1 +
+    KRW(expense.amount, { abs: true }).length +
+    (isEn() ? 0 : 1);
+  const stacked = !right && amountChars >= STACK_AMOUNT_CHARS;
   const detail = (
-    <TagGroup size="t3" truncate>
+    // 큰 금액 줄은 설명을 한 줄로 자르지 않고 줄을 바꿔 카테고리 · 자산 · 시각이 다 보이게 한다
+    <TagGroup size="t3" truncate={!stacked}>
       <TagGroupItem>{expense.categoryName ?? t("others")}</TagGroupItem>
       {expense.assetName && <TagGroupItem>{expense.assetName}</TagGroupItem>}
       {expense.expenseDate &&
@@ -110,7 +126,7 @@ export function ExpenseRow({
     </TagGroup>
   );
 
-  const suffix = right ?? (
+  const amountEl = (
     <span
       className={cn(
         "whitespace-nowrap font-bold tabular-nums",
@@ -133,6 +149,15 @@ export function ExpenseRow({
       </HideUnit>
     </span>
   );
+  const suffix = right ?? (stacked ? undefined : amountEl);
+  const detailNode = stacked ? (
+    <>
+      {detail}
+      <span className="mt-x0_5 block">{amountEl}</span>
+    </>
+  ) : (
+    detail
+  );
 
   const prefix = (
     <ListTile
@@ -153,19 +178,21 @@ export function ExpenseRow({
       {onClick ? (
         <ListButtonItem
           title={title}
-          detail={detail}
+          detail={detailNode}
           prefix={prefix}
           suffix={suffix}
           align="top"
+          highlighted={highlighted}
           onClick={() => onClick(expense)}
         />
       ) : (
         <ListItem
           title={title}
-          detail={detail}
+          detail={detailNode}
           prefix={prefix}
           suffix={suffix}
           align="top"
+          highlighted={highlighted}
         />
       )}
     </List>

@@ -24,6 +24,11 @@ import {
   useExpenseSwipeActions,
   type ExpenseSwipeAction,
 } from "@/pages/expense/lib/use-expense-swipe-actions";
+import {
+  dayKeyOf,
+  monthWeeks,
+  pickWeek,
+} from "@/pages/expense/model/month-weeks";
 import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import {
   HIDE_AMOUNTS_MASK,
@@ -141,14 +146,13 @@ const dowLabelList = () =>
 export function ExpenseMobileSkeleton({ month }: { month?: string }) {
   const { t } = useTranslation("expense");
   const mk = month ?? currentMonthKey();
-  const now = new Date();
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now);
-    d.setDate(now.getDate() - (now.getDay() - i));
-    return d;
-  });
-  const [y, m] = mk.split("-").map(Number);
-  const inMonth = (d: Date) => d.getFullYear() === y && d.getMonth() + 1 === m;
+  const todayStr = dayKeyOf(new Date());
+  // 실제 달력과 같은 주 · 같은 칸 — 이 달이면 오늘이 든 주, 아니면 첫 주. 달 밖은 빈 칸, 오는 날은 옅게
+  const weeks = monthWeeks(mk);
+  const week =
+    weeks[
+      pickWeek(weeks, todayStr.startsWith(mk) ? todayStr : null, todayStr)
+    ] ?? [];
   return (
     <LedgerShell aria-busy="true">
       <div className="pt-x2">
@@ -177,14 +181,18 @@ export function ExpenseMobileSkeleton({ month }: { month?: string }) {
         <LedgerCalendar>
           <LedgerDow labels={dowLabelList()} />
           <LedgerWeek>
-            {weekDays.map((d, i) => (
-              <LedgerCell key={i} empty>
-                <LedgerCellNum dow={i} future={!inMonth(d)}>
-                  {d.getDate()}
-                </LedgerCellNum>
-                <Skeleton text="t1" className="w-x8" />
-              </LedgerCell>
-            ))}
+            {week.map((c, i) =>
+              c ? (
+                <LedgerCell key={c.ds} empty>
+                  <LedgerCellNum dow={i} future={c.ds > todayStr}>
+                    {c.d}
+                  </LedgerCellNum>
+                  <Skeleton text="t1" className="w-x8" />
+                </LedgerCell>
+              ) : (
+                <LedgerCell key={`e${i}`} empty />
+              ),
+            )}
           </LedgerWeek>
           <LedgerExpand aria-label={t("txm.monthCalendar")} disabled />
         </LedgerCalendar>
@@ -220,7 +228,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
     setSumOpen(false);
   };
   const now = new Date();
-  const todayStr = `${now.getFullYear()}-${TXM_PAD(now.getMonth() + 1)}-${TXM_PAD(now.getDate())}`;
+  const todayStr = dayKeyOf(now);
   // 셀 차트형 툴팁(지출·수입) — hover 셀 기준 좌표 (사용자 결정).
   const [cellTip, setCellTip] = useState<{
     ds: string;
@@ -374,23 +382,8 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const tipDay = cellTip ? byDay[cellTip.ds] : undefined;
 
   // 캘린더 주(week) 구성.
-  const weeks = useMemo(() => {
-    const [y = 0, m = 1] = month.split("-").map(Number);
-    const firstDow = new Date(y, m - 1, 1).getDay();
-    const dim = new Date(y, m, 0).getDate();
-    const cells: ({ d: number; ds: string } | null)[] = [];
-    for (let i = 0; i < firstDow; i++) cells.push(null);
-    for (let d = 1; d <= dim; d++)
-      cells.push({ d, ds: `${month}-${TXM_PAD(d)}` });
-    while (cells.length % 7) cells.push(null);
-    const out: (typeof cells)[] = [];
-    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
-    return out;
-  }, [month]);
-  let selWeek = weeks.findIndex((w) => w.some((c) => c && c.ds === selected));
-  if (selWeek < 0)
-    selWeek = weeks.findIndex((w) => w.some((c) => c && c.ds === todayStr));
-  if (selWeek < 0) selWeek = 0;
+  const weeks = useMemo(() => monthWeeks(month), [month]);
+  const selWeek = pickWeek(weeks, selected, todayStr);
 
   const goMonth = (dir: -1 | 1) => {
     const next = shiftMonthKey(month, dir);

@@ -107,7 +107,8 @@ vi.mock("@/widgets/expense-detail/ui/TransferDetailDialog", () => ({
   TransferDetailDialog: () => null,
 }));
 
-const { ExpenseMobile } = await import("./ExpenseMobile");
+const { ExpenseMobile, ExpenseMobileSkeleton } =
+  await import("./ExpenseMobile");
 const { i18n } = await import("@/shared/i18n/config");
 
 const tx = (
@@ -383,8 +384,13 @@ describe("알림 · 검색에서 들어온 줄 (I-07 6 · ?txId=)", () => {
       behavior: "smooth",
       block: "center",
     });
-    const hl = container.querySelector('[class*="bg-bg-brand-weak"]');
+    // ds List 의 강조 바탕(brand-weak · 누름 brand-weak-pressed) — 손으로 짠 before: 바탕이 아니다
+    const hl = container
+      .querySelector('[class*="bg-bg-brand-weak"]')
+      ?.closest("[data-slot=list-item]");
     expect(hl?.textContent).toContain("가게2");
+    expect(container.innerHTML).toContain("bg-bg-brand-weak-pressed");
+    expect(container.innerHTML).not.toContain("before:bg-bg-brand-weak");
     expect(container.innerHTML).not.toContain("brand-subtle");
   });
 });
@@ -426,5 +432,57 @@ describe("검수 고침 — 요약 0 원 · 실패 틀 · 빼기 부호", () => 
     const cell = container.querySelector("button[data-sel]")!;
     expect(container.textContent).toContain("−5,000");
     expect(cell).toBeTruthy();
+  });
+});
+
+describe("첫 진입 스켈레톤 — 실제 달력과 같은 주 · 같은 칸", () => {
+  const renderSkel = (month?: string) =>
+    act(() => root.render(<ExpenseMobileSkeleton month={month} />));
+  const cells = () =>
+    Array.from(
+      container.querySelectorAll<HTMLElement>(
+        "[data-slot=ledger-cell], div.group\\/cell",
+      ),
+    );
+
+  it("이 달이면 오늘이 든 주를 그리고 오는 날(16 · 17)만 옅게 한다", () => {
+    renderSkel("2026-10");
+    const days = cells().map((c) => c.querySelector("span"));
+    expect(days.map((d) => d?.textContent)).toEqual([
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+    ]);
+    const subtle = days
+      .filter((d) => d?.className.includes("text-fg-neutral-subtle"))
+      .map((d) => d?.textContent);
+    expect(subtle).toEqual(["16", "17"]);
+  });
+
+  it("?month= 가 다른 달이면 그 달 첫 주 — 달 밖 자리는 숫자 없는 빈 칸이다", () => {
+    renderSkel("2026-09");
+    const cs = cells();
+    // 2026-09 는 화요일 시작 — 일 · 월 빈 칸, 1 ~ 5
+    expect(cs.map((c) => c.querySelector("span")?.textContent ?? "")).toEqual([
+      "",
+      "",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+    ]);
+  });
+
+  it("오는 달이면 첫 주 전체가 옅다", () => {
+    renderSkel("2026-11");
+    const subtle = cells().map((c) =>
+      c.querySelector("span")?.className.includes("text-fg-neutral-subtle"),
+    );
+    expect(subtle).toEqual(Array(7).fill(true));
   });
 });
