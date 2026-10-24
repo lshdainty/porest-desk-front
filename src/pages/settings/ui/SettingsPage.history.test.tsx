@@ -1,7 +1,12 @@
 // 섹션 이동 = 기록(Q1-A · I-16 4 · 5 · 8) · 폰 머리 "추가" · 문서 제목 — 실제 SettingsPage 를 라우터 안에 띄워 잠근다.
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { createMemoryRouter, Outlet, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createMemoryRouter,
+  Outlet,
+  RouterProvider,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -18,6 +23,7 @@ vi.mock("react-i18next", () => ({
 const stub = (name: string) => (props: { addRequest?: number }) => (
   <div data-stub={name} data-add={props.addRequest ?? 0} />
 );
+vi.mock("sonner", () => ({ toast: { success: () => {}, error: () => {} } }));
 vi.mock("@/widgets/category-manage", () => ({
   CategoryManager: stub("categories"),
 }));
@@ -166,5 +172,33 @@ describe("설정 섹션 이동 기록", () => {
     const router = mount("/desk/settings?section=nope", true);
     expect(where(router)).toBe("/desk/settings?section=nope");
     expect(container.querySelector("[data-stub]")).toBeNull();
+  });
+
+  it("OAuth 복귀 ?linked 를 지워도 기록이 늘지 않고 history.state 가 남는다(replace)", () => {
+    window.history.replaceState(
+      { idx: 0 },
+      "",
+      "/desk/settings?section=account&linked=google",
+    );
+    const lengthBefore = window.history.length;
+    const router = createBrowserRouter([
+      {
+        element: <Outlet context={{ onAddTx: () => {}, mobile: true }} />,
+        children: [{ path: "/desk/settings", element: <SettingsPage /> }],
+      },
+    ]);
+    act(() =>
+      root.render(
+        <QueryClientProvider client={new QueryClient()}>
+          <TopNavigationProvider product="그루 담다">
+            <RouterProvider router={router} />
+          </TopNavigationProvider>
+        </QueryClientProvider>,
+      ),
+    );
+    expect(window.location.search).toBe("?section=account");
+    expect(window.history.length).toBe(lengthBefore);
+    expect((window.history.state as { idx?: number } | null)?.idx).toBe(0);
+    router.dispose();
   });
 });
