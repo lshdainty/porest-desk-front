@@ -39,7 +39,7 @@ export function SummaryRows({
   const val = (node: ReactNode) =>
     loading ? <Skeleton text="t5" className="w-x16" /> : node;
   return (
-    <List className="-mx-global-gutter mt-x2">
+    <List className="mt-x2 w-[calc(100%+2*var(--spacing-global-gutter))] -mx-global-gutter">
       <ListItem
         title={incomeLabel}
         suffix={val(

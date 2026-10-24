@@ -249,6 +249,12 @@ describe("머리 — 단추 · 요약 · 달력 (I-07 7 · 8 · 11)", () => {
     expect(summary!.className).not.toMatch(/shadow|animate/);
     expect(summary!.textContent).toContain("+450,000");
     expect(summary!.textContent).toContain("−12,000");
+    // 화면 끝까지 — ds List 는 w-full 이라 음수 여백만으로는 왼쪽으로 밀리기만 한다(오른쪽 48 모자람). 폭을 +2×gutter 로 준다
+    const list = container.querySelector("ul[data-slot=list]")!;
+    expect(list.className).toContain(
+      "w-[calc(100%+2*var(--spacing-global-gutter))]",
+    );
+    expect(list.className).toContain("-mx-global-gutter");
   });
 
   it("오는 날 글자는 fg-neutral-subtle 이고 불투명도로 흐리지 않는다", () => {
