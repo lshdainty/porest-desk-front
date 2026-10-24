@@ -1,6 +1,7 @@
 namespace,key,ko,en
 common,app.title,그루 담다,그루 담다
 common,save,저장,Save
+common,newTab,새 탭,new tab
 common,cancel,취소,Cancel
 common,delete,삭제,Delete
 common,edit,수정,Edit
@@ -85,7 +86,7 @@ layout,userFallback,사용자,User
 layout,expandSubmenu,{{name}} 하위 메뉴 펼치기,Expand {{name}} submenu
 layout,collapseSubmenu,{{name}} 하위 메뉴 접기,Collapse {{name}} submenu
 more,search,메뉴 검색,Search menu
-more,noResults,검색 결과가 없습니다,No search results
+more,noResults,검색 결과가 없어요,No search results
 more,group.money,돈 관리,Money
 more,group.daily,일상,Daily
 more,group.personal,개인화,Personalization
@@ -95,7 +96,7 @@ more,item.asset,자산,Assets
 more,item.stocks,증권,Stocks
 more,item.budget,예산,Budget
 more,item.savingGoal,저축 목표,Saving Goals
-more,item.stats,통계·분석,Stats & Analysis
+more,item.stats,통계,Stats
 more,item.recurring,반복 거래,Recurring
 more,item.accounts,계좌·카드 관리,Account & Card Management
 more,item.calendar,캘린더,Calendar
@@ -130,7 +131,7 @@ more,desc.presets,자주 쓰는 내역,Frequently used entries
 more,desc.appearance,테마 · 언어 · 통화,Theme · language · currency
 more,desc.settings,전체 설정 메뉴,All settings
 more,desc.notifications,푸시 · 이메일 · 방해 금지,Push · email · do not disturb
-more,desc.dataExport,CSV · Excel · PDF · 자동 백업,CSV · Excel · PDF · auto backup
+more,desc.dataExport,CSV · Excel · JSON,CSV · Excel · JSON
 more,desc.account,프로필 · 보안 · 구독,Profile · security · subscription
 todo,title,할일,Todo
 todo,createTodo,할일 추가,Add Todo
@@ -1934,7 +1935,6 @@ settings,groups.appEnv,앱 환경,App Preferences
 settings,groups.data,데이터,Data
 settings,groups.account,계정,Account
 settings,account.defaultName,사용자,User
-settings,account.profileMeta,내 정보 · 보안 · 연결된 계정,Profile · security · linked accounts
 settings,account.edit,수정,Edit
 settings,account.joined,가입 {{date}},Joined {{date}}
 settings,account.group.security,보안,Security
@@ -1958,10 +1958,14 @@ settings,devices.lastUsed,마지막 사용 {{when}},Last used {{when}}
 settings,devices.empty,로그인된 기기가 없어요,No devices are signed in
 settings,devices.loadError,기기 목록을 불러오지 못했어요,Couldn't load your devices
 settings,devices.logout,로그아웃,Log out
-settings,devices.logoutTitle,이 기기에서 로그아웃,Log out this device
-settings,devices.logoutConfirm,{{device}} 에서 로그아웃할까요? 그 기기는 다시 로그인해야 해요.,Log out of {{device}}? It will need to sign in again.
+settings,devices.logoutTitle,{{device}}에서 로그아웃할까요?,Log out of {{device}}?
+settings,devices.logoutConfirm,그 기기는 다시 로그인해야 해요.,That device will need to sign in again.
 settings,devices.logoutAll,모든 기기에서 로그아웃,Log out all devices
-settings,devices.logoutAllConfirm,지금 쓰는 기기를 포함해 모두 로그아웃할까요? 다시 로그인해야 해요.,Log out everywhere including this device? You'll need to sign in again.
+settings,devices.logoutAllTitle,모든 기기에서 로그아웃할까요?,Log out of all devices?
+settings,devices.logoutAllConfirm,지금 쓰는 기기도 로그아웃돼요. 다시 로그인해야 해요.,This device will be logged out too. You'll need to sign in again.
+settings,devices.logoutLabel,{{device}} 로그아웃,Log out {{device}}
+settings,devices.loadErrorHint,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
+settings,devices.logoutFailed,로그아웃하지 못했어요. 잠시 뒤 다시 시도해주세요.,Couldn't log out. Please try again in a moment.
 settings,account.linked,연결됨,Connected
 settings,account.notLinked,연결 안 됨,Not connected
 settings,account.link,연결,Connect
@@ -2430,7 +2434,7 @@ subscription,apiToken.loadFailed,토큰 목록을 불러오지 못했어요,Coul
 subscription,gate.title,증권 구독이 필요해요,Securities needs a subscription
 subscription,gate.desc,"실시간 시세·종목 검색·관심종목은 Pro 구독에 들어 있어요. 구독하면 이 화면이 바로 열려요.","Real-time quotes, search and watchlists are part of Pro. Subscribe and this screen opens right away."
 subscription,gate.action,구독 보기,See plans
-date,justNow,방금,Just now
+date,justNow,방금 전,Just now
 date,minutesAgo,{{count}}분 전,{{count}} min ago
 date,hoursAgo,{{count}}시간 전,{{count}} hr ago
 date,daysAgo,{{count}}일 전,{{count}} days ago

@@ -1,179 +1,35 @@
-import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { useState } from "react";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/shared/ui/input";
-import { useHasSecurities } from "@/features/subscription/model/useSubscription";
 import { Search, SearchX } from "lucide-react";
+import { useMoreGroups } from "../model/use-more-groups";
+import { MoreMobile } from "./MoreMobile";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-interface NavItem {
-  labelKey: string;
-  path: string;
-  descKey: string;
-}
-
-interface NavGroup {
-  labelKey: string;
-  items: NavItem[];
-}
-
-// K뱅크 톤 전체 메뉴 — 카드·아이콘·설명 행 없이 그룹 라벨 + 2열 텍스트 링크
-// (design chrome.jsx MoreScreen SoT — 모바일 카드 다이어트).
-const GROUPS: NavGroup[] = [
-  {
-    labelKey: "group.money",
-    items: [
-      {
-        labelKey: "item.expense",
-        path: "/desk/expense",
-        descKey: "desc.expense",
-      },
-      { labelKey: "item.asset", path: "/desk/asset", descKey: "desc.asset" },
-      { labelKey: "item.stocks", path: "/desk/stocks", descKey: "desc.stocks" },
-      { labelKey: "item.budget", path: "/desk/budget", descKey: "desc.budget" },
-      {
-        labelKey: "item.savingGoal",
-        path: "/desk/settings?section=goals",
-        descKey: "desc.savingGoal",
-      },
-      { labelKey: "item.stats", path: "/desk/stats", descKey: "desc.stats" },
-      {
-        labelKey: "item.recurring",
-        path: "/desk/settings?section=recurring",
-        descKey: "desc.recurring",
-      },
-      {
-        labelKey: "item.accounts",
-        path: "/desk/settings?section=accounts",
-        descKey: "desc.accounts",
-      },
-    ],
-  },
-  {
-    labelKey: "group.daily",
-    items: [
-      {
-        labelKey: "item.calendar",
-        path: "/desk/calendar",
-        descKey: "desc.calendar",
-      },
-      { labelKey: "item.todo", path: "/desk/todo", descKey: "desc.todo" },
-      { labelKey: "item.memo", path: "/desk/memo", descKey: "desc.memo" },
-      {
-        labelKey: "item.dutchPay",
-        path: "/desk/dutch-pay",
-        descKey: "desc.dutchPay",
-      },
-      {
-        labelKey: "item.cardBenefit",
-        path: "/desk/card-benefit",
-        descKey: "desc.cardBenefit",
-      },
-    ],
-  },
-  {
-    labelKey: "group.personal",
-    items: [
-      {
-        labelKey: "item.categories",
-        path: "/desk/settings?section=categories",
-        descKey: "desc.categories",
-      },
-      {
-        labelKey: "item.presets",
-        path: "/desk/settings?section=presets",
-        descKey: "desc.presets",
-      },
-      {
-        labelKey: "item.appearance",
-        path: "/desk/settings?section=appearance",
-        descKey: "desc.appearance",
-      },
-    ],
-  },
-  {
-    labelKey: "group.system",
-    items: [
-      {
-        labelKey: "item.settings",
-        path: "/desk/settings",
-        descKey: "desc.settings",
-      },
-      // 알림 '목록' 이 아니라 알림 '설정' 이다 — 설명이 푸시·방해 금지를 말하고 있고,
-      // 목록은 헤더의 종 아이콘이 이미 연다. 앱 더보기도 설정으로 간다.
-      {
-        labelKey: "item.notifications",
-        path: "/desk/settings?section=notifications",
-        descKey: "desc.notifications",
-      },
-      {
-        labelKey: "item.dataExport",
-        path: "/desk/settings?section=data",
-        descKey: "desc.dataExport",
-      },
-      {
-        labelKey: "item.account",
-        path: "/desk/settings?section=account",
-        descKey: "desc.account",
-      },
-      // 앱 받기 — 로그인 밖 공개 페이지라 경로에 /desk 가 없다.
-      {
-        labelKey: "item.appDownload",
-        path: "/download",
-        descKey: "desc.appDownload",
-      },
-    ],
-  },
-];
-
+/** 폰은 MoreMobile, 데스크톱은 여기(들어오는 길이 없어 그대로 둔다) */
 export const MorePage = () => {
+  const { mobile } = useOutletContext<OutletCtx>();
+  return mobile ? <MoreMobile /> : <MoreDesktop />;
+};
+
+const MoreDesktop = () => {
   const navigate = useNavigate();
   const { t } = useTranslation("more");
-  const { mobile } = useOutletContext<OutletCtx>();
   const { t: tLayout } = useTranslation("layout");
   const [query, setQuery] = useState("");
-  const hasSecurities = useHasSecurities();
+  const filtered = useMoreGroups(query);
 
-  // 증권 메뉴는 구독(SECURITIES) 보유 시에만 노출
-  const visibleGroups: NavGroup[] = hasSecurities
-    ? GROUPS
-    : GROUPS.map((g) => ({
-        ...g,
-        items: g.items.filter((i) => i.path !== "/desk/stocks"),
-      }));
-
-  // 검색 — 그룹 구조를 유지한 채 항목 필터 (design MoreScreen 정합)
-  const q = query.trim().toLowerCase();
-  const filtered = q
-    ? visibleGroups
-        .map((g) => ({
-          ...g,
-          items: g.items.filter(
-            (item) =>
-              t(item.labelKey).toLowerCase().includes(q) ||
-              t(item.descKey).toLowerCase().includes(q),
-          ),
-        }))
-        .filter((g) => g.items.length > 0)
-    : visibleGroups;
-
-  // 폰은 검색칸 · 묶음마다 화면 폭 흰 띠(I-01 결정 4B — 묶음 사이 8 은 바닥이 보이는 틈), 데스크톱은 한 면
-  const Root = mobile ? ScreenBands : "div";
   return (
-    <Root
-      {...(mobile
-        ? { list: true }
-        : {
-            style: {
-              padding: "var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)",
-            },
-          })}
+    <div
+      style={{
+        padding: "var(--spacing-xs) var(--spacing-xl) var(--spacing-xl)",
+      }}
     >
       {/* 폰은 상단 바의 제목이 화면 제목이다 — 데스크톱만 본문 맨 위 h1 */}
-      {!mobile && <PageHead title={tLayout("all")} />}
+      <PageHead title={tLayout("all")} />
       {/* 검색바 */}
       <div
         style={{
@@ -181,13 +37,7 @@ export const MorePage = () => {
           top: 0,
           zIndex: 5,
           background: "var(--bg-surface)",
-          // 폰은 띠 안 — 앱 검색 띠와 같이 위 8 · 아래 12
-          ...(mobile
-            ? {
-                padding:
-                  "var(--spacing-x2) var(--spacing-x6) var(--spacing-x3)",
-              }
-            : { paddingBottom: "var(--spacing-sm)" }),
+          paddingBottom: "var(--spacing-sm)",
         }}
       >
         {/* 아이콘 세로 중앙 기준은 input 높이 — sticky wrapper의 paddingBottom에 안 끌리도록 분리 */}
@@ -236,8 +86,8 @@ export const MorePage = () => {
       ) : (
         filtered.map((group, gi) => (
           <div key={group.labelKey}>
-            {/* 그룹 사이 헤어라인(데스크톱) — 폰은 띠 사이 틈이 가른다 */}
-            {gi > 0 && !mobile && (
+            {/* 그룹 사이 헤어라인 */}
+            {gi > 0 && (
               <div
                 style={{
                   height: 1,
@@ -252,7 +102,7 @@ export const MorePage = () => {
                 fontWeight: 700,
                 color: "var(--fg-primary)",
                 letterSpacing: "-0.01em",
-                padding: mobile ? "10px 0 2px" : "14px 0 2px",
+                padding: "14px 0 2px",
               }}
             >
               {t(group.labelKey)}
@@ -308,6 +158,6 @@ export const MorePage = () => {
           </div>
         ))
       )}
-    </Root>
+    </div>
   );
 };

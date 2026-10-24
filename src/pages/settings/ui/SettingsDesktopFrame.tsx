@@ -57,7 +57,8 @@ export const SettingsDesktopFrame = ({
         >
           {SECTIONS.filter((s) => !s.hidden).map((s) => {
             const IconComp = s.icon;
-            const active = section === s.id;
+            // 목록에 없는 숨은 칸(기기 …)에서는 부모 칸("계정")이 켜진다(I-12 35)
+            const active = section === s.id || activeSection?.parent === s.id;
             // inactive 는 회색(fg-secondary) 그대로 유지. 선택 탭만 다크에서 brand light variant 로.
             // DESIGN.desk.md: 어두운 표면 위 브랜드 텍스트·아이콘 = primary-light(#5fa0e5) — spec 정합.
             const dark = resolvedTheme === "dark";
@@ -69,6 +70,7 @@ export const SettingsDesktopFrame = ({
             return (
               <button
                 key={s.id}
+                aria-current={active ? "page" : undefined}
                 onClick={() => openSection(s)}
                 style={{
                   display: "flex",

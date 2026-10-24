@@ -37,7 +37,11 @@ function Probe({ section }: { section: typeof devices | null }) {
   );
 }
 
-function mount(entries: string[], index: number, section: typeof devices) {
+function mount(
+  entries: string[],
+  index: number,
+  section: typeof devices | null,
+) {
   const router = createMemoryRouter(
     [{ path: "/desk/*", element: <Probe section={section} /> }],
     { initialEntries: entries, initialIndex: index },
@@ -99,6 +103,16 @@ describe("useSettingsBack", () => {
     expect(router.state.location.pathname + router.state.location.search).toBe(
       "/desk/settings?section=account",
     );
+    expect(router.state.historyAction).toBe("REPLACE");
+  });
+
+  it("설정 메뉴(활성 섹션 없음)에서 앞 화면이 없으면 전체로 고쳐 쓴다", async () => {
+    window.history.replaceState({ idx: 0 }, "", "/");
+    const router = mount(["/desk/settings"], 0, null);
+    await act(async () => {
+      container.querySelector("button")!.click();
+    });
+    expect(router.state.location.pathname).toBe("/desk/more");
     expect(router.state.historyAction).toBe("REPLACE");
   });
 });

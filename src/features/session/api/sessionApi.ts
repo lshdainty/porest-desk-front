@@ -1,5 +1,12 @@
 import { apiClient } from "@/shared/api";
 import type { ApiResponse } from "@/shared/types";
+import type { AxiosRequestConfig } from "axios";
+
+/**
+ * 목록 불러오기 · 끊기 실패는 전역 오류 알림 대신 화면이 알린다(I-12 29 · 31) — 서버 글 대신 "로그아웃하지 못했어요" 하나만 뜬다.
+ * 전역 핸들러의 `silent` 확장은 base.ts 의 QuietRequestConfig 다.
+ */
+const QUIET = { silent: true } as AxiosRequestConfig & { silent: boolean };
 
 /**
  * 기기 형태 — 아이콘을 고르는 데만 쓴다.
@@ -29,6 +36,7 @@ export const sessionApi = {
   list: async (): Promise<DeviceSession[]> => {
     const resp: ApiResponse<DeviceSession[]> = await apiClient.get(
       "/v1/users/me/sessions",
+      QUIET,
     );
     return resp.data ?? [];
   },
@@ -37,13 +45,17 @@ export const sessionApi = {
   revoke: async (sessionId: string): Promise<void> => {
     const resp: ApiResponse = await apiClient.delete(
       `/v1/users/me/sessions/${sessionId}`,
+      QUIET,
     );
     if (!resp.success) throw new Error(resp.message);
   },
 
   /** 모든 기기에서 로그아웃 — 지금 이 브라우저도 포함된다. */
   revokeAll: async (): Promise<void> => {
-    const resp: ApiResponse = await apiClient.delete("/v1/users/me/sessions");
+    const resp: ApiResponse = await apiClient.delete(
+      "/v1/users/me/sessions",
+      QUIET,
+    );
     if (!resp.success) throw new Error(resp.message);
   },
 };

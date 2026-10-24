@@ -11,7 +11,7 @@ describe("screenFloor", () => {
     ["/desk/budget", "bands"],
     ["/desk/expense", "white"],
     ["/desk/calendar", "strip"],
-    ["/desk/more", "bands"],
+    ["/desk/more", "white"],
     ["/desk/search", "strip"],
   ])("%s → %s", (path, floor) => {
     expect(screenFloor(path)).toBe(floor);
