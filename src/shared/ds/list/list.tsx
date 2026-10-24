@@ -60,6 +60,11 @@ type ItemBase = {
    * 좁은 줄에서 값만 본문 아래로 내려가고 꺾쇠는 줄 끝에 남는다. 한 요소로 싸 넘기거나 값에 svg 를 붙이면 값까지 줄 끝에 남는다
    */
   suffix?: React.ReactNode;
+  /**
+   * 뒤 붙이개를 글 값으로 다룬다 — 요소(앞 점 + 이름 같은 인라인 묶음)로 넘겨도 글 값처럼 좁은 줄에서 줄을 바꾸고 줄 끝에서 끊는다.
+   * 기본은 글(string · number)만 글 값, 요소는 줄지 않는 덩어리다
+   */
+  suffixText?: boolean;
   /** 새 알림처럼 주목이 필요한 줄 — 옅은 브랜드 바탕(list.yaml highlight) */
   highlighted?: boolean;
   /** 맞춤 — 기본 center. 제목이 두 줄을 넘거나 설명이 길면 top. 한 목록 안에서는 줄마다 섞지 않는다 */
@@ -167,7 +172,7 @@ function Texts({ title, detail, disabled, highlighted }: TextsProps) {
 
 type RowProps = Pick<
   ItemBase,
-  "prefix" | "suffix" | "highlighted" | "align"
+  "prefix" | "suffix" | "suffixText" | "highlighted" | "align"
 > & {
   as?: "li" | "div";
   itemRef?: React.Ref<HTMLElement>;
@@ -192,6 +197,7 @@ function Row({
   itemProps,
   prefix,
   suffix,
+  suffixText,
   highlighted,
   align,
   nest,
@@ -205,7 +211,9 @@ function Row({
   const { className, ...rest } = itemProps ?? {};
   // 글(string · number)로 넘긴 값은 줄 끝에서 끊고, 요소(금액 · 화살표 · 컨트롤)는 줄지 않는다(Q-001)
   const suffixValue =
-    typeof suffix === "string" || typeof suffix === "number" ? "text" : "node";
+    suffixText || typeof suffix === "string" || typeof suffix === "number"
+      ? "text"
+      : "node";
   const parts = (
     <>
       {leading}
@@ -301,7 +309,17 @@ export interface ListItemProps
 // 보기만 하는 줄 — 누르지 않는다(호버 · 누름 · 포커스가 없다). 키-값 · 안내 줄
 const ListItem = React.forwardRef<HTMLLIElement, ListItemProps>(
   (
-    { title, detail, prefix, suffix, align, highlighted, as, ...props },
+    {
+      title,
+      detail,
+      prefix,
+      suffix,
+      suffixText,
+      align,
+      highlighted,
+      as,
+      ...props
+    },
     ref,
   ) => {
     const nest = React.useContext(ListNestContext);
@@ -312,6 +330,7 @@ const ListItem = React.forwardRef<HTMLLIElement, ListItemProps>(
         itemProps={props}
         prefix={prefix}
         suffix={suffix}
+        suffixText={suffixText}
         align={align}
         highlighted={highlighted}
         nest={nest}
@@ -346,6 +365,7 @@ const ListButtonItem = React.forwardRef<HTMLButtonElement, ListButtonItemProps>(
       detail,
       prefix,
       suffix,
+      suffixText,
       align,
       highlighted,
       disabled,
@@ -363,6 +383,7 @@ const ListButtonItem = React.forwardRef<HTMLButtonElement, ListButtonItemProps>(
         itemProps={rootProps}
         prefix={prefix}
         suffix={suffix}
+        suffixText={suffixText}
         align={align}
         highlighted={highlighted}
         nest={nest}

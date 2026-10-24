@@ -451,6 +451,8 @@ export interface ResponsiveDialogContentProps extends Omit<
   description?: React.ReactNode;
   /** 대화상자의 폭 — medium 480(기본) | large 800. 시트는 최대 480 */
   size?: keyof typeof DIALOG_SIZE;
+  /** 열릴 때 초점 — 기본은 표면(컨테이너). 폼이 첫 칸에 초점을 줄 때 e.preventDefault() 하고 직접 옮긴다(두 표면 모두 같다) */
+  onOpenAutoFocus?: (event: Event) => void;
 }
 
 const ResponsiveDialogContent = React.forwardRef<
