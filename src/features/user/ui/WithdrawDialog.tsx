@@ -341,10 +341,13 @@ export function WithdrawDialog({
                 codeInputId="withdraw-code"
                 onResend={onSendCode}
               />
-              {/* 스팸함 안내 — input-otp.md 해부(라벨 · 칸 · 설명 · 다시 받기)에 없는 줄이다. 남길지는 사용자 결정 대기(결과표 "빼 둔 것" 1) — 답 전에는 앱과 같이 [코드 받기] 아래 R9 한 줄 */}
-              <p className="m-0 text-t4 text-fg-neutral-subtle">
-                {t("withdraw.codeHint")}
-              </p>
+              {/* 스팸함 안내 — input-otp.md 해부에 없는 줄이지만 사용자 결정(10-24) 05-2 Q1 A 로 남긴다. 코드를 보낸 뒤에만 보인다
+                  (보내기 전에는 확인할 메일이 없다). 오류 때도 남는다 */}
+              {sentAt != null && (
+                <p className="m-0 text-t4 text-fg-neutral-subtle">
+                  {t("withdraw.codeHint")}
+                </p>
+              )}
             </div>
             <div className="flex justify-end">
               <Button

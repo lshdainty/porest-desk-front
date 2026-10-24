@@ -39,7 +39,7 @@ vi.mock("../model/useWithdrawal", () => ({
     refetch: () => {},
   }),
   useSendReauthEmailCodeMutation: () => ({
-    mutate: () => {},
+    mutate: (_v: unknown, o?: { onSuccess?: () => void }) => o?.onSuccess?.(),
     isPending: false,
   }),
   useVerifyReauthEmailCodeMutation: () => ({
@@ -618,7 +618,7 @@ describe("머리 설명 · [코드 받기] 자리(I-05 33 · 35)", () => {
     ).toBe("withdraw.reauthIntro");
   });
 
-  it("[코드 받기] 는 칸 묶음 바로 아래 12(gap-x3)이고 스팸함 안내는 그 아래 한 줄이다", async () => {
+  it("[코드 받기] 는 칸 묶음 바로 아래 12(gap-x3)이고, 스팸함 안내는 코드를 보낸 뒤에만 그 아래 한 줄로 보인다(사용자 결정 10-24 Q1 A)", async () => {
     state.check = CLEAR;
     render();
     act(() => click("withdraw.next"));
@@ -628,6 +628,13 @@ describe("머리 설명 · [코드 받기] 자리(I-05 33 · 35)", () => {
       '[data-slot="input-otp-resend"]',
     )!;
     expect(resend.parentElement!.className).toContain("gap-x3");
-    expect(resend.nextElementSibling?.textContent).toBe("withdraw.codeHint");
+    // 보내기 전 — 안내 없음
+    expect(document.body.textContent).not.toContain("withdraw.codeHint");
+    await act(async () => {
+      resend.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    // 보낸 뒤 — 같은 묶음 안 [코드 받기] 바로 아래
+    const sent = document.body.querySelector('[data-slot="input-otp-resend"]')!;
+    expect(sent.nextElementSibling?.textContent).toBe("withdraw.codeHint");
   });
 });
