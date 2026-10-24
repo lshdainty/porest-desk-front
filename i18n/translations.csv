@@ -47,7 +47,7 @@ common,themeSystem,시스템,System
 common,goToday,오늘로,Today
 common,none,없음,None
 common,noSearchResults,검색 결과가 없습니다,No results found
-common,amountTooLarge,금액은 100억원까지 입력할 수 있어요,Amount can be up to 10 billion won
+common,amountTooLarge,금액은 100억원까지 입력할 수 있어요.,Amount can be up to 10 billion won.
 common,recordOnly,기록만,Record only
 layout,dashboard,대시보드,Dashboard
 layout,todo,할일,Todo
@@ -646,10 +646,12 @@ asset,savingGoal.namePlaceholder,예: 유럽 여행,e.g. Europe trip
 asset,savingGoal.targetAmount,목표 금액,Target amount
 asset,savingGoal.currentAmount,현재 모은 금액,Amount saved
 asset,savingGoal.deadline,목표일,Target date
-asset,savingGoal.optional,(선택),(optional)
+asset,savingGoal.none,없음,None
+asset,savingGoal.deadlineClear,목표일 지우기,Clear target date
+asset,savingGoal.done,완료,Done
+asset,savingGoal.optional,선택,Optional
 asset,savingGoal.titleEdit,저축 목표 수정,Edit saving goal
 asset,savingGoal.titleAdd,저축 목표 추가,Add saving goal
-asset,savingGoal.colorSwatch,색상 {{n}},Color {{n}}
 asset,savingGoal.deleteTitle,저축 목표 삭제,Delete saving goal
 asset,savingGoal.deleteConfirm,"""{{title}}"" 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.","Delete the ""{{title}}"" goal? This can't be undone."
 asset,savingGoal.overallProgress,전체 진행률,Overall progress
@@ -660,9 +662,9 @@ asset,savingGoal.editNamed,{{name}} 목표 수정,Edit {{name}} goal
 asset,savingGoal.deleteNamed,{{name}} 목표 삭제,Delete {{name}} goal
 asset,savingGoal.remaining,남은 금액,Remaining
 asset,savingGoal.achievedAt,달성일,Achieved on
-asset,savingGoal.errName,목표 이름을 입력해주세요,Enter a goal name
-asset,savingGoal.errAmount,목표 금액을 입력해주세요,Enter a goal amount
-asset,savingGoal.errCurrentExceeds,현재 금액이 목표보다 클 수 없어요,Current amount can't exceed the target
+asset,savingGoal.errName,목표 이름을 입력해주세요.,Enter a goal name.
+asset,savingGoal.errAmount,목표 금액을 입력해주세요.,Enter a goal amount.
+asset,savingGoal.errCurrentExceeds,현재 모은 금액이 목표 금액보다 클 수 없어요.,The amount saved can't exceed the target amount.
 asset,savingGoal.errNameTooLong,목표 이름은 12자 이내로 입력해주세요.,Keep the goal name to 12 characters or fewer.
 asset,savingGoal.errNameDuplicate,같은 이름의 목표가 이미 있어요.,A goal with that name already exists.
 asset,savingGoal.errAmountTooLarge,목표 금액은 100억원까지 입력할 수 있어요.,Target amount can be up to 10 billion won.
@@ -1351,12 +1353,18 @@ budget,copyMessage,{{prevYear}}년 {{prevMonth}}월 예산 한도({{count}}개)�
 budget,edit.addTitle,카테고리 예산 추가,Add category budget
 budget,edit.editTitle,카테고리 예산 수정,Edit category budget
 budget,edit.selectCategory,카테고리 선택,Select Category
-budget,edit.monthlyLimitPreview,월 한도,Monthly limit
+budget,edit.totalTitle,{{month}}월 총 예산,Month {{month}} total budget
+budget,edit.totalField,총 예산,Total budget
+budget,edit.categoryAmountField,예산,Budget
+budget,edit.quickAmounts,빠른 금액,Quick amounts
+budget,edit.errCategory,카테고리를 골라주세요.,Choose a category.
+budget,edit.errTotal,총 예산을 입력해주세요.,Enter the total budget.
+budget,edit.errAmount,예산을 입력해주세요.,Enter a budget.
+budget,edit.hasBudget,이번 달 예산이 있어요,Already has a budget this month
+budget,edit.noCategories,예산을 줄 지출 카테고리가 없어요.,There are no expense categories to budget.
+budget,edit.noneSelected,선택 안 함,Not selected
 budget,edit.categoryLabel,카테고리,Category
-budget,edit.allBudgeted,모든 지출 카테고리에 이미 예산이 설정되어 있어요.,All expense categories already have a budget set.
-budget,edit.monthlyLimitField,월 한도 (원),Monthly limit (KRW)
-budget,edit.monthlyTitle,월 전체 상한 수정,Edit overall monthly cap
-budget,edit.monthlyTotalField,월 총 예산 (원),Total monthly budget (KRW)
+budget,edit.allBudgeted,모든 지출 카테고리에 이미 예산이 있어요.,All expense categories already have a budget.
 budget,pageTitle,예산,Budget
 budget,subtitle,카테고리별 한도 관리,Manage per-category limits
 budget,complianceRate,이행률,Compliance rate

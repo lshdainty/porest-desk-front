@@ -27,6 +27,8 @@ import {
   SHEET_FOOTER,
   SHEET_HANDLE,
   SHEET_HEADER,
+  SHEET_NESTED_CONTENT,
+  SHEET_NESTED_OVERLAY,
   SHEET_OVERLAY,
   SHEET_TITLE,
   SHEET_TITLE_WITH_CLOSE,
@@ -104,6 +106,8 @@ type SheetContextValue = {
   setOverlay: (node: HTMLDivElement | null) => void;
   container: HTMLElement | null | undefined;
   modal: boolean;
+  /** 다른 시트 안에서 열린 시트(폼 시트 위의 고르기 시트) — 딤이 아래 시트 위에, 시트가 그 딤 위에 선다 */
+  nested: boolean;
   snapPoints: SnapPoint[] | undefined;
   snap: SnapPoint | null;
   setSnap: (point: SnapPoint | null) => void;
@@ -150,6 +154,7 @@ function BottomSheet({
   children,
 }: BottomSheetProps) {
   const [open, setOpen] = useOpenState(openProp, defaultOpen, onOpenChange);
+  const nested = React.useContext(SheetContext) != null;
   const narrow = !useWideSurface();
   const contentRef = React.useRef<HTMLDivElement>(null);
   const overlayRef = React.useRef<HTMLDivElement>(null);
@@ -203,6 +208,7 @@ function BottomSheet({
     },
     container,
     modal,
+    nested,
     snapPoints: snaps,
     snap,
     setSnap,
@@ -333,6 +339,7 @@ const BottomSheetSurface = React.forwardRef<
       requestClose,
       setContent,
       setOverlay,
+      nested,
     } = ctx;
     const own = React.useRef<HTMLDivElement>(null);
     const openerRef = React.useRef<Element | null>(null);
@@ -346,13 +353,13 @@ const BottomSheetSurface = React.forwardRef<
           <DrawerPrimitive.Overlay
             ref={setOverlay}
             data-slot="bottom-sheet-overlay"
-            className={SHEET_OVERLAY}
+            className={cn(SHEET_OVERLAY, nested && SHEET_NESTED_OVERLAY)}
           />
         ) : (
           <div
             data-slot="bottom-sheet-overlay"
             data-state="open"
-            className={SHEET_OVERLAY}
+            className={cn(SHEET_OVERLAY, nested && SHEET_NESTED_OVERLAY)}
           />
         )}
         <SheetContentPrimitive
@@ -361,6 +368,7 @@ const BottomSheetSurface = React.forwardRef<
           aria-modal="true"
           className={cn(
             SHEET_CONTENT,
+            nested && SHEET_NESTED_CONTENT,
             snapPoints?.length && "h-[90dvh]",
             className,
           )}

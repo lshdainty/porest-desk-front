@@ -22,9 +22,8 @@ vi.mock("@/shared/ui/groo/primitives", () => ({
   MonthPicker: () => <button type="button">월</button>,
   Icon: () => <svg />,
 }));
-vi.mock("./BudgetEditDialog", () => ({
-  BudgetEditDialog: () => null,
-  MonthlyBudgetDialog: () => null,
+vi.mock("./BudgetFormDialog", () => ({
+  BudgetFormDialog: () => null,
 }));
 
 const q = (data: unknown, extra: object = {}) => ({
