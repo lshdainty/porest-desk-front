@@ -1,25 +1,12 @@
 import { useId, useMemo, useRef, useState } from "react";
-import { Spinner } from "@/shared/ui/spinner";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  formatMonthDay,
-  formatMonthDayDow,
   toLocalDateKey,
   toLocalDateTime,
   todayLocalKey,
 } from "@/shared/lib/date";
-import { i18n } from "@/shared/i18n/config";
-import {
-  Plus,
-  Check,
-  Sparkles,
-  CheckCheck,
-  AlignLeft,
-  Flame,
-  CircleDot,
-  Leaf,
-} from "lucide-react";
+import { Plus, Sparkles, CheckCheck, CircleDot } from "lucide-react";
 import {
   useTodos,
   useCreateTodo,
@@ -37,22 +24,22 @@ import {
   ForestStrip,
   NightSkyPanel,
 } from "@/widgets/constellation";
-import {
-  dayDiff,
-  dueKey,
-  inSevenDays,
-  isDone,
-  visibleTodos,
-  type FilterKey,
-} from "@/pages/todo/lib/visible-todos";
+import { dueKey, isDone } from "@/pages/todo/lib/visible-todos";
 import {
   NO_TAG_KEY,
   tagValueToPayload,
   todoTagInitialValue,
-  todoTagKey,
   todoTagOptions,
 } from "@/pages/todo/lib/todo-tags";
+import {
+  PRIO,
+  PRIO_ORDER,
+  kDate,
+  relativeDate,
+  todoTagLabel,
+} from "@/pages/todo/model/todo-view";
 import { TodoMobileLedger } from "./TodoMobileLedger";
+import { TodoDesktop } from "./TodoDesktop";
 import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
 import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
 import { Fab } from "@/shared/ui/groo/fab";
@@ -68,7 +55,6 @@ import {
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Card } from "@/shared/ui/card";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
@@ -88,78 +74,9 @@ const CONTENT_MAX = 10_000;
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-// 우선순위 칩/아이콘 스타일 (양 플랫폼 공통 확정).
-//  high = chart-red + bg 14% 틴트 / med = chart-orange + 14% 틴트 /
-//  low  = fg-tertiary + bg-sunken.
-const PRIO: Record<
-  TodoPriority,
-  { labelKey: string; color: string; bg: string; order: number }
-> = {
-  // 중요=error(빨강)/보통=warning(노랑)/여유=info(파랑) — status-*-fg 는
-  // 다크에서 *-light 로 스왑되는 토큰 (사용자 결정, 앱 todo_meta 동기).
-  HIGH: {
-    labelKey: "prio.HIGH",
-    color: "var(--status-danger-fg)",
-    bg: "var(--color-bg-critical-weak)",
-    order: 0,
-  },
-  MEDIUM: {
-    labelKey: "prio.MEDIUM",
-    color: "var(--status-warning-fg)",
-    bg: "var(--color-bg-warning-weak)",
-    order: 1,
-  },
-  LOW: {
-    labelKey: "prio.LOW",
-    color: "var(--status-info-fg)",
-    bg: "var(--color-bg-informative-weak)",
-    order: 2,
-  },
-};
-const PRIO_ORDER: TodoPriority[] = ["HIGH", "MEDIUM", "LOW"];
-
 // ── 날짜 유틸 ──────────────────────────────────────────────────────────────
 // FilterKey·dueKey·dayDiff·inSevenDays·isDone 은 `lib/visible-todos.ts` 로 옮겼다 —
 // 목록 필터에 테스트를 붙이려면 렌더링 없이 부를 수 있어야 했다(QA #29).
-
-/** 'YYYY-MM-DD' → { full: 'M월 D일 (요일)' }. */
-function kDate(s: string): { md: string; full: string } {
-  return { md: formatMonthDay(s), full: formatMonthDayDow(s) };
-}
-
-/** 상대 시간: 오늘/내일/어제/N일 후/N일 전(±7) · 그 외 'M월 D일'. */
-function relativeDate(due: string, today: string): string {
-  const diff = dayDiff(today, due);
-  if (diff === 0) return i18n.t("date:today");
-  if (diff === 1) return i18n.t("date:tomorrow");
-  if (diff === -1) return i18n.t("date:yesterday");
-  if (diff > 0 && diff <= 7) return i18n.t("date:daysLater", { count: diff });
-  if (diff < 0 && diff >= -7) return i18n.t("date:daysAgo", { count: -diff });
-  return kDate(due).md;
-}
-
-// 그룹 정렬 시 맨 뒤로 보내기 위한 sentinel. `todo-tags` 의 `NO_TAG_KEY` 와 값이 같은데,
-// 쓰는 키 공간이 다르다(날짜 그룹 · 태그 묶음) — 한쪽에서 다른 쪽을 비교하지 않는다.
-const NO_DUE_KEY = "￿";
-
-/**
- * 묶음 키 → 화면 라벨. sentinel 은 번역 문구로 바꿔 그린다 — U+FFFF 를 그대로 그리면
- * 안 보이는 글자 하나가 태그 이름 자리에 남는다.
- */
-function tagKeyLabel(key: string): string {
-  return key === NO_TAG_KEY ? i18n.t("todo:noTag") : key;
-}
-
-/**
- * Todo.category → 태그 라벨. 태그가 없으면 '태그 없음' 이다.
- *
- * 종전엔 `t.category || '개인'` 이라 **태그를 지운 할 일이 '개인' 으로 보였다**(QA #103).
- * 서버는 태그를 지울 때 그 할 일의 `category` 를 실제로 비우므로, 화면이 이름을 지어내면
- * 삭제 확인창이 약속한 "태그 없음으로 남아요" 와 어긋난다. 메모 화면과 같은 규칙이다.
- */
-function todoTagLabel(td: Todo): string {
-  return tagKeyLabel(todoTagKey(td));
-}
 
 /** TodoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
 function useTodoPageData() {
@@ -204,7 +121,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
   // 태그 목록 — TodoTag(설정 관리) + 기존 할 일에 남은 카테고리 union. 둘 다 비면 빈 목록.
   const tagNames = todoTagOptions(todoTagsQ.data, todos);
 
-  const [filter, setFilter] = useState<FilterKey>("today");
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null);
   // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
@@ -245,50 +161,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     });
   };
 
-  // 필터별 카운트 (칩 뱃지).
-  const counts = useMemo(() => {
-    let t = 0;
-    let w = 0;
-    let a = 0;
-    let d = 0;
-    for (const todo of todos) {
-      if (isDone(todo)) {
-        d++;
-        continue;
-      }
-      a++;
-      const key = dueKey(todo.dueDate);
-      if (key === today) t++;
-      if (inSevenDays(today, key)) w++;
-    }
-    return { today: t, week: w, all: a, done: d };
-  }, [todos, today]);
-
-  // 필터 → 정렬(우선순위 desc → due asc) → 마감일별 그룹.
-  // holdIds — 방금 완료를 누른 행은 잠깐 자리를 지킨다(QA #29). 안 지키면 그 행이
-  // 즉시 빠지고 아래 행이 올라와, 따닥 누른 두 번째 탭이 다른 할 일을 완료시킨다.
-  const groups = useMemo(() => {
-    const visible = visibleTodos(todos, filter, today, toggleStatus.holdIds);
-
-    const sorted = [...visible].sort((a, b) => {
-      const pa = PRIO[a.priority].order;
-      const pb = PRIO[b.priority].order;
-      if (pa !== pb) return pa - pb;
-      const da = dueKey(a.dueDate) ?? NO_DUE_KEY;
-      const db = dueKey(b.dueDate) ?? NO_DUE_KEY;
-      return da.localeCompare(db);
-    });
-
-    const map = new Map<string, Todo[]>();
-    for (const t of sorted) {
-      const k = dueKey(t.dueDate) ?? NO_DUE_KEY;
-      const arr = map.get(k);
-      if (arr) arr.push(t);
-      else map.set(k, [t]);
-    }
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [todos, filter, today, toggleStatus.holdIds]);
-
   const onSave = (values: TodoFormValues, id?: number) => {
     if (id != null)
       updateTodo.mutate(
@@ -325,361 +197,6 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
         <ForestReport mobile={mobile} onClose={() => setForestReport(false)} />
       )}
     </>
-  );
-
-  // ── 필터 칩 4종 + 카운트 ──────────────────────────────────────────────────
-  const FilterChips = (
-    <Tabs value={filter} onValueChange={(v) => v && setFilter(v as FilterKey)}>
-      <TabsList variant="pills" size="sm">
-        {(
-          [
-            { id: "today", label: t("today"), count: counts.today },
-            { id: "week", label: t("thisWeek"), count: counts.week },
-            { id: "all", label: t("status.ALL"), count: counts.all },
-            { id: "done", label: t("status.COMPLETED"), count: counts.done },
-          ] as const
-        ).map((f) => {
-          const active = filter === f.id;
-          return (
-            <TabsTrigger key={f.id} variant="pills" size="sm" value={f.id}>
-              {f.label}
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: "700",
-                  fontVariantNumeric: "tabular-nums",
-                  opacity: active ? 0.85 : 0.55,
-                  marginLeft: 2,
-                }}
-              >
-                {f.count}
-              </span>
-            </TabsTrigger>
-          );
-        })}
-      </TabsList>
-    </Tabs>
-  );
-
-  // ── 행 ────────────────────────────────────────────────────────────────────
-  const Row = ({ todo, last }: { todo: Todo; last: boolean }) => {
-    const prio = PRIO[todo.priority];
-    const done = isDone(todo);
-    const key = dueKey(todo.dueDate);
-    const overdue = !done && !!key && key < today;
-    return (
-      <div
-        onClick={() => setViewing(todo)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 4px",
-          cursor: "pointer",
-          borderBottom: last ? "none" : "1px solid var(--border-subtle)",
-          transition:
-            "background var(--motion-duration-fast) var(--motion-ease-out)",
-          opacity: done ? 0.55 : 1,
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background = "var(--bg-muted)")
-        }
-        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-      >
-        <button
-          type="button"
-          disabled={toggleStatus.pendingIds.has(todo.rowId)}
-          aria-busy={toggleStatus.pendingIds.has(todo.rowId) || undefined}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleTodo(todo);
-          }}
-          aria-label={done ? t("uncomplete") : t("status.COMPLETED")}
-          aria-pressed={done}
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 999,
-            border: done
-              ? "0"
-              : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
-            background: done ? "var(--color-bg-brand-solid)" : "transparent",
-            cursor: "pointer",
-            flexShrink: 0,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 0,
-            transition:
-              "all var(--motion-duration-fast) var(--motion-ease-out)",
-          }}
-        >
-          {toggleStatus.pendingIds.has(todo.rowId) ? (
-            <Spinner size="sm" />
-          ) : (
-            done && (
-              <Check
-                size={13}
-                color="var(--color-static-white)"
-                strokeWidth={3}
-              />
-            )
-          )}
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: "var(--fg-primary)",
-              letterSpacing: "-0.01em",
-              textDecoration: done ? "line-through" : "none",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {todo.title}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginTop: 4,
-              fontSize: 12,
-            }}
-          >
-            <span
-              style={{
-                color: overdue
-                  ? "var(--color-chart-red)"
-                  : "var(--fg-tertiary)",
-                fontWeight: overdue ? "600" : "500",
-              }}
-            >
-              {key ? relativeDate(key, today) : t("noDueDate")}
-            </span>
-            <span style={dot} />
-            <span style={{ color: "var(--fg-tertiary)" }}>
-              {todoTagLabel(todo)}
-            </span>
-            {todo.content && (
-              <>
-                <span style={dot} />
-                <AlignLeft size={11} color="var(--fg-tertiary)" />
-              </>
-            )}
-          </div>
-        </div>
-        <span
-          style={{
-            padding: "3px 8px",
-            borderRadius: "var(--radius-sm)",
-            background: prio.bg,
-            color: prio.color,
-            fontSize: 11,
-            fontWeight: "600",
-            flexShrink: 0,
-          }}
-        >
-          {t(prio.labelKey)}
-        </span>
-      </div>
-    );
-  };
-
-  // ── 빈 상태 ───────────────────────────────────────────────────────────────
-  const EmptyState = (
-    <div style={{ textAlign: "center", padding: "60px 20px" }}>
-      <div
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 999,
-          background: "var(--bg-sunken)",
-          color: "var(--fg-tertiary)",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 14,
-        }}
-      >
-        {filter === "done" ? <CheckCheck size={24} /> : <Sparkles size={24} />}
-      </div>
-      <div
-        style={{
-          fontSize: 15,
-          fontWeight: "700",
-          color: "var(--fg-primary)",
-          marginBottom: 4,
-        }}
-      >
-        {filter === "today"
-          ? t("empty.today")
-          : filter === "week"
-            ? t("empty.week")
-            : filter === "done"
-              ? t("empty.done")
-              : t("empty.all")}
-      </div>
-      <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
-        {filter === "done" ? t("emptyDesc.done") : t("emptyDesc.default")}
-      </div>
-    </div>
-  );
-
-  // ── 그룹 리스트 ───────────────────────────────────────────────────────────
-  const listBody = (
-    <>
-      {groups.length === 0
-        ? EmptyState
-        : groups.map(([k, items]) => (
-            <div key={k}>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: "700",
-                  color: "var(--fg-tertiary)",
-                  letterSpacing: "0.04em",
-                  padding: mobile ? "12px 0 6px" : "14px 0 8px",
-                  borderBottom: "1px solid var(--border-subtle)",
-                  marginBottom: 4,
-                }}
-              >
-                {k === NO_DUE_KEY ? t("noDueDate") : kDate(k).full} ·{" "}
-                {t("kanban.count", { count: items.length })}
-              </div>
-              {items.map((td, i) => (
-                <Row key={td.rowId} todo={td} last={i === items.length - 1} />
-              ))}
-            </div>
-          ))}
-    </>
-  );
-  // 모바일 카드 다이어트 — 리스트 카드 벗김(날짜 라벨+행이 배경 위에 바로).
-  const ListCard = mobile ? (
-    <div>{listBody}</div>
-  ) : (
-    <Card style={{ padding: "8px 20px" }}>{listBody}</Card>
-  );
-
-  // ── 데스크톱 우측: 태그별 분포 ────────────────────────────────────────────
-  const TagDistribution = (
-    <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 14 }}>
-        {t("tagDistribution")}
-      </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* '태그 없음' 도 한 줄이다 — 없으면 태그를 뗀 할 일이 분포에서 통째로 사라진다. */}
-        {[...tagNames, NO_TAG_KEY].map((tag) => {
-          const tagged = todos.filter((td) => todoTagKey(td) === tag);
-          const total = tagged.length;
-          if (total === 0) return null;
-          const done = tagged.filter(isDone).length;
-          return (
-            <div
-              key={tag}
-              style={{ display: "flex", alignItems: "center", gap: 12 }}
-            >
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: "600",
-                  color: "var(--fg-primary)",
-                  width: 60,
-                  flexShrink: 0,
-                }}
-              >
-                {tagKeyLabel(tag)}
-              </span>
-              <div
-                style={{
-                  flex: 1,
-                  height: 6,
-                  background: "var(--bg-sunken)",
-                  borderRadius: 999,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${(done / total) * 100}%`,
-                    height: "100%",
-                    background: "var(--color-bg-brand-solid)",
-                    borderRadius: 999,
-                  }}
-                />
-              </div>
-              <span
-                className="num"
-                style={{
-                  fontSize: 12,
-                  color: "var(--fg-tertiary)",
-                  minWidth: 36,
-                  textAlign: "right",
-                }}
-              >
-                {done}/{total}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </Card>
-  );
-
-  // ── 데스크톱 우측: 우선순위 ───────────────────────────────────────────────
-  const PriorityCard = (
-    <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 12 }}>
-        {t("form.priority")}
-      </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {PRIO_ORDER.map((k) => {
-          const p = PRIO[k];
-          const n = todos.filter((t) => !isDone(t) && t.priority === k).length;
-          const PIcon =
-            k === "HIGH" ? Flame : k === "MEDIUM" ? CircleDot : Leaf;
-          return (
-            <div
-              key={k}
-              style={{ display: "flex", alignItems: "center", gap: 12 }}
-            >
-              <span
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "var(--radius-sm)",
-                  background: p.bg,
-                  color: p.color,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <PIcon size={14} />
-              </span>
-              <span style={{ fontSize: 13.5, fontWeight: "600" }}>
-                {t(p.labelKey)}
-              </span>
-              <span
-                className="num"
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 13,
-                  fontWeight: "700",
-                  color: p.color,
-                }}
-              >
-                {n}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </Card>
   );
 
   const dialog = (
@@ -749,55 +266,25 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     );
   }
 
-  // ── 데스크톱 ──────────────────────────────────────────────────────────────
+  // ── 데스크톱 · 태블릿 ─────────────────────────────────────────────────────
   return (
-    <div style={{ padding: 0 }}>
-      <PageHead
-        title={t("pageTitle")}
-        description={t("subtitle")}
-        actions={
-          <>
-            <Button size="sm" onClick={() => setEditing({ _new: true })}>
-              <Plus size={14} /> {t("newTodo")}
-            </Button>
-          </>
-        }
-        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
+    <>
+      <TodoDesktop
+        todos={todos}
+        tagNames={tagNames}
+        today={today}
+        pendingIds={toggleStatus.pendingIds}
+        holdIds={toggleStatus.holdIds}
+        onToggle={onToggleTodo}
+        onOpen={setViewing}
+        onAdd={() => setEditing({ _new: true })}
+        strip={Strip}
       />
-      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.4fr 1fr",
-            gap: 20,
-            alignItems: "flex-start",
-            marginTop: 20,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {FilterChips}
-            {ListCard}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {Strip}
-            {TagDistribution}
-            {PriorityCard}
-          </div>
-        </div>
-      </div>
       {dialog}
       {overlays}
-    </div>
+    </>
   );
 };
-
-const dot = {
-  width: 2,
-  height: 2,
-  borderRadius: 999,
-  background: "var(--border-strong)",
-  flexShrink: 0,
-} as const;
 
 // ───────────────────────────── 상세 다이얼로그 ─────────────────────────────
 

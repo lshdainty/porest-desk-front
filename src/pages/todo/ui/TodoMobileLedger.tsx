@@ -58,9 +58,25 @@ import {
   type SkyDay,
 } from "@/features/constellation";
 import { NightSkyHero } from "@/widgets/constellation";
-import type { Todo, TodoPriority } from "@/entities/todo";
+import type { Todo } from "@/entities/todo";
+import {
+  NO_DUE,
+  PRIO_KEYS,
+  cellMarkOf,
+  dueOf,
+  groupByDay,
+  isDone,
+  isFilterActive,
+  monthTodos as selectMonthTodos,
+  relKindOf,
+  shiftYm,
+  tagOf,
+  todayISO,
+  todayLeft as countTodayLeft,
+  type PrioKey,
+} from "@/pages/todo/model/todo-ledger";
 
-type PrioKey = TodoPriority;
+const PAD = (n: number) => String(n).padStart(2, "0");
 
 /** 우선순위 색 — 중요=error·보통=warning·여유=info (status-*-fg, 다크 light 스왑). */
 const TDM_PRIO: Record<PrioKey, { color: string }> = {
@@ -68,30 +84,6 @@ const TDM_PRIO: Record<PrioKey, { color: string }> = {
   MEDIUM: { color: "var(--status-warning-fg)" },
   LOW: { color: "var(--status-info-fg)" },
 };
-const PRIO_KEYS: PrioKey[] = ["HIGH", "MEDIUM", "LOW"];
-
-const PAD = (n: number) => String(n).padStart(2, "0");
-const NO_DUE = "9999-99-99";
-
-function todayISO(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${PAD(d.getMonth() + 1)}-${PAD(d.getDate())}`;
-}
-function shiftYm(ym: string, dir: -1 | 1): string {
-  const [y = 0, m = 1] = ym.split("-").map(Number);
-  const d = new Date(y, m - 1 + dir, 1);
-  return `${d.getFullYear()}-${PAD(d.getMonth() + 1)}`;
-}
-function isDone(t: Todo): boolean {
-  return t.status === "COMPLETED";
-}
-function dueOf(t: Todo): string | null {
-  return t.dueDate ? t.dueDate.slice(0, 10) : null;
-}
-function tagOf(t: Todo): string {
-  return t.category || "";
-}
-
 /**
  * 모바일 할일 원장 — 캘린더 + 일별 리스트 통합(가계부 tx-mobile 문법 재사용).
  * 상단 고정: 월네비+필터 / 오늘 상태+별빛 인사이트+[밤하늘] 토글 / 접이식 캘린더.
@@ -147,7 +139,7 @@ export function TodoMobileLedger({
   const [fTags, setFTags] = useState<string[]>([]);
   const [fPrios, setFPrios] = useState<PrioKey[]>([]);
   const [hideDone, setHideDone] = useState(false);
-  const filterActive = fTags.length > 0 || fPrios.length > 0 || hideDone;
+  const filterActive = isFilterActive({ tags: fTags, prios: fPrios, hideDone });
 
   // pin compact·스크롤 스파이·lock — 공용 원장 훅 (가계부와 동일 문법).
   const {
@@ -163,34 +155,16 @@ export function TodoMobileLedger({
     initialSelected: today,
   });
 
-  // 월 + 필터 적용 목록. 기한 없는 할 일은 월과 무관하게 꼬리 그룹으로 노출.
-  const monthTodos = useMemo(() => {
-    const pass = (td: Todo) =>
-      (fTags.length === 0 || fTags.includes(tagOf(td))) &&
-      (fPrios.length === 0 || fPrios.includes(td.priority)) &&
-      // 방금 누른 행은 '완료 숨기기' 를 켰어도 잠깐 남는다 — 빠지면 아래 행이 그
-      // 자리로 올라와 두 번째 탭이 다른 할 일을 완료시킨다(QA #29).
-      (!hideDone || !isDone(td) || (holdIds?.has(td.rowId) ?? false));
-    return todos.filter((td) => {
-      const due = dueOf(td);
-      return (due ? due.startsWith(ym) : true) && pass(td);
-    });
-  }, [todos, ym, fTags, fPrios, hideDone, holdIds]);
-
-  const byDay = useMemo(() => {
-    const map = new Map<string, Todo[]>();
-    for (const td of monthTodos) {
-      const k = dueOf(td) ?? NO_DUE;
-      const arr = map.get(k);
-      if (arr) arr.push(td);
-      else map.set(k, [td]);
-    }
-    return map;
-  }, [monthTodos]);
-  const dayKeys = useMemo(() => [...byDay.keys()].sort(), [byDay]);
-  const todayLeft = todos.filter(
-    (td) => !isDone(td) && dueOf(td) === today,
-  ).length;
+  // 월 + 필터 적용 목록. 기한 없는 할 일은 월과 무관하게 꼬리 그룹으로 노출(모델 — 데스크톱과 같은 셈).
+  const monthTodos = selectMonthTodos(
+    todos,
+    ym,
+    { tags: fTags, prios: fPrios, hideDone },
+    holdIds,
+  );
+  const byDay = groupByDay(monthTodos);
+  const dayKeys = [...byDay.keys()].sort();
+  const todayLeft = countTodayLeft(todos, today);
 
   const skyByDate = useMemo(() => new Map(sky.map((d) => [d.date, d])), [sky]);
 
@@ -244,12 +218,12 @@ export function TodoMobileLedger({
     ? constellationColorVar(constellationToday.constellation.colorKey)
     : "var(--fg-brand)";
 
-  // 캘린더 셀 마크 — 오늘: 남은 건수/수집★, 과거: 수집★(색)/구름/N건/체크
+  // 캘린더 셀 마크 — 오늘: 남은 건수/수집★, 과거: 수집★(색)/구름/N건/체크 (판정은 모델)
   const cellMark = (ds: string) => {
-    const items = byDay.get(ds);
-    const left = items ? items.filter((td) => !isDone(td)).length : 0;
-    if (ds === today) {
-      if (skyDone)
+    const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
+    if (!mark) return null;
+    switch (mark.kind) {
+      case "collected":
         return (
           <Star
             size={10}
@@ -258,51 +232,47 @@ export function TodoMobileLedger({
             style={{ color: todayColor }}
           />
         );
-      return left > 0 ? (
-        <span style={{ color: "var(--fg-brand)", fontWeight: 700 }}>
-          {t("tdm.countN", { count: left })}
-        </span>
-      ) : null;
+      case "grown":
+        return (
+          <Star
+            size={10}
+            strokeWidth={0}
+            fill="currentColor"
+            style={{ color: constellationColorVar(mark.colorKey) }}
+          />
+        );
+      case "missed":
+        return (
+          <Cloudy
+            size={10}
+            strokeWidth={2}
+            style={{ color: "var(--fg-tertiary)" }}
+          />
+        );
+      case "left":
+        return mark.today ? (
+          <span style={{ color: "var(--fg-brand)", fontWeight: 700 }}>
+            {t("tdm.countN", { count: mark.count })}
+          </span>
+        ) : (
+          <span>{t("tdm.countN", { count: mark.count })}</span>
+        );
+      case "done":
+        return (
+          <Check
+            size={10}
+            strokeWidth={3}
+            style={{ color: "var(--color-chart-green)" }}
+          />
+        );
     }
-    const log = skyByDate.get(ds);
-    if (log?.status === "GROWN" && log.colorKey) {
-      return (
-        <Star
-          size={10}
-          strokeWidth={0}
-          fill="currentColor"
-          style={{ color: constellationColorVar(log.colorKey) }}
-        />
-      );
-    }
-    if (log?.status === "WITHERED") {
-      return (
-        <Cloudy
-          size={10}
-          strokeWidth={2}
-          style={{ color: "var(--fg-tertiary)" }}
-        />
-      );
-    }
-    if (items) {
-      return left > 0 ? (
-        <span>{t("tdm.countN", { count: left })}</span>
-      ) : (
-        <Check
-          size={10}
-          strokeWidth={3}
-          style={{ color: "var(--color-chart-green)" }}
-        />
-      );
-    }
-    return null;
   };
 
   const relOf = (d: string): string | null => {
-    const diff = Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
-    if (diff === 0) return t("tdm.relToday");
-    if (diff === 1) return t("tdm.relTomorrow");
-    if (diff === -1) return t("tdm.relYesterday");
+    const kind = relKindOf(d, today);
+    if (kind === "today") return t("tdm.relToday");
+    if (kind === "tomorrow") return t("tdm.relTomorrow");
+    if (kind === "yesterday") return t("tdm.relYesterday");
     return null;
   };
   const dowOf = (ds: string) =>
