@@ -67,7 +67,6 @@ layout,logout,로그아웃,Log out
 layout,changePassword,비밀번호 변경,Change Password
 layout,home,홈,Home
 layout,stocks,증권,Stocks
-layout,statsAnalysis,통계·분석,Stats & Analysis
 layout,budget,예산,Budget
 layout,stats,통계,Stats
 layout,cardBenefit,카드 혜택,Card Benefits
@@ -2136,7 +2135,7 @@ stocks,namu.tabDomestic,국내,Domestic
 stocks,namu.tabOverseas,해외,Overseas
 stocks,namu.holdingsEmpty,보유 중인 종목이 없어요,No holdings yet
 stocks,namu.holdingsError,보유 정보를 불러오지 못했어요. 계좌가 없거나 조회 권한이 없을 수 있어요.,Couldn't load holdings. There may be no account or no query permission.
-stats,page.title,통계·분석,Statistics
+stats,page.title,통계,Statistics
 stats,uncategorized,미분류,Uncategorized
 stats,page.subtitle,카테고리·추이·인사이트,Categories · Trends · Insights
 stats,tab.category,카테고리,Category

@@ -38,7 +38,7 @@ export const NAV: NavItem[] = [
   { id: "tx", labelKey: "expense", icon: ReceiptText, path: "/desk/expense" },
   {
     id: "stats",
-    labelKey: "statsAnalysis",
+    labelKey: "stats",
     icon: ChartPie,
     path: "/desk/stats",
   },
