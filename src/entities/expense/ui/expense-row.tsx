@@ -36,7 +36,6 @@ export function ExpenseRow({
   maskCard = "ledger.txList",
   gutter = false,
   highlighted = false,
-  trailing,
 }: {
   expense: Expense;
   onClick?: (e: Expense) => void;
@@ -54,8 +53,6 @@ export function ExpenseRow({
   gutter?: boolean;
   /** 알림 · 검색에서 들어온 줄 — ds List 강조(brand-weak 바탕 · 누름 brand-weak-pressed · 설명 글 보정). 줄을 누를 수 있을 때만 의미가 있다 */
   highlighted?: boolean;
-  /** 금액 뒤에 같은 뒤 붙이개로 놓는 것 — 가계부의 ⋮(swipe-actions `suffixNode`, 오른쪽으로 8 내밀기는 호출자가 준다) · 빈 자리 */
-  trailing?: ReactNode;
 }) {
   const { t } = useTranslation("common");
   const isIncome = expense.expenseType === "INCOME";
@@ -148,17 +145,8 @@ export function ExpenseRow({
       </HideUnit>
     </span>
   );
-  // 뒤 붙이개 — 금액, 호출자가 `trailing`(가계부의 ⋮)을 주면 금액 뒤에 같은 붙이개 안에 둔다(강조 · 누름 바탕이 줄 끝까지 덮는다)
-  const suffix =
-    right ??
-    (trailing ? (
-      <>
-        {amountEl}
-        {trailing}
-      </>
-    ) : (
-      amountEl
-    ));
+  // 뒤 붙이개 — 금액(호출자가 `right` 를 주면 그대로 오른쪽). 가계부는 줄 끝 ⋮ 를 두지 않는다(10-24 사용자 결정) — 수정 · 삭제는 밀기 · 상세에서
+  const suffix = right ?? amountEl;
 
   const prefix = (
     <ListTile

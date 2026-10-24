@@ -63,11 +63,7 @@ import {
   useAssetFilter,
   useExpenseData,
 } from "@/pages/expense/model/ledger-data";
-import {
-  ExpenseSwipeRow,
-  RowMoreSlot,
-  SwipeConfirmDialog,
-} from "./ExpenseSwipeRow";
+import { ExpenseSwipeRow, SwipeConfirmDialog } from "./ExpenseSwipeRow";
 import {
   DayGroupSkeleton,
   FilterChipsRow,
@@ -521,12 +517,11 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   onAsk={setPendingAction}
                 />
               ) : (
-                // 이체 행은 감싸지 않는다 — 앱도 제외한다. ⋮ 자리만 뒤 붙이개 안에 비워 금액 열을 맞춘다(줄 · 누름 바탕은 화면 끝까지)
+                // 이체 행은 감싸지 않는다 — 앱도 제외한다. 줄 · 누름 바탕은 화면 끝까지
                 <TransferRow
                   key={ledgerKey(item)}
                   gutter
                   transfer={item.transfer}
-                  trailing={<RowMoreSlot />}
                   onClick={(tr) => setTransferDetail(tr)}
                 />
               );

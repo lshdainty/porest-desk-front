@@ -105,13 +105,6 @@ describe("이체 줄 — ds List 줄", () => {
     );
   });
 
-  it("trailing 은 금액 뒤 같은 뒤 붙이개 안에 든다 — 줄 · 누름 바탕이 화면 끝까지 닿는다(바깥 감싸개 없음)", () => {
-    render({ gutter: true, trailing: <i data-testid="slot" /> });
-    const suffix = container.querySelector("[data-slot=list-suffix]")!;
-    expect(suffix.querySelector("[data-testid=slot]")).not.toBeNull();
-    expect(suffix.textContent).toContain("120,000");
-  });
-
   it("좁은 폭에서도 줄어드는 건 계좌 이름뿐이다 — 이체 줄 시각 · 수수료 글은 줄지 않는다(shrink 2 · 0 · 0)", () => {
     render({ transfer: { ...base, fee: 500 } });
     const items = Array.from(

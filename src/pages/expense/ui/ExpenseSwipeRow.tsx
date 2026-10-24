@@ -9,25 +9,9 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@/shared/ds/alert-dialog";
-import {
-  SwipeActions,
-  SwipeActionsMenu,
-  type SwipeAction,
-} from "@/shared/ds/swipe-actions";
-import { cn } from "@/shared/lib/cn";
+import { SwipeActions, type SwipeAction } from "@/shared/ds/swipe-actions";
 import { ExpenseRow, type Expense } from "@/entities/expense";
 import type { ExpenseSwipeAction } from "@/pages/expense/lib/use-expense-swipe-actions";
-
-/**
- * 줄 끝 ⋮ 가 차지하는 폭 — 보이는 40 에서 오른쪽으로 8 을 내민 값(swipe-actions 스펙 `suffixNode` marginRight −8).
- * ⋮ 가 없는 줄(이체 · 시스템 거래)도 이만큼 비워 금액 열이 어긋나지 않게 한다.
- */
-export const ROW_MORE_SPACE = "w-x8";
-
-/** ⋮ 가 없는 줄(이체 · 시스템 거래)의 뒤 붙이개 빈자리 — 금액 열을 ⋮ 줄과 맞춘다(금액 앞 붙이개 간격 4 를 되돌린다) */
-export function RowMoreSlot() {
-  return <span aria-hidden className={cn("-ml-x1 shrink-0", ROW_MORE_SPACE)} />;
-}
 
 /**
  * 가계부 거래 줄 — 밀면 [수정, 삭제], 줄 끝 ⋮ 로 같은 동작(I-07 6).
@@ -64,24 +48,13 @@ export function ExpenseSwipeRow({
       else void a.onSelect();
     },
   }));
-  // ⋮ 는 줄의 뒤 붙이개 안에 둔다(swipe-actions `suffixNode`) — 강조 · 누름 바탕이 줄 끝까지 이어진다. 금액 끝은 화면 끝에서 56 그대로
+  // 줄 끝 ⋮ 는 두지 않는다(10-24 사용자 결정) — 수정 · 삭제는 밀기 + 줄 누름(상세)에서. 줄 · 강조 바탕은 화면 끝까지, 금액 끝은 줄 끝 24
   const row = (
     <ExpenseRow
       gutter
       highlighted={highlighted}
       expense={expense}
       onClick={onOpen}
-      trailing={
-        dsActions.length > 0 ? (
-          <SwipeActionsMenu
-            actions={dsActions}
-            rowLabel={rowLabel}
-            className="-ml-x1 -mr-x2 shrink-0"
-          />
-        ) : (
-          <RowMoreSlot />
-        )
-      }
     />
   );
   return (

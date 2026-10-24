@@ -97,13 +97,6 @@ describe("거래 줄 — ds List", () => {
     expect(shrinks).toEqual(["0", "2", "0"]);
   });
 
-  it("trailing(가계부 ⋮)은 금액 뒤 같은 뒤 붙이개 안에 들어 강조 바탕이 줄 끝까지 덮는다", () => {
-    render(base, { trailing: <button aria-label="더보기">⋮</button> });
-    const suffix = q("[data-slot=list-suffix]")!;
-    expect(suffix.querySelector("button[aria-label=더보기]")).not.toBeNull();
-    expect(suffix.textContent).toContain("1,234,567,890");
-  });
-
   it("앞 타일 40 · 모서리 r3 · 줄 전체가 버튼", () => {
     render(base, { onClick: () => {} });
     expect(q("[data-slot=list-tile]")?.className).toMatch(

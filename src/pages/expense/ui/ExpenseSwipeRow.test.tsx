@@ -14,7 +14,7 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
-const { ExpenseSwipeRow, RowMoreSlot, SwipeConfirmDialog } =
+const { ExpenseSwipeRow, SwipeConfirmDialog } =
   await import("./ExpenseSwipeRow");
 const { SwipeActionsProvider } = await import("@/shared/ds/swipe-actions");
 
@@ -104,22 +104,17 @@ const row = (props: Partial<Parameters<typeof ExpenseSwipeRow>[0]> = {}) => (
 const more = () =>
   container.querySelector<HTMLButtonElement>("[data-slot=swipe-actions-more]");
 
-describe("밀기 + 줄 끝 ⋮ — 한 배열에서 나온다", () => {
-  it('줄 끝 ⋮ 의 이름은 "{줄 제목} 더보기" 이고 누르면 [수정, 삭제] 가 이 차례로 열린다', async () => {
+describe("밀기 — 줄 끝 ⋮ 는 없다(10-24 사용자 결정), 수정 · 삭제는 밀기 + 줄 누름(상세)", () => {
+  it("줄 끝에 ⋮ 단추도 빈자리도 없고 금액이 줄의 뒤 붙이개 끝이다", async () => {
     await render(row());
-    // 이름은 ds 문구 common.moreFor — 줄 제목이 들어간다(언어는 테스트 환경에서 정해진다)
-    expect(more()?.getAttribute("aria-label")).toMatch(
-      /^(숲길커피 더보기|More options for 숲길커피)$/,
-    );
-
-    await act(async () => {
-      more()!.click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    const names = Array.from(
-      document.querySelectorAll("[data-slot=menu-sheet-item]"),
-    ).map((b) => b.textContent);
-    expect(names).toEqual(["수정", "삭제"]);
+    expect(more()).toBeNull();
+    expect(
+      container.querySelector("[data-slot=swipe-actions-menu]"),
+    ).toBeNull();
+    const suffix = container.querySelector("[data-slot=list-suffix]")!;
+    expect(suffix.querySelectorAll("button")).toHaveLength(0);
+    expect(suffix.querySelector("[aria-hidden]")).toBeNull();
+    expect(suffix.textContent).toMatch(/\d/);
   });
 
   it("밀면 드러나는 트레이에도 같은 두 동작이 있다 — 삭제가 가장 안쪽", async () => {
@@ -132,20 +127,12 @@ describe("밀기 + 줄 끝 ⋮ — 한 배열에서 나온다", () => {
     expect(tray).toEqual(["삭제: 숲길커피", "수정: 숲길커피"]);
   });
 
-  it("시스템이 만든 거래(동작 없음)는 밀기도 ⋮ 도 없다 — 줄은 그대로 그려진다", async () => {
+  it("시스템이 만든 거래(동작 없음)는 밀기도 없다 — 줄은 그대로 그려진다", async () => {
     await render(row({ actions: [] }));
 
     expect(more()).toBeNull();
     expect(container.querySelector("[data-slot=swipe-actions]")).toBeNull();
     expect(container.textContent).toContain("숲길커피");
-  });
-
-  it("이체 줄처럼 감싸지 않는 줄은 ⋮ 자리만 뒤 붙이개 안에 비워 금액 열을 맞춘다", async () => {
-    await render(<RowMoreSlot />);
-
-    expect(more()).toBeNull();
-    expect(container.querySelector("[data-slot=swipe-actions]")).toBeNull();
-    expect(container.querySelector(".w-x8")).not.toBeNull();
   });
 
   it("알림 · 검색에서 들어온 줄은 List 강조 바탕(bg-brand-weak)으로 알린다 — 옛 brand-subtle 아님", async () => {
