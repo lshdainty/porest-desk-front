@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pencil, Plus, Target, Trash2 } from "lucide-react";
+import { Pencil, Target, Trash2 } from "lucide-react";
 import { SwipeActions } from "@/shared/ui/swipe-actions";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { isIconName } from "@/shared/lib";
@@ -18,6 +18,7 @@ import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import {
   BandEmpty,
+  BarredItem,
   BandFailure,
   ListTitle,
   MeterBar,
@@ -84,72 +85,85 @@ function GoalRow({
   };
   return (
     // 모바일 = 줄을 누르면 수정, 밀면 수정 · 삭제(지름길). 데스크톱 = 줄 끝 수정 · 삭제 아이콘.
-    <SwipeActions
-      rowId={`saving-goal-${goal.rowId}`}
-      groupTag="saving-goal-list"
-      rowLabel={goal.title}
-      enabled={mobile}
-      actions={[
-        {
-          label: tc("edit"),
-          icon: <Pencil />,
-          kind: "primary",
-          onSelect: () => onEdit(goal),
-        },
-        {
-          label: tc("delete"),
-          icon: <Trash2 />,
-          kind: "destructive",
-          // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
-          confirm: {
-            title: t("savingGoal.deleteTitle"),
-            message: t("savingGoal.deleteConfirm", { title: goal.title }),
-          },
-          onSelect: () => onDeleteConfirmed(goal),
-        },
-      ]}
-    >
-      <div role="listitem">
-        <List>
-          {mobile ? (
-            <ListButtonItem {...common} onClick={() => onEdit(goal)} />
-          ) : (
-            <ListItem
-              {...common}
-              suffix={
-                <span className="inline-flex shrink-0 items-center">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    layout="iconOnly"
-                    size="small"
-                    aria-label={t("savingGoal.editNamed", {
-                      name: goal.title,
-                    })}
-                    onClick={() => onEdit(goal)}
-                  >
-                    <Pencil aria-hidden />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    layout="iconOnly"
-                    size="small"
-                    ghostColor="critical"
-                    aria-label={t("savingGoal.deleteNamed", {
-                      name: goal.title,
-                    })}
-                    onClick={() => onDelete(goal)}
-                  >
-                    <Trash2 aria-hidden />
-                  </Button>
-                </span>
-              }
-            />
-          )}
-        </List>
-        {/* 줄 아래 10 에 한 줄(좌우 24) — 왼쪽 금액(줄바꿈 허용), 오른쪽 %. 그 아래 6 에 막대 8 */}
-        <div className="px-x6 pb-x3 pt-x1">
+    <BarredItem
+      className="pt-0"
+      wrap={(inner) => (
+        <SwipeActions
+          rowId={`saving-goal-${goal.rowId}`}
+          groupTag="saving-goal-list"
+          rowLabel={goal.title}
+          enabled={mobile}
+          actions={[
+            {
+              label: tc("edit"),
+              icon: <Pencil />,
+              kind: "primary",
+              onSelect: () => onEdit(goal),
+            },
+            {
+              label: tc("delete"),
+              icon: <Trash2 />,
+              kind: "destructive",
+              // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
+              confirm: {
+                title: t("savingGoal.deleteTitle"),
+                message: t("savingGoal.deleteConfirm", { title: goal.title }),
+              },
+              onSelect: () => onDeleteConfirmed(goal),
+            },
+          ]}
+        >
+          {inner}
+        </SwipeActions>
+      )}
+      row={
+        mobile ? (
+          <ListButtonItem
+            as="div"
+            align="top"
+            {...common}
+            onClick={() => onEdit(goal)}
+          />
+        ) : (
+          <ListItem
+            as="div"
+            align="top"
+            {...common}
+            suffix={
+              <span className="inline-flex shrink-0 items-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  layout="iconOnly"
+                  size="small"
+                  aria-label={t("savingGoal.editNamed", {
+                    name: goal.title,
+                  })}
+                  onClick={() => onEdit(goal)}
+                >
+                  <Pencil aria-hidden />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  layout="iconOnly"
+                  size="small"
+                  ghostColor="critical"
+                  aria-label={t("savingGoal.deleteNamed", {
+                    name: goal.title,
+                  })}
+                  onClick={() => onDelete(goal)}
+                >
+                  <Trash2 aria-hidden />
+                </Button>
+              </span>
+            }
+          />
+        )
+      }
+      bar={
+        <>
+          {/* 줄 아래 12 에 한 줄(좌우 24) — 왼쪽 금액(줄바꿈 허용), 오른쪽 %. 그 아래 6 에 막대 8 */}
           <div className="flex items-baseline justify-between gap-x3">
             <span className="min-w-0 text-t3 font-medium tabular-nums text-fg-neutral-subtle">
               {withCommaBreaks(mask(won(goal.currentAmount)))} /{" "}
@@ -167,9 +181,9 @@ function GoalRow({
             max={goal.targetAmount}
             formatValue={(n) => mask(won(n))}
           />
-        </div>
-      </div>
-    </SwipeActions>
+        </>
+      }
+    />
   );
 }
 
@@ -223,10 +237,7 @@ function SummaryArea({
             / {withCommaBreaks(mask(won(totalTarget)))}
           </span>
         </p>
-        <span
-          aria-label={`${t("savingGoal.overallName")} ${totalPct.toFixed(0)}%`}
-          className="shrink-0 text-t9 font-bold tabular-nums text-fg-brand"
-        >
+        <span className="shrink-0 text-t9 font-bold tabular-nums text-fg-brand">
           {totalPct.toFixed(0)}%
         </span>
       </div>
@@ -268,7 +279,6 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
       first={!mobile || goals.length === 0}
       action={{
         label: t("addGoal"),
-        icon: <Plus aria-hidden />,
         onClick: () => setEditing("new"),
       }}
     >
@@ -283,7 +293,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
       <BandEmpty>{t("savingGoal.emptyManager")}</BandEmpty>
     </div>
   ) : (
-    <div role="list" aria-labelledby="saving-goal-list-title">
+    <List aria-labelledby="saving-goal-list-title">
       {goals.map((g) => (
         <GoalRow
           key={g.rowId}
@@ -294,7 +304,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           onDeleteConfirmed={(goal) => deleteMut.mutateAsync(goal.rowId)}
         />
       ))}
-    </div>
+    </List>
   );
   const summary =
     !failed && !loading && goals.length > 0 ? (
@@ -307,7 +317,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
     ) : null;
 
   const content = failed ? (
-    <div className={mobile ? "px-x6 pb-x6 pt-x5" : undefined}>
+    <div className={mobile ? "px-x6 pb-x6 pt-x2" : undefined}>
       <BandFailure
         title={t("savingGoal.loadFailed")}
         onRetry={() => void goalsQ.refetch()}
@@ -336,7 +346,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
         // 폰 — 흰 면 하나(I-08 24). 카드 · 줄 사이 선 없음, 구역 · 줄이 제 좌우 24 를 갖는다
         <div
           data-slot="saving-goal-phone"
-          className={summary ? undefined : "pt-x1"}
+          className={summary ? undefined : "pt-x4"}
         >
           {content}
         </div>

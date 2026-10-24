@@ -102,9 +102,9 @@ describe("막대 · % 는 한 색(fg-brand) — 목표 색은 타일에만(I-08 
       expect(f.className).toContain("bg-fg-brand");
       expect(f.style.background).toBe("");
     }
-    const pcts = Array.from(
-      container.querySelectorAll("[role=listitem] span"),
-    ).filter((s) => /^\d+%$/.test(s.textContent ?? ""));
+    const pcts = Array.from(container.querySelectorAll("li span")).filter((s) =>
+      /^\d+%$/.test(s.textContent ?? ""),
+    );
     expect(pcts.length).toBeGreaterThan(0);
     for (const p of pcts) expect(p.className).toContain("text-fg-brand");
   });
