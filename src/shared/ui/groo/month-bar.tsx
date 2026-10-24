@@ -67,7 +67,10 @@ export function MonthBar({
   right?: ReactNode;
 }) {
   return (
-    <div className="flex items-center px-x6 pt-x1" data-slot="month-bar">
+    <div
+      className="flex flex-wrap items-center px-x6 pt-x1"
+      data-slot="month-bar"
+    >
       <MonthControls flushLeft {...controls} />
       {right != null && (
         <div className="ml-auto flex items-center">{right}</div>
