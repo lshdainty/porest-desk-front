@@ -71,8 +71,38 @@ export function monthTodos(
   });
 }
 
-/** 날짜 묶음 — 열쇠는 'YYYY-MM-DD' 또는 NO_DUE */
-export function groupByDay(list: Todo[]): Map<string, Todo[]> {
+const PRIO_RANK: Record<PrioKey, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+
+/**
+ * 묶음 안 차례(I-10 15) — 남은 일 위 · 끝낸 일 아래, 각각 우선순위(중요 → 보통 → 여유), 같으면 서버 차례(안정 정렬).
+ * `held` — 방금 끝냄을 누른 줄은 누르기 전 자리 차례로 센다(QA #29): 낙관 갱신이 상태를 뒤집어도 잠깐 그 자리에 남아야
+ * 아래 줄이 올라와 두 번째 누름을 대신 받지 않는다. 붙들기가 풀리면(700ms) 제 차례로 내려간다.
+ */
+export function sortDayItems(
+  items: Todo[],
+  held?: ReadonlySet<number>,
+): Todo[] {
+  const doneForOrder = (td: Todo) =>
+    held?.has(td.rowId) ? !isDone(td) : isDone(td);
+  return items
+    .map((td, i) => ({ td, i }))
+    .sort((a, b) => {
+      const da = doneForOrder(a.td) ? 1 : 0;
+      const db = doneForOrder(b.td) ? 1 : 0;
+      if (da !== db) return da - db;
+      const pa = PRIO_RANK[a.td.priority];
+      const pb = PRIO_RANK[b.td.priority];
+      if (pa !== pb) return pa - pb;
+      return a.i - b.i;
+    })
+    .map((x) => x.td);
+}
+
+/** 날짜 묶음 — 열쇠는 'YYYY-MM-DD' 또는 NO_DUE. 묶음 안은 sortDayItems 차례 */
+export function groupByDay(
+  list: Todo[],
+  held?: ReadonlySet<number>,
+): Map<string, Todo[]> {
   const map = new Map<string, Todo[]>();
   for (const td of list) {
     const k = dueOf(td) ?? NO_DUE;
@@ -80,6 +110,7 @@ export function groupByDay(list: Todo[]): Map<string, Todo[]> {
     if (arr) arr.push(td);
     else map.set(k, [td]);
   }
+  for (const [k, arr] of map) map.set(k, sortDayItems(arr, held));
   return map;
 }
 
