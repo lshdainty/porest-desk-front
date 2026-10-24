@@ -895,7 +895,7 @@ export function AssetRow({
   const row = (
     <ListButtonItem
       as={usage ? "div" : undefined}
-      align="top"
+      align={tags.length > 0 ? "top" : undefined}
       prefix={
         <LogoTile
           name={asset.institution || asset.assetName}
