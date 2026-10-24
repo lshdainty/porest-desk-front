@@ -363,7 +363,6 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
       {editing != null && (
         <SavingGoalAddDialog
           goal={editing === "new" ? null : editing}
-          mobile={mobile}
           onClose={() => setEditing(null)}
         />
       )}

@@ -1,21 +1,20 @@
-import { useState } from "react";
-import {
-  MAX_AMOUNT,
-  blockNonDigitKey,
-  parseAmount,
-  sanitizeAmountInput,
-} from "@/shared/lib/groo/amount";
-import { nameIssue } from "@/shared/lib/groo/name-policy";
-import { NameCounter } from "@/shared/ui/groo/name-counter";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertCircle, Target } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { Input } from "@/shared/ui/input";
-import { Field, FieldLabel } from "@/shared/ui/field";
-import { IconPicker } from "@/shared/ui/icon-picker";
-import { InputDatePicker } from "@/shared/ui/input-date-picker";
+import { MAX_AMOUNT, parseAmount } from "@/shared/lib/groo/amount";
+import { nameIssue } from "@/shared/lib/groo/name-policy";
+import { Button } from "@/shared/ds/button";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogCancel,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+} from "@/shared/ds/dialog";
+import { Field } from "@/shared/ds/field";
+import { Input } from "@/shared/ds/input";
+import { firstUnusedColor } from "@/shared/ds/color-swatch";
+import { AmountInput } from "@/shared/ui/groo/amount-input";
+import { CHART_PAIRS, chartColorOf } from "@/shared/lib/groo/chart-palette";
 import {
   useContributeSavingGoal,
   useCreateSavingGoal,
@@ -23,128 +22,115 @@ import {
   useUpdateSavingGoal,
 } from "@/features/savingGoal";
 import type { SavingGoal } from "@/entities/savingGoal";
-import { isIconName, tileRadius } from "@/shared/lib";
-import { parseLocalDate } from "@/shared/lib/date";
-import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
 import {
-  CAT_PALETTE,
-  getPaletteByColor,
-} from "@/shared/lib/groo/chart-palette";
-import { i18n } from "@/shared/i18n/config";
-
-// 날짜는 현재 로케일로 포맷 — ko `2026년 3월` / en `March 2026`. 기한 없음은 asset ns.
-function formatDeadlineLabel(iso: string): string {
-  const d = parseLocalDate(iso);
-  if (!d) return i18n.t("asset:savingGoal.noDeadline");
-  return new Intl.DateTimeFormat(i18n.language, {
-    year: "numeric",
-    month: "long",
-  }).format(d);
-}
+  GoalColorRow,
+  GoalDeadlineRow,
+  GoalIconRow,
+} from "./SavingGoalPickers";
 
 /** 목표 이름 상한 — 카테고리·라벨·태그와 같은 12자. 카드 한 줄에 들어가는 길이다. */
 const GOAL_NAME_MAX = 12;
 
-function fmtNum(n: number): string {
-  if (!n) return "";
-  return n.toLocaleString("ko-KR");
-}
-
-function parseNum(v: string): number {
-  const n = parseAmount(v);
-  return isNaN(n) ? 0 : n;
-}
+const digitsOf = (n: number | undefined) => (n ? String(n) : "");
 
 interface SavingGoalAddDialogProps {
   /** null/undefined → 생성 모드, 객체 → 수정 모드 */
   goal?: SavingGoal | null;
-  mobile: boolean;
   onClose: () => void;
-  /**
-   * 삭제 — **모바일 footer 에서만 쓴다**. 모바일은 목록 행을 탭하면 바로 이 시트로
-   * 들어오므로 삭제를 여기 둔다. 데스크탑·태블릿은 목록 행 아이콘이 담당.
-   */
 }
 
+type Errors = {
+  name?: string;
+  target?: string;
+  current?: string;
+};
+
+/**
+ * 저축 목표 추가 · 수정 폼(I-19 D). 치는 값(이름 · 목표 금액 · 현재 모은 금액)은 칸, 고르는 값(목표일 · 아이콘 · 색)은 줄.
+ * 1280 이상 대화상자 480 · 미만 Bottom Sheet. 주 버튼은 켜 두고 누를 때 칸 아래에 오류를 보인다. 저장 본문 · 순서는 그대로다.
+ */
 export function SavingGoalAddDialog({
   goal,
-  mobile,
   onClose,
 }: SavingGoalAddDialogProps) {
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
   const isEdit = !!goal;
 
-  const [title, setTitle] = useState<string>(goal?.title ?? "");
-  const [targetStr, setTargetStr] = useState<string>(
-    goal?.targetAmount ? fmtNum(goal.targetAmount) : "",
-  );
-  const [currentStr, setCurrentStr] = useState<string>(
-    goal?.currentAmount ? fmtNum(goal.currentAmount) : "",
-  );
-  const [deadlineDate, setDeadlineDate] = useState<string>(
-    goal?.deadlineDate ?? "",
-  );
-  // 저장된 아이콘이 lucide 이름이라는 보장이 없다 — API 로 이모지도 들어온다(QA #95).
-  // IconName 으로 단언하면 미리보기가 검사 없이 DynamicIcon 으로 흘러간다.
-  const [icon, setIcon] = useState<string>(goal?.icon || "piggy-bank");
-  const [color, setColor] = useState<string>(
-    goal?.color ?? CAT_PALETTE[0]!.baseHex,
-  );
-  // 저장은 raw hex(color), 표시는 다크에서 light variant 로 스왑되는 팔레트를 쓴다.
-  const palette = getPaletteByColor(color);
-  const [err, setErr] = useState<string>("");
-
   const createMut = useCreateSavingGoal();
   const updateMut = useUpdateSavingGoal();
   const contributeMut = useContributeSavingGoal();
   // 목록 화면에서만 열리므로 캐시 재사용 — 추가 요청이 나가지 않는다.
   const goalsQ = useSavingGoals();
+  const goals = goalsQ.data?.goals ?? [];
 
-  const target = parseNum(targetStr);
-  const current = parseNum(currentStr);
-  const pct = target > 0 ? (current / target) * 100 : 0;
+  const [initial] = useState(() => ({
+    title: goal?.title ?? "",
+    target: digitsOf(goal?.targetAmount),
+    current: digitsOf(goal?.currentAmount),
+    deadline: goal?.deadlineDate ?? "",
+    icon: goal?.icon || "piggy-bank",
+    // 새 목표는 같은 목록이 아직 쓰지 않은 첫 색 — 늘 빨강으로 시작하지 않는다(color-swatch.md:98)
+    color:
+      goal?.color ??
+      (() => {
+        const key = firstUnusedColor(goals.map((g) => chartColorOf(g.color)));
+        return CHART_PAIRS.find((p) => p.key === key)!.base;
+      })(),
+  }));
+  const [title, setTitle] = useState(initial.title);
+  const [target, setTarget] = useState(initial.target);
+  const [current, setCurrent] = useState(initial.current);
+  const [deadline, setDeadline] = useState(initial.deadline);
+  const [icon, setIcon] = useState(initial.icon);
+  const [color, setColor] = useState(initial.color);
+  const [errors, setErrors] = useState<Errors>({});
 
-  // 같은 이름 목표가 소리 없이 두 개 생기던 자리(QA #52). 서버에 중복 에러 코드가 없다.
-  const takenTitles = (goalsQ.data?.goals ?? [])
-    .filter((g) => g.rowId !== goal?.rowId)
-    .map((g) => g.title);
-  const titleIssue = nameIssue(title, GOAL_NAME_MAX, takenTitles);
-  // 카운터 자리에는 길이·중복만 — 금액 오류는 아래 err 박스가 이미 쓰고 있다.
-  const titleErr =
-    titleIssue === "tooLong"
-      ? t("savingGoal.errNameTooLong")
-      : titleIssue === "duplicate"
-        ? t("savingGoal.errNameDuplicate")
-        : null;
+  const nameRef = useRef<HTMLInputElement>(null);
+  const targetRef = useRef<HTMLInputElement>(null);
+  const currentRef = useRef<HTMLInputElement>(null);
+
+  const dirty =
+    title !== initial.title ||
+    target !== initial.target ||
+    current !== initial.current ||
+    deadline !== initial.deadline ||
+    icon !== initial.icon ||
+    color !== initial.color;
+
+  const saving =
+    createMut.isPending || updateMut.isPending || contributeMut.isPending;
+
+  const validate = (): Errors => {
+    const out: Errors = {};
+    const takenTitles = goals
+      .filter((g) => g.rowId !== goal?.rowId)
+      .map((g) => g.title);
+    const issue = nameIssue(title, GOAL_NAME_MAX, takenTitles);
+    if (issue === "required") out.name = t("savingGoal.errName");
+    else if (issue === "tooLong") out.name = t("savingGoal.errNameTooLong");
+    else if (issue === "duplicate") out.name = t("savingGoal.errNameDuplicate");
+    const targetNum = parseAmount(target);
+    const currentNum = parseAmount(current);
+    if (targetNum <= 0) out.target = t("savingGoal.errAmount");
+    else if (targetNum > MAX_AMOUNT)
+      out.target = t("savingGoal.errAmountTooLarge");
+    else if (currentNum > targetNum)
+      out.current = t("savingGoal.errCurrentExceeds");
+    return out;
+  };
 
   const handleSubmit = () => {
+    if (saving) return;
+    const found = validate();
+    setErrors(found);
+    if (found.name) return nameRef.current?.focus();
+    if (found.target) return targetRef.current?.focus();
+    if (found.current) return currentRef.current?.focus();
+
     const trimmed = title.trim();
-    if (titleIssue === "required") {
-      setErr(t("savingGoal.errName"));
-      return;
-    }
-    if (titleIssue === "tooLong") {
-      setErr(t("savingGoal.errNameTooLong"));
-      return;
-    }
-    if (titleIssue === "duplicate") {
-      setErr(t("savingGoal.errNameDuplicate"));
-      return;
-    }
-    if (target <= 0) {
-      setErr(t("savingGoal.errAmount"));
-      return;
-    }
-    if (target > MAX_AMOUNT) {
-      setErr(t("savingGoal.errAmountTooLarge"));
-      return;
-    }
-    if (current > target) {
-      setErr(t("savingGoal.errCurrentExceeds"));
-      return;
-    }
-    setErr("");
+    const targetNum = parseAmount(target);
+    const currentNum = parseAmount(current);
 
     if (isEdit && goal) {
       updateMut.mutate(
@@ -152,15 +138,15 @@ export function SavingGoalAddDialog({
           id: goal.rowId,
           data: {
             title: trimmed,
-            targetAmount: target,
-            deadlineDate: deadlineDate || null,
+            targetAmount: targetNum,
+            deadlineDate: deadline || null,
             icon,
             color,
           },
         },
         {
           onSuccess: () => {
-            const diff = current - goal.currentAmount;
+            const diff = currentNum - goal.currentAmount;
             if (diff !== 0) {
               contributeMut.mutate(
                 { id: goal.rowId, data: { amount: diff } },
@@ -176,17 +162,17 @@ export function SavingGoalAddDialog({
       createMut.mutate(
         {
           title: trimmed,
-          targetAmount: target,
-          deadlineDate: deadlineDate || null,
+          targetAmount: targetNum,
+          deadlineDate: deadline || null,
           icon,
           color,
           currency: "KRW",
         },
         {
           onSuccess: (created) => {
-            if (current > 0) {
+            if (currentNum > 0) {
               contributeMut.mutate(
-                { id: created.rowId, data: { amount: current } },
+                { id: created.rowId, data: { amount: currentNum } },
                 { onSuccess: () => onClose() },
               );
             } else {
@@ -198,269 +184,88 @@ export function SavingGoalAddDialog({
     }
   };
 
-  const Footer = (
-    <ModalFooter
-      onSave={handleSubmit}
-      // 모바일 수정은 '수정'(앱 정합) — 데스크탑은 기존 '저장' 그대로.
-      saveLabel={isEdit ? (mobile ? tc("edit") : tc("save")) : tc("add")}
-      saving={
-        createMut.isPending || updateMut.isPending || contributeMut.isPending
-      }
-      // 모바일도 [취소][수정] 이다. 목록 행을 밀면 삭제가 나오므로(SavingGoalManager
-      // SwipeActions) 이 시트가 유일한 삭제 경로가 아니게 됐다 — 수정하러 들어온
-      // 시트에 파괴적 액션을 같이 두지 않는다(사용자 결정).
-      onCancel={onClose}
-    />
-  );
-
   return (
-    <ModalShell
-      title={isEdit ? t("savingGoal.titleEdit") : t("savingGoal.titleAdd")}
-      onClose={onClose}
-      mobile={mobile}
-      size="md"
-      footer={Footer}
+    <ResponsiveDialog
+      open
+      form
+      dirty={dirty}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      {/* Preview */}
-      <div
-        style={{
-          padding: 16,
-          background: "var(--bg-canvas)",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-lg)",
-          marginBottom: 18,
+      <ResponsiveDialogContent
+        title={isEdit ? t("savingGoal.titleEdit") : t("savingGoal.titleAdd")}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          nameRef.current?.focus({ preventScroll: true });
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 10,
-          }}
-        >
-          <span
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: tileRadius(36),
-              background: palette.bg,
-              color: palette.color,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            {isIconName(icon) ? (
-              <DynamicIcon name={icon} size={17} />
-            ) : (
-              <Target size={17} />
-            )}
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: "var(--text-body-sm)",
-                fontWeight: "700",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
+        <ResponsiveDialogBody>
+          <div className="flex flex-col gap-x6">
+            <Field
+              label={t("savingGoal.name")}
+              maxGraphemeCount={GOAL_NAME_MAX}
+              invalid={!!errors.name}
+              errorMessage={errors.name}
             >
-              {title || t("savingGoal.name")}
-            </div>
-            <div
-              style={{
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-tertiary)",
-              }}
+              <Input
+                ref={nameRef}
+                value={title}
+                placeholder={t("savingGoal.namePlaceholder")}
+                autoComplete="off"
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setErrors((s) => ({ ...s, name: undefined }));
+                }}
+              />
+            </Field>
+            <Field
+              label={t("savingGoal.targetAmount")}
+              invalid={!!errors.target}
+              errorMessage={errors.target}
             >
-              {formatDeadlineLabel(deadlineDate)}
-            </div>
+              <AmountInput
+                ref={targetRef}
+                value={target}
+                onValueChange={(v) => {
+                  setTarget(v);
+                  setErrors((s) => ({
+                    ...s,
+                    target: undefined,
+                    current: undefined,
+                  }));
+                }}
+              />
+            </Field>
+            <Field
+              label={t("savingGoal.currentAmount")}
+              indicator={t("savingGoal.optional")}
+              invalid={!!errors.current}
+              errorMessage={errors.current}
+            >
+              <AmountInput
+                ref={currentRef}
+                value={current}
+                onValueChange={(v) => {
+                  setCurrent(v);
+                  setErrors((s) => ({ ...s, current: undefined }));
+                }}
+              />
+            </Field>
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div
-              className="num"
-              style={{ fontSize: "var(--text-body-sm)", fontWeight: "700" }}
-            >
-              {pct.toFixed(0)}%
-            </div>
-            <div
-              className="num"
-              style={{
-                fontSize: "var(--text-badge)",
-                color: "var(--fg-tertiary)",
-              }}
-            >
-              {current.toLocaleString("ko-KR")} /{" "}
-              {target.toLocaleString("ko-KR")}
-            </div>
+          <div className="-mx-x6 mb-x2 mt-x3">
+            <GoalDeadlineRow value={deadline} onChange={setDeadline} />
+            <GoalIconRow value={icon} onChange={setIcon} />
+            <GoalColorRow value={color} onChange={setColor} />
           </div>
-        </div>
-        <div
-          style={{
-            height: 6,
-            background: "var(--bg-sunken)",
-            borderRadius: "var(--radius-pill)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${Math.min(100, pct)}%`,
-              height: "100%",
-              background: palette.color,
-              borderRadius: "var(--radius-pill)",
-            }}
-          />
-        </div>
-      </div>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("savingGoal.name")}</FieldLabel>
-        <Input
-          aria-invalid={!!titleErr}
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value.slice(0, GOAL_NAME_MAX));
-            setErr("");
-          }}
-          placeholder={t("savingGoal.namePlaceholder")}
-          maxLength={GOAL_NAME_MAX}
-          autoFocus
-        />
-        <NameCounter
-          len={title.trim().length}
-          max={GOAL_NAME_MAX}
-          err={titleErr}
-        />
-      </Field>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 12,
-          marginBottom: 14,
-        }}
-      >
-        <Field>
-          <FieldLabel>{t("savingGoal.targetAmount")}</FieldLabel>
-          <div style={{ position: "relative" }}>
-            <Input
-              className="num"
-              value={fmtNum(parseNum(targetStr))}
-              onChange={(e) => {
-                setTargetStr(sanitizeAmountInput(e.target.value));
-                setErr("");
-              }}
-              onKeyDown={blockNonDigitKey}
-              placeholder="0"
-              inputMode="numeric"
-              style={{ paddingRight: 28, textAlign: "right" }}
-            />
-            <span
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                fontSize: "var(--text-label-sm)",
-                color: "var(--fg-tertiary)",
-                pointerEvents: "none",
-              }}
-            >
-              원
-            </span>
-          </div>
-        </Field>
-        <Field>
-          <FieldLabel>{t("savingGoal.currentAmount")}</FieldLabel>
-          <div style={{ position: "relative" }}>
-            <Input
-              className="num"
-              value={fmtNum(parseNum(currentStr))}
-              onChange={(e) => {
-                setCurrentStr(sanitizeAmountInput(e.target.value));
-                setErr("");
-              }}
-              onKeyDown={blockNonDigitKey}
-              placeholder="0"
-              inputMode="numeric"
-              style={{ paddingRight: 28, textAlign: "right" }}
-            />
-            <span
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                fontSize: "var(--text-label-sm)",
-                color: "var(--fg-tertiary)",
-                pointerEvents: "none",
-              }}
-            >
-              원
-            </span>
-          </div>
-        </Field>
-      </div>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>
-          {t("savingGoal.deadline")}{" "}
-          <span style={{ color: "var(--fg-tertiary)", fontWeight: "400" }}>
-            {t("savingGoal.optional")}
-          </span>
-        </FieldLabel>
-        <InputDatePicker
-          value={deadlineDate}
-          onValueChange={(v) => setDeadlineDate(v ?? "")}
-        />
-      </Field>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("form.icon")}</FieldLabel>
-        {/* 카테고리 추가와 동일한 shared IconPicker (필드 트리거 + 검색 팝오버).
-            '없음' 선택은 저축 목표 기본 아이콘(piggy-bank)으로 대체. */}
-        <IconPicker value={icon} onChange={(v) => setIcon(v || "piggy-bank")} />
-      </Field>
-
-      <Field>
-        <FieldLabel>{t("form.color")}</FieldLabel>
-        <ColorSwatchGroup
-          columns={5}
-          value={color}
-          onValueChange={setColor}
-          options={CAT_PALETTE.map((p, i) => ({
-            value: p.baseHex,
-            bg: p.bg,
-            fg: p.color,
-            label: t("savingGoal.colorSwatch", { n: i + 1 }),
-          }))}
-        />
-      </Field>
-
-      {err && (
-        <div
-          style={{
-            marginTop: 14,
-            padding: "10px 12px",
-            background: "oklch(0.96 0.04 20)",
-            border:
-              "1px solid color-mix(in oklch, var(--color-fg-critical) 30%, transparent)",
-            borderRadius: "var(--radius-md)",
-            fontSize: "var(--text-label-sm)",
-            color: "var(--color-fg-critical)",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <AlertCircle size={13} /> {err}
-        </div>
-      )}
-    </ModalShell>
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCancel>{tc("cancel")}</ResponsiveDialogCancel>
+          <Button loading={saving} onClick={handleSubmit}>
+            {isEdit ? tc("save") : tc("add")}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
