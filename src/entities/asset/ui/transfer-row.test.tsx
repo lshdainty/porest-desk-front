@@ -105,6 +105,13 @@ describe("이체 줄 — ds List 줄", () => {
     );
   });
 
+  it("trailing 은 금액 뒤 같은 뒤 붙이개 안에 든다 — 줄 · 누름 바탕이 화면 끝까지 닿는다(바깥 감싸개 없음)", () => {
+    render({ gutter: true, trailing: <i data-testid="slot" /> });
+    const suffix = container.querySelector("[data-slot=list-suffix]")!;
+    expect(suffix.querySelector("[data-testid=slot]")).not.toBeNull();
+    expect(suffix.textContent).toContain("120,000");
+  });
+
   it("누를 수 있으면 버튼 줄이고, 누르면 이체를 넘긴다", () => {
     const seen: number[] = [];
     render({ onClick: (t) => seen.push(t.rowId) });

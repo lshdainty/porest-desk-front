@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/shared/ds/badge";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
@@ -32,6 +33,7 @@ export function TransferRow({
   onClick,
   showDate,
   gutter = false,
+  trailing,
 }: {
   transfer: AssetTransfer;
   perspectiveAssetRowId?: number;
@@ -42,6 +44,8 @@ export function TransferRow({
    * 호스트(가계부 · 자산 상세 · 거래 상세)가 아직 바깥 24 를 쥐고 있어서다. I-06 이 머지된 뒤 가계부가 두 줄을 함께 켠다(I-07 4).
    */
   gutter?: boolean;
+  /** 금액 뒤 같은 뒤 붙이개 안에 놓는 빈 자리 — 가계부가 ⋮ 줄과 금액 열을 맞추려 32 를 비운다. 줄 · 누름 바탕이 화면 끝까지 닿는다 */
+  trailing?: ReactNode;
 }) {
   const { t } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
@@ -100,7 +104,7 @@ export function TransferRow({
     </TagGroup>
   );
 
-  const suffix = (
+  const amountEl = (
     <span
       className={cn(
         "whitespace-nowrap font-bold tabular-nums",
@@ -116,6 +120,15 @@ export function TransferRow({
         {isEn() ? "" : "원"}
       </HideUnit>
     </span>
+  );
+
+  const suffix = trailing ? (
+    <>
+      {amountEl}
+      {trailing}
+    </>
+  ) : (
+    amountEl
   );
 
   // 이체는 회색 타일(list.md Prefix "이체 줄은 회색") — chart-gray-weak 바탕 + chart-gray 아이콘 20

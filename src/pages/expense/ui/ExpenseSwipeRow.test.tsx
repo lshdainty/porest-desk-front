@@ -14,7 +14,7 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
-const { ExpenseSwipeRow, PlainRow, SwipeConfirmDialog } =
+const { ExpenseSwipeRow, RowMoreSlot, SwipeConfirmDialog } =
   await import("./ExpenseSwipeRow");
 const { SwipeActionsProvider } = await import("@/shared/ds/swipe-actions");
 
@@ -140,12 +140,8 @@ describe("밀기 + 줄 끝 ⋮ — 한 배열에서 나온다", () => {
     expect(container.textContent).toContain("숲길커피");
   });
 
-  it("이체 줄처럼 감싸지 않는 줄은 ⋮ 자리만 비워 금액 열을 맞춘다", async () => {
-    await render(
-      <PlainRow>
-        <span data-testid="plain">줄</span>
-      </PlainRow>,
-    );
+  it("이체 줄처럼 감싸지 않는 줄은 ⋮ 자리만 뒤 붙이개 안에 비워 금액 열을 맞춘다", async () => {
+    await render(<RowMoreSlot />);
 
     expect(more()).toBeNull();
     expect(container.querySelector("[data-slot=swipe-actions]")).toBeNull();

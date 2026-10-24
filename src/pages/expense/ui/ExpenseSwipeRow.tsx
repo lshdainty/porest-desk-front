@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type Ref } from "react";
+import { useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
@@ -24,19 +24,9 @@ import type { ExpenseSwipeAction } from "@/pages/expense/lib/use-expense-swipe-a
  */
 export const ROW_MORE_SPACE = "w-x8";
 
-/** ⋮ 가 없는 줄의 오른쪽 빈자리 — 금액 열을 맞춘다 */
-export function RowMoreSpacer() {
-  return <span aria-hidden className={cn("shrink-0", ROW_MORE_SPACE)} />;
-}
-
-/** 이체 줄처럼 밀기 · ⋮ 가 없는 줄을 같은 열에 맞춘다 */
-export function PlainRow({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex items-center pr-global-gutter">
-      <div className="-mr-global-gutter min-w-0 flex-1">{children}</div>
-      <RowMoreSpacer />
-    </div>
-  );
+/** ⋮ 가 없는 줄(이체 · 시스템 거래)의 뒤 붙이개 빈자리 — 금액 열을 ⋮ 줄과 맞춘다(금액 앞 붙이개 간격 4 를 되돌린다) */
+export function RowMoreSlot() {
+  return <span aria-hidden className={cn("-ml-x1 shrink-0", ROW_MORE_SPACE)} />;
 }
 
 /**
@@ -89,7 +79,7 @@ export function ExpenseSwipeRow({
             className="-ml-x1 -mr-x2 shrink-0"
           />
         ) : (
-          <span aria-hidden className={cn("-ml-x1 shrink-0", ROW_MORE_SPACE)} />
+          <RowMoreSlot />
         )
       }
     />

@@ -65,7 +65,7 @@ import {
 } from "@/pages/expense/model/ledger-data";
 import {
   ExpenseSwipeRow,
-  PlainRow,
+  RowMoreSlot,
   SwipeConfirmDialog,
 } from "./ExpenseSwipeRow";
 import {
@@ -521,14 +521,14 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                   onAsk={setPendingAction}
                 />
               ) : (
-                // 이체 행은 감싸지 않는다 — 앱도 제외한다. 금액 열만 ⋮ 줄과 맞춘다.
-                <PlainRow key={ledgerKey(item)}>
-                  <TransferRow
-                    gutter
-                    transfer={item.transfer}
-                    onClick={(tr) => setTransferDetail(tr)}
-                  />
-                </PlainRow>
+                // 이체 행은 감싸지 않는다 — 앱도 제외한다. ⋮ 자리만 뒤 붙이개 안에 비워 금액 열을 맞춘다(줄 · 누름 바탕은 화면 끝까지)
+                <TransferRow
+                  key={ledgerKey(item)}
+                  gutter
+                  transfer={item.transfer}
+                  trailing={<RowMoreSlot />}
+                  onClick={(tr) => setTransferDetail(tr)}
+                />
               );
             })}
           </div>
