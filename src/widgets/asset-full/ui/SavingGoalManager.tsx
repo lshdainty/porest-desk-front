@@ -346,7 +346,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
         // 폰 — 흰 면 하나(I-08 24). 카드 · 줄 사이 선 없음, 구역 · 줄이 제 좌우 24 를 갖는다
         <div
           data-slot="saving-goal-phone"
-          className={summary ? undefined : "pt-x4"}
+          className={summary || failed ? undefined : "pt-x4"}
         >
           {content}
         </div>
