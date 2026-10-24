@@ -31,7 +31,11 @@ import {
   type FilterPeriodRange,
 } from "../../model/filter";
 
-// 빠른 기간 — 옛 필터에 있던 이번 주 · 이번 달 · 3개월만 둔다(날짜 선택 스펙의 한 벌에서 고른다). 새로 넓힌 지난 달 · 올해는 두지 않는다
+// 빠른 기간 — 이름은 옛 필터의 이번 주 · 이번 달 · 3개월 셋 그대로이고, **범위는 ds 날짜 선택의 달력 단위**를 따른다(date-picker.md · 날짜 결정 10-03):
+//   이번 주   월요일 ~ 오늘          → 일요일 ~ 토요일
+//   이번 달   1일 ~ 오늘             → 1일 ~ 말일
+//   3개월     오늘 − 3달 ~ 오늘      → 최근 3개월 = 두 달 전 1일 ~ 이번 달 말일
+// 새로 넓힌 지난 달 · 올해는 두지 않는다.
 const PRESETS = DATE_PRESETS.filter((n) =>
   ["thisWeek", "thisMonth", "last3Months"].includes(n),
 );
