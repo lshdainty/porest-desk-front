@@ -42,7 +42,12 @@ import { TodoMobileLedger } from "./TodoMobileLedger";
 import { TodoDesktop } from "./TodoDesktop";
 import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
 import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
-import { Fab } from "@/shared/ui/groo/fab";
+import { FloatingActionButton } from "@/shared/ds/floating-action-button";
+import {
+  TopNavigation,
+  TopNavigationBackButton,
+  TopNavigationTitle,
+} from "@/shared/ds/top-navigation";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import {
@@ -57,7 +62,6 @@ import { Card } from "@/shared/ui/card";
 import { InputDatePicker } from "@/shared/ui/input-date-picker";
 import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
-import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { PageHead } from "@/shared/ui/groo/page-head";
 
@@ -81,17 +85,29 @@ type OutletCtx = { onAddTx: () => void; mobile: boolean };
 /** TodoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
 function useTodoPageData() {
   const todosQ = useTodos();
-  return { isLoading: todosQ.isLoading };
+  return {
+    isLoading: todosQ.isLoading,
+    failed: todosQ.isError && !todosQ.data,
+  };
 }
 
 export const TodoPage = () => {
   const { mobile } = useOutletContext<OutletCtx>();
-  const { isLoading } = useTodoPageData();
-  if (isLoading) return <TodoPageSkeleton mobile={mobile} />;
-  return <TodoPageInner mobile={mobile} />;
+  const { isLoading, failed } = useTodoPageData();
+  // 폰은 틀(상단 바 · 달 · 요일 · 단추)을 그리고 데이터 자리만 기다린다(I-10 18) — 데스크톱 스켈레톤은 10-2 가 다시 짠다
+  if (isLoading && !mobile) return <TodoPageSkeleton />;
+  return <TodoPageInner mobile={mobile} loading={isLoading} failed={failed} />;
 };
 
-const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
+const TodoPageInner = ({
+  mobile,
+  loading,
+  failed,
+}: {
+  mobile: boolean;
+  loading: boolean;
+  failed: boolean;
+}) => {
   const { t } = useTranslation("todo");
   const todosQ = useTodos();
   const createTodo = useCreateTodo();
@@ -231,31 +247,37 @@ const TodoPageInner = ({ mobile }: { mobile: boolean }) => {
     </>
   );
 
-  // ── 모바일 — 캘린더+일별 리스트 원장 (design todo-mobile.jsx) ─────────────
+  // ── 모바일 — 흰 면 하나: 상단 바 + 원장(머리 · 선 · 날짜 묶음) + 떠 있는 [+] ──────
   if (mobile) {
     return (
       <>
-        <MobileBackHeader title={t("pageTitle")} />
-        <div style={{ position: "relative", paddingBottom: 96 }}>
+        <TopNavigation type="standard">
+          <TopNavigationBackButton fallbackHref="/desk/more" />
+          <TopNavigationTitle>{t("pageTitle")}</TopNavigationTitle>
+        </TopNavigation>
+        {/* 목록이 짧아도 흰 면이 화면 아래 끝까지 닿는다 — 아래 96 은 [+] 가 마지막 줄을 가리지 않게 하는 흰 면 안 여백 */}
+        <div className="relative min-h-0 flex-1 bg-bg-layer-default pb-[96px]">
           <TodoMobileLedger
             todos={todos}
             tags={tagNames}
             constellationToday={constellationTodayQ.data}
             sky={skyQ.data ?? []}
             doneToday={doneToday}
-            pinTop={46}
+            pinTop={56}
+            loading={loading}
+            failed={failed}
+            onRetry={() => void todosQ.refetch()}
             onToggle={onToggleTodo}
-            pendingIds={toggleStatus.pendingIds}
             holdIds={toggleStatus.holdIds}
             onRowClick={setViewing}
-            // 스와이프 액션 — 상세 footer 의 수정·삭제와 같은 목적지·같은 뮤테이션.
+            // 밀기 액션 — 상세 footer 의 수정·삭제와 같은 목적지·같은 뮤테이션.
             onEdit={setEditing}
             onDelete={(td) => deleteTodo.mutateAsync(td.rowId)}
-            deleting={deleteTodo.isPending}
             openNightSky={() => setNightSky(true)}
             openReport={() => setForestReport(true)}
           />
-          <Fab
+          <FloatingActionButton
+            icon={<Plus />}
             aria-label={t("addTodoLabel")}
             onClick={() => setEditing({ _new: true })}
           />
@@ -765,10 +787,10 @@ function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
 }
 
 /**
- * Todo 페이지 skeleton — 정적 틀(페이지 헤더)은 실제 렌더,
- * 서버 쿼리(useTodos) 의존 영역(원장 핀/리스트 · 칩/리스트/분포)만 skeleton.
+ * 데스크톱 · 태블릿 Todo 페이지 skeleton — 정적 틀(페이지 헤더)은 실제 렌더,
+ * 서버 쿼리(useTodos) 의존 영역(칩/리스트/분포)만 skeleton. 폰은 원장이 틀을 그리고 자리만 기다린다.
  */
-function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
+function TodoPageSkeleton() {
   const { t } = useTranslation("todo");
   // ── 필터 칩 4개 placeholder ──
   const Chips = (
@@ -791,51 +813,8 @@ function TodoPageSkeleton({ mobile }: { mobile: boolean }) {
       ))}
     </>
   );
-  const List = mobile ? (
-    <div>{rows}</div>
-  ) : (
-    <Card style={{ padding: "8px 20px" }}>{rows}</Card>
-  );
+  const List = <Card style={{ padding: "8px 20px" }}>{rows}</Card>;
 
-  if (mobile) {
-    // 모바일 원장 skeleton — 월네비/오늘상태/캘린더 핀 자리 + 일별 리스트
-    return (
-      <>
-        <MobileBackHeader title={t("pageTitle")} />
-        {/* 실렌더 원장(Shell = spacing-xl 24)과 같은 좌우 여백 */}
-        <div style={{ padding: "10px 24px 96px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "4px 0 10px",
-            }}
-          >
-            <SkeletonBase className="h-6 w-6 rounded-md" />
-            <SkeletonBase className="h-5 w-12" />
-            <SkeletonBase className="h-6 w-6 rounded-md" />
-            <SkeletonBase className="h-6 w-6 rounded-md ml-auto" />
-          </div>
-          <SkeletonBase className="h-6 w-40 mb-1.5" />
-          <SkeletonBase className="h-3.5 w-56 mb-4" />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
-              gap: 6,
-              marginBottom: 14,
-            }}
-          >
-            {Array.from({ length: 7 }).map((_, i) => (
-              <SkeletonBase key={i} className="h-12 w-full rounded-md" />
-            ))}
-          </div>
-          {List}
-        </div>
-      </>
-    );
-  }
   return (
     <div style={{ padding: 0 }}>
       {/* 정적 페이지 헤더 — 실제 렌더 */}

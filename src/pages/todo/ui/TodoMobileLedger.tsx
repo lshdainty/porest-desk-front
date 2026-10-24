@@ -1,24 +1,33 @@
-import { cn } from "@/shared/lib/cn";
-import { Fragment, useMemo, useState } from "react";
-import { Spinner } from "@/shared/ui/spinner";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  AlignLeft,
-  Check,
-  CheckCheck,
   ChevronLeft,
   ChevronRight,
   Cloudy,
-  FilterX,
+  Check,
+  FunnelX,
+  ListChecks,
   Pencil,
-  Sparkles,
   SlidersHorizontal,
+  Sparkles,
   Star,
   Telescope,
   Trash2,
 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { SwipeActions } from "@/shared/ui/swipe-actions";
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetContent,
+  BottomSheetFooter,
+} from "@/shared/ds/bottom-sheet";
+import { Button } from "@/shared/ds/button";
+import { List, ListSwitchItem } from "@/shared/ds/list";
+import { NotificationBadge } from "@/shared/ds/notification-badge";
+import { ResultSection } from "@/shared/ds/result-section";
+import { Skeleton } from "@/shared/ds/skeleton";
+import { SwipeActions } from "@/shared/ds/swipe-actions";
+import { useDsText } from "@/shared/ds/i18n";
+import { formatMonthDayDow } from "@/shared/lib/date";
 import {
   LedgerCalendar,
   LedgerCell,
@@ -38,11 +47,6 @@ import {
   LedgerMonthNav,
   LedgerNavBtn,
   LedgerPin,
-  LedgerRow,
-  LedgerRowMain,
-  LedgerRowSep,
-  LedgerRowSub,
-  LedgerRowTitle,
   LedgerShell,
   LedgerSub,
   LedgerSumBtn,
@@ -50,7 +54,6 @@ import {
   LedgerWeek,
 } from "@/shared/ui/groo/ledger";
 import { useLedgerScroll } from "@/shared/ui/groo/use-ledger-scroll";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
 import {
   constellationColorVar,
   constellationName,
@@ -61,9 +64,7 @@ import { NightSkyHero } from "@/widgets/constellation";
 import type { Todo } from "@/entities/todo";
 import {
   NO_DUE,
-  PRIO_KEYS,
   cellMarkOf,
-  dueOf,
   groupByDay,
   isDone,
   isFilterActive,
@@ -73,21 +74,23 @@ import {
   tagOf,
   todayISO,
   todayLeft as countTodayLeft,
-  type PrioKey,
+  type TodoFilter,
 } from "@/pages/todo/model/todo-ledger";
+import { TodoRow } from "./TodoRow";
+import { TodoDeleteConfirm } from "./TodoDeleteConfirm";
+import {
+  TodoFilterSection,
+  TodoPrioFilterBody,
+  TodoTagFilterBody,
+} from "./TodoFilterBody";
 
 const PAD = (n: number) => String(n).padStart(2, "0");
 
-/** 우선순위 색 — 중요=error·보통=warning·여유=info (status-*-fg, 다크 light 스왑). */
-const TDM_PRIO: Record<PrioKey, { color: string }> = {
-  HIGH: { color: "var(--status-danger-fg)" },
-  MEDIUM: { color: "var(--status-warning-fg)" },
-  LOW: { color: "var(--status-info-fg)" },
-};
 /**
- * 모바일 할일 원장 — 캘린더 + 일별 리스트 통합(가계부 tx-mobile 문법 재사용).
- * 상단 고정: 월네비+필터 / 오늘 상태+별빛 인사이트+[밤하늘] 토글 / 접이식 캘린더.
- * 디자인 SoT: todo-mobile.jsx TodoMobileLedger(v3).
+ * 폰 할 일 원장(I-10 B ~ E) — 흰 면 하나. 위에서 아래로: 원장 머리(달 이동 + 거르기 · 오늘 할 일 + [밤하늘] · 별빛 한 줄 ·
+ * 주 달력 + 월 달력 펼침) → 끝까지 선 → 날짜 묶음(목록 제목 + 줄). 머리는 Scroll Auto Hide 로 내리면 숨고 올리면 드러난다.
+ * 띠 · 카드를 두지 않는다 — 머리가 목록을 조절하므로 한 덩어리다(틈 0 + 끝까지 선).
+ * 달 · 거르기 셈은 `model/todo-ledger.ts`(데스크톱과 같은 모델) 가 한다.
  */
 export function TodoMobileLedger({
   todos,
@@ -96,13 +99,14 @@ export function TodoMobileLedger({
   sky,
   doneToday,
   pinTop,
+  loading = false,
+  failed = false,
+  onRetry,
   onToggle,
-  pendingIds,
   holdIds,
   onRowClick,
   onEdit,
   onDelete,
-  deleting,
   openNightSky,
   openReport,
 }: {
@@ -111,37 +115,42 @@ export function TodoMobileLedger({
   constellationToday: ConstellationToday | undefined;
   sky: SkyDay[];
   doneToday: number;
-  /** 상단 백 헤더 높이(px) — sticky pin·스크롤 보정 offset. */
+  /** 상단 바 높이(px) — 머리가 붙는 자리 · 스크롤 보정 */
   pinTop: number;
+  /** 처음 받는 중 — 틀은 그리고 데이터 자리만 Skeleton */
+  loading?: boolean;
+  /** 받지 못했다 — 틀은 그리고 목록 자리에 Result Section failure */
+  failed?: boolean;
+  onRetry?: () => void;
   onToggle: (todo: Todo) => void;
-  /** 완료 토글 요청이 진행 중인 항목 — 체크 자리에 스피너, 탭 잠금. */
-  pendingIds?: ReadonlySet<number>;
-  /** 방금 완료를 누른 항목 — '완료 숨기기' 를 켰어도 잠깐은 자리를 지킨다(QA #29). */
+  /** 방금 완료를 누른 항목 — '완료 숨기기' 를 켰어도, 정렬에서도 잠깐은 자리를 지킨다(QA #29) */
   holdIds?: ReadonlySet<number>;
   onRowClick: (todo: Todo) => void;
-  /** 스와이프 '수정' — 상세 footer 의 수정과 같은 목적지. */
+  /** 밀기 '수정' — 상세 footer 의 수정과 같은 목적지 */
   onEdit: (todo: Todo) => void;
-  /** 스와이프 '삭제' — Promise 를 돌려주면 확인 버튼이 끝날 때까지 스피너를 문다. */
-  onDelete: (todo: Todo) => Promise<unknown> | void;
-  /** 삭제 뮤테이션 pending. */
-  deleting: boolean;
+  /** 밀기 · 상세 '삭제' — 확인 뒤 부른다. Promise 가 끝날 때까지 확인창이 로딩을 문다 */
+  onDelete: (todo: Todo) => Promise<unknown>;
   openNightSky: () => void;
   openReport: () => void;
 }) {
   const { t, i18n } = useTranslation("todo");
   const { t: tc } = useTranslation("common");
+  const dsT = useDsText();
   const today = useMemo(() => todayISO(), []);
+  const en = !i18n.language.startsWith("ko");
 
   const [ym, setYm] = useState(today.slice(0, 7));
   const [expanded, setExpanded] = useState(false);
   const [skyOpen, setSkyOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [fTags, setFTags] = useState<string[]>([]);
-  const [fPrios, setFPrios] = useState<PrioKey[]>([]);
-  const [hideDone, setHideDone] = useState(false);
-  const filterActive = isFilterActive({ tags: fTags, prios: fPrios, hideDone });
+  const [filter, setFilter] = useState<TodoFilter>({
+    tags: [],
+    prios: [],
+    hideDone: false,
+  });
+  const [askDelete, setAskDelete] = useState<Todo | null>(null);
+  const filterActive = isFilterActive(filter);
 
-  // pin compact·스크롤 스파이·lock — 공용 원장 훅 (가계부와 동일 문법).
   const {
     rootRef,
     pinRef,
@@ -150,21 +159,14 @@ export function TodoMobileLedger({
     lock,
     scrollToDay,
     scrollToTop,
-  } = useLedgerScroll({
-    pinTop,
-    initialSelected: today,
-  });
+  } = useLedgerScroll({ pinTop, initialSelected: today });
 
-  // 월 + 필터 적용 목록. 기한 없는 할 일은 월과 무관하게 꼬리 그룹으로 노출(모델 — 데스크톱과 같은 셈).
-  const monthTodos = selectMonthTodos(
-    todos,
-    ym,
-    { tags: fTags, prios: fPrios, hideDone },
-    holdIds,
-  );
-  const byDay = groupByDay(monthTodos);
+  // 월 + 필터 적용 목록. 마감일 없는 할 일은 월과 무관하게 꼬리 묶음으로 낸다(모델 — 데스크톱과 같은 셈).
+  const monthTodos = selectMonthTodos(todos, ym, filter, holdIds);
+  const byDay = groupByDay(monthTodos, holdIds);
   const dayKeys = [...byDay.keys()].sort();
   const todayLeft = countTodayLeft(todos, today);
+  const hasUntagged = todos.some((td) => tagOf(td) === "");
 
   const skyByDate = useMemo(() => new Map(sky.map((d) => [d.date, d])), [sky]);
 
@@ -195,15 +197,10 @@ export function TodoMobileLedger({
     scrollToTop();
   };
 
-  const dowLabels = useMemo(
-    () =>
-      Array.from({ length: 7 }, (_, i) =>
-        new Date(2026, 1, i + 1).toLocaleDateString(
-          i18n.language.startsWith("ko") ? "ko-KR" : "en-US",
-          { weekday: i18n.language.startsWith("ko") ? "narrow" : "short" },
-        ),
-      ),
-    [i18n.language],
+  const dowLabels = Array.from({ length: 7 }, (_, i) =>
+    new Date(2026, 1, i + 1).toLocaleDateString(en ? "en-US" : "ko-KR", {
+      weekday: en ? "short" : "narrow",
+    }),
   );
 
   const lit = constellationToday
@@ -218,7 +215,13 @@ export function TodoMobileLedger({
     ? constellationColorVar(constellationToday.constellation.colorKey)
     : "var(--fg-brand)";
 
-  // 캘린더 셀 마크 — 오늘: 남은 건수/수집★, 과거: 수집★(색)/구름/N건/체크 (판정은 모델)
+  const dateName = (ds: string) =>
+    new Intl.DateTimeFormat(en ? "en-US" : "ko-KR", {
+      month: "long",
+      day: "numeric",
+    }).format(new Date(`${ds}T00:00:00`));
+
+  // 칸 표시(장식) — 판정은 모델, 뜻은 칸 이름(cellName)이 읽는다
   const cellMark = (ds: string) => {
     const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
     if (!mark) return null;
@@ -242,30 +245,32 @@ export function TodoMobileLedger({
           />
         );
       case "missed":
-        return (
-          <Cloudy
-            size={10}
-            strokeWidth={2}
-            style={{ color: "var(--fg-tertiary)" }}
-          />
-        );
+        return <Cloudy size={10} strokeWidth={2} />;
       case "left":
-        return mark.today ? (
-          <span style={{ color: "var(--fg-brand)", fontWeight: 700 }}>
-            {t("tdm.countN", { count: mark.count })}
-          </span>
-        ) : (
-          <span>{t("tdm.countN", { count: mark.count })}</span>
-        );
+        return t("tdm.countN", { count: mark.count });
       case "done":
-        return (
-          <Check
-            size={10}
-            strokeWidth={3}
-            style={{ color: "var(--color-chart-green)" }}
-          />
-        );
+        return <Check size={10} strokeWidth={3} className="text-fg-positive" />;
     }
+  };
+  const cellName = (ds: string) => {
+    const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
+    const date = dateName(ds);
+    if (!mark) return date;
+    switch (mark.kind) {
+      case "collected":
+      case "grown":
+        return t("tdm.cellCollected", { date });
+      case "missed":
+        return t("tdm.cellMissed", { date });
+      case "left":
+        return t("tdm.cellLeft", { date, count: mark.count });
+      case "done":
+        return t("tdm.cellDone", { date });
+    }
+  };
+  const isTodayLeft = (ds: string) => {
+    const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
+    return mark?.kind === "left" && mark.today;
   };
 
   const relOf = (d: string): string | null => {
@@ -275,18 +280,101 @@ export function TodoMobileLedger({
     if (kind === "yesterday") return t("tdm.relYesterday");
     return null;
   };
-  const dowOf = (ds: string) =>
-    new Date(`${ds}T00:00:00`).toLocaleDateString(
-      i18n.language.startsWith("ko") ? "ko-KR" : "en-US",
-      { weekday: i18n.language.startsWith("ko") ? "narrow" : "short" },
-    );
 
   const monthNum = Number(ym.split("-")[1]);
+
+  let body;
+  if (failed) {
+    body = (
+      <ResultSection
+        kind="failure"
+        title={t("tdm.loadFailed")}
+        description={t("tdm.loadFailedDesc")}
+        primaryAction={{ label: dsT("common.retry"), onClick: onRetry }}
+      />
+    );
+  } else if (loading) {
+    body = (
+      <div aria-busy="true">
+        <DayGroupSkeleton rows={3} />
+        <DayGroupSkeleton rows={2} />
+      </div>
+    );
+  } else if (monthTodos.length === 0) {
+    body = filterActive ? (
+      <ResultSection
+        icon={<FunnelX />}
+        title={t("tdm.emptyFilter")}
+        description={t("tdm.emptyFilterDesc")}
+      />
+    ) : (
+      <ResultSection
+        icon={<ListChecks />}
+        title={t("tdm.emptyMonth", { month: monthNum })}
+        description={t("tdm.emptyMonthDesc")}
+      />
+    );
+  } else {
+    body = dayKeys.map((d) => {
+      const items = byDay.get(d)!;
+      const doneN = items.filter(isDone).length;
+      const noDue = d === NO_DUE;
+      return (
+        <LedgerDayGroup
+          key={d}
+          day={noDue ? undefined : d}
+          // 할 일 폰은 묶음 머리 위 16 · 끝까지 선 바로 아래 첫 묶음 8(가계부 폰은 12 / 4 — 그림대로 짠다)
+          className="[&_[data-slot=list-header]]:mt-x4 [&:first-child_[data-slot=list-header]]:mt-x2"
+        >
+          <LedgerDayHead gutter>
+            <LedgerDayDate relative={noDue ? null : relOf(d)}>
+              {noDue ? t("tdm.noDue") : formatMonthDayDow(d)}
+            </LedgerDayDate>
+            <LedgerDaySum className="whitespace-nowrap">
+              {t("tdm.doneRatio", { done: doneN, total: items.length })}
+            </LedgerDaySum>
+          </LedgerDayHead>
+          <div>
+            {items.map((td) => (
+              <SwipeActions
+                key={td.rowId}
+                rowLabel={td.title}
+                enabled
+                actions={[
+                  {
+                    label: tc("edit"),
+                    icon: <Pencil />,
+                    kind: "primary",
+                    onSelect: () => onEdit(td),
+                  },
+                  {
+                    label: tc("delete"),
+                    icon: <Trash2 />,
+                    kind: "destructive",
+                    onSelect: () => setAskDelete(td),
+                  },
+                ]}
+              >
+                <List>
+                  <TodoRow
+                    todo={td}
+                    today={today}
+                    onToggle={onToggle}
+                    onOpen={onRowClick}
+                  />
+                </List>
+              </SwipeActions>
+            ))}
+          </div>
+        </LedgerDayGroup>
+      );
+    });
+  }
 
   return (
     <LedgerShell ref={rootRef}>
       <LedgerPin ref={pinRef} top={pinTop}>
-        {/* 월 네비 + 필터 */}
+        {/* 월 네비 + 거르기 */}
         <LedgerMonthNav>
           <LedgerNavBtn
             onClick={() => goMonth(-1)}
@@ -303,77 +391,86 @@ export function TodoMobileLedger({
           >
             <ChevronRight />
           </LedgerNavBtn>
+          {/* 조건이 걸렸다는 표시는 알림 점 하나 — 개수 숫자 · 켜짐 틴트를 두지 않는다(사용자 결정 10-23) */}
           <LedgerNavBtn
             className="ml-auto"
-            active={filterActive}
             onClick={() => setFilterOpen(true)}
-            aria-label={t("tdm.filter")}
+            aria-label={filterActive ? t("tdm.filterOn") : t("tdm.filter")}
           >
-            <SlidersHorizontal />
+            <NotificationBadge aria-hidden visible={filterActive}>
+              <SlidersHorizontal />
+            </NotificationBadge>
           </LedgerNavBtn>
         </LedgerMonthNav>
 
-        {/* 오늘 상태 + 별빛 인사이트 + [밤하늘] 토글 — 머리 전체가 Scroll Auto Hide 로 숨는다 */}
-        <>
-          <LedgerHead>
-            <div className="min-w-0 flex-auto">
-              <LedgerTotal>
-                {todayLeft > 0
-                  ? t("tdm.todayLeft", { count: todayLeft })
-                  : t("tdm.todayDone")}
-              </LedgerTotal>
-              {constellationToday && (
-                <LedgerSub>
-                  {skyDone
-                    ? t("tdm.insightDone", {
-                        name: conName,
-                        streak: constellationToday.streak,
-                      })
-                    : t("tdm.insightProgress", {
-                        lit,
-                        goal,
-                        left: goal - lit,
-                        name: conName,
-                      })}
-                </LedgerSub>
+        {/* 오늘 상태 + 별빛 한 줄 + [밤하늘] */}
+        <LedgerHead>
+          <div className="min-w-0 flex-auto">
+            <LedgerTotal>
+              {loading ? (
+                <Skeleton text="t9" className="w-40" />
+              ) : todayLeft > 0 ? (
+                t("tdm.todayLeft", { count: todayLeft })
+              ) : (
+                t("tdm.todayDone")
               )}
+            </LedgerTotal>
+            {constellationToday && (
+              <LedgerSub className="break-keep [overflow-wrap:break-word]">
+                {skyDone
+                  ? t("tdm.insightDone", {
+                      name: conName,
+                      streak: constellationToday.streak,
+                    })
+                  : t("tdm.insightProgress", {
+                      lit,
+                      goal,
+                      left: goal - lit,
+                      name: conName,
+                    })}
+              </LedgerSub>
+            )}
+          </div>
+          <LedgerSumBtn
+            aria-expanded={skyOpen}
+            onClick={() => {
+              setSkyOpen((v) => !v);
+              setExpanded(false);
+            }}
+          >
+            <Sparkles />
+            {t("tdm.nightSky")}
+          </LedgerSumBtn>
+        </LedgerHead>
+        {skyOpen && constellationToday && (
+          <LedgerDrop>
+            <NightSkyHero
+              today={constellationToday}
+              doneToday={doneToday}
+              mobile
+            />
+            <div className="mt-x2 flex gap-x2">
+              <Button
+                variant="neutralOutline"
+                size="small"
+                className="flex-1"
+                onClick={openReport}
+              >
+                <Telescope />
+                {t("tdm.report")}
+              </Button>
+              <Button
+                variant="neutralOutline"
+                size="small"
+                className="flex-1"
+                onClick={openNightSky}
+              >
+                <Sparkles />
+                {t("tdm.collection")}
+              </Button>
             </div>
-            <LedgerSumBtn
-              onClick={() => setSkyOpen((v) => !v)}
-              aria-expanded={skyOpen}
-            >
-              <Sparkles />
-              {t("tdm.nightSky")}
-            </LedgerSumBtn>
-          </LedgerHead>
-          {skyOpen && constellationToday && (
-            <LedgerDrop>
-              <NightSkyHero
-                today={constellationToday}
-                doneToday={doneToday}
-                mobile
-              />
-              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ flex: 1 }}
-                  onClick={openReport}
-                >
-                  <Telescope size={13} /> {t("tdm.report")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ flex: 1 }}
-                  onClick={openNightSky}
-                >
-                  <Sparkles size={13} /> {t("tdm.collection")}
-                </Button>
-              </div>
-            </LedgerDrop>
-          )}
-        </>
+          </LedgerDrop>
+        )}
 
         {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체 */}
         <LedgerCalendar>
@@ -388,6 +485,7 @@ export function TodoMobileLedger({
                   <LedgerCell
                     key={c.ds}
                     selected={isSel}
+                    aria-label={cellName(c.ds)}
                     onClick={() => {
                       setSelected(c.ds);
                       if (items) {
@@ -403,8 +501,20 @@ export function TodoMobileLedger({
                     >
                       {c.d}
                     </LedgerCellNum>
-                    <LedgerCellAmt className="inline-flex items-center justify-center">
-                      {cellMark(c.ds)}
+                    {/* 표시는 장식 — 뜻은 칸 이름이 읽는다. 높이 15(t1 줄 높이) */}
+                    <LedgerCellAmt
+                      aria-hidden
+                      className={
+                        isTodayLeft(c.ds)
+                          ? "inline-flex min-h-[1lh] items-center justify-center font-bold text-fg-brand"
+                          : "inline-flex min-h-[1lh] items-center justify-center font-normal text-fg-neutral-subtle"
+                      }
+                    >
+                      {loading ? (
+                        <Skeleton text="t1" className="w-x8" />
+                      ) : (
+                        cellMark(c.ds)
+                      )}
                     </LedgerCellAmt>
                   </LedgerCell>
                 );
@@ -413,280 +523,95 @@ export function TodoMobileLedger({
           ))}
           <LedgerExpand
             expanded={expanded}
-            onClick={() => setExpanded((v) => !v)}
-            aria-label={expanded ? t("tdm.collapse") : t("tdm.expand")}
+            onClick={() => {
+              setExpanded((v) => !v);
+              setSkyOpen(false);
+            }}
+            aria-label={t("tdm.monthCalendar")}
           />
         </LedgerCalendar>
         <LedgerDivider />
       </LedgerPin>
 
-      {/* 일별 할 일 리스트 */}
-      <LedgerList>
-        {dayKeys.map((d) => {
-          const items = byDay.get(d)!;
-          const doneN = items.filter(isDone).length;
-          const noDue = d === NO_DUE;
-          const rel = noDue ? null : relOf(d);
-          const [yy = "", mm = "", dd = ""] = d.split("-");
-          return (
-            <LedgerDayGroup key={d} day={noDue ? undefined : d}>
-              <LedgerDayHead>
-                <LedgerDayDate relative={rel}>
-                  {noDue
-                    ? t("tdm.noDue")
-                    : `${yy.slice(2)}. ${Number(mm)}. ${Number(dd)}(${dowOf(d)})`}
-                </LedgerDayDate>
-                <LedgerDaySum
-                  className={cn(
-                    "num",
-                    doneN === items.length
-                      ? "text-chart-green"
-                      : "text-fg-neutral-subtle",
-                  )}
-                >
-                  {t("tdm.doneRatio", { done: doneN, total: items.length })}
-                </LedgerDaySum>
-              </LedgerDayHead>
-              <div>
-                {items.map((td, i) => {
-                  const prio = TDM_PRIO[td.priority];
-                  const due = dueOf(td);
-                  const overdue = !isDone(td) && !!due && due < today;
-                  const done = isDone(td);
-                  return (
-                    <Fragment key={td.rowId}>
-                      {/* 구분선을 행 안쪽 border 로 두면 행이 밀릴 때 선도 함께 밀려
-                          트레이 위를 지나간다 — 행 사이 형제로 뺀다. */}
-                      {i > 0 && <LedgerDivider inset />}
-                      <SwipeActions
-                        rowId={`todo-${td.rowId}`}
-                        groupTag="todo-list"
-                        rowLabel={td.title}
-                        enabled
-                        actions={[
-                          {
-                            label: tc("edit"),
-                            icon: <Pencil />,
-                            kind: "primary",
-                            onSelect: () => onEdit(td),
-                          },
-                          {
-                            label: tc("delete"),
-                            icon: <Trash2 />,
-                            kind: "destructive",
-                            confirm: {
-                              title: t("deleteConfirm.title"),
-                              message: t("deleteConfirm.message", {
-                                name: td.title,
-                              }),
-                              cancelLabel: t("deleteConfirm.cancel"),
-                              loading: deleting,
-                            },
-                            onSelect: () => onDelete(td),
-                          },
-                        ]}
-                      >
-                        <LedgerRow
-                          className="rounded-none"
-                          style={{ opacity: done ? 0.55 : 1 }}
-                          onClick={() => onRowClick(td)}
-                        >
-                          <button
-                            type="button"
-                            className="tdm-check"
-                            disabled={pendingIds?.has(td.rowId)}
-                            aria-busy={pendingIds?.has(td.rowId) || undefined}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggle(td);
-                            }}
-                            aria-label={
-                              done ? t("uncomplete") : t("status.COMPLETED")
-                            }
-                            aria-pressed={done}
-                            style={{
-                              border: done
-                                ? "0"
-                                : `2px solid ${overdue ? "var(--color-chart-red)" : "var(--border-strong)"}`,
-                              background: done
-                                ? "var(--color-bg-brand-solid)"
-                                : "transparent",
-                            }}
-                          >
-                            {pendingIds?.has(td.rowId) ? (
-                              <Spinner size="sm" />
-                            ) : (
-                              done && (
-                                <Check
-                                  size={13}
-                                  color="var(--color-static-white)"
-                                  strokeWidth={3}
-                                />
-                              )
-                            )}
-                          </button>
-                          <LedgerRowMain as="button">
-                            <LedgerRowTitle
-                              style={{
-                                textDecoration: done ? "line-through" : "none",
-                              }}
-                            >
-                              {td.title}
-                            </LedgerRowTitle>
-                            <LedgerRowSub>
-                              {tagOf(td) && <span>{tagOf(td)}</span>}
-                              {td.content && (
-                                <>
-                                  {tagOf(td) && <LedgerRowSep />}
-                                  <AlignLeft size={11} />
-                                </>
-                              )}
-                            </LedgerRowSub>
-                          </LedgerRowMain>
-                          <span
-                            className="tdm-prio"
-                            style={{
-                              background: `color-mix(in oklab, ${prio.color} 12%, var(--bg-surface))`,
-                              color: prio.color,
-                            }}
-                          >
-                            {t(`prio.${td.priority}`)}
-                          </span>
-                        </LedgerRow>
-                      </SwipeActions>
-                    </Fragment>
-                  );
-                })}
-              </div>
-            </LedgerDayGroup>
-          );
-        })}
-        {monthTodos.length === 0 && (
-          <div style={{ textAlign: "center", padding: "56px 0" }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 999,
-                background: "var(--bg-sunken)",
-                color: "var(--fg-tertiary)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 14,
-              }}
-            >
-              {filterActive ? <FilterX size={24} /> : <CheckCheck size={24} />}
-            </div>
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: "var(--fg-primary)",
-                marginBottom: 4,
-              }}
-            >
-              {filterActive
-                ? t("tdm.emptyFilter")
-                : t("tdm.emptyMonth", { month: monthNum })}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
-              {filterActive
-                ? t("tdm.emptyFilterDesc")
-                : t("tdm.emptyMonthDesc")}
-            </div>
-          </div>
-        )}
-      </LedgerList>
+      {/* 날짜 묶음 — 목록 제목 + 줄(줄이 제 좌우 24 를 갖는다) */}
+      <LedgerList className="-mx-global-gutter">{body}</LedgerList>
 
-      {/* 필터 시트 */}
-      {filterOpen && (
-        <ModalShell
-          title={t("tdm.filter")}
-          onClose={() => setFilterOpen(false)}
-          size="sm"
-          mobile
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 18,
-              paddingBottom: 8,
-            }}
-          >
-            <div>
-              <div className="tdm-filter__label">{t("tag")}</div>
-              <div className="tdm-chips">
-                {tags.map((tag) => (
-                  <button
-                    type="button"
-                    key={tag}
-                    className={`tdm-chip ${fTags.includes(tag) ? "tdm-chip--on" : ""}`}
-                    onClick={() =>
-                      setFTags((prev) =>
-                        prev.includes(tag)
-                          ? prev.filter((x) => x !== tag)
-                          : [...prev, tag],
-                      )
-                    }
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="tdm-filter__label">{t("form.priority")}</div>
-              <div className="tdm-chips">
-                {PRIO_KEYS.map((k) => (
-                  <button
-                    type="button"
-                    key={k}
-                    className={`tdm-chip ${fPrios.includes(k) ? "tdm-chip--on" : ""}`}
-                    onClick={() =>
-                      setFPrios((prev) =>
-                        prev.includes(k)
-                          ? prev.filter((x) => x !== k)
-                          : [...prev, k],
-                      )
-                    }
-                  >
-                    <i style={{ background: TDM_PRIO[k].color }} />
-                    {t(`prio.${k}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button
-              type="button"
-              className={`tdm-chip ${hideDone ? "tdm-chip--on" : ""}`}
-              style={{ alignSelf: "flex-start" }}
-              onClick={() => setHideDone((v) => !v)}
-            >
-              <Check size={12} strokeWidth={3} /> {t("tdm.hideDone")}
-            </button>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button
-                variant="outline"
-                style={{ flex: 1 }}
-                disabled={!filterActive}
-                onClick={() => {
-                  setFTags([]);
-                  setFPrios([]);
-                  setHideDone(false);
-                }}
-              >
-                {t("tdm.reset")}
-              </Button>
-              {/* footer 액션은 화면 폭을 반씩 나눠 갖는다 — spec drawer.md "flex:1 평등 분배". */}
-              <Button style={{ flex: 1 }} onClick={() => setFilterOpen(false)}>
-                {t("tdm.apply")}
-              </Button>
-            </div>
-          </div>
-        </ModalShell>
+      {askDelete && (
+        <TodoDeleteConfirm
+          name={askDelete.title}
+          onConfirm={() => onDelete(askDelete)}
+          onClose={() => setAskDelete(null)}
+        />
       )}
+
+      {/* 거르기 시트 — 고르기(바깥 누름 · 끌어내림으로 닫힌다). 바꾸는 즉시 목록에 걸린다 */}
+      <BottomSheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <BottomSheetContent title={t("tdm.filter")}>
+          <BottomSheetBody>
+            <div className="flex flex-col gap-x6 pb-x2">
+              <TodoFilterSection label={t("tag")}>
+                <TodoTagFilterBody
+                  tags={tags}
+                  hasUntagged={hasUntagged}
+                  value={filter.tags}
+                  onChange={(next) => setFilter((f) => ({ ...f, tags: next }))}
+                />
+              </TodoFilterSection>
+              <TodoFilterSection label={t("form.priority")}>
+                <TodoPrioFilterBody
+                  value={filter.prios}
+                  onChange={(next) => setFilter((f) => ({ ...f, prios: next }))}
+                />
+              </TodoFilterSection>
+              <List className="-mx-x6 w-[calc(100%+var(--spacing-x12))]">
+                <ListSwitchItem
+                  title={t("tdm.hideDone")}
+                  checked={filter.hideDone}
+                  onCheckedChange={(on) =>
+                    setFilter((f) => ({ ...f, hideDone: on }))
+                  }
+                />
+              </List>
+            </div>
+          </BottomSheetBody>
+          <BottomSheetFooter>
+            <Button
+              variant="neutralWeak"
+              disabled={!filterActive}
+              onClick={() =>
+                setFilter({ tags: [], prios: [], hideDone: false })
+              }
+            >
+              {t("tdm.reset")}
+            </Button>
+            <Button onClick={() => setFilterOpen(false)}>
+              {t("tdm.apply")}
+            </Button>
+          </BottomSheetFooter>
+        </BottomSheetContent>
+      </BottomSheet>
     </LedgerShell>
+  );
+}
+
+/** 불러오는 동안의 날짜 묶음 — 머리 + 줄(체크 24 · 제목 · 설명 · 배지) 자리. 틀 값은 실제 줄과 같다 */
+function DayGroupSkeleton({ rows }: { rows: number }) {
+  return (
+    <div className="[&:not(:first-child)]:mt-x4 first:mt-x2">
+      <div className="flex items-center justify-between px-global-gutter py-x2">
+        <Skeleton text="t4" className="w-32" />
+        <Skeleton text="t4" className="w-12" />
+      </div>
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex items-start gap-x3 px-global-gutter py-x3">
+          <Skeleton className="size-6 shrink-0" radius="4" />
+          <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
+            <Skeleton text="t5" className="w-3/4" />
+            <Skeleton text="t3" className="w-1/3" />
+          </div>
+          <Skeleton text="t1" className="w-x8 shrink-0" />
+        </div>
+      ))}
+    </div>
   );
 }

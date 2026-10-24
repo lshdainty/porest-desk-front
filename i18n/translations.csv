@@ -2605,15 +2605,24 @@ todo,tdm.nightSky,밤하늘,Night sky
 todo,tdm.report,관측 리포트,Observation report
 todo,tdm.collection,도감 · 기록,Collection · log
 todo,tdm.countN,{{count}}건,{{count}}
-todo,tdm.collapse,접기,Collapse
-todo,tdm.expand,월 전체 보기,Show full month
-todo,tdm.noDue,기한 없음,No due date
+todo,tdm.noDue,마감일 없음,No due date
 todo,tdm.doneRatio,{{done}}/{{total}} 완료,{{done}}/{{total}} done
 todo,tdm.relToday,오늘,Today
 todo,tdm.relTomorrow,내일,Tomorrow
 todo,tdm.relYesterday,어제,Yesterday
+todo,check.name,{{title}} 완료,Complete {{title}}
+todo,check.nameOverdue,"{{title}} 완료, 마감 지남","Complete {{title}}, overdue"
+todo,memoTag,메모,Note
+todo,tdm.monthCalendar,월 달력,Month calendar
+todo,tdm.filterOn,"필터, 조건 걸림","Filter, applied"
+todo,tdm.cellLeft,"{{date}}, 남은 할 일 {{count}}개","{{date}}, {{count}} to do"
+todo,tdm.cellCollected,"{{date}}, 별자리 수집","{{date}}, constellation collected"
+todo,tdm.cellMissed,"{{date}}, 놓친 날","{{date}}, missed day"
+todo,tdm.cellDone,"{{date}}, 다 끝냄","{{date}}, all done"
+todo,tdm.loadFailed,할 일을 불러오지 못했어요,Couldn't load your to-dos
+todo,tdm.loadFailedDesc,잠시 후 다시 시도해주세요.,Please try again in a moment.
 todo,tdm.emptyFilter,조건에 맞는 할 일이 없어요,No todos match the filters
-todo,tdm.emptyFilterDesc,필터를 조정하거나 초기화해보세요.,Adjust or reset the filters.
+todo,tdm.emptyFilterDesc,조건을 바꾸거나 지워보세요.,Change or clear the conditions.
 todo,tdm.emptyMonth,{{month}}월 할 일이 없어요,No todos this month
 todo,tdm.emptyMonthDesc,오른쪽 아래 + 버튼으로 추가해보세요.,Add one with the + button.
 todo,tdm.hideDone,완료한 할 일 숨기기,Hide completed
