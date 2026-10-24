@@ -74,13 +74,19 @@ function AssetDesktop() {
       className="px-[var(--layout-margin)] pb-screen-bottom pt-nav-to-title"
     >
       <div className="mx-auto w-full max-w-[var(--layout-max-low)] lg:max-w-[var(--layout-max-medium)]">
+        <span role="status" className="sr-only">
+          {g.isFetching ? t("refreshing") : ""}
+        </span>
         <PageHead
           title={
             <span className="inline-flex items-center gap-x3">
               {t("assets")}
-              {/* 새로 고침 중 — 버튼이 아니라 섹션 새로 고침이다(뒤를 계속 써도 된다): 제목 옆 원 24 */}
+              {/* 새로 고침 중 — 버튼이 아니라 섹션 새로 고침이다(뒤를 계속 써도 된다): 제목 옆 원 24.
+                  제목(h1)의 이름에 들어가지 않게 장식으로 숨기고, 진행 알림은 아래 role="status" 한 곳에서 한다 */}
               {g.isFetching && (
-                <ProgressCircle size="24" aria-label={t("refreshing")} />
+                <span aria-hidden className="inline-flex">
+                  <ProgressCircle size="24" />
+                </span>
               )}
             </span>
           }
@@ -217,56 +223,61 @@ function AssetMobile() {
       <div data-band="flush" data-section="summary">
         <SummarySection g={g} place="band" />
       </div>
-      <div data-band="flush" data-section="accounts">
-        <GroupSection
-          place="band"
-          g={g}
-          card="asset.accounts"
-          title={t("accountDepositTitle")}
-          assets={g.accounts}
-          total={g.accountsTotal}
-          onOpenDetail={open}
-        />
-      </div>
-      {g.investments.length > 0 && (
-        <div data-band="flush" data-section="investments">
-          <GroupSection
-            place="band"
-            g={g}
-            card="asset.investments"
-            title={t("group.invest")}
-            assets={g.investments}
-            total={g.investmentsTotal}
-            onOpenDetail={open}
-            investValMap={g.investValMap}
-          />
-        </div>
-      )}
-      <div data-band="flush" data-section="cards">
-        <GroupSection
-          place="band"
-          g={g}
-          card="asset.cards"
-          title={t("group.card")}
-          assets={g.cards}
-          total={g.cardsTotal}
-          negativeTotal
-          onOpenDetail={open}
-        />
-      </div>
-      {g.loans.length > 0 && (
-        <div data-band="flush" data-section="loans">
-          <GroupSection
-            place="band"
-            g={g}
-            card="asset.loans"
-            title={t("assetType.loan")}
-            assets={g.loans}
-            total={g.loansTotal}
-            negativeTotal
-            onOpenDetail={open}
-          />
-        </div>
+      {/* 목록 질의 하나가 실패하면 상자는 요약 띠에 하나뿐이다 — 묶음 띠는 두지 않는다(08-1 0307ba35 와 같은 규칙, 데스크톱은 카드마다) */}
+      {!g.assetsFailed && (
+        <>
+          <div data-band="flush" data-section="accounts">
+            <GroupSection
+              place="band"
+              g={g}
+              card="asset.accounts"
+              title={t("accountDepositTitle")}
+              assets={g.accounts}
+              total={g.accountsTotal}
+              onOpenDetail={open}
+            />
+          </div>
+          {g.investments.length > 0 && (
+            <div data-band="flush" data-section="investments">
+              <GroupSection
+                place="band"
+                g={g}
+                card="asset.investments"
+                title={t("group.invest")}
+                assets={g.investments}
+                total={g.investmentsTotal}
+                onOpenDetail={open}
+                investValMap={g.investValMap}
+              />
+            </div>
+          )}
+          <div data-band="flush" data-section="cards">
+            <GroupSection
+              place="band"
+              g={g}
+              card="asset.cards"
+              title={t("group.card")}
+              assets={g.cards}
+              total={g.cardsTotal}
+              negativeTotal
+              onOpenDetail={open}
+            />
+          </div>
+          {g.loans.length > 0 && (
+            <div data-band="flush" data-section="loans">
+              <GroupSection
+                place="band"
+                g={g}
+                card="asset.loans"
+                title={t("assetType.loan")}
+                assets={g.loans}
+                total={g.loansTotal}
+                negativeTotal
+                onOpenDetail={open}
+              />
+            </div>
+          )}
+        </>
       )}
       <div data-band="flush" data-section="goals">
         <SavingGoalsSection place="band" />

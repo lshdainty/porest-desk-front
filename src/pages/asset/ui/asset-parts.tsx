@@ -29,7 +29,7 @@ import {
   formatAxisWon,
   type ChartColor,
 } from "@/shared/ds/chart";
-import { withCommaBreaks, dsLocale } from "@/shared/ds/i18n";
+import { withCommaBreaks, dsLocale, useDsText } from "@/shared/ds/i18n";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { ResultSection } from "@/shared/ds/result-section";
 import { Skeleton } from "@/shared/ds/skeleton";
@@ -791,6 +791,7 @@ export function AssetRow({
   investVal?: InvestValuation | null;
 }) {
   const { t } = useTranslation("asset");
+  const dsT = useDsText();
   const m = useAssetMask(card, asset.isAmountHidden === "Y");
   const neg = asset.balance < 0;
   const isCard = CARD_TYPES.includes(asset.assetType);
@@ -930,7 +931,9 @@ export function AssetRow({
           />
           <BarCaption
             left={m(`${won(usage.used)} / ${won(usage.limit)}`)}
-            right={over ? t("overAmt", { amount: m(won(usage.over)) }) : null}
+            right={
+              over ? dsT("progress.over", { value: m(won(usage.over)) }) : null
+            }
             critical={over}
           />
         </>

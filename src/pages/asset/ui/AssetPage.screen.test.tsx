@@ -243,7 +243,7 @@ describe("카드 한도 막대(56)", () => {
       m95!.querySelector("[data-slot=progress-fill]")!.className,
     ).toContain("bg-fg-brand");
     expect(over!.getAttribute("data-state")).toBe("over");
-    expect(text()).toContain('overAmt{"amount":"2,345,678원"}');
+    expect(text()).toContain("2,345,678원 초과");
   });
 
   it("막대에 이름 · 값 글이 있다(role=meter)", () => {
@@ -339,11 +339,41 @@ describe("카드마다 따로 불러오고 실패한다(62)", () => {
     expect(text()).not.toContain("서버 오류");
   });
 
-  it("목록이 실패하면 묶음마다 실패 상자 + 오류 원문은 없다", () => {
+  it("목록이 실패하면 데스크톱은 카드마다 실패 상자 + 오류 원문은 없다", () => {
     state.assets = q(undefined, { isError: true });
     render();
     expect(text()).toContain("loadFailed.assets");
     expect(text()).toContain("loadFailed.composition");
+  });
+
+  it("폰은 질의 하나 = 실패 상자 하나 — 요약 띠에만, 묶음 띠는 없다(08-1 규칙)", () => {
+    outlet.mobile = true;
+    state.assets = q(undefined, { isError: true });
+    render();
+    expect(
+      container.querySelectorAll("[data-slot=result-section]"),
+    ).toHaveLength(1);
+    expect(text()).toContain("loadFailed.summary");
+    expect(text()).not.toContain("loadFailed.assets");
+    const bands = Array.from(
+      container.querySelectorAll(".screen-bands > *"),
+    ).map((b) => b.getAttribute("data-section"));
+    expect(bands).toEqual(["summary", "goals"]);
+  });
+
+  it("새로 고치는 중에도 제목(h1)의 이름은 '자산' 이다 — 원은 장식이고 진행 알림은 role=status 한 곳", () => {
+    state.assets = q(state.assets.data, { isFetching: true });
+    render();
+    const h1 = container.querySelector("h1")!;
+    expect(h1.textContent).toBe("assets");
+    const spinner = h1.querySelector("[data-slot=progress-circle]");
+    expect(spinner).not.toBeNull();
+    expect(spinner!.closest("[aria-hidden=true]")).not.toBeNull();
+    const status = container.querySelectorAll("[role=status]");
+    expect(
+      Array.from(status).filter((n) => n.textContent === "refreshing"),
+    ).toHaveLength(1);
+    expect(h1.closest("[role=status]")).toBeNull();
   });
 
   it("불러오는 중에도 제목 · 카드 틀은 그린다", () => {

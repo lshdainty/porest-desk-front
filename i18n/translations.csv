@@ -630,7 +630,6 @@ asset,group.cashDeposit,현금·예금,Cash & Deposits
 asset,composition,자산 구성,Asset composition
 asset,noItems,등록된 항목이 없어요.,No items registered.
 asset,noAssetData,자산 데이터가 없어요.,No asset data.
-asset,viewSubAssets,클릭하여 하위 자산 보기,Click to view sub-assets
 asset,upcomingBills,예정된 결제 · 고정지출,Upcoming payments · Fixed expenses
 asset,viewAll,전체 보기,View all
 asset,noUpcomingBills,예정된 결제가 없어요.,No upcoming payments.
@@ -690,7 +689,6 @@ asset,assetTotal,자산 합계,Total assets
 asset,others,기타,Others
 asset,backToComposition,자산 구성으로,Back to composition
 asset,cardLimitName,{{name}} 한도,{{name}} limit
-asset,overAmt,{{amount}} 초과,{{amount}} over
 asset,chart.netWorthName,최근 12개월 순자산 추이 — 이번 달 {{amount}},Net worth over the last 12 months — this month {{amount}}
 asset,chart.compositionName,자산 구성 — {{label}} {{amount}},Asset composition — {{label}} {{amount}}
 asset,chart.tableMonth,달,Month
