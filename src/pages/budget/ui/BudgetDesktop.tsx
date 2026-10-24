@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Settings } from "lucide-react";
 import { Card } from "@/shared/ds/card";
 import { Button } from "@/shared/ds/button";
 import { PageHead } from "@/shared/ui/groo/page-head";
@@ -45,10 +44,8 @@ export function BudgetDesktop() {
                 variant="ghost"
                 ghostColor="neutralMuted"
                 size="small"
-                className="[&_svg]:size-4"
                 onClick={goToSettings}
               >
-                <Settings aria-hidden />
                 {t("settings")}
               </Button>
             </>

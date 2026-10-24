@@ -22,7 +22,6 @@ import {
 import { List, ListItem, ListTile } from "@/shared/ds/list";
 import { ResultSection } from "@/shared/ds/result-section";
 import { Skeleton } from "@/shared/ds/skeleton";
-import { withCommaBreaks } from "@/shared/ds/i18n";
 import { Button } from "@/shared/ds/button";
 import { cn } from "@/shared/lib/cn";
 import { formatMonthShort } from "@/shared/lib/date";
@@ -40,8 +39,10 @@ import {
   Eyebrow,
   HeadNote,
   KeyValueRows,
+  BarredItem,
   KeyValueSkeleton,
   MeterBar,
+  StackedAmount,
   StatGrid,
   type KeyValue,
 } from "@/shared/ui/groo/band-parts";
@@ -152,9 +153,18 @@ export function TotalSection({
             </div>
           </>
         ) : (
-          <Callout tone="neutral" className="mt-x3" icon={null}>
-            {t("capUnset")}
-          </Callout>
+          <>
+            <Callout tone="neutral" className="mt-x3">
+              {t("capUnset")}
+            </Callout>
+            {m.categoryLimitSum > 0 && (
+              <p className="m-0 mt-x2 text-t3 text-fg-neutral-subtle">
+                {t("categorySumNow", {
+                  amount: mask(won(m.categoryLimitSum)),
+                })}
+              </p>
+            )}
+          </>
         )}
       </Body>
       {m.overallBudget ? (
@@ -173,16 +183,18 @@ export function TotalSection({
               </Callout>
             </div>
           )}
-          <div className={place === "band" ? "pb-x6" : undefined} />
+          <div
+            className={
+              place === "band"
+                ? m.overAllocated
+                  ? "pb-x6"
+                  : "pb-x4"
+                : undefined
+            }
+          />
         </>
       ) : (
-        m.categoryLimitSum > 0 && (
-          <Body place={place} className="pt-x3 pb-x6">
-            <Desc>
-              {t("categorySumNow", { amount: mask(won(m.categoryLimitSum)) })}
-            </Desc>
-          </Body>
-        )
+        <div className={place === "band" ? "pb-x6" : undefined} />
       )}
     </>
   );
@@ -278,6 +290,10 @@ export function PaceSection({
             value={m.totalSpent}
             max={Math.max(m.totalLimit, 0)}
             formatValue={(n) => mask(won(n))}
+            valueText={t("paceValue", {
+              used: m.pct.toFixed(0),
+              elapsed: elapsed.toFixed(0),
+            })}
           />
           {/* 오늘 표시선 2 × 14 — 막대 위로 3, 장식(aria-hidden) */}
           <span
@@ -454,7 +470,10 @@ export function CategorySection({
   return (
     <>
       {head}
-      <div role="list" aria-label={t("categoryBudgets")}>
+      <List
+        aria-label={t("categoryBudgets")}
+        className={place === "band" ? "pb-x3" : undefined}
+      >
         {m.categoryBudgets.map((b) => {
           const catId = b.categoryRowId as number;
           const cat = m.categoryMap.get(catId);
@@ -467,9 +486,12 @@ export function CategorySection({
           const limit = b.budgetAmount;
           const over = spent > limit;
           return (
-            <div role="listitem" key={b.rowId}>
-              <List>
+            <BarredItem
+              key={b.rowId}
+              row={
                 <ListItem
+                  as="div"
+                  align="top"
                   prefix={
                     <ListTile
                       style={{ background: palette.bg, color: palette.color }}
@@ -488,34 +510,26 @@ export function CategorySection({
                     </span>
                   }
                   suffix={
-                    <>
-                      <span
-                        className={cn(
-                          "block text-end text-t5 font-bold tabular-nums",
-                          over ? "text-fg-critical" : "text-fg-neutral",
-                        )}
-                      >
-                        {withCommaBreaks(mask(won(spent)))}
-                      </span>
-                      <span className="block text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
-                        / {withCommaBreaks(mask(won(limit)))}
-                      </span>
-                    </>
+                    <StackedAmount
+                      main={mask(won(spent))}
+                      sub={mask(won(limit))}
+                      critical={over}
+                    />
                   }
                 />
-              </List>
-              <div className="px-x6 pb-x3 pt-x1">
+              }
+              bar={
                 <MeterBar
                   label={t("budgetName", { name })}
                   value={spent}
                   max={limit}
                   formatValue={(n) => mask(won(n))}
                 />
-              </div>
-            </div>
+              }
+            />
           );
         })}
-      </div>
+      </List>
     </>
   );
 }
@@ -557,13 +571,13 @@ type ComplianceDatum = {
   active: boolean;
 };
 
-/** 막대 색 — 100% 넘음 chart red · 고른 달 chart blue · 지난 달 stroke-neutral-solid(예전 border-strong 값) */
+/** 막대 색 — 100% 넘음 chart red · 고른 달 chart blue · 지난 달 chart-blue-weak(같은 파랑의 옅은 단계 — v111) */
 const complianceFill = (d: ComplianceDatum) =>
   d.percent != null && d.percent > 100
     ? "var(--color-chart-red)"
     : d.active
       ? "var(--color-chart-blue)"
-      : "var(--color-stroke-neutral-solid)";
+      : "var(--color-chart-blue-weak)";
 
 function ComplianceTip({
   active,
@@ -639,7 +653,7 @@ export function ComplianceSection({
       <>
         {head}
         <Body place={place}>
-          <Skeleton className="h-[180px] w-full" radius="8" />
+          <Skeleton className="h-[180px] w-full" radius="16" />
         </Body>
       </>
     );

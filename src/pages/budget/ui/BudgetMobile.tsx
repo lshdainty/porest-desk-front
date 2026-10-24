@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Settings } from "lucide-react";
 import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { Button } from "@/shared/ds/button";
 import { MonthBar } from "@/shared/ui/groo/month-bar";
@@ -35,10 +34,9 @@ export function BudgetMobile() {
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-mr-x3_5 [&_svg]:size-4"
+          className="-mr-x3_5"
           onClick={goToSettings}
         >
-          <Settings aria-hidden />
           {t("settings")}
         </Button>
       }

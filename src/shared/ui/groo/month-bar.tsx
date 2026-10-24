@@ -5,8 +5,8 @@ import { Button } from "@/shared/ds/button";
 import { MonthPicker } from "@/shared/ui/groo/primitives";
 
 /**
- * 달 줄(I-08 7 · 19) — 띠 맨 위 4, ← 달 → 와 오른쪽 자리 한 줄(높이 44), 좌우 24.
- * ← → 는 ds 아이콘 버튼(상자 44 · 아이콘 20, 아이콘이 글 왼쪽 24 에 서도록 −12), 달 글을 누르면 달 고르기.
+ * 달 줄(I-08 7 · 19) — 띠 맨 위 4 + 8 = 12, ← 달 → 와 오른쪽 자리 한 줄, 좌우 24.
+ * ← → 는 ds 아이콘 버튼(크기표 medium — 보이는 40 · 아이콘 18 · 누르는 44, 아이콘이 글 왼쪽 24 에 서도록 −10), 달 글을 누르면 달 고르기.
  * 페이지 전체를 조절하는 줄이라 첫 구역과 한 덩어리다 — 위 틈 없음, 첫 구역과는 12(구역이 준다).
  */
 type MonthControlsProps = {
@@ -25,14 +25,13 @@ export function MonthControls({
   flushLeft = false,
 }: MonthControlsProps) {
   const { t } = useTranslation("budget");
-  const iconBtn = "size-11 [&_svg]:size-5";
   return (
     <>
       <Button
         type="button"
         variant="ghost"
         layout="iconOnly"
-        className={`${iconBtn} ${flushLeft ? "-ml-x3" : ""}`}
+        className={flushLeft ? "-ml-x2_5" : undefined}
         aria-label={t("prevMonth")}
         onClick={() => onStep(-1)}
       >
@@ -49,7 +48,6 @@ export function MonthControls({
         type="button"
         variant="ghost"
         layout="iconOnly"
-        className={iconBtn}
         aria-label={t("nextMonth")}
         onClick={() => onStep(1)}
       >
@@ -68,7 +66,7 @@ export function MonthBar({
 }) {
   return (
     <div
-      className="flex flex-wrap items-center px-x6 pt-x1"
+      className="flex flex-wrap items-center px-x6 pt-x3"
       data-slot="month-bar"
     >
       <MonthControls flushLeft {...controls} />

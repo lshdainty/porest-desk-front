@@ -11,7 +11,7 @@ import { cn } from "@/shared/lib/cn";
 
 /*
  * 폰 띠 · 흰 면 안 구역 부품 — 예산 · 예산 설정 · 저축 목표(I-08 공통 값)가 같이 쓴다. 홈(I-06)의 HomeHead 와 같은 값이다.
- * 값: 구역 머리 위 24 · 좌우 24 · 머리 ↔ 본문 8(목록 구역은 4), 본문 좌우 24 · 아래 24, 키-값 줄 위아래 12 · 좌우 24.
+ * 값: 구역 머리 위 24 · 좌우 24 · 머리 ↔ 본문 8(목록 구역은 4), 본문 좌우 24 · 아래 24, 키-값 줄 위아래 8 · 좌우 24.
  * 금액은 글로 만들어 넘긴다(money-text — 원까지, 쉼표 뒤 줄바꿈 자리).
  */
 
@@ -154,7 +154,7 @@ export function BigAmount({
 }
 
 /**
- * 키-값 줄 — ds List 보기만 하는 줄. 이름 R6(t5 · 400) · 값 t5 · 700 · 고정폭 · 원까지, 줄 위아래 12 · 좌우 24, 폰은 한 줄에 하나.
+ * 키-값 줄 — ds List 보기만 하는 줄. 이름 R6(t5 · 400) · 값 t5 · 700 · 고정폭 · 원까지, 줄 위아래 8 · 좌우 24, 폰은 한 줄에 하나.
  * 값의 색은 `tone` — critical(넘침) · brand(여유 · 남음) · 기본 fg-neutral.
  */
 export type KeyValue = {
@@ -212,7 +212,6 @@ export function ListTitle({
   children: ReactNode;
   action?: {
     label: string;
-    icon?: ReactNode;
     onClick: () => void;
     disabled?: boolean;
     title?: string;
@@ -230,12 +229,11 @@ export function ListTitle({
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-my-x2 -mr-x3_5 [&_svg]:size-4"
+          className="-my-x2 -mr-x3_5"
           disabled={action.disabled}
           title={action.title}
           onClick={action.onClick}
         >
-          {action.icon}
           {action.label}
         </Button>
       )}
@@ -269,12 +267,12 @@ export function BarCaption({
   );
 }
 
-/** 스켈레톤 키-값 줄 — 실제 줄(46)과 같은 높이 */
+/** 스켈레톤 키-값 줄 — 실제 줄(38 = 8 + 22 + 8)과 같은 높이 */
 export function KeyValueSkeleton({ rows = 2 }: { rows?: number }) {
   return (
     <div aria-hidden>
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex items-center gap-x3 px-x6 py-x3">
+        <div key={i} className="flex items-center gap-x3 px-x6 py-x2">
           <Skeleton text="t5" className="w-1/3" />
           <Skeleton text="t5" className="ml-auto w-1/4" />
         </div>
@@ -294,6 +292,7 @@ export function MeterBar({
   max,
   meaning = "limit",
   formatValue,
+  valueText,
   className,
 }: {
   label: string;
@@ -301,6 +300,8 @@ export function MeterBar({
   max: number;
   meaning?: ProgressMeaning;
   formatValue: (n: number) => string;
+  /** 값 글을 직접 준다(예: "88% 사용 · 이번 달 77% 지남") — 없으면 "88%" · "{금액} 초과" · "달성" */
+  valueText?: string;
   className?: string;
 }) {
   const dsT = useDsText();
@@ -324,7 +325,7 @@ export function MeterBar({
         max: formatValue(max),
         current: formatValue(current),
       })}
-      aria-valuetext={text}
+      aria-valuetext={valueText ?? text}
     />
   );
 }
@@ -344,12 +345,11 @@ export function StatGrid({
     <dl
       className={cn(
         "m-0 mt-x3 grid gap-x3",
-        items.length === 3 ? "grid-cols-3" : "grid-cols-2",
+        items.length === 3
+          ? "grid-cols-[repeat(3,minmax(0,1fr))]"
+          : "grid-cols-[repeat(2,minmax(0,1fr))]",
         className,
       )}
-      style={{
-        gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
-      }}
     >
       {items.map((it) => (
         <div key={it.key} className="min-w-0">
@@ -371,5 +371,59 @@ export function StatGrid({
         </div>
       ))}
     </dl>
+  );
+}
+
+/** 줄 뒤 두 줄 — 쓴 돈(t5 · 700 · 원까지) 위, "/ 한도"(t3 · 500 · subtle) 아래로 쌓는다. 한 요소라 좁은 줄에서 통째로 본문 아래로 내려간다 */
+export function StackedAmount({
+  main,
+  sub,
+  critical,
+}: {
+  main: string;
+  sub: string;
+  critical?: boolean;
+}) {
+  return (
+    <span className="flex flex-col items-end">
+      <span
+        className={cn(
+          "block text-end text-t5 font-bold tabular-nums",
+          critical ? "text-fg-critical" : "text-fg-neutral",
+        )}
+      >
+        {withCommaBreaks(main)}
+      </span>
+      <span className="block text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
+        / {withCommaBreaks(sub)}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * 줄 + 줄 아래 막대를 li 하나에 담는다(ul 하나 · li 줄 수만큼). 줄은 `ListItem as="div"`, 막대 자리는 위 4(줄 아래 16) · 아래 12.
+ * `topGap` 은 막대 자리 위 여백 — 기본 4.
+ */
+export function BarredItem({
+  row,
+  bar,
+  wrap,
+  className,
+}: {
+  row: ReactNode;
+  bar: ReactNode;
+  /** li 안쪽 감싸기 — 밀면 수정 · 삭제(SwipeActions) */
+  wrap?: (inner: ReactNode) => ReactNode;
+  className?: string;
+}) {
+  const inner = (
+    <>
+      {row}
+      <div className={cn("px-x6 pb-x3 pt-x1", className)}>{bar}</div>
+    </>
+  );
+  return (
+    <li className="list-none">{wrap ? wrap(<div>{inner}</div>) : inner}</li>
   );
 }

@@ -185,6 +185,40 @@ describe("금액 원까지 · 막대 색(I-08 8 · 12 · 14)", () => {
   });
 });
 
+describe("목록 짜임 · 페이스 값 글 · 한 줄 금액 쌓기(검수 12 · 10)", () => {
+  it("카테고리 목록은 ul 하나 · li 줄 수만큼, 줄 아래 막대가 같은 li 안", () => {
+    render();
+    const list = section("list");
+    expect(list.querySelectorAll("ul")).toHaveLength(1);
+    const items = list.querySelectorAll("ul > li");
+    expect(items).toHaveLength(1);
+    expect(items[0]!.querySelector("[role=meter]")).not.toBeNull();
+    // 줄은 위 맞춤, 뒤 두 줄은 한 요소 안에서 세로로 쌓인다
+    expect(
+      items[0]!.querySelector("[data-slot=list-content]")!.className,
+    ).toContain("items-start");
+    const suffix = items[0]!.querySelector("[data-slot=list-suffix]")!;
+    expect(suffix.children).toHaveLength(1);
+    expect(suffix.firstElementChild!.className).toContain("flex-col");
+  });
+
+  it("페이스 막대 값 글이 '{n}% 사용 · 이번 달 {m}% 지남'", () => {
+    render();
+    const meter = section("pace").querySelector("[role=meter]")!;
+    expect(meter.getAttribute("aria-valuetext")).toContain("paceValue");
+  });
+
+  it("키-값 스켈레톤 줄은 실제 줄(38 = py-x2)과 같고 달 줄 위는 12(pt-x3)", () => {
+    state.summary = q(undefined);
+    render();
+    const skel = section("pace").querySelector("[aria-hidden] .py-x2");
+    expect(skel).not.toBeNull();
+    expect(
+      container.querySelector("[data-slot=month-bar]")!.className,
+    ).toContain("pt-x3");
+  });
+});
+
 describe("예산 현황 — 여유 수는 알림 기준 이하인 카테고리 수(I-08 11 · 14)", () => {
   const spent78 = () => summary(1000, [[1, 624_000]]); // 800,000 중 78%
   const healthy = () =>
