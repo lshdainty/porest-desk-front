@@ -66,7 +66,7 @@ const q = (sel: string) => container.querySelector<HTMLElement>(sel);
 
 describe("거래 줄 — ds List", () => {
   it("제목은 줄을 바꾸고(말줄임 0) 설명만 한 줄 말줄임이다", () => {
-    render(base);
+    render({ ...base, amount: 1_234_567 });
     expect(q("[data-slot=list-title]")?.textContent).toContain("아주 긴 가게");
     expect(q("[data-slot=list-title]")?.innerHTML).not.toContain("truncate");
     expect(q("[data-slot=tag-group]")?.className).toContain(
@@ -75,6 +75,26 @@ describe("거래 줄 — ds List", () => {
     expect(q("[data-slot=tag-group-item-label]")?.className).toContain(
       "truncate",
     );
+  });
+
+  it("값은 금액 길이와 상관없이 늘 뒤 붙이개(오른쪽)에 둔다 — 값 길이로 내리지 않는다(list.md:136 · :146)", () => {
+    render(base);
+    const suffix = q("[data-slot=list-suffix]");
+    expect(suffix?.textContent).toContain("1,234,567,890");
+    expect(q("[data-slot=list-detail]")?.textContent).not.toContain(
+      "1,234,567,890",
+    );
+    // 호출자가 right 를 주면 그대로 오른쪽
+    render(base, { right: <b>R</b> });
+    expect(q("[data-slot=list-suffix]")?.textContent).toBe("R");
+  });
+
+  it("설명이 줄어드는 정도는 스펙 예 그대로 — 카테고리 0 · 계좌 2 · 시각 0", () => {
+    render(base);
+    const shrinks = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-slot=tag-group-item]"),
+    ).map((e) => e.style.flexShrink);
+    expect(shrinks).toEqual(["0", "2", "0"]);
   });
 
   it("앞 타일 40 · 모서리 r3 · 줄 전체가 버튼", () => {
@@ -86,18 +106,18 @@ describe("거래 줄 — ds List", () => {
   });
 
   it("지출 금액은 fg-neutral, 수입만 fg-brand + 부호", () => {
-    render(base);
+    render({ ...base, amount: 54_000 });
     expect(q("[data-slot=list-suffix] span")?.className).toContain(
       "text-fg-neutral",
     );
-    render({ ...base, expenseType: "INCOME" });
+    render({ ...base, amount: 54_000, expenseType: "INCOME" });
     const amt = q("[data-slot=list-suffix] span");
     expect(amt?.className).toContain("text-fg-brand");
     expect(amt?.textContent).toContain("+");
   });
 
   it("환불 줄은 흐림(opacity) 없이 금액만 subtle + 취소선", () => {
-    render({ ...base, refundedAt: "2026-08-21T10:00:00" });
+    render({ ...base, amount: 54_000, refundedAt: "2026-08-21T10:00:00" });
     expect(container.innerHTML).not.toContain("opacity-60");
     expect(q("[data-slot=list-suffix] span")?.className).toContain(
       "text-fg-neutral-subtle",

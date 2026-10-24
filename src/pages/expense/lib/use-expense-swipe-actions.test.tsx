@@ -10,7 +10,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Asset } from "@/entities/asset";
 import type { Expense } from "@/entities/expense";
-import type { SwipeAction } from "@/shared/ui/swipe-actions";
+import type { ExpenseSwipeAction } from "./use-expense-swipe-actions";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -83,7 +83,7 @@ const tx: Expense = {
   modifyAt: "2026-08-20T08:00:00",
 };
 
-let actionsFor: ((e: Expense) => SwipeAction[]) | null = null;
+let actionsFor: ((e: Expense) => ExpenseSwipeAction[]) | null = null;
 function Probe() {
   const fn = useExpenseSwipeActions({
     assets: [card, bank],

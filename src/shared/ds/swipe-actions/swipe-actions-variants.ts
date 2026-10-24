@@ -34,18 +34,45 @@ export const SWIPE_DEAD_ZONE = 8;
 export const SWIPE_AXIS_RATIO = 1.5;
 
 /**
- * 동작 하나가 차지하는 폭 — 배지 + 그 앞 간격(첫 칸 56 · 다음부터 48).
- * 간격은 앞에만 둔다. 뒤에도 두면 마지막 배지와 화면 끝이 벌어져 덜 열린 것처럼 보인다.
+ * 글자 크기 배율 — 루트 글자 크기 ÷ 16(브라우저 글자 크기 설정 · 200% 확대 = 2). 라벨은 rem(text-t2)이라 이 배율만큼 커지고
+ * 배지(36 px)는 그대로다 — 앱의 `MediaQuery.textScalerOf` 로 라벨을 재는 것과 같은 뜻이다. 브라우저 밖(시험)에서는 1.
  */
-export const swipeSlotWidth = (index: number) =>
-  SWIPE_BADGE_SIZE + (index === 0 ? SWIPE_GAP_LEAD : SWIPE_GAP_BETWEEN);
+export const swipeTextScale = () => {
+  if (typeof document === "undefined") return 1;
+  const px = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return Number.isFinite(px) && px > 0 ? px / 16 : 1;
+};
 
-/** 트레이 전체 폭 — 하나 56 · 둘 104 · 셋 152. */
-export const swipeTrayWidth = (count: number) =>
-  Array.from({ length: count }, (_, i) => swipeSlotWidth(i)).reduce(
-    (a, b) => a + b,
+/**
+ * 라벨 글 폭 어림(12 rem / 700 → 글자 크기 배율을 곱한다) — 한글 12 · 그 밖 6.5. 글이 배지(36)보다 넓을 때만 칸을 넓히려는 값이라
+ * 정확하지 않아도 된다(한국어 두 글자 동사 24 는 100% 에서 배지 안에 들어 칸이 그대로다 — 영어 "Delete" 약 39 가 칸을 넓히고,
+ * 200% 에서는 "삭제" 도 48 이라 칸이 넓어진다).
+ */
+export const swipeLabelWidth = (label: string, scale = swipeTextScale()) =>
+  scale *
+  Array.from(label).reduce(
+    (w, ch) =>
+      w + (/[\u1100-\u11ff\u3130-\u318f\uac00-\ud7af]/.test(ch) ? 12 : 6.5),
     0,
   );
+
+/**
+ * 동작 하나가 차지하는 폭 — 배지 + 그 앞 간격(첫 칸 56 · 다음부터 48). **글이 배지보다 넓으면 글 폭만큼 넓어진다**(영어 · 큰 글자에서
+ * 라벨이 두 줄로 꺾여 줄 높이를 넘지 않게 — 최소 36 이라 한국어는 그대로).
+ * 간격은 앞에만 둔다. 뒤에도 두면 마지막 배지와 화면 끝이 벌어져 덜 열린 것처럼 보인다.
+ */
+export const swipeSlotWidth = (index: number, label?: string) =>
+  Math.max(SWIPE_BADGE_SIZE, label ? Math.ceil(swipeLabelWidth(label)) : 0) +
+  (index === 0 ? SWIPE_GAP_LEAD : SWIPE_GAP_BETWEEN);
+
+/** 트레이 전체 폭 — 하나 56 · 둘 104 · 셋 152(한국어). 라벨을 주면 칸마다 글 폭을 본다(안쪽 칸부터 차례로). */
+export const swipeTrayWidth = (countOrLabels: number | readonly string[]) => {
+  const labels = typeof countOrLabels === "number" ? null : countOrLabels;
+  const count = labels ? labels.length : (countOrLabels as number);
+  return Array.from({ length: count }, (_, i) =>
+    swipeSlotWidth(i, labels?.[i]),
+  ).reduce((a, b) => a + b, 0);
+};
 
 export type SwipeAxis = "none" | "x" | "y";
 

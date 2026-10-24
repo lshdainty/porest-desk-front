@@ -4,29 +4,23 @@ import { useEffect, useRef, useState } from "react";
  * 원장 스크롤 훅 — 컴포넌트 파일(`ledger.tsx`)과 갈라 둔다.
  * 한 파일이 컴포넌트와 그 밖의 것을 함께 export 하면 Fast Refresh 가 그 파일의 상태를
  * 매번 버린다(react-refresh/only-export-components).
+ *
+ * 머리를 숨기는 일은 ds Scroll Auto Hide(`LedgerPin`)가 맡는다 — 이 훅은 스크롤 스파이 · lock · 날 누름 이동만 한다.
  */
 
-const COMPACT_ENTER = 72;
-const COMPACT_EXIT = 24;
-
 /**
- * pin compact(72/24 히스테리시스 + 짧은 콘텐츠 플리커 가드) · 스크롤 스파이
- * ([data-ledger-day] 그룹 → 선택 동기) · lock/scrollToDay 공용 훅.
+ * 스크롤 스파이([data-ledger-day] 그룹 → 선택 동기) · lock · 날 누름 이동 공용 훅.
  */
 export function useLedgerScroll({
   pinTop = 0,
   initialSelected = null,
-  onCompactEnter,
 }: {
   /** 상단 고정 헤더 높이(px) — sticky top·스크롤 보정 offset. */
   pinTop?: number;
   initialSelected?: string | null;
-  /** compact 진입 순간 콜백 (예: 캘린더 월 전체 → 주 1줄 접기). */
-  onCompactEnter?: () => void;
-}) {
+} = {}) {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const pinRef = useRef<HTMLDivElement | null>(null);
-  const [compact, setCompact] = useState(false);
+  const pinRef = useRef<HTMLElement | null>(null);
   const [selected, setSelected] = useState<string | null>(initialSelected);
   const selectedRef = useRef<string | null>(initialSelected);
   useEffect(() => {
@@ -43,14 +37,6 @@ export function useLedgerScroll({
     }, ms);
   };
 
-  // 스크롤 핸들러가 항상 최신 콜백을 부르게 담아 둔다. 쓰기는 커밋 뒤에 한다 —
-  // 렌더 중에 ref 를 쓰면 화면과 어긋난 값을 남길 수 있다(`react-hooks/refs`).
-  // 핸들러는 커밋 이후에만 도므로 한 렌더 늦을 일이 없다.
-  const onCompactEnterRef = useRef(onCompactEnter);
-  useEffect(() => {
-    onCompactEnterRef.current = onCompactEnter;
-  });
-
   const scroller = () =>
     rootRef.current?.closest(
       ".m-scroll, .overflow-y-auto",
@@ -60,21 +46,6 @@ export function useLedgerScroll({
     const p = scroller();
     if (!p) return;
     const onScroll = () => {
-      const st = p.scrollTop;
-      setCompact((prev) => {
-        // 콘텐츠가 짧으면 접힘(−collapse 높이) 순간 scrollTop이 해제 임계 아래로
-        // clamp돼 접힘↔펼침 무한 플리커 발생 — 접힌 뒤에도 진입 임계 위에
-        // 남을 수 있는 스크롤 여유가 있을 때만 진입.
-        const collapseH =
-          pinRef.current?.querySelector("[data-ledger-collapse]")
-            ?.scrollHeight ?? 0;
-        const canStay =
-          p.scrollHeight - p.clientHeight - (prev ? 0 : collapseH) >
-          COMPACT_ENTER;
-        const next = prev ? st > COMPACT_EXIT : st > COMPACT_ENTER && canStay;
-        if (next && !prev) onCompactEnterRef.current?.();
-        return next;
-      });
       if (lockRef.current || !pinRef.current || !rootRef.current) return;
       const bottom = pinRef.current.getBoundingClientRect().bottom;
       const groups = rootRef.current.querySelectorAll("[data-ledger-day]");
@@ -94,18 +65,23 @@ export function useLedgerScroll({
     return () => p.removeEventListener("scroll", onScroll);
   }, []);
 
+  /**
+   * 날을 눌러 그 날 묶음으로 옮긴다. 아래로 가면 스크롤 방향 때문에 머리가 숨으니 머리 높이를 빼지 않고, 위로 가면 머리가
+   * 드러나니 그 아래에 선다(Scroll Auto Hide — 내리면 숨고 올리면 드러난다).
+   */
   const scrollToDay = (ds: string) => {
     const el = rootRef.current?.querySelector(`[data-ledger-day="${ds}"]`);
     const p = scroller();
     if (!el || !p) return;
+    const gap = 6;
+    const top =
+      p.scrollTop +
+      el.getBoundingClientRect().top -
+      p.getBoundingClientRect().top;
     const pinH = (pinRef.current?.offsetHeight ?? 0) + pinTop;
+    const down = top - gap > p.scrollTop;
     p.scrollTo({
-      top:
-        p.scrollTop +
-        el.getBoundingClientRect().top -
-        p.getBoundingClientRect().top -
-        pinH -
-        6,
+      top: down ? top - gap : top - pinH - gap,
       behavior: "smooth",
     });
   };
@@ -115,7 +91,6 @@ export function useLedgerScroll({
   return {
     rootRef,
     pinRef,
-    compact,
     selected,
     setSelected,
     lock,
@@ -123,7 +98,3 @@ export function useLedgerScroll({
     scrollToTop,
   };
 }
-
-// ─── 큰 틀 ──────────────────────────────────────────────────
-
-/** 페이지 루트 — 좌우 spacing-xl(24) 인셋 담당, 하단 28. */

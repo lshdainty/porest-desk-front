@@ -121,7 +121,7 @@ const SwipeActionCell = React.forwardRef<
       className={cn(swipeActionVariants({ kind }), className)}
       // 간격을 배지 앞에만 둬 마지막 동작이 트레이 끝에 딱 붙는다 — 칸 폭 첫 56 · 다음부터 48
       style={{
-        inlineSize: swipeSlotWidth(index),
+        inlineSize: swipeSlotWidth(index, action.label),
         paddingInlineStart: index === 0 ? SWIPE_GAP_LEAD : SWIPE_GAP_BETWEEN,
         minBlockSize: SWIPE_MIN_HEIGHT,
         ...style,
@@ -184,7 +184,8 @@ const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
     /** 끌고 난 뒤의 click 은 삼킨다 — 밀었다가 놓는 자리가 줄 위라 click 이 따라온다 */
     const swallowClick = React.useRef(false);
 
-    const tray = swipeTrayWidth(actions.length);
+    // 칸은 안쪽(뒤 동작)부터 놓이므로 뒤집은 차례로 글 폭을 본다
+    const tray = swipeTrayWidth([...actions].reverse().map((a) => a.label));
     const open = group ? group.openId === id : localOpen;
     const offset = drag ?? (open ? tray : 0);
 

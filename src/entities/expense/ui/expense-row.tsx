@@ -35,6 +35,7 @@ export function ExpenseRow({
   showDate,
   maskCard = "ledger.txList",
   gutter = false,
+  highlighted = false,
 }: {
   expense: Expense;
   onClick?: (e: Expense) => void;
@@ -46,10 +47,12 @@ export function ExpenseRow({
   /**
    * **임시 인자 — 호스트가 옛 부품을 걷을 때까지만 둔다.** 줄이 제 좌우 24 를 갖는가(ds List 기본). 기본 false 는 날짜 머리 ·
    * 이체 줄 · 다이얼로그가 아직 옛 부품이라 바깥 24 를 쥐고 있어서다(줄만 24 로 옮기면 한 목록 안에서 글자 자리가 갈린다).
-   * 걷는 몫: 가계부 = I-07 4 · 검색 = I-08 08-3 · 자산 상세 · 거래 상세 = 아직 지시서 없음. 다 옮겨지면 기본 true 로 바꾸고
+   * 걷는 몫: 가계부는 끝남(I-07 4 — gutter 를 준다) · 검색 = I-08 08-3 · 자산 상세 · 거래 상세 = 아직 지시서 없음. 다 옮겨지면 기본 true 로 바꾸고
    * 이 인자를 지운다. 띠 · 카드 안 목록(홈)은 true.
    */
   gutter?: boolean;
+  /** 알림 · 검색에서 들어온 줄 — ds List 강조(brand-weak 바탕 · 누름 brand-weak-pressed · 설명 글 보정). 줄을 누를 수 있을 때만 의미가 있다 */
+  highlighted?: boolean;
 }) {
   const { t } = useTranslation("common");
   const isIncome = expense.expenseType === "INCOME";
@@ -97,20 +100,29 @@ export function ExpenseRow({
     </>
   );
 
+  // 설명이 줄어드는 정도는 tag-group.md "줄어드는 정도" 예 그대로(03-E 5 B) — 카테고리 · 시각은 줄지 않고(0) 긴 계좌 이름만 줄어든다(2).
+  // `shrink` 는 차례가 아니라 넘친 폭을 글 폭 × shrink 비율로 나누는 값이다. 모두 최소 폭이어도 넘치면 줄 끝이 잘린다(스펙이 받아들인 동작).
+  // 값은 늘 오른쪽이고, 줄 안 폭이 16em 미만이면 ds 가 값을 본문 아래로 내린다(CHANGELOG 03-D 결정 1 B) — 값 길이로 가르지 않는다.
   const detail = (
     <TagGroup size="t3" truncate>
-      <TagGroupItem>{expense.categoryName ?? t("others")}</TagGroupItem>
-      {expense.assetName && <TagGroupItem>{expense.assetName}</TagGroupItem>}
+      <TagGroupItem shrink={0}>
+        {expense.categoryName ?? t("others")}
+      </TagGroupItem>
+      {expense.assetName && (
+        <TagGroupItem shrink={2}>{expense.assetName}</TagGroupItem>
+      )}
       {expense.expenseDate &&
         (showDate ? (
-          <TagGroupItem>{txDateFull(expense.expenseDate)}</TagGroupItem>
+          <TagGroupItem shrink={0}>
+            {txDateFull(expense.expenseDate)}
+          </TagGroupItem>
         ) : (
-          time && <TagGroupItem>{time}</TagGroupItem>
+          time && <TagGroupItem shrink={0}>{time}</TagGroupItem>
         ))}
     </TagGroup>
   );
 
-  const suffix = right ?? (
+  const amountEl = (
     <span
       className={cn(
         "whitespace-nowrap font-bold tabular-nums",
@@ -133,6 +145,8 @@ export function ExpenseRow({
       </HideUnit>
     </span>
   );
+  // 뒤 붙이개 — 금액(호출자가 `right` 를 주면 그대로 오른쪽). 가계부는 줄 끝 ⋮ 를 두지 않는다(10-24 사용자 결정) — 수정 · 삭제는 밀기 · 상세에서
+  const suffix = right ?? amountEl;
 
   const prefix = (
     <ListTile
@@ -157,6 +171,7 @@ export function ExpenseRow({
           prefix={prefix}
           suffix={suffix}
           align="top"
+          highlighted={highlighted}
           onClick={() => onClick(expense)}
         />
       ) : (
@@ -166,6 +181,7 @@ export function ExpenseRow({
           prefix={prefix}
           suffix={suffix}
           align="top"
+          highlighted={highlighted}
         />
       )}
     </List>

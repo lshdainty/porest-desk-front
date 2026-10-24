@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pencil, Trash2 } from "lucide-react";
 import type { Asset } from "@/entities/asset";
@@ -8,7 +9,20 @@ import {
 } from "@/entities/expense";
 import { useDeleteExpense, useLedgerResultToast } from "@/features/expense";
 import { ClosedCycleNote } from "@/features/expense/ui/ClosedCycleNote";
-import type { SwipeAction } from "@/shared/ui/swipe-actions";
+
+/**
+ * 밀기 · ⋮ 의 동작 한 칸. ds `SwipeAction` 에 **삭제 확인창의 글**을 더한 것이다 — ds 부품은 확인창을 소유하지 않고
+ * (swipe-actions.tsx "destructive 는 확인 창부터 — 제목 · 설명은 부르는 쪽이 넘긴다"), 화면이 이 글로 Alert Dialog 를 띄운다.
+ * 글은 상세에서 지울 때와 같다(같은 동작은 같은 글).
+ */
+export interface ExpenseSwipeAction {
+  label: string;
+  icon: ReactNode;
+  kind: "primary" | "destructive";
+  /** 있으면 바로 실행하지 않고 확인창부터 — 누르면 [onSelect] */
+  confirm?: { title: string; message: ReactNode };
+  onSelect: () => void | Promise<unknown>;
+}
 
 /**
  * 가계부 행을 밀었을 때 드러나는 액션 — 상세 다이얼로그와 같은 뮤테이션·같은 확인 문구를
@@ -28,7 +42,7 @@ export function useExpenseSwipeActions({
 }: {
   assets: Asset[];
   onEdit: (e: Expense) => void;
-}): (e: Expense) => SwipeAction[] {
+}): (e: Expense) => ExpenseSwipeAction[] {
   const { t } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
   const deleteExpense = useDeleteExpense();
@@ -75,7 +89,6 @@ export function useExpenseSwipeActions({
               <ClosedCycleNote span={closedSpan} />
             </>
           ),
-          loading: deleteExpense.isPending,
         },
         // 지운 뒤는 상세 삭제와 같다 — 미리 낸 돈이 돌아왔으면 그 금액, 닫힌 회차였으면
         // [잔액 고치기](D4·D9).

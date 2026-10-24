@@ -1,3 +1,4 @@
+import { cn } from "@/shared/lib/cn";
 import { Fragment, useMemo, useState } from "react";
 import { Spinner } from "@/shared/ui/spinner";
 import { useTranslation } from "react-i18next";
@@ -23,11 +24,9 @@ import {
   LedgerCell,
   LedgerCellAmt,
   LedgerCellNum,
-  LedgerCollapse,
   LedgerDayDate,
   LedgerDayGroup,
   LedgerDayHead,
-  LedgerDayRel,
   LedgerDaySum,
   LedgerDivider,
   LedgerDow,
@@ -154,7 +153,6 @@ export function TodoMobileLedger({
   const {
     rootRef,
     pinRef,
-    compact,
     selected,
     setSelected,
     lock,
@@ -163,7 +161,6 @@ export function TodoMobileLedger({
   } = useLedgerScroll({
     pinTop,
     initialSelected: today,
-    onCompactEnter: () => setExpanded(false),
   });
 
   // 월 + 필터 적용 목록. 기한 없는 할 일은 월과 무관하게 꼬리 그룹으로 노출.
@@ -224,12 +221,6 @@ export function TodoMobileLedger({
     scrollToTop();
   };
 
-  const numColor = (ds: string, dow: number): string => {
-    if (ds > today) return "var(--fg-tertiary)";
-    if (dow === 0) return "var(--color-fg-critical)"; // 캘린더 일요일 정합(사용자 결정)
-    if (dow === 6) return "var(--fg-brand)";
-    return "var(--fg-primary)";
-  };
   const dowLabels = useMemo(
     () =>
       Array.from({ length: 7 }, (_, i) =>
@@ -324,14 +315,14 @@ export function TodoMobileLedger({
 
   return (
     <LedgerShell ref={rootRef}>
-      <LedgerPin ref={pinRef} compact={compact} top={pinTop}>
+      <LedgerPin ref={pinRef} top={pinTop}>
         {/* 월 네비 + 필터 */}
         <LedgerMonthNav>
           <LedgerNavBtn
             onClick={() => goMonth(-1)}
             aria-label={t("tdm.prevMonth")}
           >
-            <ChevronLeft size={19} />
+            <ChevronLeft />
           </LedgerNavBtn>
           <LedgerMonthLabel>
             {t("tdm.monthLabel", { month: monthNum })}
@@ -340,7 +331,7 @@ export function TodoMobileLedger({
             onClick={() => goMonth(1)}
             aria-label={t("tdm.nextMonth")}
           >
-            <ChevronRight size={19} />
+            <ChevronRight />
           </LedgerNavBtn>
           <LedgerNavBtn
             className="ml-auto"
@@ -348,14 +339,14 @@ export function TodoMobileLedger({
             onClick={() => setFilterOpen(true)}
             aria-label={t("tdm.filter")}
           >
-            <SlidersHorizontal size={18} />
+            <SlidersHorizontal />
           </LedgerNavBtn>
         </LedgerMonthNav>
 
-        {/* 오늘 상태 + 별빛 인사이트 + [밤하늘] 토글 — 스크롤 시 접힘 */}
-        <LedgerCollapse>
+        {/* 오늘 상태 + 별빛 인사이트 + [밤하늘] 토글 — 머리 전체가 Scroll Auto Hide 로 숨는다 */}
+        <>
           <LedgerHead>
-            <div style={{ minWidth: 0 }}>
+            <div className="min-w-0 flex-auto">
               <LedgerTotal>
                 {todayLeft > 0
                   ? t("tdm.todayLeft", { count: todayLeft })
@@ -378,14 +369,10 @@ export function TodoMobileLedger({
               )}
             </div>
             <LedgerSumBtn
-              active={skyOpen}
               onClick={() => setSkyOpen((v) => !v)}
               aria-expanded={skyOpen}
             >
-              <Sparkles
-                size={13}
-                style={{ marginRight: 4, verticalAlign: "-2px" }}
-              />
+              <Sparkles />
               {t("tdm.nightSky")}
             </LedgerSumBtn>
           </LedgerHead>
@@ -416,20 +403,11 @@ export function TodoMobileLedger({
               </div>
             </LedgerDrop>
           )}
-        </LedgerCollapse>
+        </>
 
         {/* 캘린더 — 접힘: 선택 주 1줄 / 펼침: 월 전체 */}
         <LedgerCalendar>
-          <LedgerDow
-            labels={dowLabels}
-            colorFor={(i) =>
-              i === 0
-                ? "var(--color-fg-critical)"
-                : i === 6
-                  ? "var(--fg-brand)"
-                  : undefined
-            }
-          />
+          <LedgerDow labels={dowLabels} />
           {(expanded ? weeks : [weeks[selWeek] ?? []]).map((w, wi) => (
             <LedgerWeek key={wi}>
               {w.map((c, i) => {
@@ -450,14 +428,8 @@ export function TodoMobileLedger({
                   >
                     <LedgerCellNum
                       selected={isSel}
-                      style={
-                        isSel
-                          ? undefined
-                          : {
-                              color: numColor(c.ds, i % 7),
-                              opacity: c.ds > today ? 0.55 : 1,
-                            }
-                      }
+                      dow={i % 7}
+                      future={c.ds > today}
                     >
                       {c.d}
                     </LedgerCellNum>
@@ -489,20 +461,18 @@ export function TodoMobileLedger({
           return (
             <LedgerDayGroup key={d} day={noDue ? undefined : d}>
               <LedgerDayHead>
-                <LedgerDayDate>
+                <LedgerDayDate relative={rel}>
                   {noDue
                     ? t("tdm.noDue")
                     : `${yy.slice(2)}. ${Number(mm)}. ${Number(dd)}(${dowOf(d)})`}
                 </LedgerDayDate>
-                {rel && <LedgerDayRel> · {rel}</LedgerDayRel>}
                 <LedgerDaySum
-                  className="num font-semibold"
-                  style={{
-                    color:
-                      doneN === items.length
-                        ? "var(--color-chart-green)"
-                        : "var(--fg-tertiary)",
-                  }}
+                  className={cn(
+                    "num",
+                    doneN === items.length
+                      ? "text-chart-green"
+                      : "text-fg-neutral-subtle",
+                  )}
                 >
                   {t("tdm.doneRatio", { done: doneN, total: items.length })}
                 </LedgerDaySum>
@@ -517,7 +487,7 @@ export function TodoMobileLedger({
                     <Fragment key={td.rowId}>
                       {/* 구분선을 행 안쪽 border 로 두면 행이 밀릴 때 선도 함께 밀려
                           트레이 위를 지나간다 — 행 사이 형제로 뺀다. */}
-                      {i > 0 && <LedgerDivider inset subtle />}
+                      {i > 0 && <LedgerDivider inset />}
                       <SwipeActions
                         rowId={`todo-${td.rowId}`}
                         groupTag="todo-list"
