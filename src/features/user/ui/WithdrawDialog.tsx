@@ -41,9 +41,12 @@ type Step = "impact" | "reauth";
 
 /** 서버 `REAUTH_FAILED`(AUTH_021) — 비밀번호 · 코드가 틀렸거나 지났다. */
 const REAUTH_FAILED = "AUTH_021";
-const isReauthFailed = (e: unknown) =>
+/** 서버 `REAUTH_LOCKED`(AUTH_022, 429) — 5번 틀려 잠겼다. 코드를 다시 받아야 풀린다. */
+const REAUTH_LOCKED = "AUTH_022";
+const errorCode = (e: unknown) =>
   (e as { response?: { data?: { code?: string } } } | null)?.response?.data
-    ?.code === REAUTH_FAILED;
+    ?.code;
+const isReauthFailed = (e: unknown) => errorCode(e) === REAUTH_FAILED;
 
 /** 본인 확인 방법. 비밀번호가 없는 소셜 전용 계정은 코드 말고 길이 없다. */
 type ReauthMethod = "password" | "emailCode";
@@ -181,11 +184,13 @@ export function WithdrawDialog({
     } catch (e) {
       // 틀림 · 지남(서버 AUTH_021 REAUTH_FAILED)만 그 칸의 글이고, 네트워크 · 서버 오류는 해지 실패 글이다(앱과 한 벌).
       setReauthError(
-        isReauthFailed(e)
-          ? method === "password"
-            ? t("withdraw.passwordWrong")
-            : t("withdraw.codeWrong")
-          : t("withdraw.failed"),
+        errorCode(e) === REAUTH_LOCKED
+          ? t("withdraw.locked")
+          : isReauthFailed(e)
+            ? method === "password"
+              ? t("withdraw.passwordWrong")
+              : t("withdraw.codeWrong")
+            : t("withdraw.failed"),
       );
       setBusy(false);
       runningRef.current = false;

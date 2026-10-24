@@ -352,6 +352,39 @@ describe("막는 게 없을 때", () => {
     expect(text).not.toContain("Network Error");
   });
 
+  it("5번 틀려 잠기면(AUTH_022) 비밀번호 · 코드 모두 '5번 틀렸어요. 코드를 다시 받아주세요' 글이다", async () => {
+    state.verifyError = Object.assign(new Error("x"), {
+      response: { data: { code: "AUTH_022" } },
+    });
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    const pw = document.getElementById("withdraw-password") as HTMLInputElement;
+    act(() => setValue(pw, "pw"));
+    await act(async () => click("withdraw.confirm"));
+    expect(document.body.textContent).toContain("withdraw.locked");
+    expect(document.body.textContent).not.toContain("withdraw.passwordWrong");
+  });
+
+  it("코드 방식도 잠기면 같은 글이다", async () => {
+    state.verifyCodeError = Object.assign(new Error("x"), {
+      response: { data: { code: "AUTH_022" } },
+    });
+    act(() => click("withdraw.next"));
+    await flushClickGuard();
+    act(() => click("withdraw.useEmailCode"));
+    const input = document.getElementById("withdraw-code") as HTMLInputElement;
+    const e = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(e, "clipboardData", {
+      value: { getData: () => "123456" },
+    });
+    act(() => {
+      input.dispatchEvent(e);
+    });
+    await act(async () => click("withdraw.confirm"));
+    expect(document.body.textContent).toContain("withdraw.locked");
+    expect(document.body.textContent).not.toContain("withdraw.codeWrong");
+  });
+
   it("해지 요청이 실패하면 해지 실패 문구를 쓴다", async () => {
     state.withdrawError = new Error("Network Error");
     act(() => click("withdraw.next"));

@@ -1307,6 +1307,7 @@ user,withdraw.codeRule,10분 안에 입력해주세요 · 5번 틀리면 다시 
 user,withdraw.codeIncomplete,인증 코드 6자리를 입력해주세요.,Enter the 6-digit verification code.
 user,withdraw.codeWrong,코드가 맞지 않거나 시간이 지났어요. 확인하거나 다시 받아주세요.,The code is wrong or has expired. Check it or request a new one.
 user,withdraw.passwordWrong,비밀번호가 맞지 않아요. 다시 확인해주세요.,That password doesn't match. Please check it again.
+user,withdraw.locked,5번 틀렸어요. 코드를 다시 받아주세요.,Too many wrong tries. Please request a new code.
 user,withdraw.sendCodeFailed,코드를 보내지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not send the code. Please try again shortly.
 user,withdraw.failed,해지하지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not stop your 그루 담다 account. Please try again shortly.
 user,withdraw.blockedSubscription,구독이 남아 있어 아직 해지할 수 없어요.,"You still have an active subscription, so you cannot stop using 그루 담다 yet."
