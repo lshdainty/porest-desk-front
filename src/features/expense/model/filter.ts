@@ -113,6 +113,37 @@ export function activeConditionCount(f: FilterValue): number {
 }
 
 /**
+ * 필터에 **걸린 조건이 하나라도 있는가** — 기간(고른 것) · 종류(하나만) · 카테고리 · 계좌 · 금액 · 빼기.
+ *
+ * 필터 바의 ↺ 와 "필터 없음" 판정이 쓴다. 기간은 사용자가 고른 때만 칸이 있다(고르지 않은 기간은 조건이 아니다 — I-07 Q5-C).
+ * 조건 맞추기만 "하나라도" 로 바뀐 값은 걸린 조건이 아니다.
+ */
+export function hasActiveFilter(f: FilterValue | null | undefined): boolean {
+  if (!f) return false;
+  return (
+    f.periods.length > 0 ||
+    activeConditionCount(f) > 0 ||
+    f.categories.exclude.length > 0 ||
+    f.assets.exclude.length > 0
+  );
+}
+
+/** "yyyy-MM-dd" → "yyyy-MM" */
+const monthOfDay = (day: string): string => day.slice(0, 7);
+
+/**
+ * 고른 기간이 걸치는 달의 처음과 끝("yyyy-MM") — 기간이 걸렸을 때 작은 달력이 첫 달을 보이고 ‹ › 가 이 안에서만 움직인다(Q5-C).
+ * 고른 기간이 없으면 null(달 이동은 자유다 — 달 하나 = 한 쪽).
+ */
+export function periodMonthBounds(
+  f: FilterValue | null | undefined,
+): { first: string; last: string } | null {
+  const span = f ? filterSpan(f) : null;
+  if (!span) return null;
+  return { first: monthOfDay(span.start), last: monthOfDay(span.end) };
+}
+
+/**
  * 한 줄이 필터를 통과하는가.
  *
  * 순서가 규칙이다.

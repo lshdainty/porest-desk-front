@@ -10,8 +10,6 @@ import {
 } from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
 import { ListHeader } from "@/shared/ds/list";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import {
   DEFAULT_FILTER,
   activeConditionCount,
@@ -46,12 +44,12 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 }
 
 /**
- * 거래 거르기 — 조건 본문 부품(`./filter/*`) 여섯을 한 번에 쌓는다(I-07 18). 폰은 Bottom Sheet(폼 — 바깥을 눌러도 닫히지 않고,
- * 머리 ✕ 는 고른 것을 버리고 닫는다), 그 밖은 지금처럼 대화상자다(데스크톱 · 태블릿은 07-2 가 조건마다 팝오버 · 시트로 나눠 담는다).
+ * 거래 거르기 — 조건 본문 부품(`./filter/*`) 여섯을 한 번에 쌓는다(I-07 18). 폰만 쓴다 — Bottom Sheet(폼 — 바깥을 눌러도 닫히지 않고,
+ * 머리 ✕ 는 고른 것을 버리고 닫는다). 데스크톱 · 태블릿은 조건마다 팝오버 · 시트로 나눠 담는다(`FilterBar`, I-07 28 ~ 30).
  * 값은 `FilterValue` 그대로 — 모델 · `matchesFilter` 는 바꾸지 않는다.
  *
  * 기간 칸은 처음 열 때 보던 달(`defaultPeriod`)로 채운다 — 폰은 "옮기기 = 기능 그대로"라 옛 동작을 지킨다. "고르지 않은 기간은
- * 조건이 아니다"(Q5-C)는 짝 2(07-2)가 데스크톱 · 태블릿에서 적용한다.
+ * 조건이 아니다"(Q5-C)는 짝 2 가 데스크톱 · 태블릿(`FilterBar`)에서 적용했다 — 폰까지 걷을지는 디자인시스템 세션에 묻는다.
  */
 export function FilterDialog({
   initial,
@@ -60,7 +58,6 @@ export function FilterDialog({
   assets,
   onClose,
   onApply,
-  mobile,
 }: {
   initial?: FilterValue | null;
   /** 보고 있는 달의 기간 — 처음 열 때와 초기화에 쓴다(`monthPeriodOf`). 없으면 이번 달. */
@@ -69,7 +66,6 @@ export function FilterDialog({
   assets: Asset[];
   onClose: () => void;
   onApply: (v: FilterValue) => void;
-  mobile: boolean;
 }) {
   const { t } = useTranslation("expense");
   const start = initial ?? DEFAULT_FILTER;
@@ -149,47 +145,25 @@ export function FilterDialog({
     </div>
   );
 
-  if (mobile) {
-    return (
-      <BottomSheet
-        open
-        form
-        onOpenChange={(open) => {
-          if (!open) onClose();
-        }}
-      >
-        <BottomSheetContent title={t("filter.title")}>
-          <BottomSheetBody scrollFog>{sections}</BottomSheetBody>
-          <BottomSheetFooter>
-            <Button variant="neutralWeak" onClick={reset}>
-              {t("filter.reset")}
-            </Button>
-            <Button disabled={badPeriod} onClick={apply}>
-              {t("filter.apply")}
-            </Button>
-          </BottomSheetFooter>
-        </BottomSheetContent>
-      </BottomSheet>
-    );
-  }
-
   return (
-    <ModalShell
-      title={t("filter.title")}
-      onClose={onClose}
-      size="md"
-      footer={
-        <ModalFooter
-          onCancel={reset}
-          cancelLabel={t("filter.reset")}
-          onSave={apply}
-          saveLabel={t("filter.apply")}
-          saveDisabled={badPeriod}
-        />
-      }
-      mobile={false}
+    <BottomSheet
+      open
+      form
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      {sections}
-    </ModalShell>
+      <BottomSheetContent title={t("filter.title")}>
+        <BottomSheetBody scrollFog>{sections}</BottomSheetBody>
+        <BottomSheetFooter>
+          <Button variant="neutralWeak" onClick={reset}>
+            {t("filter.reset")}
+          </Button>
+          <Button disabled={badPeriod} onClick={apply}>
+            {t("filter.apply")}
+          </Button>
+        </BottomSheetFooter>
+      </BottomSheetContent>
+    </BottomSheet>
   );
 }

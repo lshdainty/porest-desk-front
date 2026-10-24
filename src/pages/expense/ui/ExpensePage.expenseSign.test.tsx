@@ -36,7 +36,7 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
-const { Summary } = await import("./ExpensePage");
+const { SummaryCard } = await import("./desktop/SummaryCard");
 
 let container: HTMLDivElement;
 let root: Root;
@@ -57,18 +57,24 @@ afterEach(() => {
 function amounts(monthIn: number, monthOut: number) {
   act(() =>
     root.render(
-      <Summary
+      <SummaryCard
         month="2026-09"
-        onMonthChange={() => {}}
-        mobile={false}
+        onMove={() => {}}
+        canPrev
+        canNext
+        today="2026-09-10"
+        byDay={{}}
+        loading={false}
         monthIn={monthIn}
         monthOut={monthOut}
-        isLoading={false}
+        summaryLoading={false}
+        onPickDay={() => {}}
       />,
     ),
   );
-  const nums = [...container.querySelectorAll(".num")].map(
-    (el) => el.textContent ?? "",
+  const nums = [...container.querySelectorAll("[data-metric]")].map(
+    // 통화 기호(₩, 영어일 때)는 부호 판정과 상관없다
+    (el) => (el.textContent ?? "").replace("₩", ""),
   );
   expect(nums, "수입·지출·합계 세 칸").toHaveLength(3);
   return { income: nums[0]!, expense: nums[1]!, net: nums[2]! };
@@ -100,9 +106,15 @@ describe("월 요약 지출 칸 — 부호는 값을 따른다", () => {
   });
 });
 
-describe("부호를 붙이는 자리는 네 곳뿐이고 전부 minusOf 를 지난다", () => {
+describe("부호를 붙이는 자리는 다섯 곳뿐이고 전부 minusOf 를 지난다", () => {
   // 폰 화면은 ExpenseMobile.tsx 로 나뉘었다(I-07 10) — 두 파일을 함께 본다
-  const SRC = ["ExpensePage.tsx", "ExpenseMobile.tsx", "ExpenseMobileParts.tsx"]
+  const SRC = [
+    "ExpenseMobile.tsx",
+    "ExpenseMobileParts.tsx",
+    "desktop/MiniCalendar.tsx",
+    "desktop/SummaryCard.tsx",
+    "desktop/ListCard.tsx",
+  ]
     .map((n) => readFileSync(join(cwd(), "src/pages/expense/ui", n), "utf8"))
     .join("\n");
 
@@ -111,16 +123,17 @@ describe("부호를 붙이는 자리는 네 곳뿐이고 전부 minusOf 를 지�
     expect(SRC).not.toContain(`${MINUS}{wonPre()`);
   });
 
-  it("음수로 올 수 있는 지출 값 네 자리가 모두 minusOf 를 지난다", () => {
+  it("음수로 올 수 있는 지출 값 다섯 자리가 모두 minusOf 를 지난다", () => {
     const signed = [...SRC.matchAll(/\{minusOf\(([^)]+)\)\}/g)]
       .map((m) => m[1]!)
       .sort();
 
-    // 월 요약 카드 · 소비 요약 행(둘 다 monthOut) · 날짜 상세 카드 · 캘린더 셀 툴팁.
+    // 폰 소비 요약 행 · 캘린더 셀 툴팁 · 작은 달력 지출 줄 · 태블릿 요약 카드 지출 칸 · 목록 카드 머리 지출.
     expect(signed).toEqual([
-      "expenseTotal",
       "monthOut",
       "monthOut",
+      "monthOut",
+      "out",
       "tipDay.out",
     ]);
   });

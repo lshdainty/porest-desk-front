@@ -129,7 +129,6 @@ const open = async (
         assets={assets}
         onClose={() => {}}
         onApply={(v) => applied.push(v)}
-        mobile
       />,
     ),
   );
