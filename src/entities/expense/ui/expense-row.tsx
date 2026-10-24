@@ -116,12 +116,17 @@ export function ExpenseRow({
     // 큰 금액 줄은 설명을 한 줄로 자르지 않고 줄을 바꿔 카테고리 · 자산 · 시각이 다 보이게 한다
     <TagGroup size="t3" truncate={!stacked}>
       <TagGroupItem>{expense.categoryName ?? t("others")}</TagGroupItem>
-      {expense.assetName && <TagGroupItem>{expense.assetName}</TagGroupItem>}
+      {/* 줄어드는 차례: 계좌 이름이 먼저 · 가장 많이, 카테고리가 그다음, 시각은 줄지 않는다 — 긴 계좌 이름이 카테고리를 한 글자로 만들지 않게 */}
+      {expense.assetName && (
+        <TagGroupItem shrink={4}>{expense.assetName}</TagGroupItem>
+      )}
       {expense.expenseDate &&
         (showDate ? (
-          <TagGroupItem>{txDateFull(expense.expenseDate)}</TagGroupItem>
+          <TagGroupItem shrink={0}>
+            {txDateFull(expense.expenseDate)}
+          </TagGroupItem>
         ) : (
-          time && <TagGroupItem>{time}</TagGroupItem>
+          time && <TagGroupItem shrink={0}>{time}</TagGroupItem>
         ))}
     </TagGroup>
   );
