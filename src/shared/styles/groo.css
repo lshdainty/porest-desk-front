@@ -217,7 +217,8 @@
 }
 .page__head {
   display: flex;
-  align-items: flex-end;
+  /* 오른쪽 동작은 제목 줄(h1 한 줄)의 세로 가운데 — 설명이 있어도 설명 줄 바닥에 붙지 않는다(I-10 26 · I-16 27) */
+  align-items: flex-start;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -229,10 +230,15 @@
   font-weight: 400;
   color: var(--color-fg-neutral-muted);
 }
+/* 설정 틀이 제목 줄 ↔ 첫 내용 간격을 한 곳에서 정한다(I-16 T7) — 감싸개가 아래 여백을 갖고 PageHead 자신의 20 은 0 */
+.settings-head-slot > .page__head {
+  margin-bottom: 0;
+}
 .page__head .right {
   margin-left: auto;
   display: flex;
   align-items: center;
+  min-height: var(--text-screen-title--line-height);
   gap: 8px;
 }
 

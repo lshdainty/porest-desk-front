@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isEn } from "@/shared/lib/groo/format";
+import { useDeviceSize } from "@/shared/lib/groo/responsive";
 import { parseServerUtc, toLocalDateKey } from "@/shared/lib/date";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import { focusScreenTitle, useScreenTitle } from "@/shared/ds/top-navigation";
@@ -80,6 +81,7 @@ import {
 import { useSettingsBack } from "../model/use-settings-back";
 import { SettingsDesktopFrame } from "./SettingsDesktopFrame";
 import { SettingsMobileMenu } from "./SettingsMobileMenu";
+import { SettingsTabletFrame } from "./SettingsTabletFrame";
 import { SettingsSubpageMobile } from "./SettingsSubpageMobile";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
@@ -103,8 +105,10 @@ export const SettingsPage = () => {
   })();
   // 섹션은 주소에서만 읽는다 — 기록을 남기므로(changeSection) 뒤로 · 앞으로 가기가 주소만 바꾸고,
   // 상태를 따로 들면 화면과 주소가 어긋난다.
+  // 섹션 없는 주소: 폰 · 태블릿(768 ~ 1279)은 설정 메뉴, 1280 이상 두 칸은 카테고리(Q3-B · I-16 30 ~ 31)
+  const twoColumn = useDeviceSize() === "desktop";
   const section: SectionId | "menu" =
-    querySection ?? (mobile ? "menu" : "categories");
+    querySection ?? (mobile || !twoColumn ? "menu" : "categories");
 
   const activeSection =
     section === "menu"
@@ -258,11 +262,21 @@ export const SettingsPage = () => {
     );
   }
 
+  if (!twoColumn) {
+    return (
+      <SettingsTabletFrame
+        activeSection={activeSection}
+        onSelect={changeSection}
+        renderBody={renderBody}
+      />
+    );
+  }
+
   return (
     <SettingsDesktopFrame
       section={section}
       activeSection={activeSection}
-      openSection={openSection}
+      onSelect={changeSection}
       renderBody={renderBody}
     />
   );

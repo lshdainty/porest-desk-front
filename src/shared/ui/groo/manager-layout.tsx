@@ -1,5 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { PageHead } from "@/shared/ui/groo/page-head";
+import { useSettingsFrame } from "@/shared/ui/groo/settings-frame-context";
 
 /**
  * ManagerLayout: 설정 화면(카테고리/계좌/예산/알림 등) 상단 영역 공통 spec.
@@ -11,25 +14,6 @@ const SHELL_CLS = "flex flex-col gap-4";
 
 export const MANAGER_LAYOUT = {
   shellClassName: SHELL_CLS,
-  headStyle: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 20,
-  } as CSSProperties,
-  titleStyle: {
-    font: "700 20px/1.3 var(--font-sans)",
-    letterSpacing: "-0.022em",
-    margin: "0 0 4px",
-    color: "var(--fg-primary)",
-  } as CSSProperties,
-  subStyle: {
-    fontSize: "var(--text-label-sm)",
-    color: "var(--fg-tertiary)",
-    margin: 0,
-    maxWidth: "52ch",
-    lineHeight: "1.5",
-  } as CSSProperties,
   toolbarStyle: {
     display: "flex",
     justifyContent: "space-between",
@@ -72,8 +56,10 @@ export function ManagerShell({
 }
 
 /**
- * ManagerHead: 데스크톱에서만 노출되는 머리말 섹션 (제목 + 설명 + 우측 액션).
- * 모바일에서는 페이지가 알아서 분기하므로 그대로 안 쓰면 됨.
+ * ManagerHead: 데스크톱에서만 노출되는 화면 제목 줄(제목 + 설명 + 오른쪽 동작) — 받는 값(title · description · actions)은 그대로,
+ * 그리는 것은 공용 `PageHead`(h1 26 / 35 · 설명 16 / 22 · 동작은 h1 줄 가운데)다(I-16 27).
+ * 설정 틀 안이면 틀이 둔 제목 줄 자리로 그린다(위젯마다 달랐던 제목 줄 ↔ 첫 내용 간격을 틀 한 곳이 정한다) —
+ * 틀 밖(단독 렌더)이면 제자리에 그린다. 모바일에서는 페이지가 알아서 분기하므로 그대로 안 쓰면 됨.
  */
 export function ManagerHead({
   title,
@@ -84,15 +70,12 @@ export function ManagerHead({
   description?: ReactNode;
   actions?: ReactNode;
 }) {
-  return (
-    <div style={MANAGER_LAYOUT.headStyle}>
-      <div>
-        <h2 style={MANAGER_LAYOUT.titleStyle}>{title}</h2>
-        {description && <p style={MANAGER_LAYOUT.subStyle}>{description}</p>}
-      </div>
-      {actions}
-    </div>
+  const frame = useSettingsFrame();
+  const head = (
+    <PageHead title={title} description={description} actions={actions} />
   );
+  if (!frame) return head;
+  return frame.headSlot ? createPortal(head, frame.headSlot) : null;
 }
 
 /**

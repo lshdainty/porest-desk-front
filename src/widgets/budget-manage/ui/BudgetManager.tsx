@@ -12,7 +12,7 @@ import {
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
 import { MINUS } from "@/shared/lib/groo/format";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
-import { Icon, MonthPicker } from "@/shared/ui/groo/primitives";
+import { Icon } from "@/shared/ui/groo/primitives";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { Button } from "@/shared/ds/button";
 import { Callout } from "@/shared/ds/callout";
@@ -21,7 +21,7 @@ import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
-import { MonthBar } from "@/shared/ui/groo/month-bar";
+import { MonthBar, MonthControls } from "@/shared/ui/groo/month-bar";
 import {
   BandEmpty,
   BandFailure,
@@ -277,7 +277,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const copyButton = (
     <Button
       type="button"
-      variant="neutralWeak"
+      variant={mobile ? "neutralWeak" : "neutralOutline"}
       size="small"
       onClick={() => setConfirmCopy(true)}
       disabled={
@@ -348,20 +348,21 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         </div>
       ) : (
         <ManagerShell>
+          {/* 제목 줄 오른쪽은 비운다 — 달 고르기 · 지난달 복사는 본문 위 도구 줄(S4 · I-16 36).
+              1024 에서 달 글이 두 줄로 접히던 자리다. 제목 줄 ↔ 도구 줄 ↔ 첫 카드 16 */}
           <ManagerHead
             title={t("manager.title")}
             description={t("manager.description")}
-            actions={
-              <div className="flex items-center gap-x2">
-                <MonthPicker
-                  value={monthKey}
-                  onChange={setMonthKey}
-                  allowFuture
-                />
-                {copyButton}
-              </div>
-            }
           />
+          <div data-slot="budget-tools" className="flex items-center">
+            <MonthControls
+              flushLeft
+              monthKey={monthKey}
+              onChange={setMonthKey}
+              onStep={adjustMonth}
+            />
+            <div className="ml-auto">{copyButton}</div>
+          </div>
           {body}
         </ManagerShell>
       )}

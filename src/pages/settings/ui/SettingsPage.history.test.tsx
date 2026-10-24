@@ -120,9 +120,10 @@ const where = (r: ReturnType<typeof mount>) =>
   r.state.location.pathname + r.state.location.search;
 
 const pressByText = (text: string) => {
-  const el = [...container.querySelectorAll("button")].find((b) =>
+  // 폰 메뉴 줄은 버튼, 데스크톱 목록 줄은 링크(I-16 23)
+  const el = [...container.querySelectorAll("button, nav a")].find((b) =>
     b.textContent?.includes(text),
-  );
+  ) as HTMLElement | undefined;
   if (!el) throw new Error(`버튼 없음: ${text}`);
   act(() => el.click());
 };
