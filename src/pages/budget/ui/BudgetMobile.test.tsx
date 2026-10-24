@@ -234,20 +234,24 @@ describe("예산 현황 — 여유 수는 알림 기준 이하인 카테고리 �
 });
 
 describe("불러오는 중 · 실패 · 예산 없음(I-08 15 · 17)", () => {
-  it("요약 질의 실패 → 총 예산 · 페이스 · 현황 자리가 0원이 아니라 다시 시도", () => {
+  it("요약 질의 실패 → 폰은 실패 상자 하나(띠 ①), 띠 ② 없음, 0원 없음", () => {
     state.summary = q(undefined, { isError: true });
     render();
-    expect(section("total").textContent).toContain("loadFailed.header");
-    expect(section("total").textContent).not.toContain("0원");
-    expect(section("pace").textContent).toContain("loadFailed.pace");
-    expect(section("status").textContent).toContain("loadFailed.status");
+    expect(
+      container.querySelectorAll("[data-slot=result-section]"),
+    ).toHaveLength(1);
+    expect(section("month").textContent).toContain("manager.loadFailed");
+    expect(section("month").textContent).not.toContain("0원");
+    expect(container.querySelector("[data-section=categories]")).toBeNull();
     // 이행률은 따로 산다
     expect(section("compliance").querySelector("[role=meter]")).toBeNull();
     expect(section("compliance").textContent).not.toContain("loadFailed");
     // 서버 오류 원문을 그리지 않는다 — 다시 시도 버튼만
-    const retry = section("total").querySelector("button");
-    expect(retry).toBeDefined();
-    act(() => retry!.click());
+    const retry = section("month").querySelector(
+      "button[type=button]:not([data-slot=month-bar] *)",
+    );
+    expect(retry).not.toBeNull();
+    act(() => (retry as HTMLButtonElement).click());
     expect(state.summary.refetch).toHaveBeenCalled();
   });
 

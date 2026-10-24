@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { Button } from "@/shared/ds/button";
 import { MonthBar } from "@/shared/ui/groo/month-bar";
+import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { useBudgetModel } from "./budget-model";
 import {
   CategorySection,
@@ -47,7 +48,16 @@ export function BudgetMobile() {
     <ScreenBands>
       <div data-band="flush" data-section="month">
         {monthBar}
-        {m.noBudgets ? (
+        {m.coreFailed ? (
+          // 질의 하나 = 실패 상자 하나(폰) — 총 예산 · 페이스 · 현황 · 목록이 같은 질의를 먹으므로 띠 ① 에 한 상자, 띠 ② 는 없다
+          <div className="pb-x6 pt-x3">
+            <BandFailure
+              band
+              title={t("manager.loadFailed")}
+              onRetry={m.retryCore}
+            />
+          </div>
+        ) : m.noBudgets ? (
           <div className="pb-x6 pt-x3">
             <EmptyMonth m={m} onSettings={goToSettings} />
           </div>
@@ -62,7 +72,7 @@ export function BudgetMobile() {
           </>
         )}
       </div>
-      {!m.noBudgets && (
+      {!m.noBudgets && !m.coreFailed && (
         <div data-band="flush" data-section="categories">
           <section data-section="status">
             <StatusSection m={m} place="band" />
