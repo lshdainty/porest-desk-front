@@ -119,7 +119,46 @@ export function useBudgetModel() {
     setMonthKey(`${ny}-${String(nm).padStart(2, "0")}`);
   };
 
+  // 구역마다 따로 기다리고 따로 실패한다(I-08 17) — 질의 하나가 처음 받는 중이거나 내용 없이 실패한 것만 센다.
+  const pending = (q: { data: unknown; isError: boolean }) =>
+    q.data === undefined && !q.isError;
+  const failed = (q: { data: unknown; isError: boolean }) =>
+    q.isError && q.data === undefined;
+  /** 총 예산 · 페이스 · 현황 — 예산과 이번 달 요약이 함께 있어야 센다 */
+  const coreLoading = pending(budgetsQ) || pending(summaryQ);
+  const coreFailed = failed(budgetsQ) || failed(summaryQ);
+  const retryCore = () => {
+    if (failed(budgetsQ)) void budgetsQ.refetch();
+    if (failed(summaryQ)) void summaryQ.refetch();
+  };
+  /** 카테고리별 예산 — 카테고리(이름 · 색)도 필요 */
+  const listLoading = coreLoading || pending(categoriesQ);
+  const listFailed = coreFailed || failed(categoriesQ);
+  const retryList = () => {
+    retryCore();
+    if (failed(categoriesQ)) void categoriesQ.refetch();
+  };
+  const complianceLoading = pending(complianceQ);
+  const complianceFailed = failed(complianceQ);
+  /** 이번 달 예산이 하나도 없다(Q3-B) — 질의가 성공했고 비었을 때만 */
+  const noBudgets = budgetsQ.data !== undefined && budgetsQ.data.length === 0;
+  /** 이행률은 상한 0 초과인 달이 하나라도 있을 때만 남긴다(Q3-B) */
+  const complianceHasData = (complianceQ.data ?? []).some(
+    (r) => r.totalLimit > 0,
+  );
+
   return {
+    coreLoading,
+    coreFailed,
+    retryCore,
+    listLoading,
+    listFailed,
+    retryList,
+    complianceLoading,
+    complianceFailed,
+    retryCompliance: () => void complianceQ.refetch(),
+    noBudgets,
+    complianceHasData,
     monthKey,
     setMonthKey,
     adjustMonth,
