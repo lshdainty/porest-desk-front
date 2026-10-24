@@ -22,6 +22,7 @@ import {
 import { List, ListItem, ListTile } from "@/shared/ds/list";
 import { ResultSection } from "@/shared/ds/result-section";
 import { Skeleton } from "@/shared/ds/skeleton";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { Button } from "@/shared/ds/button";
 import { cn } from "@/shared/lib/cn";
 import { formatMonthShort } from "@/shared/lib/date";
@@ -490,14 +491,14 @@ export function CategorySection({
                     <>
                       <span
                         className={cn(
-                          "block whitespace-nowrap text-end text-t5 font-bold tabular-nums",
+                          "block text-end text-t5 font-bold tabular-nums",
                           over ? "text-fg-critical" : "text-fg-neutral",
                         )}
                       >
-                        {mask(won(spent))}
+                        {withCommaBreaks(mask(won(spent)))}
                       </span>
-                      <span className="block whitespace-nowrap text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
-                        / {mask(won(limit))}
+                      <span className="block text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
+                        / {withCommaBreaks(mask(won(limit)))}
                       </span>
                     </>
                   }

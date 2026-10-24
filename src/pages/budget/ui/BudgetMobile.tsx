@@ -35,7 +35,7 @@ export function BudgetMobile() {
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-mr-x3_5"
+          className="-mr-x3_5 [&_svg]:size-4"
           onClick={goToSettings}
         >
           <Settings aria-hidden />

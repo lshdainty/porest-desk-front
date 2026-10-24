@@ -45,6 +45,7 @@ export function BudgetDesktop() {
                 variant="ghost"
                 ghostColor="neutralMuted"
                 size="small"
+                className="[&_svg]:size-4"
                 onClick={goToSettings}
               >
                 <Settings aria-hidden />

@@ -181,7 +181,7 @@ export function KeyValueRows({
             <span
               data-slot="kv-value"
               className={cn(
-                "whitespace-nowrap font-bold tabular-nums",
+                "text-end font-bold tabular-nums",
                 it.tone === "critical"
                   ? "text-fg-critical"
                   : it.tone === "brand"
@@ -189,7 +189,7 @@ export function KeyValueRows({
                     : "text-fg-neutral",
               )}
             >
-              {it.value}
+              {withCommaBreaks(it.value)}
             </span>
           }
         />
@@ -230,7 +230,7 @@ export function ListTitle({
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-my-x2 -mr-x3_5"
+          className="-my-x2 -mr-x3_5 [&_svg]:size-4"
           disabled={action.disabled}
           title={action.title}
           onClick={action.onClick}

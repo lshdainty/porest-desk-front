@@ -19,6 +19,7 @@ import { Callout } from "@/shared/ds/callout";
 import { Card, CardContent } from "@/shared/ds/card";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import { MonthBar } from "@/shared/ui/groo/month-bar";
@@ -278,6 +279,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       type="button"
       variant="neutralWeak"
       size="small"
+      className="[&_svg]:size-4"
       onClick={() => setConfirmCopy(true)}
       disabled={
         prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0
@@ -473,7 +475,7 @@ function TotalArea({
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-my-x2 -mr-x3_5"
+          className="-my-x2 -mr-x3_5 [&_svg]:size-4"
           onClick={onEdit}
           disabled={disabled}
         >
@@ -646,14 +648,14 @@ function CategoryArea({
             <>
               <span
                 className={cn(
-                  "block whitespace-nowrap text-end text-t5 font-bold tabular-nums",
+                  "block text-end text-t5 font-bold tabular-nums",
                   over ? "text-fg-critical" : "text-fg-neutral",
                 )}
               >
-                {mask(won(spent))}
+                {withCommaBreaks(mask(won(spent)))}
               </span>
-              <span className="block whitespace-nowrap text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
-                / {mask(won(limitAmt))}
+              <span className="block text-end text-t3 font-medium tabular-nums text-fg-neutral-subtle">
+                / {withCommaBreaks(mask(won(limitAmt)))}
               </span>
             </>
           );
