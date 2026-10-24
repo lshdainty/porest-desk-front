@@ -268,7 +268,7 @@ export function CategoryManager({
       {t("reorderHint")}
     </p>
   ) : (
-    <div className="px-global-gutter pt-x2">
+    <div className="px-global-gutter pb-x2 pt-x2">
       <Input
         variant="underline"
         value={query}
@@ -285,7 +285,10 @@ export function CategoryManager({
 
   const listTitle = !isLoading && categories && (
     <ListHeader as="div">
-      <h2 id={titleId} className="m-0 tracking-normal [font:inherit]">
+      <h2
+        id={titleId}
+        className="m-0 tracking-normal text-inherit [font:inherit]"
+      >
         {t("listTitle", {
           kind: tab === "EXPENSE" ? t("expenseCategory") : t("incomeCategory"),
           count,

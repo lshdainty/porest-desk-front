@@ -229,6 +229,22 @@ describe("카테고리 목록(폰)", () => {
     expect(stub("edit")?.getAttribute("data-id")).toBe("3");
   });
 
+  it("세트 밖 아이콘 이름은 빈 타일이 아니라 기본 아이콘(tag)으로 그린다", () => {
+    state.categories = [cat(2, "교통", null, { icon: "weird-unknown-icon" })];
+    render();
+    expect(
+      container.querySelector("[data-slot=list-tile] svg.lucide-tag"),
+    ).not.toBeNull();
+  });
+
+  it("검색칸 아래 8 + 목록 제목 위 8 — 검색 줄이 제 아래 여백을 갖는다(T3)", () => {
+    render();
+    const wrap = container
+      .querySelector("input")!
+      .closest(".px-global-gutter")!;
+    expect(wrap.className).toContain("pb-x2");
+  });
+
   it("바깥(머리 '추가')이 올린 횟수가 바뀌면 새 카테고리 폼이 열린다", () => {
     render({ addRequest: 0 });
     expect(stub("edit")).toBeNull();

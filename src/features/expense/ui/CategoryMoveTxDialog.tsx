@@ -19,6 +19,7 @@ import {
 import { PickList } from "@/shared/ui/groo/pick-list";
 import { PickerRow } from "@/shared/ui/groo/picker-row";
 import { Icon } from "@/shared/ui/groo/primitives";
+import { isIconName } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import {
   useMoveCategoryTransactions,
@@ -222,7 +223,10 @@ export function CategoryMoveTxDialog({
                                   color: palette.color,
                                 }}
                               >
-                                <Icon name={c.icon ?? "tag"} size={20} />
+                                <Icon
+                                  name={isIconName(c.icon) ? c.icon : "tag"}
+                                  size={20}
+                                />
                               </ListTile>
                             ),
                           };

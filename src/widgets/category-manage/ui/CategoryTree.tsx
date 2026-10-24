@@ -37,6 +37,7 @@ import {
 } from "@/shared/ds/menu";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { Icon } from "@/shared/ui/groo/primitives";
+import { isIconName } from "@/shared/lib";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import type { ExpenseCategory } from "@/entities/expense";
 
@@ -56,7 +57,7 @@ function Tile({ cat }: { cat: ExpenseCategory }) {
   const palette = getPaletteByColor(cat.color);
   return (
     <ListTile style={{ background: palette.bg, color: palette.color }}>
-      <Icon name={cat.icon ?? "tag"} size={20} />
+      <Icon name={isIconName(cat.icon) ? cat.icon : "tag"} size={20} />
     </ListTile>
   );
 }

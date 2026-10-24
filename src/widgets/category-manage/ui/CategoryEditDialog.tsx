@@ -16,6 +16,7 @@ import { ListTile } from "@/shared/ds/list";
 import { PickList } from "@/shared/ui/groo/pick-list";
 import { PickerRow } from "@/shared/ui/groo/picker-row";
 import { Icon } from "@/shared/ui/groo/primitives";
+import { isIconName } from "@/shared/lib";
 import {
   ColorPickerRow,
   IconPickerRow,
@@ -168,7 +169,7 @@ export function CategoryEditDialog({
     const p = getPaletteByColor(c.color);
     return (
       <ListTile style={{ background: p.bg, color: p.color }}>
-        <Icon name={c.icon ?? "tag"} size={20} />
+        <Icon name={isIconName(c.icon) ? c.icon : "tag"} size={20} />
       </ListTile>
     );
   };
@@ -201,7 +202,7 @@ export function CategoryEditDialog({
               className="inline-grid size-x13 shrink-0 place-items-center rounded-r4 [&>svg]:size-5"
               style={{ background: palette.bg, color: palette.color }}
             >
-              <Icon name={icon} size={20} />
+              <Icon name={isIconName(icon) ? icon : "tag"} size={20} />
             </span>
             <Field
               className="min-w-0 flex-1"
