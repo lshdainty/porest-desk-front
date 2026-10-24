@@ -48,6 +48,10 @@ const current = (section: SectionId) => {
 };
 
 describe("SettingsDesktopFrame 고른 칸", () => {
+  it("기기 화면은 머리(제목 · 안내)를 그대로 그린다", () => {
+    current("devices");
+    expect(container.textContent).toContain("sections.devices.desc");
+  });
   it("기기 화면에서는 계정 칸이 켜진다", () => {
     expect(current("devices")).toEqual(["sections.account.label"]);
   });

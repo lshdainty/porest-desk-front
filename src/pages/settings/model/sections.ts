@@ -201,6 +201,7 @@ export const NEEDS_DESKTOP_HEAD: SectionId[] = [
   "appearance",
   "data",
   "account",
+  "devices",
 ];
 
 /**
