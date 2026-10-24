@@ -65,14 +65,14 @@ function CompareBar({
   current: boolean;
 }) {
   return (
-    <div className="flex items-center gap-x2_5">
+    <div className="flex flex-wrap items-center gap-x-x2_5 gap-y-x1">
       <span className="min-w-[44px] shrink-0 text-t2 font-bold text-fg-neutral-subtle">
         {label}
       </span>
       {/* 막대가 양보한다 — 금액은 한 줄 · 고정폭 · 오른쪽 끝(고정 폭을 두지 않는다) */}
       <div
         aria-hidden
-        className="h-2 min-w-x6 flex-1 overflow-hidden rounded-full"
+        className="h-2 min-w-[4rem] flex-1 overflow-hidden rounded-full"
       >
         <div
           className={cn(
@@ -86,7 +86,7 @@ function CompareBar({
       </div>
       <span
         className={cn(
-          "shrink-0 whitespace-nowrap text-end text-t3 font-bold tabular-nums",
+          "ms-auto shrink-0 whitespace-nowrap text-end text-t3 font-bold tabular-nums",
           current ? "text-fg-neutral" : "text-fg-neutral-muted",
         )}
       >

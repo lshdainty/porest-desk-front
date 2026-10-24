@@ -612,8 +612,8 @@ export function FixedCategorySection({
             const s = splitFixed(r.total, r.fixed);
             return (
               <li key={r.key}>
-                <div className="flex items-baseline justify-between gap-x3">
-                  <span className="min-w-0 text-t4 font-bold text-fg-neutral [overflow-wrap:anywhere]">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-x3">
+                  <span className="min-w-[8rem] flex-1 text-t4 font-bold text-fg-neutral [overflow-wrap:anywhere]">
                     {r.name}
                   </span>
                   <span className="shrink-0 whitespace-nowrap text-t4 font-bold tabular-nums text-fg-neutral">

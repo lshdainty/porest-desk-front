@@ -380,7 +380,7 @@ export function SavingsRateSection({
             {rows.map((r) => (
               <li
                 key={r.key}
-                className="flex items-baseline justify-between gap-x3 text-t5"
+                className="flex flex-wrap items-baseline justify-between gap-x-x3 text-t5"
               >
                 <span className="inline-flex min-w-0 items-center gap-x2 text-fg-neutral">
                   <span

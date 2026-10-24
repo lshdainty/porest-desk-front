@@ -464,8 +464,8 @@ export function MerchantsSection({
               {i + 1}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="flex items-baseline justify-between gap-x3">
-                <span className="min-w-0 text-t5 text-fg-neutral [overflow-wrap:anywhere]">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-x3">
+                <span className="min-w-[8rem] flex-1 text-t5 text-fg-neutral [overflow-wrap:anywhere]">
                   {mc.merchant}
                   <span className="ms-x1_5 text-t3 text-fg-neutral-subtle">
                     {t("unit.times", { count: mc.count })}

@@ -269,39 +269,6 @@
   margin-top: 2px;
 }
 
-/* Category legend */
-.cat-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-}
-.cat-legend__row {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  gap: 10px;
-  align-items: center;
-  font-size: var(--text-label-sm);
-}
-.cat-legend__sw {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-xs);
-}
-.cat-legend__name {
-  font-weight: 500;
-}
-.cat-legend__pct {
-  font-size: var(--text-caption);
-  color: var(--fg-tertiary);
-  font-variant-numeric: tabular-nums;
-}
-.cat-legend__amt {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.012em;
-}
-
 /* Modal/Dialog 디자인은 shadcn Dialog (shared/ui/dialog.tsx) 로 이전됨.
    .modal*, .modal-overlay, modalIn/modalOut/fadeIn/fadeOut 모두 제거.
    호출자는 ModalShell (shared/ui/groo/dialogs.tsx) 또는 Dialog 컴포넌트를 직접 사용. */
