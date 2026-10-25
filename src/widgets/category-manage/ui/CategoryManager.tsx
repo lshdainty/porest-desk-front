@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Search } from "lucide-react";
 import {
@@ -83,6 +83,30 @@ export function CategoryManager({
     null,
   );
   const [movingTx, setMovingTx] = useState<ExpenseCategory | null>(null);
+  // 표면이 닫힌 뒤 초점을 돌려 둘 줄 — 수정 시트와 함께 ⋮ 가 사라지므로 그 카테고리 줄로 돌린다(삭제 뒤에는 이웃 줄 · 없으면 목록 머리)
+  const lastRowRef = useRef<number | null>(null);
+  const focusRow = (id: number | null) => {
+    window.setTimeout(() => {
+      const row =
+        id == null
+          ? null
+          : document.querySelector<HTMLElement>(`[data-category-row="${id}"]`);
+      (row ?? document.getElementById(titleId))?.focus({
+        preventScroll: false,
+      });
+    }, 200);
+  };
+  const neighborOf = (id: number): number | null => {
+    const ids = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-category-row]"),
+    ).map((el) => Number(el.dataset.categoryRow));
+    const i = ids.indexOf(id);
+    return ids[i + 1] ?? ids[i - 1] ?? null;
+  };
+  const closeEdit = () => {
+    setEditing(null);
+    focusRow(lastRowRef.current);
+  };
   // 자식 이동 시 새 부모 예산 초과 확인 — 승인하면 저장 진행.
   const [pendingMove, setPendingMove] = useState<{
     values: ExpenseCategoryFormValues;
@@ -176,10 +200,7 @@ export function CategoryManager({
   };
 
   const doUpdate = (id: number, values: ExpenseCategoryFormValues) => {
-    updateMut.mutate(
-      { id, data: values },
-      { onSuccess: () => setEditing(null) },
-    );
+    updateMut.mutate({ id, data: values }, { onSuccess: closeEdit });
   };
 
   const onSave = (values: ExpenseCategoryFormValues) => {
@@ -207,7 +228,7 @@ export function CategoryManager({
       }
       doUpdate(editing.rowId, values);
     } else {
-      createMut.mutate(values, { onSuccess: () => setEditing(null) });
+      createMut.mutate(values, { onSuccess: closeEdit });
     }
   };
 
@@ -287,6 +308,7 @@ export function CategoryManager({
     <ListHeader as="div">
       <h2
         id={titleId}
+        tabIndex={-1}
         className="m-0 tracking-normal text-inherit [font:inherit]"
       >
         {t("listTitle", {
@@ -326,7 +348,12 @@ export function CategoryManager({
       sensors={sensors}
       onReorder={handleDragEnd}
       ariaLabelledBy={titleId}
-      actions={{ onEdit: (c) => setEditing(c) }}
+      actions={{
+        onEdit: (c) => {
+          lastRowRef.current = c.rowId;
+          setEditing(c);
+        },
+      }}
     />
   );
 
@@ -368,7 +395,10 @@ export function CategoryManager({
         <CategoryMoveTxDialog
           source={movingTx}
           categories={list}
-          onClose={() => setMovingTx(null)}
+          onClose={() => {
+            setMovingTx(null);
+            focusRow(movingTx.rowId);
+          }}
         />
       )}
       {editing && (
@@ -384,10 +414,11 @@ export function CategoryManager({
           defaultParentRowId={
             editing && "kind" in editing ? (editing.parentRowId ?? null) : null
           }
-          onClose={() => setEditing(null)}
+          onClose={closeEdit}
           onSave={onSave}
           // 수정 시트 머리 ⋮ — 시트를 닫고 새 폼 · 시트 · 확인창을 연다(폼 위 폼은 겹치지 않는다)
           onAddChild={(parent) => {
+            lastRowRef.current = parent.rowId;
             setEditing({ kind: "new", parentRowId: parent.rowId });
           }}
           onMoveTx={(c) => {
@@ -407,7 +438,10 @@ export function CategoryManager({
       <AlertDialog
         open={confirmDelete?.hasChildren === true}
         onOpenChange={(open) => {
-          if (!open) setConfirmDelete(null);
+          if (!open) {
+            focusRow(confirmDelete?.rowId ?? null);
+            setConfirmDelete(null);
+          }
         }}
       >
         {confirmDelete?.hasChildren && (
@@ -427,7 +461,10 @@ export function CategoryManager({
       <AlertDialog
         open={confirmDelete != null && !confirmDelete.hasChildren}
         onOpenChange={(open) => {
-          if (!open && !deleteMut.isPending) setConfirmDelete(null);
+          if (!open && !deleteMut.isPending) {
+            focusRow(confirmDelete?.rowId ?? null);
+            setConfirmDelete(null);
+          }
         }}
       >
         {confirmDelete && !confirmDelete.hasChildren && (
@@ -447,8 +484,12 @@ export function CategoryManager({
                 loading={deleteMut.isPending}
                 onClick={(e) => {
                   e.preventDefault();
+                  const next = neighborOf(confirmDelete.rowId);
                   deleteMut.mutate(confirmDelete.rowId, {
-                    onSuccess: () => setConfirmDelete(null),
+                    onSuccess: () => {
+                      setConfirmDelete(null);
+                      focusRow(next);
+                    },
                   });
                 }}
               >

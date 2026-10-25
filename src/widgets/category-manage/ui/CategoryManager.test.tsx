@@ -50,8 +50,13 @@ vi.mock("@/features/recurring-transaction", () => ({
   useRecurringTransactions: () => ({ data: state.recurrings }),
 }));
 vi.mock("@/features/expense/ui/CategoryMoveTxDialog", () => ({
-  CategoryMoveTxDialog: (p: { source: { rowId: number } }) => (
-    <div data-stub="move" data-id={p.source.rowId} />
+  CategoryMoveTxDialog: (p: {
+    source: { rowId: number };
+    onClose: () => void;
+  }) => (
+    <div data-stub="move" data-id={p.source.rowId}>
+      <button data-act="close-move" onClick={p.onClose} />
+    </div>
   ),
 }));
 vi.mock("./CategoryEditDialog", () => ({
@@ -369,5 +374,47 @@ describe("순서 바꾸기", () => {
     await click(btnText("reorderDone"));
     expect(container.querySelector("input")).not.toBeNull();
     expect(btnText("교통")).toBeTruthy();
+  });
+});
+
+describe("동작 뒤 초점(K2)", () => {
+  const settle = () => tick(300);
+  const focusedRow = () =>
+    (document.activeElement as HTMLElement | null)?.dataset?.categoryRow;
+
+  it("거래 옮기기 시트를 닫으면 그 카테고리 줄로 초점이 돌아온다", async () => {
+    render();
+    await viaSheet("교통", "move");
+    await click(document.querySelector<HTMLElement>("[data-act=close-move]")!);
+    await settle();
+    expect(focusedRow()).toBe("2");
+  });
+
+  it("삭제를 취소하면 그 줄로, 지우면 이웃 줄(없으면 앞 줄)로 돌아온다", async () => {
+    render();
+    await viaSheet("교통", "delete");
+    await tick(300);
+    const dlg = () => document.querySelector("[role=alertdialog]")!;
+    await click(
+      Array.from(dlg().querySelectorAll<HTMLElement>("button")).find(
+        (b) => b.textContent === "cancel",
+      )!,
+    );
+    await settle();
+    expect(focusedRow()).toBe("2");
+
+    await viaSheet("교통", "delete");
+    await tick(300);
+    await click(
+      Array.from(dlg().querySelectorAll<HTMLElement>("button")).find(
+        (b) => b.textContent === "delete",
+      )!,
+    );
+    // 서버가 지웠다고 알린다 — 교통은 맨 아래 줄이라 앞 줄(점심)로
+    await act(async () => {
+      state.deleteMutate.mock.calls[0]![1].onSuccess();
+    });
+    await settle();
+    expect(focusedRow()).toBe("3");
   });
 });

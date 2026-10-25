@@ -354,4 +354,25 @@ describe("수정 시트 머리 ⋮ (10-25 줄 끝 ⋮ 원칙)", () => {
       expect(fn).toHaveBeenCalledWith(target);
     }
   });
+
+  it("바뀐 값이 있으면 동작 전에 '작성한 내용이 사라져요' 를 묻고, 나간 뒤에 동작한다(K1)", async () => {
+    const onMoveTx = vi.fn();
+    const target = cat(2, "교통");
+    mount({ cat: target, onMoveTx });
+    type(input(), "교통비");
+    await open("교통");
+    await click(
+      items().find((i) => i.textContent === "moveTx.entry") as HTMLElement,
+    );
+    await tick(1100);
+    expect(onMoveTx).not.toHaveBeenCalled();
+    const alert = document.querySelector("[role=alertdialog]")!;
+    expect(alert).not.toBeNull();
+    // [계속 작성] 은 동작을 하지 않고 닫는다 · [나가기](critical)는 동작한다
+    await click(
+      alert.querySelector<HTMLElement>("[data-slot=alert-dialog-action]")!,
+    );
+    await tick();
+    expect(onMoveTx).toHaveBeenCalledWith(target);
+  });
 });

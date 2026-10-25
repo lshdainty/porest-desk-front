@@ -126,6 +126,7 @@ export function CategoryTree({
             prefix={<Tile cat={parent} />}
             expandLabel={t("expandOf", { name: parent.categoryName })}
             defaultOpen
+            data-category-row={parent.rowId}
             onClick={() => actions.onEdit(parent)}
           >
             {children.map((c) => (
@@ -133,6 +134,7 @@ export function CategoryTree({
                 key={c.rowId}
                 title={c.categoryName}
                 prefix={<Tile cat={c} />}
+                data-category-row={c.rowId}
                 onClick={() => actions.onEdit(c)}
               />
             ))}

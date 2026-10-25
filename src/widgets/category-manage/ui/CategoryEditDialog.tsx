@@ -11,6 +11,7 @@ import {
   Tags,
   Trash2,
 } from "lucide-react";
+import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
 import { Button } from "@/shared/ds/button";
 import { firstUnusedColor } from "@/shared/ds/color-swatch";
 import {
@@ -156,6 +157,23 @@ export function CategoryEditDialog({
 
   const palette = getPaletteByColor(color);
 
+  // 머리 ⋮ 의 세 동작은 수정 시트를 떠난다 — 바뀐 값이 있으면 닫을 때와 같은 "작성한 내용이 사라져요" 를 먼저 묻는다
+  const pendingRef = useRef<(() => void) | null>(null);
+  const contentRef = useRef<HTMLElement | null>(null);
+  const leave = useLeaveConfirm({
+    dirty,
+    leave: () => {
+      const run = pendingRef.current;
+      pendingRef.current = null;
+      run?.();
+    },
+    contentRef,
+  });
+  const leaveThen = (run: () => void) => {
+    pendingRef.current = run;
+    leave.request();
+  };
+
   const submit = () => {
     if (submitting) return;
     // 같은 상위 · 같은 종류 안에서만 이름이 겹치면 안 된다(서버 규칙과 같다)
@@ -235,7 +253,7 @@ export function CategoryEditDialog({
                     <ResponsiveMenuItem
                       label={t("addSub")}
                       icon={<Plus aria-hidden />}
-                      onSelect={() => onAddChild?.(cat)}
+                      onSelect={() => leaveThen(() => onAddChild?.(cat))}
                     />
                   )}
                   {/* 하위가 있는 부모에는 거래가 달릴 수 없어 옮길 것이 0 이다 */}
@@ -243,7 +261,7 @@ export function CategoryEditDialog({
                     <ResponsiveMenuItem
                       label={t("moveTx.entry")}
                       icon={<ArrowRightLeft aria-hidden />}
-                      onSelect={() => onMoveTx?.(cat)}
+                      onSelect={() => leaveThen(() => onMoveTx?.(cat))}
                     />
                   )}
                 </ResponsiveMenuGroup>
@@ -252,7 +270,7 @@ export function CategoryEditDialog({
                     label={tc("delete")}
                     icon={<Trash2 aria-hidden />}
                     tone="critical"
-                    onSelect={() => onDelete?.(cat)}
+                    onSelect={() => leaveThen(() => onDelete?.(cat))}
                   />
                 </ResponsiveMenuGroup>
               </ResponsiveMenuContent>
@@ -409,6 +427,7 @@ export function CategoryEditDialog({
             {isNew ? t("submitAdd") : tc("save")}
           </Button>
         </ResponsiveDialogFooter>
+        {leave.node}
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );
