@@ -1074,7 +1074,6 @@ group,addGroupExpense,그룹 지출 추가,Add Group Expense
 group,noGroupEvents,아직 공유 일정이 없습니다,No shared events yet
 group,noGroupExpenses,아직 공유 가계부가 없습니다,No shared expenses yet
 group,createdBy,작성자,Created by
-calendar,header.eventCount,{{count}}개 일정,{{count}} events
 calendar,form.calendar,캘린더,Calendar
 calendar,selectGroup,그룹 선택,Select Group
 calendar,personal,개인,Personal
@@ -1096,13 +1095,7 @@ calendar,otherSources,기타 소스,Other Sources
 calendar,source.holiday,공휴일,Holidays
 calendar,source.expense,가계부,Expenses
 calendar,source.todo,할 일,Todos
-calendar,header.viewDay,일 보기,Day View
-calendar,header.viewWeek,주 보기,Week View
-calendar,header.viewMonth,월 보기,Month View
-calendar,header.viewYear,년 보기,Year View
-calendar,header.viewAgenda,아젠다 보기,Agenda View
 calendar,event.dayOfTotal,{{current}}/{{total}}일,Day {{current}} of {{total}}
-calendar,monthView.more,+{{count}}개 더보기,+{{count}} more
 calendar,dayView.happeningNow,진행 중,Happening Now
 calendar,dayView.noAppointments,진행 중인 일정이 없습니다,No appointments right now
 calendar,agenda.noEvents,일정이 없습니다,No events
@@ -1110,7 +1103,6 @@ calendar,close,닫기,Close
 calendar,eventDetail,일정 상세,Event details
 calendar,goToToday,오늘로,Today
 calendar,dateNavigation,날짜 이동,Go to date
-calendar,dayEvents.count,{{count}}건,{{count}} events
 calendar,sourceCount,{{count}}개,{{count}}
 calendar,preview,미리보기,Preview
 calendar,newCalendar,캘린더 추가,Add calendar
@@ -3107,3 +3099,9 @@ calendar,header.nextMonth,다음 달,Next month
 calendar,monthView.moreCount,+{{count}}개,+{{count}}
 calendar,monthView.cellLabel,"{{date}}, 일정 {{count}}개","{{date}}, {{count}} events"
 calendar,monthView.cellLabelEmpty,"{{date}}, 일정 없음","{{date}}, no events"
+calendar,view.label,보기,View
+calendar,view.day,일,Day
+calendar,view.year,연,Year
+calendar,view.agenda,목록,List
+calendar,panel.count,일정 {{count}}개,{{count}} events
+calendar,panel.today,오늘,Today

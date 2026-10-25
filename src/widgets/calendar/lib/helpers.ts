@@ -7,24 +7,15 @@ import {
   differenceInMinutes,
   eachDayOfInterval,
   endOfMonth,
-  endOfWeek,
-  endOfYear,
-  format,
   isSameDay,
-  isSameMonth,
-  isSameWeek,
-  isSameYear,
   isWithinInterval,
   parseISO,
   startOfDay,
   startOfMonth,
-  startOfWeek,
-  startOfYear,
   subDays,
   subMonths,
   subWeeks,
   subYears,
-  type Locale,
 } from "date-fns";
 
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
@@ -51,37 +42,6 @@ import type {
 
 // ================ Header helper functions ================ //
 
-export function rangeText(view: TCalendarView, date: Date, locale?: Locale) {
-  const formatString = "yyyy.MM.dd";
-  let start: Date;
-  let end: Date;
-
-  switch (view) {
-    case "agenda":
-      start = startOfMonth(date);
-      end = endOfMonth(date);
-      break;
-    case "year":
-      start = startOfYear(date);
-      end = endOfYear(date);
-      break;
-    case "month":
-      start = startOfMonth(date);
-      end = endOfMonth(date);
-      break;
-    case "week":
-      start = startOfWeek(date, { locale });
-      end = endOfWeek(date, { locale });
-      break;
-    case "day":
-      return format(date, formatString, { locale });
-    default:
-      return "";
-  }
-
-  return `${format(start, formatString, { locale })} - ${format(end, formatString, { locale })}`;
-}
-
 export function navigateDate(
   date: Date,
   view: TCalendarView,
@@ -96,24 +56,6 @@ export function navigateDate(
   };
 
   return operations[view](date, 1);
-}
-
-export function getEventsCount(
-  events: IEvent[],
-  date: Date,
-  view: TCalendarView,
-): number {
-  const compareFns = {
-    agenda: isSameMonth,
-    year: isSameYear,
-    day: isSameDay,
-    week: isSameWeek,
-    month: isSameMonth,
-  };
-
-  return events.filter((event) =>
-    compareFns[view](new Date(event.startDate), date),
-  ).length;
 }
 
 // ================ Week and day view helper functions ================ //

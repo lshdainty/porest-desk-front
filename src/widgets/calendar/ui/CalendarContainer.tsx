@@ -40,14 +40,7 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   } = screen;
 
   return (
-    <div
-      className={
-        // 폰은 격자가 화면보다 길면 화면(셸 본문)이 스크롤한다 — 높이를 가두지 않는다
-        isMobile
-          ? "flex w-full flex-col"
-          : "w-full h-full flex flex-col overflow-hidden"
-      }
-    >
+    <div className="flex w-full flex-col">
       {isMobile ? (
         <CalendarMobile screen={screen} isLoading={isLoading} />
       ) : (

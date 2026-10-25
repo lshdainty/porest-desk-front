@@ -1,0 +1,98 @@
+// 데스크톱 도구 줄 (I-09 14 · 15) — 보기 고르기는 이름이 보이는 Chip 하나 고르기 줄이다
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
+}
+
+const mocks = vi.hoisted(() => ({
+  setView: vi.fn(),
+  setSelectedDate: vi.fn(),
+}));
+
+vi.mock("react-i18next", () => ({
+  initReactI18next: { type: "3rdParty", init: () => {} },
+  useTranslation: () => ({
+    t: (k: string) => k,
+    i18n: { language: "ko" },
+  }),
+}));
+vi.mock("@/widgets/calendar/model/calendar-context", () => ({
+  useCalendar: () => ({
+    selectedDate: new Date(2026, 9, 22),
+    setSelectedDate: mocks.setSelectedDate,
+    view: "month",
+    setView: mocks.setView,
+  }),
+}));
+vi.mock("@/widgets/calendar/ui/header/calendar-source-toggle", () => ({
+  CalendarSourceToggle: () => <span data-testid="source" />,
+}));
+
+const { CalendarHeaderDesktop } = await import("./calendar-header-desktop");
+
+let container: HTMLDivElement;
+let root: Root;
+
+beforeEach(() => {
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  mocks.setView.mockClear();
+  mocks.setSelectedDate.mockClear();
+  container = document.createElement("div");
+  document.body.appendChild(container);
+  root = createRoot(container);
+  act(() => root.render(<CalendarHeaderDesktop />));
+});
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+});
+
+describe("도구 줄", () => {
+  it('보기 고르기는 radiogroup "보기" — 월 · 주 · 일 · 연 · 목록 이름이 보인다', () => {
+    const group = container.querySelector("[role=radiogroup]")!;
+    expect(group.getAttribute("aria-label")).toBe("view.label");
+    const radios = [...group.querySelectorAll("[role=radio]")];
+    expect(radios.map((r) => r.textContent)).toEqual([
+      "view.month",
+      "view.week",
+      "view.day",
+      "view.year",
+      "view.agenda",
+    ]);
+    // 아이콘만인 단추가 아니다 — 이름이 글로 보인다
+    expect(radios.every((r) => (r.textContent ?? "").length > 0)).toBe(true);
+    expect(radios[0]!.getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("보기 칩을 누르면 그 보기로 바뀐다", () => {
+    const radios = [...container.querySelectorAll<HTMLElement>("[role=radio]")];
+    act(() => radios[2]!.click());
+    expect(mocks.setView).toHaveBeenCalledWith("day");
+  });
+
+  it("옛 머리의 것이 없다 — 오늘 칩 상자 · 일정 수 배지 · 기간 글 · 세로 선", () => {
+    expect(container.textContent).not.toContain("header.eventCount");
+    expect(container.textContent).not.toMatch(/\d{4}\.\d{2}\.\d{2}/);
+    expect(container.innerHTML).not.toContain("w-px");
+    expect(container.textContent).toContain("today");
+  });
+
+  it('‹ › 와 "오늘" 이 달을 옮긴다', () => {
+    const buttons = [...container.querySelectorAll("button")];
+    const prev = buttons.find(
+      (b) => b.getAttribute("aria-label") === "header.prevMonth",
+    )!;
+    const next = buttons.find(
+      (b) => b.getAttribute("aria-label") === "header.nextMonth",
+    )!;
+    act(() => prev.click());
+    act(() => next.click());
+    expect(mocks.setSelectedDate).toHaveBeenCalledTimes(2);
+    const today = buttons.find((b) => b.textContent === "today")!;
+    act(() => today.click());
+    expect(mocks.setSelectedDate).toHaveBeenCalledTimes(3);
+  });
+});
