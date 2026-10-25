@@ -28,25 +28,22 @@ declare global {
 const mocks = vi.hoisted(() => ({ toggle: vi.fn(), mobile: false }));
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
-vi.mock("@/shared/hooks", () => ({ useIsMobile: () => mocks.mobile }));
-// Popover·Drawer 는 열기 전엔 내용을 DOM 에 두지 않는다 — 여기서 볼 건 그 안의 행이라
-// 통째로 편다. 껍데기(트리거·헤더)는 그대로 지나가게 둬야 개수 표시도 같이 잡힌다.
+// 1280 이상이면 Popover, 미만이면 Bottom Sheet — 폭 판정만 갈음한다(폰 = 좁은 폭)
+vi.mock("@/shared/ds/overlay", () => ({ useWideSurface: () => !mocks.mobile }));
+// Popover · Bottom Sheet 는 열기 전엔 내용을 DOM 에 두지 않는다 — 여기서 볼 건 그 안의 행이라
+// 통째로 편다. 껍데기(트리거 · 칩)는 그대로 지나가게 둬야 개수 표시도 같이 잡힌다.
 const passthrough = ({ children }: { children?: React.ReactNode }) => (
   <>{children}</>
 );
-vi.mock("@/shared/ui/popover", () => ({
+vi.mock("@/shared/ds/popover", () => ({
   Popover: passthrough,
   PopoverTrigger: passthrough,
   PopoverContent: passthrough,
 }));
-vi.mock("@/shared/ui/drawer", () => ({
-  Drawer: passthrough,
-  DrawerTrigger: passthrough,
-  DrawerContent: passthrough,
-  DrawerHeader: passthrough,
-  DrawerTitle: passthrough,
-  DrawerBody: passthrough,
-  DrawerClose: passthrough,
+vi.mock("@/shared/ds/bottom-sheet", () => ({
+  BottomSheet: passthrough,
+  BottomSheetContent: passthrough,
+  BottomSheetBody: passthrough,
 }));
 
 const { CalendarSourceToggle } = await import("./calendar-source-toggle");
@@ -121,17 +118,15 @@ const render = (calendars: UserCalendar[], { mobile = false } = {}) => {
   );
 };
 
-/** 캘린더 행 — 누를 수 있는 행(button)이든 아니든 같은 자리에 있다. */
+/** 캘린더 행 — 누를 수 있는 행(체크 줄)이든 아니든 같은 자리(ds 목록 줄)에 있다. */
 const rowOf = (name: string) =>
-  Array.from(container.querySelectorAll<HTMLElement>('[class*="py-1.5"]')).find(
-    (el) => (el.textContent ?? "").includes(name),
-  );
+  Array.from(
+    container.querySelectorAll<HTMLElement>("[data-slot=list-item]"),
+  ).find((el) => (el.textContent ?? "").includes(name));
 
-/** 그 캘린더를 누를 수 있는 자리 — 없으면 undefined. */
+/** 그 캘린더를 누를 수 있는 자리(체크) — 없으면 undefined. */
 const rowButton = (name: string) =>
-  Array.from(container.querySelectorAll("button")).find((b) =>
-    (b.textContent ?? "").includes(name),
-  );
+  rowOf(name)?.querySelector<HTMLElement>("[role=checkbox]") ?? undefined;
 
 const click = (el: Element) =>
   act(() => {
@@ -196,7 +191,7 @@ describe("기본 캘린더는 늘 보이는 것으로 친다", () => {
 
   it("꺼진 값이 남아 있어도 행이 흐려지지 않는다", () => {
     render([HIDDEN_DEFAULT, PRIVATE]);
-    expect(rowOf("업무")!.className).not.toContain("opacity-50");
+    expect(rowOf("업무")!.outerHTML).not.toContain("opacity-50");
   });
 
   // 보이는 소스 개수는 모바일 트리거에만 나온다(데스크톱 트리거는 이름만 띄운다).
@@ -213,6 +208,6 @@ describe("기본 캘린더는 늘 보이는 것으로 친다", () => {
     // 캘린더 1(기본만) + 공휴일 1.
     expect(container.textContent).toContain("2개");
     // 꺼진 줄은 체크로만 알린다 — 불투명도를 쓰지 않는다(DESIGN State)
-    expect(rowOf("개인")!.className).not.toContain("opacity");
+    expect(rowOf("개인")!.outerHTML).not.toContain("opacity");
   });
 });

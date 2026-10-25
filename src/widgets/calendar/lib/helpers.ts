@@ -284,7 +284,7 @@ export function calculateMonthEventPositions(
 
   eachDayOfInterval({ start: monthStart, end: monthEnd }).forEach((day) => {
     const dayKey = startOfDay(day).toISOString();
-    occupiedPositions[dayKey] = [false, false, false];
+    occupiedPositions[dayKey] = [];
   });
 
   const sortedEvents = [
@@ -318,17 +318,17 @@ export function calculateMonthEventPositions(
       end: eventEnd > monthEnd ? monthEnd : startOfDay(eventEnd),
     });
 
-    let position = -1;
-
-    for (let i = 0; i < 3; i++) {
-      if (
-        eventDays.every((day) => {
-          const dayKey = startOfDay(day).toISOString();
-          const dayPositions = occupiedPositions[dayKey];
-          return dayPositions && !dayPositions[i];
-        })
-      ) {
-        position = i;
+    // 칸 수에 위쪽 한도를 두지 않는다 — 몇 줄이 보이는지는 칸 높이가 정하고(칩 + "+N개"), 위치는 모든 일정이 받는다
+    let position = 0;
+    while (
+      !eventDays.every((day) => {
+        const dayPositions = occupiedPositions[startOfDay(day).toISOString()];
+        return dayPositions && !dayPositions[position];
+      })
+    ) {
+      position += 1;
+      if (position > 200) {
+        position = -1;
         break;
       }
     }

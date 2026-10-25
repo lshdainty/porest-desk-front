@@ -2,12 +2,11 @@ import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useBackClose } from "@/shared/lib/groo/use-back-close";
-import { DndProviderWrapper } from "@/widgets/calendar/ui/dnd/dnd-provider";
 import { DayEventsDialog } from "@/widgets/calendar/ui/DayEventsDialog";
 import { EventDetailPopover } from "@/widgets/calendar/ui/EventDetailPopover";
 import { CalendarHeaderMobile } from "@/widgets/calendar/ui/header/calendar-header-mobile";
-import { CalendarMonthView } from "@/widgets/calendar/ui/month-view/calendar-month-view";
-import { CalendarMonthViewSkeleton } from "@/widgets/calendar/ui/month-view/calendar-month-view-skeleton";
+import { CalendarMonthViewMobile } from "@/widgets/calendar/ui/month-view/calendar-month-view-mobile";
+import { CalendarMonthViewMobileSkeleton } from "@/widgets/calendar/ui/month-view/calendar-month-view-mobile-skeleton";
 import {
   Drawer,
   DrawerBody,
@@ -29,7 +28,6 @@ const CalendarMobile = ({ screen, isLoading }: IProps) => {
   const { t } = useTranslation("calendar");
   const {
     selectedEvent,
-    handleEventClick,
     handleClosePopover,
     handleEditEvent,
     handleDeleteEvent,
@@ -48,21 +46,15 @@ const CalendarMobile = ({ screen, isLoading }: IProps) => {
     <>
       <CalendarHeaderMobile />
 
-      <div className="flex-1 overflow-hidden">
-        <DndProviderWrapper>
-          {isLoading ? (
-            <CalendarMonthViewSkeleton />
-          ) : (
-            <CalendarMonthView
-              singleDayEvents={singleDayEvents}
-              multiDayEvents={multiDayEvents}
-              onEventClick={handleEventClick}
-              onDayClick={setDayDate}
-              mobileHeaderBorder={false}
-            />
-          )}
-        </DndProviderWrapper>
-      </div>
+      {isLoading ? (
+        <CalendarMonthViewMobileSkeleton />
+      ) : (
+        <CalendarMonthViewMobile
+          singleDayEvents={singleDayEvents}
+          multiDayEvents={multiDayEvents}
+          onDayClick={setDayDate}
+        />
+      )}
 
       {/* Event Detail — 모바일은 표준 모바일 drawer 패턴(DrawerHeader+제목+X), 데스크톱·태블릿은 Popover */}
       <Drawer
