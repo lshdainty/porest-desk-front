@@ -467,7 +467,10 @@ export function LedgerDayDate({
 }: React.ComponentProps<"h2"> & { relative?: React.ReactNode }) {
   return (
     <h2
-      className={cn("m-0 font-[inherit] text-[length:inherit]", className)}
+      className={cn(
+        "m-0 font-[inherit] [font-weight:inherit] text-[length:inherit]",
+        className,
+      )}
       {...props}
     >
       <span className="tabular-nums">{children}</span>

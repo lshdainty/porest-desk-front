@@ -357,6 +357,8 @@ describe("날짜 묶음 머리 (I-10 16)", () => {
     expect(h2.textContent?.replace(/\u00a0/g, " ")).toBe(
       "10월 21일 (수) · 어제",
     );
+    // 머리말은 브라우저 기본 굵기(700)가 아니라 머리 값(500)을 물려받는다
+    expect(h2.className).toContain("[font-weight:inherit]");
     const head = h2.closest("[data-slot=list-header]")!;
     expect(head.textContent).toContain("1/1 완료");
     expect(head.innerHTML).not.toMatch(/green|positive/);
