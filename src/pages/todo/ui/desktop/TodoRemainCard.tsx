@@ -63,11 +63,12 @@ export function TodoRemainCard({
                 <ListItem
                   key={tag || "__none"}
                   title={
-                    <span className="inline-flex items-baseline gap-x2">
+                    <span className="flex items-start gap-x2">
                       <i
                         aria-hidden
                         data-slot="todo-tag-dot"
-                        className="size-x2 shrink-0 translate-y-[-1px] rounded-full not-italic"
+                        // 제목 첫 줄(22)의 가운데에 점(8)을 세운다 — 이름이 여러 줄이어도 첫 줄에 붙는다
+                        className="mt-[calc((1lh-var(--spacing-x2))/2)] size-x2 shrink-0 rounded-full"
                         style={{
                           background: tag
                             ? getPaletteByColor(tagColors.get(tag)).color
