@@ -93,7 +93,7 @@ export function TagEditDialog({
               style={{ background: palette.bg }}
             >
               <span
-                className="inline-flex size-x10 shrink-0 items-center justify-center rounded-r3"
+                className="inline-flex size-x10 shrink-0 items-center justify-center rounded-r3 text-static-white"
                 style={{
                   background: palette.color,
                   color: "var(--fg-on-brand)",
