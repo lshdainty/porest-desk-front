@@ -180,7 +180,8 @@ describe("카테고리 목록(폰)", () => {
     const tabs = Array.from(document.querySelectorAll("[role=tab]")).map(
       (t) => t.textContent,
     );
-    expect(tabs).toEqual(["expense 3", "income 1"]);
+    // 탭 글은 이름만 — 개수는 바로 아래 목록 제목("지출 카테고리 {n}개")이 말한다(같은 수를 두 번 말하지 않는다)
+    expect(tabs).toEqual(["expense", "income"]);
   });
 
   it("목록 제목 · 순서 바꾸기는 불러온 뒤에만 있다", () => {
@@ -366,6 +367,31 @@ describe("순서 바꾸기", () => {
     expect(btn('dragReorderOf{"name":"점심"}')).toBeTruthy();
     // 늘 펼친 화면 — 꺾쇠 단추가 없다
     expect(document.querySelector("[data-slot=list-expand-button]")).toBeNull();
+  });
+
+  it("순서 모드의 부모 줄은 보기 줄과 같은 색 · 누르지 않는 비대화형 줄이다", async () => {
+    render();
+    const viewTitle = () =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>("[data-slot=list-title]"),
+      ).find((e) => e.textContent === "식비")!;
+    const viewClass = viewTitle().className;
+    await click(btnText("reorderEdit"));
+    const title = viewTitle();
+    // 꺼진 색이 아니다: 글 클래스가 보기 줄과 같고 disabled 표시가 없다
+    expect(title.className).toBe(viewClass);
+    const item = title.closest("[data-slot=list-item]")!;
+    expect(item.querySelector("[data-disabled]")).toBeNull();
+    // 버튼이 아니다(키보드 초점이 가지 않는다): 줄 안 버튼은 손잡이 하나뿐
+    const buttons = Array.from(item.querySelectorAll("button"));
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]!.getAttribute("aria-label")).toBe(
+      'dragReorderOf{"name":"식비"}',
+    );
+    expect(title.closest("button")).toBeNull();
+    // 줄을 눌러도 수정 시트가 열리지 않는다
+    await click(title);
+    expect(stub("edit")).toBeNull();
   });
 
   it("완료를 누르면 목록으로 돌아온다", async () => {

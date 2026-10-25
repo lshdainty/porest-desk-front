@@ -32,6 +32,12 @@ import type { ExpenseCategory } from "@/entities/expense";
  * 줄 누르기 = 수정 시트, 꺾쇠 = 펴고 접기만. 순서 바꾸기 모드에서는 줄 끝에 끄는 손잡이가 서고 줄 누름은 막힌다.
  */
 
+// 순서 모드의 보기 줄 들임 — 보기 줄의 부모 타일(x 52 = 꺾쇠 자리 4 + 44 + 4)·하위 타일(x 104)과 같은 자리
+const INDENT_PARENT =
+  "[&_[data-slot=list-content]]:pl-[calc(var(--spacing-x13))]";
+const INDENT_CHILD =
+  "[&_[data-slot=list-content]]:pl-[calc(var(--spacing-x13)*2)]";
+
 export interface CategoryRowActions {
   /** 줄 누름 = 수정 시트 한 단계 들어가기 — 하위 추가 · 거래 옮기기 · 삭제는 수정 시트 머리 ⋮ 에 있다 */
   onEdit: (c: ExpenseCategory) => void;
@@ -169,29 +175,33 @@ export function CategoryTree({
               name={parent.categoryName}
             >
               {(grip) => (
-                <List>
-                  <ListParentItem
-                    collapsible={false}
-                    title={parent.categoryName}
-                    prefix={<Tile cat={parent} />}
-                    disabled
-                    suffix={grip}
-                  >
-                    {children.length > 0 && (
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={(ev) =>
-                          onReorder(
-                            ev,
-                            children.map((c) => c.rowId),
-                          )
-                        }
+                <>
+                  {/* 순서 모드의 부모 줄은 누르지 않는 보기 줄이다 — 버튼이 아니고 초점이 가지 않으며 글 · 타일 색은 보기 줄과 같다
+                      (꺼진 색은 "쓸 수 없음" 이라 모드 때문에 막힌 줄에 맞지 않는다). 타일은 보기 줄과 같은 x 52 에 선다 */}
+                  <List>
+                    <ListItem
+                      className={INDENT_PARENT}
+                      title={parent.categoryName}
+                      prefix={<Tile cat={parent} />}
+                      suffix={grip}
+                    />
+                  </List>
+                  {children.length > 0 && (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(ev) =>
+                        onReorder(
+                          ev,
+                          children.map((c) => c.rowId),
+                        )
+                      }
+                    >
+                      <SortableContext
+                        items={children.map((c) => c.rowId)}
+                        strategy={verticalListSortingStrategy}
                       >
-                        <SortableContext
-                          items={children.map((c) => c.rowId)}
-                          strategy={verticalListSortingStrategy}
-                        >
+                        <List>
                           {children.map((c) => (
                             <Sortable
                               key={c.rowId}
@@ -202,6 +212,7 @@ export function CategoryTree({
                               {(childGrip) => (
                                 <ListItem
                                   as="div"
+                                  className={INDENT_CHILD}
                                   title={c.categoryName}
                                   prefix={<Tile cat={c} />}
                                   suffix={childGrip}
@@ -209,11 +220,11 @@ export function CategoryTree({
                               )}
                             </Sortable>
                           ))}
-                        </SortableContext>
-                      </DndContext>
-                    )}
-                  </ListParentItem>
-                </List>
+                        </List>
+                      </SortableContext>
+                    </DndContext>
+                  )}
+                </>
               )}
             </Sortable>
           ))}

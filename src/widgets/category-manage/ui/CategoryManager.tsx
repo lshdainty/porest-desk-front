@@ -271,14 +271,8 @@ export function CategoryManager({
         layout={mobile ? "fill" : "hug"}
         size="medium"
       >
-        <TabsTrigger value="EXPENSE">
-          {te("expense")}
-          {categories && ` ${counts.expense}`}
-        </TabsTrigger>
-        <TabsTrigger value="INCOME">
-          {te("income")}
-          {categories && ` ${counts.income}`}
-        </TabsTrigger>
+        <TabsTrigger value="EXPENSE">{te("expense")}</TabsTrigger>
+        <TabsTrigger value="INCOME">{te("income")}</TabsTrigger>
       </TabsList>
     </Tabs>
   );
