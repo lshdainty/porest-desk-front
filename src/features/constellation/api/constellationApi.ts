@@ -91,6 +91,11 @@ export function constellationColorVar(colorKey: string): string {
   return `var(--color-chart-${colorKey})`;
 }
 
+/** color_key → 옅은 바탕 CSS 변수(`chart-{색}-weak` — 수집한 칸 · 점의 바탕. 다크는 토큰이 바꾼다). */
+export function constellationWeakVar(colorKey: string): string {
+  return `var(--color-chart-${colorKey}-weak)`;
+}
+
 export const constellationApi = {
   getToday: async (): Promise<ConstellationToday> => {
     const resp: ApiResponse<ConstellationToday> = await apiClient.get(

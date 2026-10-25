@@ -2411,6 +2411,7 @@ constellation,hero.captionMemo,메모 별빛 +{{count}},Memo starlight +{{count}
 constellation,hero.captionRemain,{{count}}별 남음,{{count}} stars to go
 constellation,hero.captionEmpty,할 일을 완료하면 별이 켜져요,Complete todos to light up the stars
 constellation,hero.streak,연속 관측 {{count}}일,{{count}}-day streak
+constellation,hero.label,오늘의 목표 별자리 {{name}} {{lit}}/{{goal}} 별빛,Today's constellation {{name}} {{lit}}/{{goal}} starlight
 constellation,hero.guardInfo,보호 {{count}} · 중요 +3 · 보통 +2 · 여유 +1,Guard {{count}} · High +3 · Medium +2 · Low +1
 constellation,mySky.title,나의 밤하늘,My Night Sky
 constellation,mySky.total,누적 {{count}}개,{{count}} collected

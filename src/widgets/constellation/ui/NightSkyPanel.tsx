@@ -39,7 +39,7 @@ export function NightSkyPanel({
         <NightSkyHero
           today={todayQ.data}
           doneToday={doneToday}
-          mobile={mobile}
+          wide={!mobile}
         />
         <ForestWeekEntry
           today={todayQ.data}
