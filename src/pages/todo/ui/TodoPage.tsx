@@ -20,29 +20,22 @@ import {
   ForestStrip,
   NightSkyPanel,
 } from "@/widgets/constellation";
-import { isDone } from "@/pages/todo/lib/visible-todos";
+import { isDone } from "@/pages/todo/model/todo-ledger";
 import { todoTagOptions } from "@/pages/todo/lib/todo-tags";
 import { TodoMobileLedger } from "./TodoMobileLedger";
 import { TodoDesktop } from "./TodoDesktop";
 import { TodoDetailDialog } from "./TodoDetailDialog";
 import { TodoFormDialog } from "./TodoFormDialog";
 import type { Todo, TodoFormValues } from "@/entities/todo";
-import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
+import { DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
 import { FloatingActionButton } from "@/shared/ds/floating-action-button";
 import {
   TopNavigation,
   TopNavigationBackButton,
   TopNavigationTitle,
 } from "@/shared/ds/top-navigation";
-import { Card } from "@/shared/ui/card";
-import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import { PageHead } from "@/shared/ui/groo/page-head";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
-
-// ── 날짜 유틸 ──────────────────────────────────────────────────────────────
-// FilterKey·dueKey·dayDiff·inSevenDays·isDone 은 `lib/visible-todos.ts` 로 옮겼다 —
-// 목록 필터에 테스트를 붙이려면 렌더링 없이 부를 수 있어야 했다(QA #29).
 
 /** TodoPage 진입 시 사용하는 useQuery 의 isLoading 집계. */
 function useTodoPageData() {
@@ -56,8 +49,7 @@ function useTodoPageData() {
 export const TodoPage = () => {
   const { mobile } = useOutletContext<OutletCtx>();
   const { isLoading, failed } = useTodoPageData();
-  // 폰은 틀(상단 바 · 달 · 요일 · 단추)을 그리고 데이터 자리만 기다린다(I-10 18) — 데스크톱 스켈레톤은 10-2 가 다시 짠다
-  if (isLoading && !mobile) return <TodoPageSkeleton />;
+  // 폰 · 넓은 화면 모두 틀(제목 · 달력 · 카드)은 그리고 데이터 자리만 기다린다(I-10 18 · 29)
   return <TodoPageInner mobile={mobile} loading={isLoading} failed={failed} />;
 };
 
@@ -98,6 +90,12 @@ const TodoPageInner = ({
 
   // 태그 목록 — TodoTag(설정 관리) + 기존 할 일에 남은 카테고리 union. 둘 다 비면 빈 목록.
   const tagNames = todoTagOptions(todoTagsQ.data, todos);
+  // 태그 이름 → 색(남은 할 일 카드의 점) — 설정 태그만 색이 있다
+  const tagColors = useMemo(
+    () =>
+      new Map((todoTagsQ.data ?? []).map((tag) => [tag.tagName, tag.color])),
+    [todoTagsQ.data],
+  );
 
   // editing: Todo(편집) | { _new: true }(신규) | null(닫힘)
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null);
@@ -253,132 +251,24 @@ const TodoPageInner = ({
       <TodoDesktop
         todos={todos}
         tagNames={tagNames}
+        tagColors={tagColors}
         today={today}
-        pendingIds={toggleStatus.pendingIds}
         holdIds={toggleStatus.holdIds}
+        loading={loading}
+        failed={failed}
+        onRetry={() => void todosQ.refetch()}
         onToggle={onToggleTodo}
         onOpen={setViewing}
         onAdd={() => setEditing({ _new: true })}
         strip={Strip}
+        sky={skyQ.data ?? []}
+        constellationToday={constellationTodayQ.data}
+        doneToday={doneToday}
+        openNightSky={() => setNightSky(true)}
+        openReport={() => setForestReport(true)}
       />
       {dialog}
       {overlays}
     </>
   );
 };
-
-// ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
-
-/** Todo 행 1줄 skeleton — 원형 체크 + 제목/메타 + 우선순위 칩. */
-function TodoRowSkeleton({ last }: { last?: boolean }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 4px",
-        borderBottom: last ? "none" : "1px solid var(--border-subtle)",
-      }}
-    >
-      <SkeletonBase className="h-[22px] w-[22px] rounded-full shrink-0" />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <SkeletonBase className="h-4 w-3/5 mb-1.5" />
-        <SkeletonBase className="h-3 w-1/3" />
-      </div>
-      <SkeletonBase className="h-5 w-10 rounded-sm shrink-0" />
-    </div>
-  );
-}
-
-/** 데스크톱 우측 분포/우선순위 카드 skeleton — 실제 타이틀 + 막대 행 구조 미러. */
-function RatioCardSkeleton({ title, rows }: { title: string; rows: number }) {
-  return (
-    <Card style={{ padding: 22 }}>
-      <h2 style={{ fontSize: 15, fontWeight: "700", marginBottom: 14 }}>
-        {title}
-      </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {Array.from({ length: rows }).map((_, i) => (
-          <div
-            key={i}
-            style={{ display: "flex", alignItems: "center", gap: 12 }}
-          >
-            <SkeletonBase className="h-4 w-[60px] shrink-0" />
-            <SkeletonBase className="h-1.5 flex-1 rounded-full" />
-            <SkeletonBase className="h-3 w-9 shrink-0" />
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-/**
- * 데스크톱 · 태블릿 Todo 페이지 skeleton — 정적 틀(페이지 헤더)은 실제 렌더,
- * 서버 쿼리(useTodos) 의존 영역(칩/리스트/분포)만 skeleton. 폰은 원장이 틀을 그리고 자리만 기다린다.
- */
-function TodoPageSkeleton() {
-  const { t } = useTranslation("todo");
-  // ── 필터 칩 4개 placeholder ──
-  const Chips = (
-    <div style={{ display: "flex", gap: 8 }}>
-      {[0, 1, 2, 3].map((i) => (
-        <SkeletonBase key={i} className="h-7 w-16 rounded-full" />
-      ))}
-    </div>
-  );
-  // ── 리스트 — 날짜 라벨 + 행 skeleton ──
-  const rows = (
-    <>
-      <SkeletonBase className="h-3 w-36 mt-3 mb-2" />
-      {[0, 1, 2].map((i) => (
-        <TodoRowSkeleton key={i} last={i === 2} />
-      ))}
-      <SkeletonBase className="h-3 w-36 mt-4 mb-2" />
-      {[0, 1].map((i) => (
-        <TodoRowSkeleton key={i} last={i === 1} />
-      ))}
-    </>
-  );
-  const List = <Card style={{ padding: "8px 20px" }}>{rows}</Card>;
-
-  return (
-    <div style={{ padding: 0 }}>
-      {/* 정적 페이지 헤더 — 실제 렌더 */}
-      <PageHead
-        title={t("pageTitle")}
-        description={t("subtitle")}
-        actions={
-          <>
-            <Button size="sm" disabled>
-              <Plus size={14} /> {t("newTodo")}
-            </Button>
-          </>
-        }
-        style={{ padding: "20px 32px 12px", margin: 0, maxWidth: 1320 }}
-      />
-      <div style={{ padding: "0 32px 24px", maxWidth: 1320 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.4fr 1fr",
-            gap: 20,
-            alignItems: "flex-start",
-            marginTop: 20,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {Chips}
-            {List}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <SkeletonBase className="h-[62px] w-full rounded-lg" />
-            <RatioCardSkeleton title={t("tagDistribution")} rows={4} />
-            <RatioCardSkeleton title={t("form.priority")} rows={3} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

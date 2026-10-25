@@ -3,14 +3,11 @@ import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
   ChevronRight,
-  Cloudy,
-  Check,
   FunnelX,
   ListChecks,
   Pencil,
   SlidersHorizontal,
   Sparkles,
-  Star,
   Telescope,
   Trash2,
 } from "lucide-react";
@@ -64,7 +61,6 @@ import { NightSkyHero } from "@/widgets/constellation";
 import type { Todo } from "@/entities/todo";
 import {
   NO_DUE,
-  cellMarkOf,
   groupByDay,
   isDone,
   isFilterActive,
@@ -77,12 +73,17 @@ import {
   type TodoFilter,
 } from "@/pages/todo/model/todo-ledger";
 import { TodoRow } from "./TodoRow";
+import { TodoDayGroupSkeleton } from "./todo-skeleton";
+import { useTodoCellMarks } from "./todo-cell-marks";
 import { TodoDeleteConfirm } from "./TodoDeleteConfirm";
 import {
   TodoFilterSection,
   TodoPrioFilterBody,
   TodoTagFilterBody,
 } from "./TodoFilterBody";
+
+/** 묶음 사이 16 · 끝까지 선 바로 아래 첫 묶음 8 — 실제 날짜 묶음과 같은 값 */
+const SKELETON_GROUP = "[&:not(:first-child)]:mt-x4 first:mt-x2";
 
 const PAD = (n: number) => String(n).padStart(2, "0");
 
@@ -215,63 +216,17 @@ export function TodoMobileLedger({
     ? constellationColorVar(constellationToday.constellation.colorKey)
     : "var(--fg-brand)";
 
-  const dateName = (ds: string) =>
-    new Intl.DateTimeFormat(en ? "en-US" : "ko-KR", {
-      month: "long",
-      day: "numeric",
-    }).format(new Date(`${ds}T00:00:00`));
-
-  // 칸 표시(장식) — 판정은 모델, 뜻은 칸 이름(cellName)이 읽는다
-  const cellMark = (ds: string) => {
-    const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
-    if (!mark) return null;
-    switch (mark.kind) {
-      case "collected":
-        return (
-          <Star
-            size={10}
-            strokeWidth={0}
-            fill="currentColor"
-            style={{ color: todayColor }}
-          />
-        );
-      case "grown":
-        return (
-          <Star
-            size={10}
-            strokeWidth={0}
-            fill="currentColor"
-            style={{ color: constellationColorVar(mark.colorKey) }}
-          />
-        );
-      case "missed":
-        return <Cloudy size={10} strokeWidth={2} />;
-      case "left":
-        return t("tdm.countN", { count: mark.count });
-      case "done":
-        return <Check size={10} strokeWidth={3} className="text-fg-positive" />;
-    }
-  };
-  const cellName = (ds: string) => {
-    const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
-    const date = dateName(ds);
-    if (!mark) return date;
-    switch (mark.kind) {
-      case "collected":
-      case "grown":
-        return t("tdm.cellCollected", { date });
-      case "missed":
-        return t("tdm.cellMissed", { date });
-      case "left":
-        return t("tdm.cellLeft", { date, count: mark.count });
-      case "done":
-        return t("tdm.cellDone", { date });
-    }
-  };
-  const isTodayLeft = (ds: string) => {
-    const mark = cellMarkOf(ds, today, byDay, skyByDate, skyDone);
-    return mark?.kind === "left" && mark.today;
-  };
+  // 칸 표시(장식) · 칸 이름 · 오늘의 남은 수 — 판정은 모델, 그리기와 이름은 데스크톱과 같은 부품
+  const marks = useTodoCellMarks({
+    today,
+    byDay,
+    skyByDate,
+    skyDone,
+    todayColor,
+  });
+  const cellMark = marks.glyph;
+  const cellName = marks.name;
+  const isTodayLeft = marks.isTodayLeft;
 
   const relOf = (d: string): string | null => {
     const kind = relKindOf(d, today);
@@ -296,8 +251,8 @@ export function TodoMobileLedger({
   } else if (loading) {
     body = (
       <div aria-busy="true">
-        <DayGroupSkeleton rows={3} />
-        <DayGroupSkeleton rows={2} />
+        <TodoDayGroupSkeleton rows={3} className={SKELETON_GROUP} />
+        <TodoDayGroupSkeleton rows={2} className={SKELETON_GROUP} />
       </div>
     );
   } else if (monthTodos.length === 0) {
@@ -591,27 +546,5 @@ export function TodoMobileLedger({
         </BottomSheetContent>
       </BottomSheet>
     </LedgerShell>
-  );
-}
-
-/** 불러오는 동안의 날짜 묶음 — 머리 + 줄(체크 24 · 제목 · 설명 · 배지) 자리. 틀 값은 실제 줄과 같다 */
-function DayGroupSkeleton({ rows }: { rows: number }) {
-  return (
-    <div className="[&:not(:first-child)]:mt-x4 first:mt-x2">
-      <div className="flex items-center justify-between px-global-gutter py-x2">
-        <Skeleton text="t4" className="w-32" />
-        <Skeleton text="t4" className="w-12" />
-      </div>
-      {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex items-start gap-x3 px-global-gutter py-x3">
-          <Skeleton className="size-6 shrink-0" radius="4" />
-          <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
-            <Skeleton text="t5" className="w-3/4" />
-            <Skeleton text="t3" className="w-1/3" />
-          </div>
-          <Skeleton text="t1" className="w-x8 shrink-0" />
-        </div>
-      ))}
-    </div>
   );
 }

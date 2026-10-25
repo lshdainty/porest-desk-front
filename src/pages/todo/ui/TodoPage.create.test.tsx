@@ -22,7 +22,7 @@ const created = vi.hoisted(() => [] as Record<string, unknown>[]);
 const ctx = vi.hoisted(() => ({ mobile: false }));
 
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k: string) => k }),
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("react-router-dom", () => ({

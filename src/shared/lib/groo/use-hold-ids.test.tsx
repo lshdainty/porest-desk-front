@@ -1,6 +1,6 @@
 // 완료 토글처럼 누른 즉시 목록에서 빠지는 항목을, 그 자리에 잠깐 붙들어 둔다(QA #29).
 // 여기서 잠그는 건 "붙든 id 가 정해진 시간 뒤 스스로 풀린다" 와 "붙드는 동안 다른 항목은
-// 건드리지 않는다" 두 가지다. 목록 필터 쪽 계약은 pages/todo/lib/visible-todos.test.ts.
+// 건드리지 않는다" 두 가지다. 목록 필터 쪽 계약은 pages/todo/model/todo-ledger.test.ts.
 import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

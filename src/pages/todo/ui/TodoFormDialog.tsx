@@ -34,7 +34,7 @@ import {
 } from "@/shared/ds/popover";
 import { Select, SelectItem } from "@/shared/ds/select";
 import { Textarea } from "@/shared/ds/textarea";
-import { dueKey } from "@/pages/todo/lib/visible-todos";
+import { dueKey } from "@/pages/todo/model/todo-ledger";
 import {
   NO_TAG_KEY,
   tagValueToPayload,

@@ -67,6 +67,7 @@ const state = vi.hoisted(() => ({ todos: [] as Todo[] }));
 // 돌려주는 흔한 mock 으로는 이 테스트가 성립하지 않는다.
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
+    i18n: { language: "ko" },
     t: (k: string, opts?: Record<string, unknown>) => {
       const raw = todoKo[k];
       if (raw == null) return k;
@@ -139,7 +140,7 @@ describe("할 일 빈 상태 안내 (QA #133)", () => {
   it("빈 상태 문구가 부르는 버튼이 같은 화면에 실제로 있다", () => {
     act(() => root.render(<TodoPage />));
 
-    const desc = copyOf("emptyDesc.default");
+    const desc = copyOf("tdm.emptyMonthDescWide");
     expect(container.textContent).toContain(desc);
 
     // 화면에 있는 버튼 이름 중 하나를 문구가 부르고 있어야 한다.
@@ -154,7 +155,7 @@ describe("할 일 빈 상태 안내 (QA #133)", () => {
   it("없어진 빠른 추가 입력칸을 가리키지 않는다 — 그 칸은 화면에 없다", () => {
     act(() => root.render(<TodoPage />));
 
-    const desc = copyOf("emptyDesc.default");
+    const desc = copyOf("tdm.emptyMonthDescWide");
     expect(desc).not.toContain("입력칸");
 
     // 반대편 — 정말로 없다. 있으면 문구를 되돌리는 게 맞는 수정이 된다.
@@ -168,6 +169,8 @@ describe("할 일 빈 상태 안내 (QA #133)", () => {
     ctx.mobile = true;
     act(() => root.render(<TodoPage />));
 
-    expect(container.textContent).not.toContain(copyOf("emptyDesc.default"));
+    expect(container.textContent).not.toContain(
+      copyOf("tdm.emptyMonthDescWide"),
+    );
   });
 });
