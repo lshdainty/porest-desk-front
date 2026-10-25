@@ -148,7 +148,6 @@ export function TodoTagManagerMobile() {
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-mr-x3_5"
           onClick={() => setEditing({ kind: "new" })}
         >
           {t("tags.new")}

@@ -1188,6 +1188,16 @@ describe("ListDivider · ListHeader · ListTile", () => {
     );
   });
 
+  it("목록 제목의 오른쪽 글 버튼은 위아래 −8 · 오른쪽 −14 로 스스로 번진다 — 화면이 −mr 를 따로 주지 않는다(list-header.yaml action.marginY)", () => {
+    render(<ListHeader id="h1">일반</ListHeader>);
+    expect(classes(slots("list-header")[0]!)).toEqual(
+      expect.arrayContaining([
+        "[&>button:last-child:not(:first-child)]:-my-x2",
+        "[&>button:last-child:not(:first-child)]:-mr-x3_5",
+      ]),
+    );
+  });
+
   it("목록 제목 — 14 · 500 · 옅은 색(기본) · boldSolid 는 700 · 짙은 색, 좌우 24 · 위아래 8 · 버튼과 사이 10", () => {
     render(
       <>

@@ -194,9 +194,11 @@ describe("TodoTagManager", () => {
     );
     expect(add).toBeTruthy();
     expect(h2?.contains(add!)).toBe(false);
-    // 블리드는 −14 한 번뿐이다(flush=right 와 겹치면 글 끝이 오른쪽 여백 밖으로 나간다) · 글 색은 ghostColor 한 길
-    expect(add!.className).toContain("-mr-x3_5");
-    expect(add!.className).not.toContain("pr-0");
+    // 블리드는 ds ListHeader 가 맡는다 — 화면 버튼에는 −mr · flush 가 없다(두 번 밀리면 글 끝이 여백 밖으로 나간다) · 글 색은 ghostColor 한 길
+    expect(add!.className).not.toMatch(/-mr-|-my-|pr-0/);
+    expect(h2?.parentElement?.className).toContain(
+      "[&>button:last-child:not(:first-child)]:-mr-x3_5",
+    );
     expect(add!.className).toContain("text-fg-neutral-muted");
     expect(container.querySelectorAll("[data-slot=list-tile]").length).toBe(2);
     expect(container.querySelector("[data-slot=divider]")).toBeNull();
