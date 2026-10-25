@@ -186,7 +186,7 @@ export function TrendSection({
               yAxisId="income"
               domain={[0, incomeScale.max]}
               ticks={incomeScale.ticks}
-              tickFormatter={(v) => formatAxisWon(Number(v))}
+              tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
               width={52}
               {...chartAxisProps(dual ? { color: "blue" } : {})}
             />
@@ -196,7 +196,7 @@ export function TrendSection({
                 orientation="right"
                 domain={[0, expenseAxis.max]}
                 ticks={expenseAxis.ticks}
-                tickFormatter={(v) => formatAxisWon(Number(v))}
+                tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
                 width={52}
                 {...chartAxisProps({ color: "red" })}
               />
@@ -262,6 +262,8 @@ export function SavingsRateSection({
   const { t } = useTranslation("stats");
   const mask = useMasked("stats.trend");
   if (m.rangeQ.isError && !m.rangeQ.data) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <HeadlessBody place={place}>
         <BandFailure
@@ -345,7 +347,7 @@ export function SavingsRateSection({
               <span className="text-t2 font-medium text-fg-neutral-subtle">
                 {t("trend.savingsRate")}
               </span>
-              <span className="text-t6 font-bold tabular-nums text-fg-neutral">
+              <span className="text-t9 font-bold tabular-nums text-fg-neutral">
                 {m.saveRate.toFixed(1)}%
               </span>
             </div>
@@ -432,6 +434,8 @@ export function SavingsBarsSection({
   );
   const height = chartHeight(place, 180, 220);
   if (m.rangeQ.isError && !m.rangeQ.data) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <>
         {head}
@@ -487,7 +491,7 @@ export function SavingsBarsSection({
             <YAxis
               domain={[axis.min, axis.max]}
               ticks={axis.ticks}
-              tickFormatter={(v) => formatAxisWon(Number(v))}
+              tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
               width={52}
               {...chartAxisProps()}
             />
@@ -542,6 +546,8 @@ export function CatTrendSection({
     />
   );
   if (m.rangeQ.isError && !m.rangeQ.data) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <>
         {head}
@@ -604,7 +610,7 @@ export function CatTrendSection({
             <CartesianGrid {...chartGridProps} />
             <XAxis dataKey="label" {...chartAxisProps()} />
             <YAxis
-              tickFormatter={(v) => formatAxisWon(Number(v))}
+              tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
               width={52}
               {...chartAxisProps()}
             />

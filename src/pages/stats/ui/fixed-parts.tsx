@@ -73,7 +73,7 @@ function RatioBar({
 }) {
   const fixedPct = split.total === 0 ? 0 : (split.fixed / split.total) * 100;
   const cell =
-    "flex h-full items-center justify-center overflow-hidden whitespace-nowrap text-t2 font-bold text-static-white";
+    "flex h-full items-center justify-center overflow-hidden whitespace-nowrap text-t2 font-bold text-bg-layer-default";
   return (
     <div
       role="img"
@@ -136,6 +136,7 @@ export function FixedOverviewSection({
     />
   );
   if (m.rangeQ.isError && !m.rangeQ.data) {
+    if (place === "band" && kind !== "expense") return null;
     return (
       <>
         {head}
@@ -341,6 +342,8 @@ export function FixedTrendSection({
   );
   const height = place === "band" ? 200 : 260;
   if (m.rangeQ.isError && !m.rangeQ.data) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <>
         {head}
@@ -461,7 +464,7 @@ export function FixedTrendSection({
             <YAxis
               domain={[0, axis.max]}
               ticks={axis.ticks}
-              tickFormatter={(v) => formatAxisWon(Number(v))}
+              tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
               width={52}
               {...chartAxisProps()}
             />
@@ -566,6 +569,8 @@ export function FixedCategorySection({
     <BandHead title={t("fixed.category.title")} band={place === "band"} />
   );
   if (m.rangeQ.isError && !m.rangeQ.data) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <>
         {head}

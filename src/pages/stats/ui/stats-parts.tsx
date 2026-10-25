@@ -278,8 +278,9 @@ function DonutChartBody({
   mask: (text: string) => string;
 }) {
   const { t } = useTranslation("stats");
+  const { t: tc } = useTranslation("common");
   const [dsFits, setDsFits] = useState(true);
-  const slices = colorDonut(m.donutView, t("category.others"));
+  const slices = colorDonut(m.donutView, tc("others"));
   const total = m.donutTotal;
   const totalText = mask(won(total));
   // 가운데 합계 판정 = 결정 2A "금액 글 폭 ≤ 구멍 − 16"(ds 판정 그대로) — 폰은 가운데 글 없이 늘 목록 위 합계 줄
@@ -649,6 +650,8 @@ export function HighlightsSection({
     (m.rangeQ.isError && !m.rangeQ.data) ||
     (m.merchantQ.isError && !m.merchantQ.data);
   if (failed) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <HeadlessBody place={place}>
         <BandFailure
@@ -668,13 +671,11 @@ export function HighlightsSection({
         {mask(won(m.totalExpense))}
       </>
     ) : m.prevTotalExpense > 0 ? (
-      <>
-        {t(m.labels.mom)}{" "}
-        <Delta
-          direction={m.dayPct > 0 ? "up" : m.dayPct < 0 ? "down" : "flat"}
-          value={`${Math.abs(m.dayPct)}%`}
-        />
-      </>
+      <Delta
+        direction={m.dayPct > 0 ? "up" : m.dayPct < 0 ? "down" : "flat"}
+        value={`${Math.abs(m.dayPct)}%`}
+        text={t(m.labels.mom)}
+      />
     ) : m.prevRangeQ.isLoading ? (
       t("avgSub.momCalculating")
     ) : (

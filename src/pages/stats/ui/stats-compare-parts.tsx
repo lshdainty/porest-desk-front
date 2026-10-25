@@ -144,7 +144,9 @@ export function CompareSummarySection({
             : undefined
         }
       />
-      {m.cmpPct != null ? (
+      {m.cmpPct != null && m.cmpDiff === 0 ? (
+        <p className="m-0 mt-x3 text-t4 text-fg-neutral">{t("compare.same")}</p>
+      ) : m.cmpPct != null ? (
         // 강조는 금액만 700 — 좋은지 나쁜지는 글이 말한다
         <p className="m-0 mt-x3 text-t4 text-fg-neutral">
           {t("compare.vsLastPrefix", { prev: m.periodPrev })}{" "}
@@ -192,6 +194,8 @@ export function CompareMetricsSection({
     (m.monthExpensesQ.isError && !m.monthExpensesQ.data) ||
     (m.prevMonthExpensesQ.isError && !m.prevMonthExpensesQ.data);
   if (failed) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <HeadlessBody place={place}>
         <BandFailure
@@ -272,6 +276,8 @@ export function CompareCategorySection({
     />
   );
   if (compareFailed(m)) {
+    // 폰은 질의 하나 = 상자 하나 — 같은 질의를 먹는 뒤 띠는 상자를 또 그리지 않는다(앞 띠가 말한다). 데스크톱은 카드마다 그대로
+    if (place === "band") return null;
     return (
       <>
         {head}
@@ -514,7 +520,7 @@ export function CompareWeekdaySection({
             {
               key: "prev",
               label: m.periodPrev,
-              color: "green",
+              color: "blue-weak",
               total: mask(won(sumPrev)),
             },
           ]}
@@ -526,7 +532,7 @@ export function CompareWeekdaySection({
             <CartesianGrid {...chartGridProps} />
             <XAxis dataKey="day" {...chartAxisProps()} />
             <YAxis
-              tickFormatter={(v) => formatAxisWon(Number(v))}
+              tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
               width={52}
               {...chartAxisProps()}
             />
@@ -544,7 +550,7 @@ export function CompareWeekdaySection({
               <Bar
                 dataKey="prev"
                 name={m.periodPrev}
-                fill={chartVar("green")}
+                fill={chartVar("blue-weak")}
               />
             )}
           </BarChart>

@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { Tabs, ChipTabsList, ChipTabsTrigger } from "@/shared/ds/tabs";
-import { useSwipeNav } from "@/shared/hooks";
 import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { HideCard } from "@/shared/lib/groo/hide-amounts";
 import { FixedBulkDialog } from "@/features/expense/ui/FixedBulkDialog";
@@ -33,7 +32,7 @@ import type { TabKey } from "./stats-range";
 
 /**
  * 폰 통계(I-08 29 ~ 31) — 가계부 묶음 Line 탭 아래 칩 탭(Chip Tabs solid large 40, 위아래 틈 0), 그 아래 구역마다 흰 띠(사이 8).
- * 기간 버튼은 첫 띠 머리 오른쪽에 있다(따로 띠를 두지 않는다). 머리 없는 띠(요약 · 지표 · 저축률)는 위 24 에서 첫 글이 시작한다.
+ * 칩 탭은 눌러서만 바뀐다(2차 탭은 밀어 넘기지 않는다 — Tabs 7A). 기간 버튼은 첫 띠 머리 오른쪽에 있다(따로 띠를 두지 않는다). 머리 없는 띠(요약 · 지표 · 저축률)는 위 24 에서 첫 글이 시작한다.
  * 네 탭 모두 같은 규칙이고 앱 `stats_screen.dart` 와 같은 구조 · 같은 값이다(짝 1).
  */
 export function StatsMobile() {
@@ -45,17 +44,6 @@ export function StatsMobile() {
     { v: "compare", l: t("tab.compare") },
     { v: "fixed", l: t("tab.fixed") },
   ];
-  // 좌우로 밀어서 탭 이동 — 칩을 눌러야만 넘어가면 한 손으로 쓰기 불편하다. 양 끝에서는 순환하지 않는다
-  const goTabBy = (step: number) => {
-    const i = TAB_ITEMS.findIndex((x) => x.v === m.tab);
-    const next = TAB_ITEMS[i + step];
-    if (next) m.setTab(next.v);
-  };
-  const swipeNav = useSwipeNav({
-    enabled: true,
-    onPrev: () => goTabBy(-1),
-    onNext: () => goTabBy(1),
-  });
   const band = (name: string, node: React.ReactNode) => (
     <div data-band="flush" data-section={name}>
       {node}
@@ -76,12 +64,7 @@ export function StatsMobile() {
           ))}
         </ChipTabsList>
       </Tabs>
-      <div
-        role="tabpanel"
-        className="min-h-0 flex-1 overflow-y-auto"
-        style={swipeNav.style}
-        {...swipeNav.handlers}
-      >
+      <div role="tabpanel" className="min-h-0 flex-1 overflow-y-auto">
         <ScreenBands>
           {m.tab === "cat" && (
             <>

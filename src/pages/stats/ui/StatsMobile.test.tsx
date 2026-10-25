@@ -281,3 +281,85 @@ describe("구역별 실패 · 원문 없음(I-08 41)", () => {
     expect(donut.textContent).not.toContain("0원");
   });
 });
+
+const boxes = () => container.querySelectorAll("[data-slot=result-section]");
+
+describe("폰은 질의 하나 = 실패 상자 하나(I-08 41 · 08-1 과 같은 규칙)", () => {
+  it("카테고리 탭 — 합계 질의 실패는 상자 하나(요약 띠는 숨음)", () => {
+    state.range = q(undefined, { isError: true });
+    render();
+    expect(boxes()).toHaveLength(1);
+    expect(
+      container.querySelector("[data-section=donut]")!.textContent,
+    ).toContain("loadFailed.category");
+  });
+
+  it("카테고리 탭 — 합계 · 가맹점이 둘 다 실패해도 상자는 각 질의마다 하나(둘)", () => {
+    state.range = q(undefined, { isError: true });
+    state.merchants = q(undefined, { isError: true });
+    render();
+    expect(boxes()).toHaveLength(2);
+  });
+
+  it("추이 · 비교 · 고정·변동 탭 — 합계 질의 실패는 상자 하나", () => {
+    state.range = q(undefined, { isError: true });
+    render();
+    for (const tab of ["tab.trend", "tab.compare", "tab.fixed"]) {
+      clickTab(tab);
+      expect(boxes()).toHaveLength(1);
+    }
+  });
+
+  it("비교 탭 — 거래 질의 실패는 요일 띠 하나가 말한다(지표 띠는 숨음)", () => {
+    state.expenses = q(undefined, { isError: true });
+    render();
+    clickTab("tab.compare");
+    expect(boxes()).toHaveLength(1);
+    expect(
+      container.querySelector("[data-section=weekday]")!.textContent,
+    ).toContain("loadFailed.weekday");
+  });
+});
+
+describe("통계 글 · 색 규칙", () => {
+  it("지난 기간과 같으면 '0원 덜 썼어요' 대신 '같아요'", () => {
+    render();
+    clickTab("tab.compare");
+    const summary = container.querySelector("[data-section=summary]")!;
+    expect(summary.textContent).toContain("compare.same");
+    expect(summary.textContent).not.toContain("compare.dirLess");
+  });
+
+  it("요일 비교 지난 기간은 chart-blue-weak", () => {
+    render();
+    clickTab("tab.compare");
+    const dots = Array.from(
+      container.querySelectorAll(
+        "[data-section=weekday] [data-slot=chart-legend-dot]",
+      ),
+    );
+    expect(dots.map((d) => d.className)).toEqual([
+      expect.stringMatching(/bg-chart-blue(\s|$)/),
+      expect.stringContaining("bg-chart-blue-weak"),
+    ]);
+  });
+
+  it("저축률 가운데 %는 t9, 비율 막대 글은 테마를 따르는 면 색(흰색 고정 아님)", () => {
+    state.range = q({ ...summary(), fixedExpense: 1_000_000_000 });
+    render();
+    clickTab("tab.trend");
+    expect(
+      container.querySelector("[data-section=rate] .text-t9"),
+    ).not.toBeNull();
+    clickTab("tab.fixed");
+    const bar = container.querySelector("[data-section=expense] [role=img]")!;
+    expect(bar.innerHTML).toContain("text-bg-layer-default");
+    expect(bar.innerHTML).not.toContain("text-static-white");
+  });
+
+  it("칩 탭은 눌러서만 바뀐다 — 밀기 처리기 없음", () => {
+    render();
+    const panel = container.querySelector("[role=tabpanel]") as HTMLElement;
+    expect(panel.style.touchAction).toBe("");
+  });
+});

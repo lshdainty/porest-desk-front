@@ -2164,16 +2164,16 @@ stats,period.custom.avg,일 평균,Daily average
 stats,category.title,카테고리별 지출,Spending by category
 stats,category.drillHint,클릭하여 하위 카테고리 보기,Click to view subcategories
 stats,category.drilledCenter,{{name}} 세부,{{name}} detail
-stats,empty.category,카테고리 데이터가 없습니다,No category data
-stats,empty.merchant,가맹점 데이터가 없습니다,No merchant data
-stats,empty.trend,추이 데이터가 없습니다,No trend data
-stats,empty.monthlyData,월별 데이터가 없습니다,No monthly data
-stats,empty.compare,비교할 데이터가 없습니다,No data to compare
+stats,empty.category,카테고리 데이터가 없어요.,No category data
+stats,empty.merchant,가맹점 데이터가 없어요.,No merchant data
+stats,empty.trend,추이 데이터가 없어요.,No trend data
+stats,empty.monthlyData,월별 데이터가 없어요.,No monthly data
+stats,empty.compare,비교할 데이터가 없어요.,No data to compare
 stats,merchant.title,많이 쓴 가맹점 TOP 5,Top 5 merchants
 stats,unit.times,{{count}}회,{{count}} times
 stats,heatmap.title,요일·시간대 지출 패턴,Spending by day & time
 stats,heatmap.subtitle,색이 진할수록 지출이 많은 시간대예요 (단위: 원),Darker means more spending (unit: KRW)
-stats,heatmap.empty,이번 달 거래가 아직 적어요,Not enough transactions this month
+stats,heatmap.empty,이번 달 거래가 아직 적어요.,Not enough transactions this month
 stats,heatmap.less,적음,Less
 stats,heatmap.more,많음,More
 stats,heatmap.total,총,Total
@@ -2836,8 +2836,8 @@ stats,category.centerVariable,고정 제외 지출,Excl. fixed
 stats,category.centerFixed,고정 지출,Fixed
 stats,fixed.expense.title,지출 — 고정과 변동,Spending: fixed vs. variable
 stats,fixed.income.title,수입 — 고정과 변동,Income: fixed vs. variable
-stats,fixed.expense.none,이 기간에는 지출이 없어요,No spending in this period
-stats,fixed.income.none,이 기간에는 수입이 없어요,No income in this period
+stats,fixed.expense.none,이 기간에는 지출이 없어요.,No spending in this period
+stats,fixed.income.none,이 기간에는 수입이 없어요.,No income in this period
 stats,fixed.total.expense,전체 지출,Total spending
 stats,fixed.total.income,전체 수입,Total income
 stats,fixed.fixed.expense,고정 지출,Fixed spending
@@ -2847,7 +2847,7 @@ stats,fixed.variable.income,고정 제외 수입,Income excl. fixed
 stats,fixed.bar.aria,"{{kind}} 중 고정 {{fixed}}%, 변동 {{variable}}%","{{fixed}}% fixed, {{variable}}% variable of {{kind}}"
 stats,fixed.insight.expense,지출의 {{pct}}%가 고정이에요. 고정을 뺀 지출은,{{pct}}% of spending is fixed. Spending excluding fixed is
 stats,fixed.insight.income,수입의 {{pct}}%가 고정이에요. 고정을 뺀 수입은,{{pct}}% of income is fixed. Income excluding fixed is
-stats,fixed.empty.desc,월세·통신비·월급처럼 매달 정해진 거래를 고정으로 표시하면 여기서 따로 볼 수 있어요,Mark monthly items like rent or salary as fixed to see them separately here
+stats,fixed.empty.desc,월세·통신비·월급처럼 매달 정해진 거래를 고정으로 표시하면 여기서 따로 볼 수 있어요.,Mark monthly items like rent or salary as fixed to see them separately here
 stats,fixed.manage,거래를 고정으로 정리하기,Organize fixed items
 stats,fixed.manageHint,매달 같은 이름으로 나가는 돈은 한 번에 정리할 수 있어요,Items with the same name every month can be set in one go
 stats,fixed.trend.title,월별 고정·변동 추이,Monthly fixed vs. variable
@@ -2868,13 +2868,12 @@ stats,fixed.bulk.toVariable,변동으로 되돌리기,Back to variable
 stats,fixed.bulk.groupSub,{{count}}건,{{count}} items
 stats,fixed.bulk.badgeAll,고정,Fixed
 stats,fixed.bulk.badgeSome,고정 {{fixed}}/{{count}},Fixed {{fixed}}/{{count}}
-stats,fixed.bulk.empty,이 기간에는 정리할 거래가 없어요,No transactions to organize in this period
+stats,fixed.bulk.empty,이 기간에는 정리할 거래가 없어요.,No transactions to organize in this period
 stats,fixed.bulk.apply,{{count}}건 적용,Apply to {{count}}
 stats,fixed.bulk.doneFixed,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
 stats,fixed.bulk.doneVariable,{{count}}건을 변동으로 되돌렸어요,Changed {{count}} back to variable
 settings,hideAmounts.card.stats.fixed,고정·변동 탭,Fixed vs. variable tab
 stats,fixed.insight.tail,이에요.,.
-stats,category.others,기타,Others
 stats,chart.donutName,"{{period}} 카테고리별 지출, 합계 {{total}}","{{period}} spending by category, total {{total}}"
 stats,chart.heatName,"{{period}} 요일 · 시간대별 지출, 합계 {{total}}","{{period}} spending by day and time, total {{total}}"
 stats,chart.heatValue,지출,Spending
@@ -2900,6 +2899,8 @@ stats,loadFailed.weekday,요일별 지출을 불러오지 못했어요,Couldn't 
 stats,loadFailed.fixed,고정 · 변동 내용을 불러오지 못했어요,Couldn't load fixed and variable spending
 stats,period.buttonAria,기간 {{period}} 바꾸기,Change period ({{period}})
 stats,tab.aria,통계 보기,Statistics views
+stats,fixed.bulk.loadFailed,거래를 불러오지 못했어요,Couldn't load transactions
+stats,compare.same,지난 기간과 같아요.,Same as the previous period.
 layout,notificationsUnread,"알림, 새 알림 있음","Notifications, new notifications"
 notification,row.unread,안 읽음,Unread
 notification,popover.unreadPlain,읽지 않은 알림 {{count}}개,{{count}} unread
