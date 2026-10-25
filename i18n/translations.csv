@@ -210,6 +210,7 @@ todo,count,건,
 todo,detail,자세히,Details
 todo,addTodoLabel,할 일 추가,Add to-do
 todo,uncomplete,완료 취소,Mark incomplete
+todo,toggleFailed,완료로 바꾸지 못했어요. 잠시 후 다시 시도해주세요.,Couldn't update the to-do. Please try again in a moment.
 todo,noDueDate,마감일 없음,No due date
 todo,detailTitle,할 일 상세,Todo details
 todo,detail.status,상태,Status

@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/api";
+import { apiClient, type QuietRequestConfig } from "@/shared/api";
 import type { ApiResponse } from "@/shared/types";
 import type { Todo, TodoFormValues, TodoStats } from "@/entities/todo";
 
@@ -42,8 +42,12 @@ export const todoApi = {
   },
 
   toggleTodoStatus: async (id: number): Promise<Todo> => {
+    // silent — 실패는 훅이 되돌리고 자기 글로 알린다(서버 원문 토스트를 띄우지 않는다)
+    const config: QuietRequestConfig = { silent: true };
     const resp: ApiResponse<Todo> = await apiClient.patch(
       `/v1/todo/${id}/status`,
+      undefined,
+      config,
     );
     return mapTodo(resp.data);
   },
