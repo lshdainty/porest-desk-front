@@ -45,62 +45,70 @@ const CalendarHeaderMobile = () => {
 
   return (
     <div className="flex min-h-x13 shrink-0 flex-wrap items-center gap-y-x1 pl-x1_5 pr-x4">
-      <Button
-        aria-label={t("header.prevMonth")}
-        variant="ghost"
-        size="medium"
-        layout="iconOnly"
-        className="[&_svg]:size-5"
-        onClick={handlePrevious}
-      >
-        <ChevronLeft />
-      </Button>
+      {/* ‹ 달 글 › 는 한 덩어리 — 글자가 커져 줄이 모자라면 칩만 아래 줄로 내려가고 ‹ › 는 갈라지지 않는다 */}
+      <div className="flex shrink-0 items-center">
+        <Button
+          aria-label={t("header.prevMonth")}
+          variant="ghost"
+          size="medium"
+          layout="iconOnly"
+          className="[&_svg]:size-5"
+          onClick={handlePrevious}
+        >
+          <ChevronLeft />
+        </Button>
 
-      <Drawer open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DrawerTrigger asChild>
-          <button
-            type="button"
-            className="flex min-h-11 items-center gap-x1 whitespace-nowrap rounded-r2 px-x1 text-t6 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
-          >
-            {formattedDate}
-            <ChevronDown aria-hidden className="size-4 text-fg-neutral-muted" />
-          </button>
-        </DrawerTrigger>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="flex-1">{t("dateNavigation")}</DrawerTitle>
-            <DrawerClose asChild>
-              <button
-                type="button"
-                aria-label={t("close")}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-fg-neutral-subtle transition-colors hover:bg-bg-layer-default-pressed hover:text-fg-neutral"
-              >
-                <X size={18} />
-              </button>
-            </DrawerClose>
-          </DrawerHeader>
-          <DrawerBody className="pb-6">
-            <MonthYearPickerContent
-              mobile
-              selectedDate={selectedDate}
-              onSelect={setSelectedDate}
-              onToday={handleTodayClick}
-              onClose={() => setPickerOpen(false)}
-            />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
+        <Drawer open={pickerOpen} onOpenChange={setPickerOpen}>
+          <DrawerTrigger asChild>
+            <button
+              type="button"
+              className="flex min-h-11 items-center gap-x1 whitespace-nowrap rounded-r2 px-x1 text-t6 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
+            >
+              {formattedDate}
+              <ChevronDown
+                aria-hidden
+                className="size-4 text-fg-neutral-muted"
+              />
+            </button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle className="flex-1">
+                {t("dateNavigation")}
+              </DrawerTitle>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  aria-label={t("close")}
+                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-fg-neutral-subtle transition-colors hover:bg-bg-layer-default-pressed hover:text-fg-neutral"
+                >
+                  <X size={18} />
+                </button>
+              </DrawerClose>
+            </DrawerHeader>
+            <DrawerBody className="pb-6">
+              <MonthYearPickerContent
+                mobile
+                selectedDate={selectedDate}
+                onSelect={setSelectedDate}
+                onToday={handleTodayClick}
+                onClose={() => setPickerOpen(false)}
+              />
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
 
-      <Button
-        aria-label={t("header.nextMonth")}
-        variant="ghost"
-        size="medium"
-        layout="iconOnly"
-        className="[&_svg]:size-5"
-        onClick={handleNext}
-      >
-        <ChevronRight />
-      </Button>
+        <Button
+          aria-label={t("header.nextMonth")}
+          variant="ghost"
+          size="medium"
+          layout="iconOnly"
+          className="[&_svg]:size-5"
+          onClick={handleNext}
+        >
+          <ChevronRight />
+        </Button>
+      </div>
       <span className="min-w-x1 flex-1" />
       <CalendarSourceToggle />
     </div>
