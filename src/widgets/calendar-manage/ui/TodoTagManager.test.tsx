@@ -180,6 +180,10 @@ describe("TodoTagManager", () => {
     );
     expect(add).toBeTruthy();
     expect(h2?.contains(add!)).toBe(false);
+    // 블리드는 −14 한 번뿐이다(flush=right 와 겹치면 글 끝이 오른쪽 여백 밖으로 나간다) · 글 색은 ghostColor 한 길
+    expect(add!.className).toContain("-mr-x3_5");
+    expect(add!.className).not.toContain("pr-0");
+    expect(add!.className).toContain("text-fg-neutral-muted");
     expect(container.querySelectorAll("[data-slot=list-tile]").length).toBe(2);
     expect(container.querySelector("[data-slot=divider]")).toBeNull();
     expect(container.querySelector("[data-slot=card]")).toBeNull();

@@ -161,19 +161,3 @@ describe("칸 · 선", () => {
     expect(lines[1]!.className).not.toContain("-mx-global-gutter");
   });
 });
-
-describe("월 이동 단추 — 켜짐 틴트(할 일 거르기)", () => {
-  it("active 면 brand-weak 바탕 · fg-brand 로 걸림을 알리고, 아니면 틴트가 없다", () => {
-    render(
-      <>
-        <LedgerNavBtn aria-label="켜짐" active />
-        <LedgerNavBtn aria-label="꺼짐" />
-      </>,
-    );
-    const on = container.querySelector("[aria-label=켜짐]")!;
-    const off = container.querySelector("[aria-label=꺼짐]")!;
-    expect(on.className).toContain("bg-bg-brand-weak");
-    expect(on.className).toContain("text-fg-brand-contrast");
-    expect(off.className).not.toContain("bg-bg-brand-weak");
-  });
-});

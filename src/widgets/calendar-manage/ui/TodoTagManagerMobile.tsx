@@ -146,9 +146,9 @@ export function TodoTagManagerMobile() {
         </h2>
         <Button
           variant="ghost"
+          ghostColor="neutralMuted"
           size="small"
-          flush="right"
-          className="-mr-x3_5 text-fg-neutral-muted font-bold"
+          className="-mr-x3_5"
           onClick={() => setEditing({ kind: "new" })}
         >
           {t("tags.new")}
