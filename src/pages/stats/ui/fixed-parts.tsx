@@ -325,18 +325,21 @@ export function FixedTrendSection({
       title={t("fixed.trend.title")}
       band={place === "band"}
       aside={
-        <SegmentedControl
-          aria-label={t("fixed.trend.kindAria")}
-          value={kind}
-          onValueChange={(v) => setKind(v as Kind)}
-        >
-          <SegmentedControlItem value="expense">
-            {t("fixed.kind.expense")}
-          </SegmentedControlItem>
-          <SegmentedControlItem value="income">
-            {t("fixed.kind.income")}
-          </SegmentedControlItem>
-        </SegmentedControl>
+        // 자리 폭 = (가장 긴 칸 글 + 좌우 24) × 칸 수 + 8(칸 글은 글자 배율을 따르지 않는다). 제목이 머리 폭 50% 를 지키고, 넘치면 머리 아래 오른쪽 끝으로 내려간다
+        <div className="w-max max-w-full">
+          <SegmentedControl
+            aria-label={t("fixed.trend.kindAria")}
+            value={kind}
+            onValueChange={(v) => setKind(v as Kind)}
+          >
+            <SegmentedControlItem value="expense">
+              {t("fixed.kind.expense")}
+            </SegmentedControlItem>
+            <SegmentedControlItem value="income">
+              {t("fixed.kind.income")}
+            </SegmentedControlItem>
+          </SegmentedControl>
+        </div>
       }
     />
   );

@@ -397,4 +397,15 @@ describe("통계 글 · 색 규칙", () => {
     expect(weekday.textContent).not.toContain("compare.weekdayInsightUp");
     expect(weekday.textContent).not.toContain("compare.weekdayInsightDown");
   });
+
+  it("고정 탭 월별 Segmented 자리 — 내용 폭(w-max)이고 넘치면 머리 아래로 내려가게 감싼다", () => {
+    render();
+    clickTab("tab.fixed");
+    const seg = container.querySelector(
+      "[data-section=trend] [data-slot=segmented-control]",
+    ) as HTMLElement;
+    const wrap = seg.parentElement as HTMLElement;
+    expect(wrap.className).toContain("w-max");
+    expect(wrap.className).toContain("max-w-full");
+  });
 });
