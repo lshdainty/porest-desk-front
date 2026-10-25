@@ -727,13 +727,30 @@ describe("남은 할 일 카드 (I-10 32)", () => {
     expect(dot.getAttribute("aria-hidden")).toBe("true");
   });
 
-  it("남은 것이 없으면 우선순위 셋은 0개로 남고 태그 줄은 없다", () => {
+  it("남은 것이 없으면 태그 묶음 없이 한 줄만 · 우선순위 셋은 0개로 남는다", () => {
     render({
       todos: [todo(1, "끝", { status: "COMPLETED", category: "업무" })],
     });
 
     expect(rows("우선순위")).toEqual(["중요0개", "보통0개", "여유0개"]);
-    expect(rows("태그")).toEqual(["태그 없음0개"]);
+    const card = container.querySelector("[data-slot=todo-remain-card]")!;
+    expect(
+      Array.from(card.querySelectorAll("[data-slot=list-header]")).map(
+        (h) => h.textContent,
+      ),
+    ).toEqual(["우선순위"]);
+    expect(
+      card.querySelector("[data-slot=todo-remain-empty]")!.textContent,
+    ).toBe("남은 할 일이 없어요.");
+    expect(card.textContent).not.toContain("태그 없음");
+  });
+
+  it("남은 것이 있으면 한 줄 안내 없이 태그 묶음이 기존대로 나온다", () => {
+    render();
+    const card = container.querySelector("[data-slot=todo-remain-card]")!;
+
+    expect(card.querySelector("[data-slot=todo-remain-empty]")).toBeNull();
+    expect(rows("태그").length).toBeGreaterThan(0);
   });
 
   it("밤하늘 줄은 왼쪽 칸 둘째 — 작은 달력과 남은 할 일 사이", () => {

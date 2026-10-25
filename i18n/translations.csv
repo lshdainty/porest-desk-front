@@ -2625,6 +2625,7 @@ todo,tdm.clearAll,필터 지우기,Clear filters
 todo,tdm.chipMore,{{first}} 외 {{count}}개,{{first}} +{{count}}
 todo,tdm.hideDoneChip,완료 숨기기,Hide completed
 todo,remain.title,남은 할 일,To-dos left
+todo,remain.none,남은 할 일이 없어요.,No to-dos left.
 todo,remain.count,{{count}}개,{{count}}
 todo,starToast.collected,별빛 +{{gain}} · 오늘의 별자리 수집!,+{{gain}} starlight · constellation collected!
 todo,starToast.progress,별빛 +{{gain}} · 수집까지 {{left}}별,+{{gain}} starlight · {{left}} to collect

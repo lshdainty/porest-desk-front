@@ -48,48 +48,52 @@ export function TodoRemainCard({
         </div>
       ) : (
         <>
-          <ListHeader as="h3" variant="boldSolid" id={tagHead}>
-            {t("tag")}
-          </ListHeader>
-          <List aria-labelledby={tagHead}>
-            {byTag.length === 0 ? (
-              <ListItem
-                title={t("noTag")}
-                suffixText
-                suffix={t("remain.count", { count: 0 })}
-              />
-            ) : (
-              byTag.map(({ tag, count }) => (
-                <ListItem
-                  key={tag || "__none"}
-                  title={
-                    <span className="flex items-start gap-x2">
-                      <i
-                        aria-hidden
-                        data-slot="todo-tag-dot"
-                        // 제목 첫 줄(22)의 가운데에 점(8)을 세운다 — 이름이 여러 줄이어도 첫 줄에 붙는다
-                        className="mt-[calc((1lh-var(--spacing-x2))/2)] size-x2 shrink-0 rounded-full"
-                        style={{
-                          background: tag
-                            ? getPaletteByColor(tagColors.get(tag)).color
-                            : "var(--color-chart-gray)",
-                        }}
-                      />
-                      <span className="[overflow-wrap:anywhere]">
-                        {tag || t("noTag")}
+          {byTag.length === 0 ? (
+            // 남은 것이 없으면 태그 묶음을 두지 않는다 — "태그 없음 0개" 같은 줄을 채우지 않는다(지시서 32)
+            <p
+              data-slot="todo-remain-empty"
+              className="m-0 px-x6 py-x3 text-t5 text-fg-neutral-subtle"
+            >
+              {t("remain.none")}
+            </p>
+          ) : (
+            <>
+              <ListHeader as="h3" variant="boldSolid" id={tagHead}>
+                {t("tag")}
+              </ListHeader>
+              <List aria-labelledby={tagHead}>
+                {byTag.map(({ tag, count }) => (
+                  <ListItem
+                    key={tag || "__none"}
+                    title={
+                      <span className="flex items-start gap-x2">
+                        <i
+                          aria-hidden
+                          data-slot="todo-tag-dot"
+                          // 제목 첫 줄(22)의 가운데에 점(8)을 세운다 — 이름이 여러 줄이어도 첫 줄에 붙는다
+                          className="mt-[calc((1lh-var(--spacing-x2))/2)] size-x2 shrink-0 rounded-full"
+                          style={{
+                            background: tag
+                              ? getPaletteByColor(tagColors.get(tag)).color
+                              : "var(--color-chart-gray)",
+                          }}
+                        />
+                        <span className="[overflow-wrap:anywhere]">
+                          {tag || t("noTag")}
+                        </span>
                       </span>
-                    </span>
-                  }
-                  suffixText
-                  suffix={
-                    <b className="num whitespace-nowrap font-bold text-fg-neutral">
-                      {t("remain.count", { count })}
-                    </b>
-                  }
-                />
-              ))
-            )}
-          </List>
+                    }
+                    suffixText
+                    suffix={
+                      <b className="num whitespace-nowrap font-bold text-fg-neutral">
+                        {t("remain.count", { count })}
+                      </b>
+                    }
+                  />
+                ))}
+              </List>
+            </>
+          )}
           <ListHeader as="h3" variant="boldSolid" id={prioHead}>
             {t("form.priority")}
           </ListHeader>
