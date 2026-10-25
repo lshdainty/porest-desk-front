@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Tag } from "lucide-react";
-import { Button } from "@/shared/ds/button";
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
-  ResponsiveDialogCancel,
   ResponsiveDialogContent,
-  ResponsiveDialogFooter,
 } from "@/shared/ds/dialog";
+import { FormFooter } from "@/shared/ui/groo/form-footer";
 import { Field } from "@/shared/ds/field";
 import { Input } from "@/shared/ds/input";
 import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
@@ -139,30 +137,17 @@ export function TagEditDialog({
                 }))}
               />
             </Field>
-            {!isNew && onDelete && (
-              <Button
-                variant="ghost"
-                ghostColor="critical"
-                size="medium"
-                flush="left"
-                className="self-start"
-                onClick={onDelete}
-              >
-                {tc("delete")}
-              </Button>
-            )}
           </div>
         </ResponsiveDialogBody>
-        <ResponsiveDialogFooter>
-          <ResponsiveDialogCancel>{tc("cancel")}</ResponsiveDialogCancel>
-          <Button
-            loading={submitting}
-            disabled={touched && !valid}
-            onClick={save}
-          >
-            {isNew ? t("tags.new") : tc("save")}
-          </Button>
-        </ResponsiveDialogFooter>
+        <FormFooter
+          cancelLabel={tc("cancel")}
+          submitLabel={isNew ? t("tags.new") : tc("save")}
+          onSubmit={save}
+          loading={submitting}
+          submitDisabled={touched && !valid}
+          deleteLabel={tc("delete")}
+          onDelete={isNew ? undefined : onDelete}
+        />
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

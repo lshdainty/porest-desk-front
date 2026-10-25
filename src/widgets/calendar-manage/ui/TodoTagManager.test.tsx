@@ -87,6 +87,20 @@ beforeEach(() => {
   // (모달 닫힘 직후 오클릭 방어). 케이스끼리 옮지 않게 여기서 푼다.
   __resetPointerBlockForTest();
   state.tags = [];
+  if (!globalThis.ResizeObserver) {
+    globalThis.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
+  // 폼은 폭으로 표면이 갈린다 — 기본은 1280 미만(시트)
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -230,5 +244,61 @@ describe("TodoTagManager", () => {
       (b) => b.textContent === "삭제",
     );
     expect(del).toBeFalsy();
+  });
+
+  const openEdit = () => {
+    state.tags = [tagOf(1, "운동", 3)];
+    render(true);
+    const row = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-slot=list-body]"),
+    ).find((b) => b.textContent?.includes("운동"))!;
+    act(() => row.click());
+  };
+  const footerOf = () =>
+    document.body.querySelector<HTMLElement>(
+      "[data-slot=bottom-sheet-footer], [data-slot=dialog-footer]",
+    )!;
+
+  it("수정 시트 [삭제] 는 빨간 글자(ghost critical, flush 없음)이고 바닥 왼쪽 · [저장] 은 나머지 폭이다 (폰)", () => {
+    openEdit();
+    const footer = footerOf();
+    const buttons = Array.from(footer.querySelectorAll("button"));
+    expect(buttons.map((b) => b.textContent)).toEqual(["삭제", "저장"]);
+    const del = buttons[0]!;
+    expect(del.className).toContain("text-fg-critical");
+    // flush 는 글자색을 neutralSubtle 로 덮는다 — 빨간 글자를 지켜야 하는 삭제에는 쓰지 않는다
+    expect(del.className).not.toMatch(/pl-0|pr-0/);
+    expect(buttons[1]!.className).toContain("flex-1");
+    expect(del.compareDocumentPosition(buttons[1]!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it("1280 이상 대화상자 바닥은 왼쪽 [삭제] · 오른쪽 [취소][저장] 이다", () => {
+    window.matchMedia = ((query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener() {},
+      removeEventListener() {},
+    })) as unknown as typeof window.matchMedia;
+    openEdit();
+    const footer = footerOf();
+    expect(footer.getAttribute("data-slot")).toBe("dialog-footer");
+    const buttons = Array.from(footer.querySelectorAll("button"));
+    expect(buttons.map((b) => b.textContent)).toEqual(["삭제", "취소", "저장"]);
+    expect(buttons[0]!.className).toContain("text-fg-critical");
+    expect(buttons[1]!.parentElement!.className).toContain("ml-auto");
+  });
+
+  it("새 태그 바닥에는 [삭제] 가 없다", () => {
+    render(true);
+    const add = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent === "태그 추가",
+    )!;
+    act(() => add.click());
+    const labels = Array.from(footerOf().querySelectorAll("button")).map(
+      (b) => b.textContent,
+    );
+    expect(labels).not.toContain("삭제");
   });
 });
