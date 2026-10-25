@@ -1,6 +1,16 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Folder, ListTree, Palette, Tag, Tags } from "lucide-react";
+import {
+  ArrowRightLeft,
+  EllipsisVertical,
+  Folder,
+  ListTree,
+  Palette,
+  Plus,
+  Tag,
+  Tags,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/shared/ds/button";
 import { firstUnusedColor } from "@/shared/ds/color-swatch";
 import {
@@ -13,6 +23,14 @@ import {
 import { Field } from "@/shared/ds/field";
 import { Input } from "@/shared/ds/input";
 import { ListTile } from "@/shared/ds/list";
+import {
+  ResponsiveMenu,
+  ResponsiveMenuContent,
+  ResponsiveMenuGroup,
+  ResponsiveMenuItem,
+  ResponsiveMenuTrigger,
+} from "@/shared/ds/menu";
+import { useInputButtonSurface } from "@/shared/ds/input-button";
 import { PickList } from "@/shared/ui/groo/pick-list";
 import { PickerRow } from "@/shared/ui/groo/picker-row";
 import { Icon } from "@/shared/ui/groo/primitives";
@@ -74,6 +92,9 @@ export function CategoryEditDialog({
   defaultParentRowId,
   onClose,
   onSave,
+  onAddChild,
+  onMoveTx,
+  onDelete,
   existing,
   submitting,
 }: {
@@ -82,12 +103,17 @@ export function CategoryEditDialog({
   defaultParentRowId?: number | null;
   onClose: () => void;
   onSave: (values: ExpenseCategoryFormValues) => void;
+  /** 수정 시트 머리 ⋮ 의 동작(10-25 줄 끝 ⋮ 원칙) — 새 카테고리에는 머리 ⋮ 가 없다 */
+  onAddChild?: (parent: ExpenseCategory) => void;
+  onMoveTx?: (cat: ExpenseCategory) => void;
+  onDelete?: (cat: ExpenseCategory) => void;
   existing: ExpenseCategory[];
   submitting?: boolean;
 }) {
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
   const { t: te } = useTranslation("expense");
+  const wide = useInputButtonSurface() === "popover";
   const isNew = !cat;
 
   const [initial] = useState(() => {
@@ -194,6 +220,58 @@ export function CategoryEditDialog({
           nameRef.current?.focus({ preventScroll: true });
         }}
       >
+        {cat && (
+          // 머리 오른쪽 ⋮ — 시트는 닫기 단추(28) 왼쪽 4, 대화상자는 닫기 단추가 없어 오른쪽 끝
+          <div
+            className={
+              wide
+                ? "absolute right-x4 top-x5 z-1"
+                : "absolute right-x14 top-[22px] z-1"
+            }
+          >
+            <ResponsiveMenu>
+              <ResponsiveMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  ghostColor="neutralSubtle"
+                  layout="iconOnly"
+                  size="xsmall"
+                  aria-label={t("moreOf", { name: cat.categoryName })}
+                >
+                  <EllipsisVertical aria-hidden />
+                </Button>
+              </ResponsiveMenuTrigger>
+              <ResponsiveMenuContent title={cat.categoryName} align="end">
+                <ResponsiveMenuGroup>
+                  {/* 2단계까지 — 하위 줄에는 하위 추가를 두지 않는다 */}
+                  {cat.parentRowId == null && (
+                    <ResponsiveMenuItem
+                      label={t("addSub")}
+                      icon={<Plus aria-hidden />}
+                      onSelect={() => onAddChild?.(cat)}
+                    />
+                  )}
+                  {/* 하위가 있는 부모에는 거래가 달릴 수 없어 옮길 것이 0 이다 */}
+                  {!cat.hasChildren && (
+                    <ResponsiveMenuItem
+                      label={t("moveTx.entry")}
+                      icon={<ArrowRightLeft aria-hidden />}
+                      onSelect={() => onMoveTx?.(cat)}
+                    />
+                  )}
+                </ResponsiveMenuGroup>
+                <ResponsiveMenuGroup>
+                  <ResponsiveMenuItem
+                    label={tc("delete")}
+                    icon={<Trash2 aria-hidden />}
+                    tone="critical"
+                    onSelect={() => onDelete?.(cat)}
+                  />
+                </ResponsiveMenuGroup>
+              </ResponsiveMenuContent>
+            </ResponsiveMenu>
+          </div>
+        )}
         <ResponsiveDialogBody>
           <div className="mb-x2 flex items-start gap-x3">
             <span

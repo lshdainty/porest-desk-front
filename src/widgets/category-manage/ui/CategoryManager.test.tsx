@@ -58,12 +58,19 @@ vi.mock("./CategoryEditDialog", () => ({
   CategoryEditDialog: (p: {
     cat: { rowId: number } | null;
     defaultParentRowId?: number | null;
+    onAddChild?: (c: never) => void;
+    onMoveTx?: (c: never) => void;
+    onDelete?: (c: never) => void;
   }) => (
     <div
       data-stub="edit"
       data-id={p.cat?.rowId ?? "new"}
       data-parent={p.defaultParentRowId ?? ""}
-    />
+    >
+      <button data-act="add" onClick={() => p.onAddChild?.(p.cat as never)} />
+      <button data-act="move" onClick={() => p.onMoveTx?.(p.cat as never)} />
+      <button data-act="delete" onClick={() => p.onDelete?.(p.cat as never)} />
+    </div>
   ),
 }));
 
@@ -153,13 +160,13 @@ const btnText = (text: string) =>
   )!;
 const stub = (name: string) =>
   document.querySelector<HTMLElement>(`[data-stub=${name}]`);
-const menuRows = () =>
-  Array.from(document.querySelectorAll("[data-slot=menu-sheet-item]")).map(
-    (r) => r.textContent,
-  );
-const openMenuOf = async (name: string) => {
-  await click(btn(`moreOf{"name":"${name}"}`));
-  await tick();
+const stubAct = (name: string) =>
+  document.querySelector<HTMLElement>(`[data-stub=edit] [data-act=${name}]`)!;
+/** 줄을 눌러 수정 시트(스텁)를 연 뒤 머리 ⋮ 가 부르는 동작을 누른다 */
+const viaSheet = async (row: string, action: "add" | "move" | "delete") => {
+  await click(btnText(row));
+  await click(stubAct(action));
+  await tick(300);
 };
 
 describe("카테고리 목록(폰)", () => {
@@ -253,60 +260,44 @@ describe("카테고리 목록(폰)", () => {
   });
 });
 
-describe("⋮ 메뉴 — 줄의 처지에 따라", () => {
-  it("최상위 · 하위 없음: 하위 추가 · 수정 · 거래 옮기기 · 삭제", async () => {
+describe("줄 끝 ⋮ 는 없다 — 동작은 수정 시트 머리 ⋮ 에서(10-25 줄 끝 ⋮ 원칙)", () => {
+  it("줄 어디에도 ⋮(더보기) 단추가 없다", () => {
     render();
-    await openMenuOf("교통");
-    expect(menuRows()).toEqual(["addSub", "edit", "moveTx.entry", "delete"]);
+    expect(document.querySelector("button[aria-label$='moreOf']")).toBeNull();
+    expect(
+      Array.from(document.querySelectorAll("button")).some((b) =>
+        (b.getAttribute("aria-label") ?? "").startsWith("moreOf"),
+      ),
+    ).toBe(false);
+    expect(container.querySelector("[data-slot=list-suffix]")).toBeNull();
   });
 
-  it("최상위 · 하위 있음: 거래 옮기기가 없다", async () => {
+  it("줄 누름이 수정 시트를 연다", async () => {
     render();
-    await openMenuOf("식비");
-    expect(menuRows()).toEqual(["addSub", "edit", "delete"]);
+    await click(btnText("교통"));
+    expect(stub("edit")?.getAttribute("data-id")).toBe("2");
   });
 
-  it("하위: 하위 추가가 없다", async () => {
+  it("하위 카테고리 추가는 수정 시트를 닫고 그 줄을 상위로 새 폼을 연다", async () => {
     render();
-    await openMenuOf("점심");
-    expect(menuRows()).toEqual(["edit", "moveTx.entry", "delete"]);
-  });
-
-  it("하위 카테고리 추가는 그 줄을 상위로 새 폼을 연다", async () => {
-    render();
-    await openMenuOf("교통");
-    await click(
-      Array.from(
-        document.querySelectorAll<HTMLElement>("[data-slot=menu-sheet-item]"),
-      ).find((r) => r.textContent === "addSub")!,
-    );
-    await tick(1100);
+    await viaSheet("교통", "add");
     expect(stub("edit")?.getAttribute("data-id")).toBe("new");
     expect(stub("edit")?.getAttribute("data-parent")).toBe("2");
   });
 
-  it("거래 옮기기는 그 줄의 카테고리로 시트를 연다", async () => {
+  it("거래 옮기기는 수정 시트를 닫고 그 카테고리로 옮기기 시트를 연다", async () => {
     render();
-    await openMenuOf("교통");
-    await click(
-      Array.from(
-        document.querySelectorAll<HTMLElement>("[data-slot=menu-sheet-item]"),
-      ).find((r) => r.textContent === "moveTx.entry")!,
-    );
-    await tick(1100);
+    await viaSheet("교통", "move");
+    expect(stub("edit")).toBeNull();
     expect(stub("move")?.getAttribute("data-id")).toBe("2");
   });
 });
 
 describe("삭제 확인", () => {
   const openDelete = async (name: string) => {
-    await openMenuOf(name);
-    await click(
-      Array.from(
-        document.querySelectorAll<HTMLElement>("[data-slot=menu-sheet-item]"),
-      ).find((r) => r.textContent === "delete")!,
-    );
-    await tick(1100);
+    await viaSheet(name, "delete");
+    await tick(300);
+    expect(stub("edit")).toBeNull();
   };
   const dlg = () => document.querySelector("[role=alertdialog]");
 
@@ -377,6 +368,6 @@ describe("순서 바꾸기", () => {
     await click(btnText("reorderEdit"));
     await click(btnText("reorderDone"));
     expect(container.querySelector("input")).not.toBeNull();
-    expect(btn('moreOf{"name":"교통"}')).toBeTruthy();
+    expect(btnText("교통")).toBeTruthy();
   });
 });

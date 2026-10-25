@@ -326,12 +326,7 @@ export function CategoryManager({
       sensors={sensors}
       onReorder={handleDragEnd}
       ariaLabelledBy={titleId}
-      actions={{
-        onEdit: (c) => setEditing(c),
-        onAddChild: (p) => setEditing({ kind: "new", parentRowId: p.rowId }),
-        onMoveTx: (c) => setMovingTx(c),
-        onDelete: (c) => setConfirmDelete(c),
-      }}
+      actions={{ onEdit: (c) => setEditing(c) }}
     />
   );
 
@@ -378,6 +373,12 @@ export function CategoryManager({
       )}
       {editing && (
         <CategoryEditDialog
+          // 수정 → 하위 추가처럼 같은 자리에서 다른 폼으로 바뀌면 폼 상태를 새로 시작한다
+          key={
+            "rowId" in editing
+              ? `edit-${editing.rowId}`
+              : `new-${editing.parentRowId ?? "root"}`
+          }
           cat={editing && "rowId" in editing ? editing : null}
           defaultKind={tab}
           defaultParentRowId={
@@ -385,6 +386,18 @@ export function CategoryManager({
           }
           onClose={() => setEditing(null)}
           onSave={onSave}
+          // 수정 시트 머리 ⋮ — 시트를 닫고 새 폼 · 시트 · 확인창을 연다(폼 위 폼은 겹치지 않는다)
+          onAddChild={(parent) => {
+            setEditing({ kind: "new", parentRowId: parent.rowId });
+          }}
+          onMoveTx={(c) => {
+            setEditing(null);
+            setMovingTx(c);
+          }}
+          onDelete={(c) => {
+            setEditing(null);
+            setConfirmDelete(c);
+          }}
           existing={list}
           submitting={submitting}
         />

@@ -276,3 +276,76 @@ describe("수정 폼", () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("수정 시트 머리 ⋮ (10-25 줄 끝 ⋮ 원칙)", () => {
+  const headMore = (name: string) =>
+    document.querySelector<HTMLElement>(
+      `button[aria-label='moreOf{"name":"${name}"}']`,
+    );
+  const items = () =>
+    Array.from(document.querySelectorAll("[data-slot=menu-sheet-item]"));
+  const open = async (name: string) => {
+    await click(headMore(name)!);
+    await tick();
+  };
+
+  it("새 카테고리에는 머리 ⋮ 가 없다", () => {
+    mount();
+    expect(document.querySelector("button[aria-label^='moreOf']")).toBeNull();
+  });
+
+  it("고칠 때는 머리에 ⋮ 가 있고 이름은 '{이름} 더보기' — 키보드로 닿는 단추다", () => {
+    mount({ cat: cat(2, "교통") });
+    const b = headMore("교통")!;
+    expect(b.tagName).toBe("BUTTON");
+    expect(b.tabIndex).toBeGreaterThanOrEqual(0);
+    // 닫기 단추와 같은 머리 안(시트 머리 오른쪽)에 서 있다
+    expect(
+      b.closest("[data-slot=bottom-sheet-content],[data-slot=dialog-content]"),
+    ).not.toBeNull();
+  });
+
+  it("최상위 · 하위 없음: 하위 카테고리 추가 · 거래 옮기기 · 삭제(critical 맨 아래)", async () => {
+    mount({ cat: cat(2, "교통") });
+    await open("교통");
+    expect(items().map((i) => i.textContent)).toEqual([
+      "addSub",
+      "moveTx.entry",
+      "delete",
+    ]);
+    expect(items()[2]!.getAttribute("data-tone")).toBe("critical");
+  });
+
+  it("하위가 있는 최상위는 거래 옮기기가 없고, 하위에는 하위 추가가 없다", async () => {
+    mount({ cat: cat(1, "식비", { hasChildren: true }) });
+    await open("식비");
+    expect(items().map((i) => i.textContent)).toEqual(["addSub", "delete"]);
+  });
+
+  it("하위: 거래 옮기기 · 삭제", async () => {
+    mount({ cat: cat(3, "점심", { parentRowId: 1 }) });
+    await open("점심");
+    expect(items().map((i) => i.textContent)).toEqual([
+      "moveTx.entry",
+      "delete",
+    ]);
+  });
+
+  it("각 항목은 그 카테고리로 부모의 콜백을 부른다", async () => {
+    const onAddChild = vi.fn();
+    const onMoveTx = vi.fn();
+    const onDelete = vi.fn();
+    const target = cat(2, "교통");
+    mount({ cat: target, onAddChild, onMoveTx, onDelete });
+    for (const [label, fn] of [
+      ["addSub", onAddChild],
+      ["moveTx.entry", onMoveTx],
+      ["delete", onDelete],
+    ] as const) {
+      await open("교통");
+      await click(items().find((i) => i.textContent === label) as HTMLElement);
+      await tick(1100);
+      expect(fn).toHaveBeenCalledWith(target);
+    }
+  });
+});

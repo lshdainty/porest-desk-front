@@ -1,13 +1,6 @@
 import { createElement, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowRightLeft,
-  EllipsisVertical,
-  GripVertical,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { GripVertical } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -28,13 +21,6 @@ import {
   ListParentItem,
   ListTile,
 } from "@/shared/ds/list";
-import {
-  ResponsiveMenu,
-  ResponsiveMenuContent,
-  ResponsiveMenuGroup,
-  ResponsiveMenuItem,
-  ResponsiveMenuTrigger,
-} from "@/shared/ds/menu";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { Icon } from "@/shared/ui/groo/primitives";
 import { isIconName } from "@/shared/lib";
@@ -42,15 +28,13 @@ import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import type { ExpenseCategory } from "@/entities/expense";
 
 /**
- * 카테고리 나무(I-20 B 6 · 7) — 최상위는 List 부모 줄(꺾쇠 단추 44 · 타일), 하위는 List 하위 줄, 줄 끝은 ⋮ 하나.
- * 줄 누르기 = 수정 폼, 꺾쇠 = 펴고 접기만. 순서 바꾸기 모드에서는 ⋮ 자리에 끄는 손잡이가 서고 줄 누름은 막힌다.
+ * 카테고리 나무(I-20 B 6 · 7) — 최상위는 List 부모 줄(꺾쇠 단추 44 · 타일), 하위는 List 하위 줄. 줄 끝 ⋮ 는 없다(10-25 줄 끝 ⋮ 원칙).
+ * 줄 누르기 = 수정 시트, 꺾쇠 = 펴고 접기만. 순서 바꾸기 모드에서는 줄 끝에 끄는 손잡이가 서고 줄 누름은 막힌다.
  */
 
 export interface CategoryRowActions {
+  /** 줄 누름 = 수정 시트 한 단계 들어가기 — 하위 추가 · 거래 옮기기 · 삭제는 수정 시트 머리 ⋮ 에 있다 */
   onEdit: (c: ExpenseCategory) => void;
-  onAddChild: (parent: ExpenseCategory) => void;
-  onMoveTx: (c: ExpenseCategory) => void;
-  onDelete: (c: ExpenseCategory) => void;
 }
 
 function Tile({ cat }: { cat: ExpenseCategory }) {
@@ -59,71 +43,6 @@ function Tile({ cat }: { cat: ExpenseCategory }) {
     <ListTile style={{ background: palette.bg, color: palette.color }}>
       <Icon name={isIconName(cat.icon) ? cat.icon : "tag"} size={20} />
     </ListTile>
-  );
-}
-
-/** 줄 끝 ⋮ — 1280 미만 Menu Sheet(머리 = 카테고리 이름) · 이상 Menu. 줄의 처지에 따라 메뉴 줄이 다르다(B 7) */
-function RowMenu({
-  cat,
-  isChild,
-  hasKids,
-  actions,
-}: {
-  cat: ExpenseCategory;
-  isChild: boolean;
-  hasKids: boolean;
-  actions: CategoryRowActions;
-}) {
-  const { t } = useTranslation("category");
-  const { t: tc } = useTranslation("common");
-  return (
-    <ResponsiveMenu>
-      <ResponsiveMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          ghostColor="neutralSubtle"
-          layout="iconOnly"
-          size="medium"
-          className="-mr-x3"
-          aria-label={t("moreOf", { name: cat.categoryName })}
-        >
-          <EllipsisVertical aria-hidden />
-        </Button>
-      </ResponsiveMenuTrigger>
-      <ResponsiveMenuContent title={cat.categoryName} align="end">
-        <ResponsiveMenuGroup>
-          {/* 2단계까지 — 하위 줄에는 하위 추가를 두지 않는다 */}
-          {!isChild && (
-            <ResponsiveMenuItem
-              label={t("addSub")}
-              icon={<Plus aria-hidden />}
-              onSelect={() => actions.onAddChild(cat)}
-            />
-          )}
-          <ResponsiveMenuItem
-            label={t("edit")}
-            icon={<Pencil aria-hidden />}
-            onSelect={() => actions.onEdit(cat)}
-          />
-          {/* 하위가 있는 부모에는 거래가 달릴 수 없어 옮길 것이 0 이다 */}
-          {!hasKids && (
-            <ResponsiveMenuItem
-              label={t("moveTx.entry")}
-              icon={<ArrowRightLeft aria-hidden />}
-              onSelect={() => actions.onMoveTx(cat)}
-            />
-          )}
-        </ResponsiveMenuGroup>
-        <ResponsiveMenuGroup>
-          <ResponsiveMenuItem
-            label={tc("delete")}
-            icon={<Trash2 aria-hidden />}
-            tone="critical"
-            onSelect={() => actions.onDelete(cat)}
-          />
-        </ResponsiveMenuGroup>
-      </ResponsiveMenuContent>
-    </ResponsiveMenu>
   );
 }
 
@@ -208,14 +127,6 @@ export function CategoryTree({
             expandLabel={t("expandOf", { name: parent.categoryName })}
             defaultOpen
             onClick={() => actions.onEdit(parent)}
-            suffix={
-              <RowMenu
-                cat={parent}
-                isChild={false}
-                hasKids={children.length > 0 || parent.hasChildren}
-                actions={actions}
-              />
-            }
           >
             {children.map((c) => (
               <ListButtonItem
@@ -223,9 +134,6 @@ export function CategoryTree({
                 title={c.categoryName}
                 prefix={<Tile cat={c} />}
                 onClick={() => actions.onEdit(c)}
-                suffix={
-                  <RowMenu cat={c} isChild hasKids={false} actions={actions} />
-                }
               />
             ))}
           </ListParentItem>
