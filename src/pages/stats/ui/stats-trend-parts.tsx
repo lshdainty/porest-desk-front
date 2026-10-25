@@ -317,8 +317,9 @@ export function SavingsRateSection({
       >
         <div
           className={cn(
-            "flex shrink-0 items-center gap-x4",
-            place === "band" && "justify-center",
+            "flex items-center gap-x4",
+            // 폰: 문장 칸이 8em 보다 좁아지면(글자 크기 200%) 문장이 고리 아래로 내려간다 — 낱말 가운데서 꺾이지 않게(v114 단어 단위)
+            place === "band" ? "flex-wrap gap-y-x3" : "shrink-0",
           )}
         >
           <div
@@ -356,7 +357,10 @@ export function SavingsRateSection({
             </div>
           </div>
           {place === "band" && (
-            <p className="m-0 min-w-0 text-t5 font-bold text-fg-neutral">
+            <p
+              data-slot="stats-savings-insight"
+              className="m-0 min-w-[8em] flex-1 basis-[8em] text-t5 font-bold text-fg-neutral"
+            >
               {insight}
             </p>
           )}

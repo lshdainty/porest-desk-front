@@ -382,6 +382,12 @@ describe("통계 글 · 색 규칙", () => {
     )!;
     expect(center.textContent).toMatch(/^\d+%$/);
     expect(center.className).toContain("text-t9");
+    // 옆 안내 문장 — 문장 칸이 8em 보다 좁으면 고리 아래로 내려가는 줄바꿈 줄
+    const insight = container.querySelector(
+      "[data-slot=stats-savings-insight]",
+    )!;
+    expect(insight.className).toContain("min-w-[8em]");
+    expect(insight.parentElement!.className).toContain("flex-wrap");
   });
 
   it("기간 버튼 — 뒤 꺾쇠 하나만(앞 아이콘 없음), 아이콘 16", () => {
