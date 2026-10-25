@@ -1,0 +1,264 @@
+import { createElement, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  type useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Button } from "@/shared/ds/button";
+import {
+  List,
+  ListButtonItem,
+  ListItem,
+  ListParentItem,
+  ListTile,
+} from "@/shared/ds/list";
+import { Skeleton } from "@/shared/ds/skeleton";
+import { Icon } from "@/shared/ui/groo/primitives";
+import { isIconName } from "@/shared/lib";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import type { ExpenseCategory } from "@/entities/expense";
+
+/**
+ * 카테고리 나무(I-20 B 6 · 7) — 최상위는 List 부모 줄(꺾쇠 단추 44 · 타일), 하위는 List 하위 줄. 줄 끝 ⋮ 는 없다(10-25 줄 끝 ⋮ 원칙).
+ * 줄 누르기 = 수정 시트, 꺾쇠 = 펴고 접기만. 순서 바꾸기 모드에서는 줄 끝에 끄는 손잡이가 서고 줄 누름은 막힌다.
+ */
+
+// 순서 모드의 보기 줄 들임 — 보기 줄의 부모 타일(x 52 = 꺾쇠 자리 4 + 44 + 4)·하위 타일(x 104)과 같은 자리
+const INDENT_PARENT =
+  "[&_[data-slot=list-content]]:pl-[calc(var(--spacing-x13))]";
+const INDENT_CHILD =
+  "[&_[data-slot=list-content]]:pl-[calc(var(--spacing-x13)*2)]";
+
+export interface CategoryRowActions {
+  /** 줄 누름 = 수정 시트 한 단계 들어가기 — 하위 추가 · 거래 옮기기 · 삭제는 수정 시트 머리 ⋮ 에 있다 */
+  onEdit: (c: ExpenseCategory) => void;
+}
+
+function Tile({ cat }: { cat: ExpenseCategory }) {
+  const palette = getPaletteByColor(cat.color);
+  return (
+    <ListTile style={{ background: palette.bg, color: palette.color }}>
+      <Icon name={isIconName(cat.icon) ? cat.icon : "tag"} size={20} />
+    </ListTile>
+  );
+}
+
+/** 끄는 줄 하나 — 손잡이를 활성 자리로 내준다. 키보드 센서(dnd-kit)는 그대로 손잡이에서 시작한다 */
+function Sortable({
+  id,
+  as,
+  name,
+  children,
+}: {
+  id: number;
+  as: "div" | "li";
+  name: string;
+  children: (grip: ReactNode) => ReactNode;
+}) {
+  const { t } = useTranslation("category");
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+  const grip = (
+    <Button
+      ref={setActivatorNodeRef}
+      variant="ghost"
+      ghostColor="neutralSubtle"
+      layout="iconOnly"
+      size="medium"
+      className="-mr-x3 cursor-grab touch-none"
+      aria-label={t("dragReorderOf", { name })}
+      {...attributes}
+      {...listeners}
+    >
+      <GripVertical aria-hidden />
+    </Button>
+  );
+  return createElement(
+    as,
+    {
+      ref: setNodeRef,
+      style: {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        position: "relative",
+        zIndex: isDragging ? 1 : undefined,
+      },
+    },
+    children(grip),
+  );
+}
+
+export function CategoryTree({
+  tree,
+  reorder,
+  actions,
+  sensors,
+  onReorder,
+  ariaLabelledBy,
+}: {
+  tree: { parent: ExpenseCategory; children: ExpenseCategory[] }[];
+  reorder: boolean;
+  actions: CategoryRowActions;
+  sensors: ReturnType<typeof useSensors>;
+  /** 같은 형제끼리만 옮긴다 — 형제 id 차례를 넘겨 서버에 보낼 값을 부르는 쪽이 만든다 */
+  onReorder: (ev: DragEndEvent, siblingIds: number[]) => void;
+  ariaLabelledBy: string;
+}) {
+  const { t } = useTranslation("category");
+
+  if (!reorder) {
+    return (
+      <List aria-labelledby={ariaLabelledBy}>
+        {tree.map(({ parent, children }) => (
+          <ListParentItem
+            key={parent.rowId}
+            title={parent.categoryName}
+            prefix={<Tile cat={parent} />}
+            expandLabel={t("expandOf", { name: parent.categoryName })}
+            defaultOpen
+            data-category-row={parent.rowId}
+            onClick={() => actions.onEdit(parent)}
+          >
+            {children.map((c) => (
+              <ListButtonItem
+                key={c.rowId}
+                title={c.categoryName}
+                prefix={<Tile cat={c} />}
+                data-category-row={c.rowId}
+                onClick={() => actions.onEdit(c)}
+              />
+            ))}
+          </ListParentItem>
+        ))}
+      </List>
+    );
+  }
+
+  // 순서 바꾸기 — 하위는 늘 보이고(꺾쇠 자리는 빈 채) 줄 누름은 막힌다. 같은 형제끼리만 옮긴다
+  return (
+    <div role="group" aria-labelledby={ariaLabelledBy}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={(ev) =>
+          onReorder(
+            ev,
+            tree.map((x) => x.parent.rowId),
+          )
+        }
+      >
+        <SortableContext
+          items={tree.map((x) => x.parent.rowId)}
+          strategy={verticalListSortingStrategy}
+        >
+          {tree.map(({ parent, children }) => (
+            <Sortable
+              key={parent.rowId}
+              id={parent.rowId}
+              as="div"
+              name={parent.categoryName}
+            >
+              {(grip) => (
+                <>
+                  {/* 순서 모드의 부모 줄은 누르지 않는 보기 줄이다 — 버튼이 아니고 초점이 가지 않으며 글 · 타일 색은 보기 줄과 같다
+                      (꺼진 색은 "쓸 수 없음" 이라 모드 때문에 막힌 줄에 맞지 않는다). 타일은 보기 줄과 같은 x 52 에 선다 */}
+                  <List>
+                    <ListItem
+                      className={INDENT_PARENT}
+                      title={parent.categoryName}
+                      prefix={<Tile cat={parent} />}
+                      suffix={grip}
+                    />
+                  </List>
+                  {children.length > 0 && (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(ev) =>
+                        onReorder(
+                          ev,
+                          children.map((c) => c.rowId),
+                        )
+                      }
+                    >
+                      <SortableContext
+                        items={children.map((c) => c.rowId)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <List>
+                          {children.map((c) => (
+                            <Sortable
+                              key={c.rowId}
+                              id={c.rowId}
+                              as="li"
+                              name={c.categoryName}
+                            >
+                              {(childGrip) => (
+                                <ListItem
+                                  as="div"
+                                  className={INDENT_CHILD}
+                                  title={c.categoryName}
+                                  prefix={<Tile cat={c} />}
+                                  suffix={childGrip}
+                                />
+                              )}
+                            </Sortable>
+                          ))}
+                        </List>
+                      </SortableContext>
+                    </DndContext>
+                  )}
+                </>
+              )}
+            </Sortable>
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+}
+
+/** 불러오는 중 — 목록 제목 아래 부모 줄 넷(꺾쇠 자리 · 타일 40 · 한 줄) · 하위 둘(I-20 F) */
+export function CategoryListSkeleton() {
+  const rows: { depth: 0 | 1 }[] = [
+    { depth: 0 },
+    { depth: 1 },
+    { depth: 1 },
+    { depth: 0 },
+    { depth: 0 },
+    { depth: 0 },
+  ];
+  return (
+    <div aria-hidden>
+      {rows.map((r, i) => (
+        <div
+          key={i}
+          className={
+            r.depth === 0
+              ? "flex items-center gap-x3 py-x3 pl-x13 pr-global-gutter"
+              : "flex items-center gap-x3 py-x3 pl-[calc(var(--spacing-x13)*2)] pr-global-gutter"
+          }
+        >
+          <Skeleton radius="12" className="size-x10 shrink-0" />
+          <Skeleton text="t5" className="w-1/2" />
+        </div>
+      ))}
+    </div>
+  );
+}

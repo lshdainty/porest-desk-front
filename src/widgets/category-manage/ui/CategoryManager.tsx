@@ -1,45 +1,30 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Plus, Search } from "lucide-react";
 import {
-  ChevronDown,
-  ChevronRight,
-  GripVertical,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
-import {
-  DndContext,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
-  closestCenter,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
 import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-  sortableKeyboardCoordinates,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Icon } from "@/shared/ui/groo/primitives";
-import { Button } from "@/shared/ui/button";
-import { Button as DsButton } from "@/shared/ds/button";
-import { Input } from "@/shared/ui/input";
-import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
-import { MANAGE_ROW, manageRowClass } from "@/shared/ui/groo/manage-row-tokens";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import {
-  MANAGER_LAYOUT,
-  ManagerHead,
-  ManagerShell,
-  ManagerTabs,
-} from "@/shared/ui/groo/manager-layout";
-import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/shared/ds/alert-dialog";
+import { Button } from "@/shared/ds/button";
+import { Card } from "@/shared/ds/card";
+import { Input } from "@/shared/ds/input";
+import { ListHeader } from "@/shared/ds/list";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ds/tabs";
+import { BandEmpty, BandFailure } from "@/shared/ui/groo/band-parts";
+import { ManagerHead } from "@/shared/ui/groo/manager-layout";
 import {
   useExpenseCategories,
   useCreateExpenseCategory,
@@ -49,42 +34,47 @@ import {
   useExpenseBudgets,
   useRangeSummary,
 } from "@/features/expense";
+import { useRecurringTransactions } from "@/features/recurring-transaction";
 import { KRW } from "@/shared/lib/groo/format";
 import type {
   ExpenseCategory,
   ExpenseCategoryFormValues,
   ExpenseType,
 } from "@/entities/expense";
-import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { CategoryEditDialog } from "./CategoryEditDialog";
+import { CategoryListSkeleton, CategoryTree } from "./CategoryTree";
 import { CategoryMoveTxDialog } from "@/features/expense/ui/CategoryMoveTxDialog";
 
 type EditingState =
   ExpenseCategory | { kind: "new"; parentRowId?: number | null } | null;
 
-/** reorderMode — 모바일 순서 편집(디자인 editMode): 켜야만 grip 노출·드래그 가능, 하위 강제 표시. */
+/**
+ * 카테고리 관리(I-20 B) — 탭(지출 · 수입) → 밑줄 검색칸 → 목록 제목("지출 카테고리 n개" + 순서 바꾸기) → 나무 줄(줄 끝 ⋮).
+ * 폰은 흰 면 하나(머리 오른쪽 "추가" 가 새 카테고리), 데스크톱은 제목 줄 [카테고리 추가] + 카드 하나다.
+ */
 export function CategoryManager({
   mobile,
-  reorderMode: reorderProp = false,
   addRequest = 0,
 }: {
   mobile: boolean;
-  reorderMode?: boolean;
   /** 바깥(설정 폰 머리 "추가")이 올리면 새 카테고리 폼을 연다 */
   addRequest?: number;
 }) {
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
   const { t: te } = useTranslation("expense");
-  const { data: categories, isLoading } = useExpenseCategories();
+  const titleId = useId();
+  const categoriesQ = useExpenseCategories();
+  const { data: categories, isLoading } = categoriesQ;
   const createMut = useCreateExpenseCategory();
   const updateMut = useUpdateExpenseCategory();
   const deleteMut = useDeleteExpenseCategory();
   const reorderMut = useReorderExpenseCategories();
+  // 삭제 확인이 "이 카테고리를 쓰는 반복 거래" 개수를 말한다 — 못 받으면 개수 문장만 뺀다(확인창을 막지 않는다)
+  const { data: recurrings } = useRecurringTransactions();
 
-  // 폰 목록 제목의 "순서 바꾸기" ↔ "완료"(I-16 · I-20 B 5) — 켜면 순서 모드.
-  const [reorderOn, setReorderOn] = useState(false);
-  const reorderMode = reorderProp || (mobile && reorderOn);
+  // 목록 제목의 "순서 바꾸기" ↔ "완료" — 켜면 순서 모드(폰 · 데스크톱 같다)
+  const [reorder, setReorder] = useState(false);
 
   const [tab, setTab] = useState<ExpenseType>("EXPENSE");
   const [query, setQuery] = useState("");
@@ -92,9 +82,31 @@ export function CategoryManager({
   const [confirmDelete, setConfirmDelete] = useState<ExpenseCategory | null>(
     null,
   );
-  // 거래가 달려 하위를 만들 수 없는 카테고리를 푸는 경로 — 거래를 다른 곳으로 옮긴다.
   const [movingTx, setMovingTx] = useState<ExpenseCategory | null>(null);
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+  // 표면이 닫힌 뒤 초점을 돌려 둘 줄 — 수정 시트와 함께 ⋮ 가 사라지므로 그 카테고리 줄로 돌린다(삭제 뒤에는 이웃 줄 · 없으면 목록 머리)
+  const lastRowRef = useRef<number | null>(null);
+  const focusRow = (id: number | null) => {
+    window.setTimeout(() => {
+      const row =
+        id == null
+          ? null
+          : document.querySelector<HTMLElement>(`[data-category-row="${id}"]`);
+      (row ?? document.getElementById(titleId))?.focus({
+        preventScroll: false,
+      });
+    }, 200);
+  };
+  const neighborOf = (id: number): number | null => {
+    const ids = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-category-row]"),
+    ).map((el) => Number(el.dataset.categoryRow));
+    const i = ids.indexOf(id);
+    return ids[i + 1] ?? ids[i - 1] ?? null;
+  };
+  const closeEdit = () => {
+    setEditing(null);
+    focusRow(lastRowRef.current);
+  };
   // 자식 이동 시 새 부모 예산 초과 확인 — 승인하면 저장 진행.
   const [pendingMove, setPendingMove] = useState<{
     values: ExpenseCategoryFormValues;
@@ -103,7 +115,7 @@ export function CategoryManager({
     over: number;
   } | null>(null);
 
-  // 이번 달 예산/지출 — 카테고리 삭제(예산 동반) 안내 + 이동 초과 경고용.
+  // 이번 달 예산/지출 — 이동 초과 경고용(삭제 확인은 모든 달 예산이 지워지므로 이번 달을 보지 않는다).
   const cmNow = new Date();
   const cmYM = { year: cmNow.getFullYear(), month: cmNow.getMonth() + 1 };
   const cmStart = `${cmYM.year}-${String(cmYM.month).padStart(2, "0")}-01`;
@@ -174,25 +186,21 @@ export function CategoryManager({
 
   const submitting = createMut.isPending || updateMut.isPending;
 
-  // 편집 모드 진입 시 검색 초기화 — 필터된 일부만 보며 정렬하는 혼란 방지(디자인은 검색행 자체가 숨음).
-  // 모드가 **바뀐 순간**에만 본다. 렌더 중 조정이라 커밋을 한 번 더 태우지 않는다.
+  // 바깥(설정 폰 머리 "추가")이 올린 횟수가 바뀐 순간에만 새 폼을 연다. 렌더 중 조정이라 커밋을 한 번 더 태우지 않는다.
   const [seenAddRequest, setSeenAddRequest] = useState(addRequest);
   if (seenAddRequest !== addRequest) {
     setSeenAddRequest(addRequest);
     setEditing({ kind: "new" });
   }
 
-  const [wasReorder, setWasReorder] = useState(reorderMode);
-  if (wasReorder !== reorderMode) {
-    setWasReorder(reorderMode);
-    if (reorderMode) setQuery("");
-  }
+  const startReorder = (on: boolean) => {
+    setReorder(on);
+    // 필터된 일부만 보며 정렬하는 혼란을 막는다 — 순서 모드에 들어갈 때 검색을 비운다
+    if (on) setQuery("");
+  };
 
   const doUpdate = (id: number, values: ExpenseCategoryFormValues) => {
-    updateMut.mutate(
-      { id, data: values },
-      { onSuccess: () => setEditing(null) },
-    );
+    updateMut.mutate({ id, data: values }, { onSuccess: closeEdit });
   };
 
   const onSave = (values: ExpenseCategoryFormValues) => {
@@ -220,21 +228,8 @@ export function CategoryManager({
       }
       doUpdate(editing.rowId, values);
     } else {
-      createMut.mutate(values, { onSuccess: () => setEditing(null) });
+      createMut.mutate(values, { onSuccess: closeEdit });
     }
-  };
-
-  const onDelete = (c: ExpenseCategory) => {
-    deleteMut.mutate(c.rowId, { onSuccess: () => setConfirmDelete(null) });
-  };
-
-  const toggleCollapse = (parentRowId: number) => {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(parentRowId)) next.delete(parentRowId);
-      else next.add(parentRowId);
-      return next;
-    });
   };
 
   // DnD: 같은 형제 레벨(최상위 또는 같은 부모)끼리만 정렬 가능
@@ -263,604 +258,271 @@ export function CategoryManager({
     reorderMut.mutate(items);
   };
 
-  // 검색바(label)+list 를 한 묶음으로 쓰기 위해 list 를 변수 추출(mobile/desktop 공유).
-  const listBlock = (
-    <div
-      className={mobile ? undefined : "cat-list"}
-      style={mobile ? { display: "flex", flexDirection: "column" } : undefined}
-    >
-      {isLoading ? (
-        <CategoryManagerSkeleton mobile={mobile} />
-      ) : list.length === 0 ? (
-        <div className="cat-list__empty">
-          <span>{t("empty")}</span>
-        </div>
-      ) : tree.length === 0 ? (
-        <div className="cat-list__empty">
-          <span>{t("noSearchResults")}</span>
-        </div>
-      ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={(ev) =>
-            handleDragEnd(
-              ev,
-              tree.map((t) => t.parent.rowId),
-            )
-          }
-        >
-          <SortableContext
-            items={tree.map((t) => t.parent.rowId)}
-            strategy={verticalListSortingStrategy}
-          >
-            {tree.map(({ parent, children }) => (
-              <ParentBlock
-                key={parent.rowId}
-                parent={parent}
-                children_={children}
-                mobile={mobile}
-                reorderMode={reorderMode}
-                isCollapsed={collapsed.has(parent.rowId)}
-                onToggle={() => toggleCollapse(parent.rowId)}
-                onEdit={(c) => setEditing(c)}
-                onDelete={(c) => setConfirmDelete(c)}
-                onAddChild={() =>
-                  setEditing({ kind: "new", parentRowId: parent.rowId })
-                }
-                onChildrenDragEnd={(ev) =>
-                  handleDragEnd(
-                    ev,
-                    children.map((c) => c.rowId),
-                  )
-                }
-                dndSensors={sensors}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      )}
+  const recurringUsing = (c: ExpenseCategory) =>
+    recurrings?.filter((r) => r.categoryRowId === c.rowId).length ?? 0;
+
+  const failed = !isLoading && categories === undefined;
+  const count = tab === "EXPENSE" ? counts.expense : counts.income;
+
+  const tabs = (
+    <Tabs value={tab} onValueChange={(v) => setTab(v as ExpenseType)}>
+      <TabsList
+        aria-label={te("category")}
+        layout={mobile ? "fill" : "hug"}
+        size="medium"
+      >
+        <TabsTrigger value="EXPENSE">{te("expense")}</TabsTrigger>
+        <TabsTrigger value="INCOME">{te("income")}</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  );
+
+  // 검색칸 자리 — 순서 모드에서는 안내 한 줄이 대신한다
+  const searchRow = reorder ? (
+    <p className="m-0 px-global-gutter pb-x2 pt-x2 font-sans text-t4 text-fg-neutral-subtle">
+      {t("reorderHint")}
+    </p>
+  ) : (
+    <div className="px-global-gutter pb-x2 pt-x2">
+      <Input
+        variant="underline"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t("searchPlaceholder")}
+        aria-label={t("searchPlaceholder")}
+        prefixIcon={<Search />}
+        clearable
+        autoComplete="off"
+        enterKeyHint="search"
+      />
     </div>
+  );
+
+  const listTitle = !isLoading && categories && (
+    <ListHeader as="div">
+      <h2
+        id={titleId}
+        tabIndex={-1}
+        className="m-0 tracking-normal text-inherit [font:inherit]"
+      >
+        {t("listTitle", {
+          kind: tab === "EXPENSE" ? t("expenseCategory") : t("incomeCategory"),
+          count,
+        })}
+      </h2>
+      <Button
+        type="button"
+        variant="ghost"
+        ghostColor="neutralMuted"
+        size="small"
+        onClick={() => startReorder(!reorder)}
+      >
+        {reorder ? t("reorderDone") : t("reorderEdit")}
+      </Button>
+    </ListHeader>
+  );
+
+  const listBody = isLoading ? (
+    <CategoryListSkeleton />
+  ) : failed ? (
+    <BandFailure
+      title={t("loadFailed")}
+      onRetry={() => void categoriesQ.refetch()}
+      className="px-x6"
+    />
+  ) : list.length === 0 ? (
+    <BandEmpty>{t("empty")}</BandEmpty>
+  ) : tree.length === 0 ? (
+    <BandEmpty>{t("noSearchResults")}</BandEmpty>
+  ) : (
+    <CategoryTree
+      tree={tree}
+      reorder={reorder}
+      sensors={sensors}
+      onReorder={handleDragEnd}
+      ariaLabelledBy={titleId}
+      actions={{
+        onEdit: (c) => {
+          lastRowRef.current = c.rowId;
+          setEditing(c);
+        },
+      }}
+    />
+  );
+
+  const body = (
+    <>
+      {tabs}
+      {searchRow}
+      {listTitle}
+      {listBody}
+    </>
   );
 
   return (
     <>
-      <ManagerShell>
-        {!mobile && (
+      {mobile ? (
+        <div className="flex flex-col pb-x6">{body}</div>
+      ) : (
+        <>
           <ManagerHead
             title={te("categories")}
             description={t("manager.description")}
             actions={
               // 제목 줄 오른쪽 주 동작 = Button small neutralOutline + 앞 아이콘 14, 글은 동작 이름(I-16 28 · S3)
-              <DsButton
+              <Button
                 variant="neutralOutline"
                 size="small"
                 onClick={() => setEditing({ kind: "new" })}
               >
                 <Plus aria-hidden />
                 {te("addCategory")}
-              </DsButton>
+              </Button>
             }
           />
-        )}
-
-        {mobile ? (
-          <>
-            {/* 머리 바로 아래 화면 폭 밑줄 탭. 스크롤은 설정 껍데기의 main 하나이고 ds 머리(높이 56 + 위 안전 영역)가
-                위에 붙어 있어 sticky top 은 머리 높이다(I-16). 음수 margin 은 껍데기 임시 24(TEMP_BODY_PADDING —
-                model/sections.ts)를 상쇄해 탭을 화면 끝까지 편다 — categories 가 그 목록에서 빠지면 함께 걷는다. */}
-            <div
-              style={{
-                background: "var(--bg-surface)",
-                margin: "-24px -20px 0",
-                position: "sticky",
-                top: "calc(56px + env(safe-area-inset-top))",
-                zIndex: 5,
-              }}
-            >
-              <Tabs value={tab} onValueChange={(v) => setTab(v as ExpenseType)}>
-                <TabsList variant="underline" className="w-full">
-                  <TabsTrigger
-                    variant="underline"
-                    value="EXPENSE"
-                    className="flex-1"
-                  >
-                    {te("expense")} {counts.expense}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    variant="underline"
-                    value="INCOME"
-                    className="flex-1"
-                  >
-                    {te("income")} {counts.income}
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-            {/* 검색바(label) + list = 한 묶음(사용자 결정). 사이 간격은 모바일 0(플랫 리스트라
-                밀착) / 데스크톱 8 — 아래가 카드라 검색바가 붙으면 답답함. */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: mobile ? 0 : 12,
-              }}
-            >
-              {reorderMode ? (
-                // 순서 모드 — 검색 대신 드래그 안내문(디자인 editMode).
-                <div
-                  style={{
-                    fontSize: "var(--text-label-sm)",
-                    color: "var(--fg-tertiary)",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {t("reorderHint")}
-                </div>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div
-                    style={{
-                      ...MANAGER_LAYOUT.searchWrapStyle,
-                      flex: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-                    <Input
-                      search
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder={t("searchPlaceholder")}
-                      className="w-full min-w-0 pl-9"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* 목록 제목 — 불러오는 중 · 실패에는 개수가 없어 그리지 않는다 */}
-              {!isLoading && categories && (
-                <div className="mb-x2 flex items-center justify-between">
-                  <h2 className="text-t4 font-medium text-fg-neutral-subtle">
-                    {t("listTitle", {
-                      kind:
-                        tab === "EXPENSE"
-                          ? t("expenseCategory")
-                          : t("incomeCategory"),
-                      count: tab === "EXPENSE" ? counts.expense : counts.income,
-                    })}
-                  </h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReorderOn((v) => !v)}
-                  >
-                    {reorderMode ? t("reorderDone") : t("reorderEdit")}
-                  </Button>
-                </div>
-              )}
-              {listBlock}
-            </div>
-          </>
-        ) : (
-          <div style={MANAGER_LAYOUT.toolbarStyle}>
-            <ManagerTabs<ExpenseType>
-              value={tab}
-              onChange={setTab}
-              options={[
-                {
-                  value: "EXPENSE",
-                  label: te("expense"),
-                  count: counts.expense,
-                },
-                { value: "INCOME", label: te("income"), count: counts.income },
-              ]}
-            />
-            <div style={MANAGER_LAYOUT.searchWrapStyle}>
-              <Search size={14} style={MANAGER_LAYOUT.searchIconStyle} />
-              <Input
-                search
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className="w-[220px] pl-9"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* desktop 은 toolbar(탭+검색)과 list 를 부모 gap 으로 분리(기존 유지).
-            mobile 은 검색바(label) 묶음 안에서 list 렌더 — label·list 는 한 div. */}
-        {!mobile && listBlock}
-      </ManagerShell>
+          <Card body="list">{body}</Card>
+        </>
+      )}
 
       {movingTx && (
         <CategoryMoveTxDialog
           source={movingTx}
           categories={list}
-          mobile={mobile}
-          onClose={() => setMovingTx(null)}
+          onClose={() => {
+            setMovingTx(null);
+            focusRow(movingTx.rowId);
+          }}
         />
       )}
       {editing && (
         <CategoryEditDialog
+          // 수정 → 하위 추가처럼 같은 자리에서 다른 폼으로 바뀌면 폼 상태를 새로 시작한다
+          key={
+            "rowId" in editing
+              ? `edit-${editing.rowId}`
+              : `new-${editing.parentRowId ?? "root"}`
+          }
           cat={editing && "rowId" in editing ? editing : null}
           defaultKind={tab}
           defaultParentRowId={
             editing && "kind" in editing ? (editing.parentRowId ?? null) : null
           }
-          onClose={() => setEditing(null)}
+          onClose={closeEdit}
           onSave={onSave}
-          onDelete={
-            editing && "rowId" in editing
-              ? () => {
-                  setConfirmDelete(editing);
-                  setEditing(null);
-                }
-              : undefined
-          }
-          onMoveTx={
-            editing && "rowId" in editing
-              ? () => {
-                  setMovingTx(editing);
-                  setEditing(null);
-                }
-              : undefined
-          }
-          mobile={mobile}
+          // 수정 시트 머리 ⋮ — 시트를 닫고 새 폼 · 시트 · 확인창을 연다(폼 위 폼은 겹치지 않는다)
+          onAddChild={(parent) => {
+            lastRowRef.current = parent.rowId;
+            setEditing({ kind: "new", parentRowId: parent.rowId });
+          }}
+          onMoveTx={(c) => {
+            setEditing(null);
+            setMovingTx(c);
+          }}
+          onDelete={(c) => {
+            setEditing(null);
+            setConfirmDelete(c);
+          }}
           existing={list}
           submitting={submitting}
         />
       )}
-      {confirmDelete &&
-        // 하위 카테고리가 있으면 삭제가 아예 막힌다 — 고를 것이 없으니 확인 하나만
-        // 둔다(spec alert-dialog.md · acknowledge). 예전엔 여기서도 빨간 [삭제] 가
-        // 떴는데 눌러도 아무 일이 없었다.
-        (confirmDelete.hasChildren ? (
-          <ConfirmDialog
-            singleAction
-            title={t("deleteBlockedTitle")}
-            message={t("deleteHasChildren", {
-              name: confirmDelete.categoryName,
-            })}
-            onCancel={() => setConfirmDelete(null)}
-            onConfirm={() => setConfirmDelete(null)}
-          />
-        ) : (
-          <ConfirmDialog
-            title={t("deleteTitle")}
-            message={
-              budgetOf(confirmDelete.rowId) != null
-                ? t("deleteWithBudget", { name: confirmDelete.categoryName })
-                : t("deleteConfirm", { name: confirmDelete.categoryName })
-            }
-            confirmLabel={tc("delete")}
-            danger
-            loading={deleteMut.isPending}
-            onCancel={() => setConfirmDelete(null)}
-            onConfirm={() => onDelete(confirmDelete)}
-          />
-        ))}
-      {pendingMove && (
-        <ConfirmDialog
-          title={t("overBudgetTitle")}
-          message={t("overBudgetMessage", {
-            parent: pendingMove.parentName,
-            amount: KRW(pendingMove.over),
-          })}
-          confirmLabel={t("move")}
-          loading={updateMut.isPending}
-          onCancel={() => setPendingMove(null)}
-          onConfirm={() => {
-            doUpdate(pendingMove.id, pendingMove.values);
-            setPendingMove(null);
-          }}
-        />
-      )}
-    </>
-  );
-}
 
-/** CategoryManager skeleton — 트리 구조(부모+자식 들여쓰기) 1:1 미러. */
-function CategoryManagerSkeleton({ mobile }: { mobile: boolean }) {
-  // 부모 행: grip + chevron + icon + name+meta + add/edit/delete (desktop) | chevron (mobile)
-  // 자식 행: paddingLeft:28 + grip + icon + name + edit/delete (desktop) | chevron (mobile)
-  const entries = [{ childCount: 2 }, { childCount: 1 }, { childCount: 0 }];
-  return (
-    <>
-      {entries.map((e, i) => (
-        <div key={i}>
-          <div className={manageRowClass(mobile)}>
-            {/* grip 은 모바일 평시엔 없음(편집 모드 전용) — 스켈레톤도 미러 */}
-            {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
-            {/* chevron 자리 18 은 항상 예약 — 하위가 없으면 실렌더도 화살표를 안 그린다 */}
-            <span className="w-[18px] shrink-0 inline-flex justify-center">
-              {e.childCount > 0 && <SkeletonBase className="h-4 w-4" />}
-            </span>
-            <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-            <div style={MANAGE_ROW.textStyle}>
-              <SkeletonBase className="h-4 w-32 mb-1.5" />
-              <SkeletonBase className="h-3 w-16" />
-            </div>
-            {!mobile ? (
-              <div className="flex gap-1">
-                <SkeletonBase className="h-7 w-7 rounded-md" />
-                <SkeletonBase className="h-7 w-7 rounded-md" />
-                <SkeletonBase className="h-7 w-7 rounded-md" />
-              </div>
-            ) : (
-              <SkeletonBase className="h-5 w-5 rounded-md" />
-            )}
-          </div>
-          {e.childCount > 0 && (
-            <div style={{ paddingLeft: 28 }}>
-              {Array.from({ length: e.childCount }).map((_, j) => (
-                <div key={j} className={manageRowClass(mobile)}>
-                  {!mobile && <SkeletonBase className="h-4 w-4 shrink-0" />}
-                  {/* 부모와 같은 chevron 자리 — 없으면 자식이 부모와 같은 x 에 선다 */}
-                  <span className="w-[18px] shrink-0" />
-                  <SkeletonBase className="h-9 w-9 rounded-md shrink-0" />
-                  <div style={MANAGE_ROW.textStyle}>
-                    <SkeletonBase className="h-4 w-24" />
-                  </div>
-                  {!mobile ? (
-                    <div className="flex gap-1">
-                      <SkeletonBase className="h-7 w-7 rounded-md" />
-                      <SkeletonBase className="h-7 w-7 rounded-md" />
-                    </div>
-                  ) : (
-                    <SkeletonBase className="h-5 w-5 rounded-md" />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-    </>
-  );
-}
-
-function ParentBlock({
-  parent,
-  children_,
-  mobile,
-  reorderMode = false,
-  isCollapsed,
-  onToggle,
-  onEdit,
-  onDelete,
-  onAddChild,
-  onChildrenDragEnd,
-  dndSensors,
-}: {
-  parent: ExpenseCategory;
-  children_: ExpenseCategory[];
-  mobile: boolean;
-  reorderMode?: boolean;
-  isCollapsed: boolean;
-  onToggle: () => void;
-  onEdit: (c: ExpenseCategory) => void;
-  onDelete: (c: ExpenseCategory) => void;
-  onAddChild: () => void;
-  onChildrenDragEnd: (ev: DragEndEvent) => void;
-  dndSensors: ReturnType<typeof useSensors>;
-}) {
-  return (
-    <div>
-      <SortableRow
-        cat={parent}
-        mobile={mobile}
-        reorderMode={reorderMode}
-        isParent
-        hasChildren={children_.length > 0}
-        isCollapsed={isCollapsed}
-        onToggle={onToggle}
-        onEdit={() => onEdit(parent)}
-        onDelete={() => onDelete(parent)}
-        onAddChild={onAddChild}
-      />
-      {/* 편집 모드는 하위 강제 표시(디자인 editMode || expanded) — 접힘 상태 무시. */}
-      {(reorderMode || !isCollapsed) && children_.length > 0 && (
-        <div style={{ paddingLeft: 28 }}>
-          <DndContext
-            sensors={dndSensors}
-            collisionDetection={closestCenter}
-            onDragEnd={onChildrenDragEnd}
-          >
-            <SortableContext
-              items={children_.map((c) => c.rowId)}
-              strategy={verticalListSortingStrategy}
-            >
-              {children_.map((c) => (
-                <SortableRow
-                  key={c.rowId}
-                  cat={c}
-                  mobile={mobile}
-                  reorderMode={reorderMode}
-                  onEdit={() => onEdit(c)}
-                  onDelete={() => onDelete(c)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SortableRow({
-  cat,
-  mobile,
-  reorderMode = false,
-  isParent,
-  hasChildren,
-  isCollapsed,
-  onToggle,
-  onEdit,
-  onDelete,
-  onAddChild,
-}: {
-  cat: ExpenseCategory;
-  mobile: boolean;
-  reorderMode?: boolean;
-  isParent?: boolean;
-  hasChildren?: boolean;
-  isCollapsed?: boolean;
-  onToggle?: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  onAddChild?: () => void;
-}) {
-  const { t } = useTranslation("category");
-  const { t: te } = useTranslation("expense");
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: cat.rowId,
-  });
-  const palette = getPaletteByColor(cat.color);
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
-  // 모바일은 편집 모드에서만 grip·드래그(디자인 editMode). 데스크톱은 항상.
-  const showGrip = !mobile || reorderMode;
-
-  return (
-    <div ref={setNodeRef} style={style} className={manageRowClass(mobile)}>
-      {showGrip && (
-        <button
-          type="button"
-          aria-label={t("dragReorder")}
-          {...attributes}
-          {...listeners}
-          style={{
-            cursor: "grab",
-            touchAction: "none",
-            background: "transparent",
-            border: 0,
-            color: "var(--fg-tertiary)",
-            padding: 0,
-            display: "inline-flex",
-          }}
-        >
-          <GripVertical size={16} />
-        </button>
-      )}
-      {/*
-        expand chevron 자리 — 부모·자식 모두 폭(18)을 예약한다.
-
-        화살표를 가진 부모만 이 폭을 먹으면 그 18 + gap 12 = 30 이 자식 들여쓰기
-        28 을 거의 그대로 상쇄해, 하위가 있는 부모(30)·없는 부모(0)·자식(28)이
-        전부 다른 지점에서 시작한다. 계층이 안 읽히는 이유다.
-        편집 모드에서 또렷한 건 grip 이 모든 행에 같은 폭을 만들어서다.
-
-        자리를 항상 잡아 두면 부모끼리 먼저 정렬되고, 그 위에 자식 28 이 온전히
-        들여쓰기로 남는다(사용자 결정). 편집 모드는 grip 이 그 역할을 하므로 제외.
-        18 = 아이콘 14 + 버튼 padding 2×2.
-      */}
-      {!reorderMode && (
-        <span
-          aria-hidden={!(isParent && hasChildren)}
-          style={{
-            width: 18,
-            flexShrink: 0,
-            display: "inline-flex",
-            justifyContent: "center",
-          }}
-        >
-          {isParent && hasChildren && (
-            <button
-              type="button"
-              onClick={onToggle}
-              aria-label={isCollapsed ? t("expand") : t("collapse")}
-              style={{
-                background: "transparent",
-                border: 0,
-                padding: 2,
-                cursor: "pointer",
-                color: "var(--fg-secondary)",
-                display: "inline-flex",
-              }}
-            >
-              {isCollapsed ? (
-                <ChevronRight size={14} />
-              ) : (
-                <ChevronDown size={14} />
-              )}
-            </button>
-          )}
-        </span>
-      )}
-      <span
-        style={{
-          ...MANAGE_ROW.iconStyle,
-          background: palette.bg,
-          color: palette.color,
+      {/* 하위가 있어 삭제가 막힘 — 고를 것이 없으니 확인 하나(acknowledge) */}
+      <AlertDialog
+        open={confirmDelete?.hasChildren === true}
+        onOpenChange={(open) => {
+          if (!open) {
+            focusRow(confirmDelete?.rowId ?? null);
+            setConfirmDelete(null);
+          }
         }}
       >
-        <Icon name={cat.icon ?? "tag"} size={18} strokeWidth={1.9} />
-      </span>
-      <div style={MANAGE_ROW.textStyle}>
-        <div style={MANAGE_ROW.labelStyle}>{cat.categoryName}</div>
-        <div style={MANAGE_ROW.metaStyle}>
-          {cat.expenseType === "EXPENSE" ? te("expense") : te("income")}
-          {isParent && hasChildren && (
-            <>
-              <span className="dot-sep" />
-              {t("hasSubcategories")}
-            </>
-          )}
-        </div>
-      </div>
-      {!mobile ? (
-        <div className={MANAGE_ROW.actionsClassName}>
-          {isParent && onAddChild && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onAddChild}
-              title={t("addSub")}
-            >
-              <Plus size={13} />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onEdit}
-            title={t("edit")}
-          >
-            <Pencil size={13} />
-          </Button>
-          <Button
-            aria-label={t("deleteTitle")}
-            variant="ghost"
-            size="icon"
-            className={MANAGE_ROW.delClassName}
-            onClick={onDelete}
-          >
-            <Trash2 size={13} />
-          </Button>
-        </div>
-      ) : reorderMode ? null : (
-        <button
-          type="button"
-          aria-label={t("editOf", { name: cat.categoryName })}
-          style={MANAGE_ROW.moreStyle}
-          onClick={onEdit}
-        >
-          <ChevronRight size={18} />
-        </button>
-      )}
-    </div>
+        {confirmDelete?.hasChildren && (
+          <AlertDialogContent>
+            <AlertDialogTitle>{t("deleteBlockedTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteHasChildren", { name: confirmDelete.categoryName })}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogAction>{tc("confirm")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
+
+      {/* 삭제 확인 — 거래가 남고 예산이 함께 지워진다는 서버 동작대로 말한다(처음 두 문장은 늘 같다) */}
+      <AlertDialog
+        open={confirmDelete != null && !confirmDelete.hasChildren}
+        onOpenChange={(open) => {
+          if (!open && !deleteMut.isPending) {
+            focusRow(confirmDelete?.rowId ?? null);
+            setConfirmDelete(null);
+          }
+        }}
+      >
+        {confirmDelete && !confirmDelete.hasChildren && (
+          <AlertDialogContent>
+            <AlertDialogTitle>
+              {t("deleteConfirm", { name: confirmDelete.categoryName })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteMessage")}
+              {recurringUsing(confirmDelete) > 0 &&
+                ` ${t("deleteRecurring", { count: recurringUsing(confirmDelete) })}`}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                variant="criticalSolid"
+                loading={deleteMut.isPending}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const next = neighborOf(confirmDelete.rowId);
+                  deleteMut.mutate(confirmDelete.rowId, {
+                    onSuccess: () => {
+                      setConfirmDelete(null);
+                      focusRow(next);
+                    },
+                  });
+                }}
+              >
+                {tc("delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
+
+      <AlertDialog
+        open={pendingMove != null}
+        onOpenChange={(open) => {
+          if (!open) setPendingMove(null);
+        }}
+      >
+        {pendingMove && (
+          <AlertDialogContent>
+            <AlertDialogTitle>{t("overBudgetTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("overBudgetMessage", {
+                parent: pendingMove.parentName,
+                amount: KRW(pendingMove.over),
+              })}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                loading={updateMut.isPending}
+                onClick={() => {
+                  doUpdate(pendingMove.id, pendingMove.values);
+                  setPendingMove(null);
+                }}
+              >
+                {t("move")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
+    </>
   );
 }

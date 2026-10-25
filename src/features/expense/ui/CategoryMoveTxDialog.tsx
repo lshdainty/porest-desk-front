@@ -1,46 +1,58 @@
-import { useId, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { Field, FieldLabel } from "@/shared/ui/field";
+import { Button } from "@/shared/ds/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Input } from "@/shared/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogCancel,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+} from "@/shared/ds/dialog";
+import { Field } from "@/shared/ds/field";
+import { Input } from "@/shared/ds/input";
+import { ListTile } from "@/shared/ds/list";
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "@/shared/ds/segmented-control";
+import { PickList } from "@/shared/ui/groo/pick-list";
+import { PickerRow } from "@/shared/ui/groo/picker-row";
+import { Icon } from "@/shared/ui/groo/primitives";
+import { isIconName } from "@/shared/lib";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import {
   useMoveCategoryTransactions,
   useSplitCategoryIntoChild,
 } from "@/features/expense";
 import type { ExpenseCategory } from "@/entities/expense";
 
+/** 새 하위 이름 상한 — 카테고리 이름 칸과 같은 12자(I-20 B 11) */
+const CHILD_NAME_MAX = 12;
+
 /**
- * 카테고리에 달린 거래를 다른 카테고리로 일괄 이동.
+ * 카테고리에 달린 거래를 다른 카테고리로 일괄 이동(D22). 목록 줄 ⋮ 의 "거래 옮기기" 에서 연다(I-20 B 11).
  *
  * <p>거래가 직접 달린 카테고리는 하위 분류를 만들 수 없다(거래는 말단에만 달 수 있어서).
- * 그 상태를 푸는 유일한 방법인데, 지금까지는 거래를 하나씩 편집하는 수밖에 없었다.
+ * 그 상태를 푸는 유일한 방법이다. 입력 폼 표면 — 1280 미만 시트 · 이상 대화상자 480.
+ * 주 버튼은 켜 두고, 비었으면 누를 때 그 칸 아래에 오류를 보인다. 요청 · 무효화 · 완료 알림은 옛 길 그대로다.
  */
 export function CategoryMoveTxDialog({
   source,
   categories,
-  mobile,
   onClose,
 }: {
   source: ExpenseCategory;
   categories: ExpenseCategory[];
-  mobile: boolean;
   onClose: () => void;
 }) {
-  const uid = useId(); // 옮길 카테고리 칸 이름 잇기
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
   const [targetRowId, setTargetRowId] = useState<number | null>(null);
   const [childName, setChildName] = useState("");
+  const [show, setShow] = useState({ name: false, target: false });
+  const nameRef = useRef<HTMLInputElement>(null);
+  const targetRef = useRef<HTMLButtonElement>(null);
   const moveMut = useMoveCategoryTransactions();
   const splitMut = useSplitCategoryIntoChild();
 
@@ -68,13 +80,11 @@ export function CategoryMoveTxDialog({
     );
   }, [categories, source]);
 
-  const labelOf = (c: ExpenseCategory) => {
-    const parent =
-      c.parentRowId != null
-        ? categories.find((p) => p.rowId === c.parentRowId)?.categoryName
-        : null;
-    return parent ? `${parent} > ${c.categoryName}` : c.categoryName;
-  };
+  const parentNameOf = (c: ExpenseCategory) =>
+    c.parentRowId != null
+      ? categories.find((p) => p.rowId === c.parentRowId)?.categoryName
+      : undefined;
+  const target = options.find((c) => c.rowId === targetRowId);
 
   const done = (r: { expenses: number; recurring: number; splits: number }) => {
     toast.success(
@@ -84,12 +94,17 @@ export function CategoryMoveTxDialog({
   };
 
   const nameTrim = childName.trim();
-  const canSubmit = mode === "new" ? nameTrim.length > 0 : targetRowId != null;
   const submitting = moveMut.isPending || splitMut.isPending;
+  const dirty = nameTrim.length > 0 || targetRowId != null;
 
   const submit = () => {
-    if (!canSubmit) return;
+    if (submitting) return;
     if (mode === "new") {
+      if (nameTrim.length === 0) {
+        setShow((s) => ({ ...s, name: true }));
+        nameRef.current?.focus();
+        return;
+      }
       splitMut.mutate(
         {
           id: source.rowId,
@@ -101,112 +116,144 @@ export function CategoryMoveTxDialog({
       );
       return;
     }
+    if (targetRowId == null) {
+      setShow((s) => ({ ...s, target: true }));
+      targetRef.current?.focus();
+      return;
+    }
     moveMut.mutate(
-      { id: source.rowId, targetCategoryRowId: targetRowId! },
+      { id: source.rowId, targetCategoryRowId: targetRowId },
       { onSuccess: done },
     );
     // onError: 전역 인터셉터가 서버 메시지를 토스트로 노출
   };
 
   return (
-    <ModalShell
-      title={t("moveTx.title")}
-      onClose={onClose}
-      size="sm"
-      mobile={mobile}
-      footer={
-        <ModalFooter
-          onCancel={onClose}
-          cancelLabel={tc("cancel")}
-          onSave={submit}
-          saveLabel={t("moveTx.action")}
-          saving={submitting}
-          saveDisabled={!canSubmit}
-        />
-      }
+    <ResponsiveDialog
+      open
+      form
+      dirty={dirty}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      <p
-        style={{
-          fontSize: "var(--text-body-sm)",
-          color: "var(--fg-secondary)",
-          marginBottom: 14,
+      <ResponsiveDialogContent
+        title={t("moveTx.title")}
+        description={t("moveTx.desc", { name: source.categoryName })}
+        onOpenAutoFocus={(e) => {
+          if (mode !== "new") return;
+          e.preventDefault();
+          nameRef.current?.focus({ preventScroll: true });
         }}
       >
-        {t("moveTx.desc", { name: source.categoryName })}
-      </p>
-
-      {canSplit && (
-        <Tabs
-          value={mode}
-          onValueChange={(v) => v && setMode(v as typeof mode)}
-          className="mb-[14px]"
-        >
-          <TabsList variant="pill" size="sm" className="w-full">
-            <TabsTrigger value="new" className="flex-1">
-              {t("moveTx.modeNew")}
-            </TabsTrigger>
-            <TabsTrigger value="existing" className="flex-1">
-              {t("moveTx.modeExisting")}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      )}
-
-      {mode === "new" ? (
-        <Field>
-          <FieldLabel>{t("moveTx.childName")}</FieldLabel>
-          <Input
-            value={childName}
-            onChange={(e) => setChildName(e.target.value)}
-            placeholder={t("moveTx.childPlaceholder")}
-            maxLength={14}
-            autoFocus
-          />
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              color: "var(--fg-tertiary)",
-              marginTop: 4,
-            }}
-          >
-            {t("moveTx.newHint", { name: source.categoryName })}
-          </div>
-        </Field>
-      ) : (
-        <Field>
-          <FieldLabel id={`${uid}target-label`}>
-            {t("moveTx.target")}
-          </FieldLabel>
-          <Select
-            value={targetRowId != null ? String(targetRowId) : ""}
-            onValueChange={(v) => setTargetRowId(v ? Number(v) : null)}
-            disabled={options.length === 0}
-          >
-            <SelectTrigger
-              id={`${uid}target`}
-              aria-labelledby={`${uid}target-label ${uid}target`}
+        <ResponsiveDialogBody>
+          {canSplit && (
+            <SegmentedControl
+              aria-label={t("moveTx.mode")}
+              value={mode}
+              onValueChange={(v) => setMode(v as typeof mode)}
+              className="mb-x6"
             >
-              <SelectValue placeholder={t("moveTx.targetPlaceholder")} />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((c) => (
-                <SelectItem key={c.rowId} value={String(c.rowId)}>
-                  {labelOf(c)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              color: "var(--fg-tertiary)",
-              marginTop: 4,
-            }}
-          >
-            {options.length === 0 ? t("moveTx.noTarget") : t("moveTx.hint")}
-          </div>
-        </Field>
-      )}
-    </ModalShell>
+              <SegmentedControlItem value="new">
+                {t("moveTx.modeNew")}
+              </SegmentedControlItem>
+              <SegmentedControlItem value="existing">
+                {t("moveTx.modeExisting")}
+              </SegmentedControlItem>
+            </SegmentedControl>
+          )}
+          {mode === "new" ? (
+            <Field
+              label={t("moveTx.childName")}
+              maxGraphemeCount={CHILD_NAME_MAX}
+              description={t("moveTx.newHint", { name: source.categoryName })}
+              invalid={show.name && nameTrim.length === 0}
+              errorMessage={t("moveTx.errChildName")}
+            >
+              <Input
+                ref={nameRef}
+                value={childName}
+                placeholder={t("moveTx.childPlaceholder")}
+                autoComplete="off"
+                onChange={(e) => {
+                  setChildName(e.target.value);
+                  setShow((s) => ({ ...s, name: false }));
+                }}
+              />
+            </Field>
+          ) : (
+            <div>
+              <div className="-mx-x6">
+                <PickerRow
+                  ref={targetRef}
+                  title={t("moveTx.target")}
+                  value={target?.categoryName}
+                  placeholder={t("moveTx.targetPlaceholder")}
+                  dot={
+                    target ? getPaletteByColor(target.color).color : undefined
+                  }
+                  surfaceTitle={t("moveTx.target")}
+                  errorMessage={
+                    show.target && targetRowId == null
+                      ? t("moveTx.errTarget")
+                      : null
+                  }
+                >
+                  {({ close }) =>
+                    options.length === 0 ? (
+                      <p className="m-0 py-x3 font-sans text-t4 text-fg-neutral-subtle">
+                        {t("moveTx.noTarget")}
+                      </p>
+                    ) : (
+                      <PickList
+                        label={t("moveTx.target")}
+                        selected={
+                          targetRowId != null ? String(targetRowId) : null
+                        }
+                        items={options.map((c) => {
+                          const palette = getPaletteByColor(c.color);
+                          return {
+                            value: String(c.rowId),
+                            title: c.categoryName,
+                            detail: parentNameOf(c),
+                            prefix: (
+                              <ListTile
+                                style={{
+                                  background: palette.bg,
+                                  color: palette.color,
+                                }}
+                              >
+                                <Icon
+                                  name={isIconName(c.icon) ? c.icon : "tag"}
+                                  size={20}
+                                />
+                              </ListTile>
+                            ),
+                          };
+                        })}
+                        onPick={(v) => {
+                          setTargetRowId(Number(v));
+                          setShow((s) => ({ ...s, target: false }));
+                          close();
+                        }}
+                      />
+                    )
+                  }
+                </PickerRow>
+              </div>
+              <p className="m-0 mt-x1_5 font-sans text-t4 text-fg-neutral-subtle">
+                {options.length === 0 ? t("moveTx.noTarget") : t("moveTx.hint")}
+              </p>
+            </div>
+          )}
+        </ResponsiveDialogBody>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCancel>{tc("cancel")}</ResponsiveDialogCancel>
+          <Button loading={submitting} onClick={submit}>
+            {t("moveTx.action")}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

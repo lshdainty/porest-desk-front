@@ -32,6 +32,10 @@ import {
   DIALOG_FOOTER,
   DIALOG_HEADER,
   DIALOG_HEADER_WITH_CLOSE,
+  DIALOG_HEADER_WITH_ACTION,
+  DIALOG_HEADER_WITH_ACTION_CLOSE,
+  DIALOG_HEADER_ACTION,
+  DIALOG_HEADER_ACTION_CLOSE,
   DIALOG_OVERLAY,
   DIALOG_SIZE,
   DIALOG_TITLE,
@@ -188,6 +192,8 @@ export interface DialogContentProps extends Omit<
   description?: React.ReactNode;
   /** medium 480(기본) — 일반 입력 폼 · 상세, large 800 — 복잡한 설정 · 많은 조회 */
   size?: keyof typeof DIALOG_SIZE;
+  /** 머리 오른쪽 동작 하나 — ghost iconOnly 36 단추(⋮ "{항목 이름} 더보기"). 닫기 단추가 있으면 그 왼쪽 사이 4, 없으면(입력 폼) 오른쪽 끝. 제목은 남은 폭에서 줄을 바꾼다 */
+  headerAction?: React.ReactNode;
 }
 
 const DialogContent = React.forwardRef<
@@ -205,6 +211,7 @@ const DialogContent = React.forwardRef<
       onOpenAutoFocus,
       onCloseAutoFocus,
       onInteractOutside,
+      headerAction,
       ...props
     },
     ref,
@@ -275,6 +282,10 @@ const DialogContent = React.forwardRef<
               className={cn(
                 DIALOG_HEADER,
                 showClose && DIALOG_HEADER_WITH_CLOSE,
+                headerAction != null &&
+                  (showClose
+                    ? DIALOG_HEADER_WITH_ACTION_CLOSE
+                    : DIALOG_HEADER_WITH_ACTION),
               )}
             >
               <DialogPrimitive.Title
@@ -290,6 +301,18 @@ const DialogContent = React.forwardRef<
                 >
                   {description}
                 </DialogPrimitive.Description>
+              )}
+              {headerAction != null && (
+                <div
+                  data-slot="dialog-header-action"
+                  className={
+                    showClose
+                      ? DIALOG_HEADER_ACTION_CLOSE
+                      : DIALOG_HEADER_ACTION
+                  }
+                >
+                  {headerAction}
+                </div>
               )}
               {showClose && (
                 <DialogPrimitive.Close
@@ -451,6 +474,8 @@ export interface ResponsiveDialogContentProps extends Omit<
   description?: React.ReactNode;
   /** 대화상자의 폭 — medium 480(기본) | large 800. 시트는 최대 480 */
   size?: keyof typeof DIALOG_SIZE;
+  /** 머리 오른쪽 동작 하나(ghost iconOnly 36) — 시트 · 대화상자 모두 */
+  headerAction?: React.ReactNode;
   /** 열릴 때 초점 — 기본은 표면(컨테이너). 폼이 첫 칸에 초점을 줄 때 e.preventDefault() 하고 직접 옮긴다(두 표면 모두 같다) */
   onOpenAutoFocus?: (event: Event) => void;
 }
