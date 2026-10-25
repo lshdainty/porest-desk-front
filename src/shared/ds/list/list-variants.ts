@@ -151,9 +151,10 @@ export const listBodyVariants = cva(
   "flex min-w-[calc(var(--text-t5)+var(--spacing-x2_5))] flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
 );
 
+// 제목 색이 바뀔 때만(끝냄 · 막힘 · 강조) 150ms 색 전환(앱 List 와 같은 값 — 처음 그림은 바뀌는 게 없어 모션 없음, 모션 줄이기면 전환 없음).
 // 제목 · 글 설명 — 평소엔 단어 단위, 본문이 낱말 하나보다 좁아질 때만 글자 사이에서 끊는다(overflow-wrap: anywhere)
 export const listTitleVariants = cva(
-  "font-sans text-t5 font-normal [overflow-wrap:anywhere]",
+  "font-sans text-t5 font-normal [overflow-wrap:anywhere] [transition:color_var(--motion-duration-color-transition)_var(--motion-ease-easing)] motion-reduce:transition-none",
   {
     variants: {
       disabled: { true: "text-fg-disabled", false: "text-fg-neutral" },
