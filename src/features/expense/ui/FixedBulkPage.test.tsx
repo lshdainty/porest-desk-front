@@ -16,20 +16,27 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 const mutate = vi.fn();
+const refetch = vi.fn();
+const qState = { error: false };
 vi.mock("../model/useExpenses", () => ({
   useExpenses: () => ({
     isLoading: false,
-    data: [
-      {
-        rowId: 1,
-        expenseType: "EXPENSE",
-        amount: 1_234_567_890,
-        description: "월세",
-        merchant: "월세 아주 긴 이름의 거래처 이십사 글자를 넘기는 이름이에요",
-        isFixed: false,
-        expenseDate: "2026-10-01T09:00:00",
-      },
-    ],
+    isError: qState.error,
+    refetch,
+    data: qState.error
+      ? undefined
+      : [
+          {
+            rowId: 1,
+            expenseType: "EXPENSE",
+            amount: 1_234_567_890,
+            description: "월세",
+            merchant:
+              "월세 아주 긴 이름의 거래처 이십사 글자를 넘기는 이름이에요",
+            isFixed: false,
+            expenseDate: "2026-10-01T09:00:00",
+          },
+        ],
   }),
   useBulkMarkFixed: () => ({ mutate, isPending: false }),
 }));
@@ -45,6 +52,7 @@ beforeEach(() => {
   root = createRoot(container);
 });
 afterEach(() => {
+  qState.error = false;
   act(() => root.unmount());
   container.remove();
 });
@@ -92,5 +100,27 @@ describe("폰 고정 정리 페이지", () => {
     expect(apply.disabled).toBe(false);
     act(() => apply.click());
     expect(mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it("거래 질의가 실패하면 빈 목록 글이 아니라 실패 상자 + 다시 시도", () => {
+    qState.error = true;
+    act(() =>
+      root.render(
+        <FixedBulkPage
+          startDate="2026-10-01"
+          endDate="2026-10-31"
+          onClose={() => {}}
+        />,
+      ),
+    );
+    const page = document.querySelector("[data-slot=fixed-bulk-page]")!;
+    expect(page.textContent).toContain("fixed.bulk.loadFailed");
+    expect(page.textContent).not.toContain("fixed.bulk.empty");
+    const retry = page.querySelector(
+      "[data-slot=result-section] button",
+    ) as HTMLButtonElement | null;
+    expect(retry).not.toBeNull();
+    act(() => retry!.click());
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 });

@@ -12,6 +12,7 @@ import {
   TopNavigationBackButton,
   TopNavigationTitle,
 } from "@/shared/ds/top-navigation";
+import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { useBackClose } from "@/shared/lib/groo/use-back-close";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import type { ExpenseType } from "@/entities/expense";
@@ -98,6 +99,14 @@ export function FixedBulkPage({
               {[0, 1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-[52px] w-full" radius="12" />
               ))}
+            </div>
+          ) : q.isError && !q.data ? (
+            // 실패는 빈 목록이 아니다 — 불러오지 못했다고 말하고 다시 시도(I-08 41 과 같은 규칙)
+            <div className="px-x6">
+              <BandFailure
+                title={t("fixed.bulk.loadFailed")}
+                onRetry={() => void q.refetch()}
+              />
             </div>
           ) : groups.length === 0 ? (
             <p className="m-0 py-x8 text-center text-t3 text-fg-neutral-subtle">
