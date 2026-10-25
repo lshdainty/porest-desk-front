@@ -329,6 +329,14 @@ function TodoTagManagerDesktop() {
           existing={list}
           onClose={() => setEditing(null)}
           onSave={onSave}
+          onDelete={
+            editing && "rowId" in editing
+              ? () => {
+                  setConfirmDelete(editing);
+                  setEditing(null);
+                }
+              : undefined
+          }
           submitting={submitting}
         />
       )}

@@ -198,4 +198,37 @@ describe("TodoTagManager", () => {
     expect(rs?.textContent).toContain("태그가 없어요");
     expect(rs?.querySelector("button")).toBeNull();
   });
+
+  it("폰 — 수정 시트에 [삭제] 가 있어 키보드 · 낭독기로도 지운다(밀기만이 아니다) · 새 태그에는 없다", () => {
+    state.tags = [tagOf(1, "운동", 3)];
+    render(true);
+
+    const row = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-slot=list-body]"),
+    ).find((b) => b.textContent?.includes("운동"))!;
+    act(() => row.click());
+    const del = Array.from(document.body.querySelectorAll("button")).find(
+      (b) => b.textContent === "삭제" && !b.getAttribute("aria-label"),
+    );
+    expect(del).toBeTruthy();
+    act(() => del!.click());
+
+    // 시트는 닫히고 확인창이 한 번 묻는다 — 지금 지운다는 말과 사용 수
+    expect(document.body.querySelector("[role=alertdialog]")).toBeTruthy();
+    const text = screenText();
+    expect(text).toContain('"운동" 태그를 삭제하면');
+    expect(text).toContain("할 일 3건은 태그 없음으로 남아요");
+  });
+
+  it("폰 — 새 태그 시트에는 [삭제] 가 없다", () => {
+    render(true);
+    const add = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent === "태그 추가",
+    )!;
+    act(() => add.click());
+    const del = Array.from(document.body.querySelectorAll("button")).find(
+      (b) => b.textContent === "삭제",
+    );
+    expect(del).toBeFalsy();
+  });
 });

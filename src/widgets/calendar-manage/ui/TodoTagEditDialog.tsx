@@ -27,12 +27,15 @@ export function TagEditDialog({
   existing,
   onClose,
   onSave,
+  onDelete,
   submitting,
 }: {
   tag: TodoTag | null;
   existing: TodoTag[];
   onClose: () => void;
   onSave: (values: { tagName: string; color: string }) => void;
+  /** 수정일 때만 — 키보드 · 낭독기로 닿는 삭제 길(밀기는 손가락뿐). 확인은 부르는 쪽이 한 번 묻는다 */
+  onDelete?: () => void;
   submitting?: boolean;
 }) {
   const { t } = useTranslation("todo");
@@ -136,6 +139,17 @@ export function TagEditDialog({
                 }))}
               />
             </Field>
+            {!isNew && onDelete && (
+              <Button
+                variant="ghost"
+                ghostColor="critical"
+                size="medium"
+                className="self-start"
+                onClick={onDelete}
+              >
+                {tc("delete")}
+              </Button>
+            )}
           </div>
         </ResponsiveDialogBody>
         <ResponsiveDialogFooter>

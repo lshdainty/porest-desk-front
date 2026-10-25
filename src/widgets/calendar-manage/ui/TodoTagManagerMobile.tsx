@@ -162,6 +162,14 @@ export function TodoTagManagerMobile() {
           existing={list}
           onClose={() => setEditing(null)}
           onSave={onSave}
+          onDelete={
+            editing && "rowId" in editing
+              ? () => {
+                  setAskDelete(editing);
+                  setEditing(null);
+                }
+              : undefined
+          }
           submitting={submitting}
         />
       )}
