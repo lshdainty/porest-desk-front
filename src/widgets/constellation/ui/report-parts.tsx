@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, Telescope } from "lucide-react";
 import { Badge } from "@/shared/ds/badge";
 import { Button } from "@/shared/ds/button";
-import { CardHeader, CardTitle } from "@/shared/ds/card";
 import { List, ListItem } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { cn } from "@/shared/lib/cn";
@@ -15,61 +14,18 @@ import type { TodoPriority } from "@/entities/todo";
 import { PRIO_COLOR, PRIO_ORDER, WEIGHT } from "../lib/week";
 import type { ReportModel } from "../model/use-report-model";
 import { ConstellationSVG } from "./ConstellationSVG";
+import {
+  HeadNote,
+  SectionBody,
+  SectionHead,
+  type Place,
+} from "./section-parts";
 
 /*
  * 관측 리포트의 구역 부품(I-11 16 ~ 21) — 폰 흰 면(band)과 데스크톱 카드(card)가 같은 내용을 같은 부품으로 그린다.
  * 흰 면 안은 구역 제목 위 20 · 좌우 24 · 제목 ↔ 본문 8, 본문 아래 16 — 앞 구역 끝 16 + 다음 제목 위 20 = 36(T8). 테두리 카드 0.
  * 카드 안은 ds Card 머리(위 24 · 좌우 24 · 아래 8)와 본문 24 그대로다.
  */
-export type Place = "band" | "card";
-
-function SectionHead({
-  place,
-  title,
-  aside,
-}: {
-  place: Place;
-  title: ReactNode;
-  aside?: ReactNode;
-}) {
-  if (place === "card")
-    return (
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {aside}
-      </CardHeader>
-    );
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-x2 px-x6 pb-x1 pt-x5">
-      <CardTitle>{title}</CardTitle>
-      {aside}
-    </div>
-  );
-}
-
-/** 오른쪽 보조 글 — t4 · fg-neutral-subtle · 고정폭 */
-function HeadNote({ children }: { children: ReactNode }) {
-  return (
-    <span className="shrink-0 text-t4 tabular-nums text-fg-neutral-subtle">
-      {children}
-    </span>
-  );
-}
-
-function SectionBody({
-  place,
-  children,
-}: {
-  place: Place;
-  children: ReactNode;
-}) {
-  return place === "band" ? (
-    <div className="px-x6 pb-x4 pt-x1">{children}</div>
-  ) : (
-    <>{children}</>
-  );
-}
-
 // ── 주 고르기 · 날 줄 · 날짜 줄 (16) ─────────────────────────────────
 /**
  * 주 고르기 + 날 줄 7칸 + 날짜 줄 — 페이지를 조절하는 줄이라 첫 내용(관측 결과)과 한 덩어리다(위 4, 날짜 줄 아래 16 은 결과가 준다).
@@ -267,6 +223,7 @@ export function StarlightSection({
     <section>
       <SectionHead
         place={place}
+        top="5"
         title={t("report.starlight")}
         aside={
           <Badge variant="weak" tone="positive">
@@ -276,7 +233,7 @@ export function StarlightSection({
           </Badge>
         }
       />
-      <SectionBody place={place}>
+      <SectionBody place={place} bottom="4" top="1">
         <dl
           className={cn(
             "m-0 grid gap-x4",
@@ -332,8 +289,8 @@ export function AnalysisSection({
   ];
   return (
     <section>
-      <SectionHead place={place} title={t("report.analysis")} />
-      <SectionBody place={place}>
+      <SectionHead place={place} title={t("report.analysis")} top="5" />
+      <SectionBody place={place} bottom="4" top="1">
         <ul className="m-0 mb-x4 flex list-none flex-col gap-x1_5 p-0">
           {legend.map((l) => (
             <li key={l.key} className="flex items-baseline gap-x2">
@@ -428,6 +385,7 @@ export function MissedSection({ m, place }: { m: ReportModel; place: Place }) {
     <section>
       <SectionHead
         place={place}
+        top="5"
         title={t("report.missed")}
         aside={
           m.missed.length > 0 ? (

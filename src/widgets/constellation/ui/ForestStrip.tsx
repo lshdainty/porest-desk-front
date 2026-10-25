@@ -1,73 +1,59 @@
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Sparkles } from "lucide-react";
-import { Card } from "@/shared/ui/card";
+import { ChevronRight } from "lucide-react";
+import { Card } from "@/shared/ds/card";
+import { List, ListButtonItem, ListTile } from "@/shared/ds/list";
+import { cn } from "@/shared/lib/cn";
 import {
   constellationName,
   type ConstellationToday,
 } from "@/features/constellation";
+import { SKY_BG } from "../lib/sky";
 import { ConstellationSVG } from "./ConstellationSVG";
 
 /**
- * 밤하늘 상태 스트립 — 할일 화면의 유일한 게임 요소(슬림 진입점).
- * 탭 → 밤하늘 화면(NightSkyPanel). 디자인 SoT: forest-report.jsx ForestStrip.
+ * 밤하늘 줄(I-11 5) — 1280 왼쪽 칸의 입구. ds Card `body="list"` 안 누르는 줄 하나: 앞 하늘 타일 40(별자리 선 24) ·
+ * 제목 "오늘의 밤하늘 · {이름}"(수집했으면 "{이름} 수집 완료!") · 설명 "별빛 {lit}/{goal} · 연속 {n}일" · 뒤 꺾쇠. 누르면 밤하늘 화면.
  */
 export function ForestStrip({
   today,
-  mobile,
   onOpen,
 }: {
   today: ConstellationToday;
-  mobile: boolean;
   onOpen: () => void;
 }) {
   const { t, i18n } = useTranslation("constellation");
   const lit = Math.min(today.points, today.goal);
-  const done = today.collected;
   const name = constellationName(today.constellation, i18n.language);
-
-  const body = (
-    <button type="button" className="fstrip" onClick={onOpen}>
-      <span className="fstrip__art">
-        <ConstellationSVG
-          starMap={today.constellation.starMap}
-          size={24}
-          lit={lit}
-          dim={!done}
+  return (
+    <Card body="list" data-slot="forest-strip">
+      <List>
+        <ListButtonItem
+          onClick={onOpen}
+          prefix={
+            <ListTile
+              aria-hidden
+              className={cn("text-fg-neutral-inverted", SKY_BG)}
+            >
+              <ConstellationSVG
+                starMap={today.constellation.starMap}
+                size={24}
+                lit={today.collected ? undefined : lit}
+              />
+            </ListTile>
+          }
+          title={
+            today.collected
+              ? t("strip.done", { name })
+              : t("strip.title", { name })
+          }
+          detail={t("strip.desc", {
+            lit,
+            goal: today.goal,
+            count: today.streak,
+          })}
+          suffix={<ChevronRight aria-hidden />}
         />
-      </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span
-          style={{
-            display: "block",
-            fontSize: 14,
-            fontWeight: 700,
-            color: "var(--fg-primary)",
-            letterSpacing: "-0.01em",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {done ? t("strip.done", { name }) : t("strip.title", { name })}
-        </span>
-        <span className="fstrip__meter">
-          {Array.from({ length: today.goal }, (_, i) => (
-            <i key={i} className={i < lit ? "on" : ""} />
-          ))}
-          <em className="num">
-            {lit}/{today.goal}
-          </em>
-        </span>
-      </span>
-      <span className="fstrip__streak">
-        <Sparkles size={11} strokeWidth={2.2} />{" "}
-        {t("strip.streak", { count: today.streak })}
-      </span>
-      <ChevronRight size={16} color="var(--fg-tertiary)" />
-    </button>
+      </List>
+    </Card>
   );
-
-  // 모바일 카드 다이어트 — 카드 벗김. 데스크톱은 Card(padding 0) 셸.
-  if (mobile) return body;
-  return <Card style={{ padding: 0, overflow: "hidden" }}>{body}</Card>;
 }

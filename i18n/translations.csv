@@ -2418,6 +2418,10 @@ constellation,hero.guardInfo,보호 {{count}} · 중요 +3 · 보통 +2 · 여�
 constellation,mySky.title,나의 밤하늘,My Night Sky
 constellation,mySky.total,누적 {{count}}개,{{count}} collected
 constellation,mySky.subtitle,최근 2주 · 흐린 밤도 기록에 남아요,Last 2 weeks · cloudy nights count too
+constellation,mySky.cellToday,"{{date}}, 오늘","{{date}}, today"
+constellation,mySky.cellCollected,"{{date}}, 수집 {{name}}","{{date}}, collected {{name}}"
+constellation,mySky.cellCloudy,"{{date}}, 흐린 밤","{{date}}, cloudy night"
+constellation,mySky.cellRest,"{{date}}, 쉰 밤","{{date}}, rest night"
 constellation,collection.title,별자리 도감,Constellation Collection
 constellation,collection.progress,{{collected}}/{{total}} 수집,{{collected}}/{{total}} collected
 constellation,collection.subtitle,별 개수만큼 별빛을 모으면 수집돼요,Gather starlight equal to the stars to collect
@@ -2575,7 +2579,7 @@ todo,tdm.insightProgress,별빛 {{lit}}/{{goal}} · {{left}}개 더 모으면 {{
 todo,tdm.insightDone,{{name}} 수집 완료 · 연속 {{streak}}일,{{name}} collected · {{streak}}-day streak
 todo,tdm.nightSky,밤하늘,Night sky
 todo,tdm.report,관측 리포트,Observation report
-todo,tdm.collection,도감 · 기록,Collection · log
+todo,tdm.collection,밤하늘,Night sky
 todo,tdm.countN,{{count}}건,{{count}}
 todo,tdm.noDue,마감일 없음,No due date
 todo,tdm.doneRatio,{{done}}/{{total}} 완료,{{done}}/{{total}} done
@@ -2666,6 +2670,18 @@ constellation,report.legendMemo,메모 별빛,Memo starlight
 constellation,report.barsName,요일별 별빛,Starlight by weekday
 constellation,report.stampName,{{count}}일째 연속 관측,Day {{count}} of your streak
 constellation,report.loadFailed,관측 리포트를 불러오지 못했어요,Couldn't load the observation report
+constellation,report.rowName,"관측 리포트, 오늘의 목표 {{name}}","Observation report, today's constellation {{name}}"
+constellation,fail.today,밤하늘을 불러오지 못했어요,Couldn't load the night sky
+constellation,fail.sky,나의 밤하늘을 불러오지 못했어요,Couldn't load your night sky
+constellation,fail.collection,별자리 도감을 불러오지 못했어요,Couldn't load the constellation collection
+constellation,strip.desc,별빛 {{lit}}/{{goal}} · 연속 {{count}}일,Starlight {{lit}}/{{goal}} · {{count}}-day streak
+constellation,collection.viewOwnedNamed,{{name}} 감상하기,View {{name}}
+constellation,collection.viewLockedNamed,{{name}} 미리보기,Preview {{name}}
+constellation,detail.skyName,{{name}} 별자리 그림,Constellation {{name}} drawing
+constellation,detail.starCountLabel,별 개수,Stars
+constellation,detail.starCountValue,{{count}}개,{{count}}
+constellation,detail.collectLabel,수집,Collected
+constellation,detail.collectValue,{{count}}번,{{count}} times
 constellation,collection.badgeNew,NEW,NEW
 constellation,collection.viewOwned,감상하기,View
 constellation,collection.viewLocked,미리보기,Preview

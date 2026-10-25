@@ -59,7 +59,6 @@ vi.mock("@/features/constellation", () => ({
 }));
 vi.mock("@/widgets/constellation", () => ({
   ForestStrip: () => null,
-  NightSkyPanel: () => null,
 }));
 vi.mock("./TodoMobileLedger", () => ({ TodoMobileLedger: () => null }));
 

@@ -16,10 +16,8 @@ import {
   WeekPicker,
   useReportModel,
 } from "@/widgets/constellation";
+import { NIGHT_SKY_PATH } from "@/shared/config";
 import { DesktopFrame } from "./DesktopFrame";
-
-export const NIGHT_SKY_PATH = "/desk/todo/night-sky";
-export const REPORT_PATH = "/desk/todo/night-sky/report";
 
 type OutletCtx = { mobile: boolean };
 

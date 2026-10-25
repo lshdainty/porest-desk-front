@@ -15,7 +15,8 @@ import {
   useConstellationSky,
   useConstellationToday,
 } from "@/features/constellation";
-import { ForestStrip, NightSkyPanel } from "@/widgets/constellation";
+import { ForestStrip } from "@/widgets/constellation";
+import { NIGHT_SKY_PATH, REPORT_PATH } from "@/shared/config";
 import { isDone } from "@/pages/todo/model/todo-ledger";
 import { todoTagOptions } from "@/pages/todo/lib/todo-tags";
 import { TodoMobileLedger } from "./TodoMobileLedger";
@@ -97,10 +98,10 @@ const TodoPageInner = ({
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null);
   // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
   const [viewing, setViewing] = useState<Todo | null>(null);
-  // 밤하늘 화면 오버레이(관측 리포트는 주소로 열린다 — 덮개가 아니라 화면)
-  const [nightSky, setNightSky] = useState(false);
+  // 밤하늘 · 관측 리포트는 주소로 열린다 — 덮개 · 대화상자가 아니라 화면(I-11 3)
   const navigate = useNavigate();
-  const openReport = () => navigate("/desk/todo/night-sky/report");
+  const openNightSky = () => navigate(NIGHT_SKY_PATH);
+  const openReport = () => navigate(REPORT_PATH);
   // 별빛 획득 토스트 — 완료 시 "+N · 수집까지 N별"
   const [starToast, setStarToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -145,11 +146,7 @@ const TodoPageInner = ({
 
   // ── 밤하늘 진입점 — 스트립(데스크톱)·토글(모바일 원장). 상세는 오버레이 화면 ──
   const Strip = constellationTodayQ.data ? (
-    <ForestStrip
-      today={constellationTodayQ.data}
-      mobile={mobile}
-      onOpen={() => setNightSky(true)}
-    />
+    <ForestStrip today={constellationTodayQ.data} onOpen={openNightSky} />
   ) : null;
   const overlays = (
     <>
@@ -157,14 +154,6 @@ const TodoPageInner = ({
         <div className="star-toast">
           <Sparkles size={14} /> {starToast}
         </div>
-      )}
-      {nightSky && (
-        <NightSkyPanel
-          mobile={mobile}
-          doneToday={doneToday}
-          onClose={() => setNightSky(false)}
-          onOpenReport={openReport}
-        />
       )}
     </>
   );
@@ -224,7 +213,7 @@ const TodoPageInner = ({
             // 밀기 액션 — 상세 footer 의 수정·삭제와 같은 목적지·같은 뮤테이션.
             onEdit={setEditing}
             onDelete={(td) => deleteTodo.mutateAsync(td.rowId)}
-            openNightSky={() => setNightSky(true)}
+            openNightSky={openNightSky}
             openReport={openReport}
           />
           <FloatingActionButton
@@ -258,7 +247,7 @@ const TodoPageInner = ({
         sky={skyQ.data ?? []}
         constellationToday={constellationTodayQ.data}
         doneToday={doneToday}
-        openNightSky={() => setNightSky(true)}
+        openNightSky={openNightSky}
         openReport={openReport}
       />
       {dialog}

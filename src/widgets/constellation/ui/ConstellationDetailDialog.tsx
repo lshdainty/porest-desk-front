@@ -1,16 +1,23 @@
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Lock } from "lucide-react";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogContent,
+} from "@/shared/ds/dialog";
+import { List, ListItem } from "@/shared/ds/list";
 import {
   constellationDesc,
   constellationName,
   type CollectionEntry,
 } from "@/features/constellation";
+import { SKY_BG } from "../lib/sky";
 import { ConstellationSVG } from "./ConstellationSVG";
+import { cn } from "@/shared/lib/cn";
 
 /**
- * 별자리 상세 감상 — 밤하늘 패널에 실제 모양(수집=점등, 미수집=실루엣) + 수집 이력.
- * 반응형은 ModalShell(데스크탑 modal / 모바일 sheet) 재사용. 디자인 SoT: forest.jsx ConstellationDetail.
+ * 별자리 상세(I-11 23, D09 · Q2-A) — ds Responsive Dialog **조회**(1280 이상 대화상자 480 · 미만 Bottom Sheet). 제목 = 별자리 이름,
+ * 하늘 패널(높이 240 · 모서리 16 · 별자리 그림 180) + 설명 + 키-값 줄 둘("별 개수" · "수집"). 바깥 누름 · 끌어내림으로 닫히고 바닥 버튼이 없다.
+ * 잔별 · 선 · 점등 별은 `aria-hidden` 장식이라 투명도를 남기고(하늘 그림 8 과 같은 규칙), 못 모은 별자리의 안내 글만 `fg-neutral-inverted` 불투명이다.
  */
 const SKY_DIM_STARS: [number, number][] = [
   [5, 18],
@@ -32,11 +39,9 @@ const SKY_DIM_STARS: [number, number][] = [
 export function ConstellationDetailDialog({
   entry,
   onClose,
-  mobile,
 }: {
   entry: CollectionEntry;
   onClose: () => void;
-  mobile: boolean;
 }) {
   const { t, i18n } = useTranslation("constellation");
   const collected = entry.collectCount > 0;
@@ -44,122 +49,103 @@ export function ConstellationDetailDialog({
   const description = constellationDesc(entry.constellation, i18n.language);
 
   return (
-    <ModalShell
-      title={t("detail.title")}
-      onClose={onClose}
-      size="sm"
-      mobile={mobile}
+    <ResponsiveDialog
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      {/* 밤하늘 감상 패널 — 고정 다크 팔레트 (라이트/다크 공통) */}
-      <div
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          borderRadius: "var(--radius-lg)",
-          background: "var(--color-bg-neutral-inverted)",
-          height: 240,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {SKY_DIM_STARS.map(([x, y], i) => (
-          <span
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${x}%`,
-              top: `${y}%`,
-              width: i % 3 === 0 ? 2.5 : 1.5,
-              height: i % 3 === 0 ? 2.5 : 1.5,
-              borderRadius: 999,
-              background:
-                "color-mix(in srgb, var(--color-fg-neutral-inverted) 30%, transparent)",
-              transform: "translate(-50%, -50%)",
-            }}
-          />
-        ))}
-        <div
-          style={{
-            color: collected
-              ? "var(--color-fg-neutral-inverted)"
-              : "color-mix(in srgb, var(--color-fg-neutral-inverted) 40%, transparent)",
-            filter: collected
-              ? "drop-shadow(0 0 10px color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent))"
-              : "none",
-          }}
-        >
-          <ConstellationSVG
-            starMap={entry.constellation.starMap}
-            lit={collected ? undefined : 0}
-            size={180}
-          />
-        </div>
-        {!collected && (
+      <ResponsiveDialogContent title={name}>
+        <ResponsiveDialogBody>
+          {/* 하늘 패널 — 역할 색 그라디언트(8 과 같다). 그림은 이름 붙은 img, 안내 글은 그 밖의 글이다 */}
           <div
-            style={{
-              position: "absolute",
-              bottom: 14,
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              fontSize: 12,
-              fontWeight: 600,
-              color:
-                "color-mix(in srgb, var(--color-fg-neutral-inverted) 65%, transparent)",
-            }}
+            className={cn(
+              "relative flex h-[240px] items-center justify-center overflow-hidden rounded-r4 text-fg-neutral-inverted",
+              SKY_BG,
+            )}
           >
-            {t("detail.notMet")}
+            <div
+              role="img"
+              aria-label={t("detail.skyName", { name })}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              {SKY_DIM_STARS.map(([x, y], i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    width: i % 3 === 0 ? 2.5 : 1.5,
+                    height: i % 3 === 0 ? 2.5 : 1.5,
+                    borderRadius: 999,
+                    background:
+                      "color-mix(in srgb, var(--color-fg-neutral-inverted) 30%, transparent)",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              ))}
+              <div
+                aria-hidden
+                style={{
+                  color: collected
+                    ? "var(--color-fg-neutral-inverted)"
+                    : "color-mix(in srgb, var(--color-fg-neutral-inverted) 40%, transparent)",
+                  filter: collected
+                    ? "drop-shadow(0 0 10px color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent))"
+                    : "none",
+                }}
+              >
+                <ConstellationSVG
+                  starMap={entry.constellation.starMap}
+                  lit={collected ? undefined : 0}
+                  size={180}
+                />
+              </div>
+            </div>
+            {!collected && (
+              <p className="absolute inset-x-0 bottom-x3_5 m-0 text-center text-t3 text-fg-neutral-inverted">
+                {t("detail.notMet")}
+              </p>
+            )}
           </div>
-        )}
-      </div>
-      {/* 정보 */}
-      <div style={{ padding: "16px 4px 4px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span
-            style={{
-              fontSize: 17,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "var(--fg-primary)",
-            }}
-          >
-            {name}
-          </span>
-          <span
-            className="num"
-            style={{
-              fontSize: 12.5,
-              fontWeight: 700,
-              color: "var(--fg-brand)",
-            }}
-          >
-            {t("collection.starCount", {
-              count: entry.constellation.starCount,
-            })}
-          </span>
-        </div>
-        <div
-          style={{ fontSize: 13, color: "var(--fg-secondary)", marginTop: 4 }}
-        >
-          {description}
-        </div>
-        <div
-          style={{
-            fontSize: 12.5,
-            color: "var(--fg-tertiary)",
-            marginTop: 10,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          {collected ? <CheckCircle2 size={13} /> : <Lock size={13} />}
-          {collected
-            ? t("detail.collectedTimes", { count: entry.collectCount })
-            : t("detail.hint", { count: entry.constellation.starCount })}
-        </div>
-      </div>
-    </ModalShell>
+          <p className="m-0 break-keep pb-x1 pt-x4 text-t5 text-fg-neutral-muted [overflow-wrap:break-word]">
+            {description}
+          </p>
+          {/* 줄이 제 좌우 24 를 갖는다 — 본문 여백 24 를 풀어 화면 끝까지 */}
+          <List className="-mx-x6 w-[calc(100%+var(--spacing-x12))]">
+            <ListItem
+              title={
+                <span className="text-fg-neutral-muted">
+                  {t("detail.starCountLabel")}
+                </span>
+              }
+              suffix={
+                <span className="whitespace-nowrap font-bold tabular-nums text-fg-neutral">
+                  {t("detail.starCountValue", {
+                    count: entry.constellation.starCount,
+                  })}
+                </span>
+              }
+            />
+            <ListItem
+              title={
+                <span className="text-fg-neutral-muted">
+                  {t("detail.collectLabel")}
+                </span>
+              }
+              suffix={
+                <span className="whitespace-nowrap font-bold tabular-nums text-fg-neutral">
+                  {collected
+                    ? t("detail.collectValue", { count: entry.collectCount })
+                    : t("collection.notCollected")}
+                </span>
+              }
+            />
+          </List>
+        </ResponsiveDialogBody>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
