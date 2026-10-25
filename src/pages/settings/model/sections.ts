@@ -220,7 +220,6 @@ export const TEMP_BODY_PADDING: SectionId[] = [
   "presets",
   "calendar-share",
   "calendar-labels",
-  "todo-tags",
   "memo-tags",
   "appearance",
   "notifications",
