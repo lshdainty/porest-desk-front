@@ -50,6 +50,9 @@ describe("폰 달 줄", () => {
     expect(next.parentElement).toBe(group);
     expect(label.closest("div")).toBe(group);
     expect(group.className).toContain("shrink-0");
+    // ‹ › 는 글자 크기와 상관없이 40(px) — 글자 200% 에서 두 단추가 줄 폭을 먹어 달 글을 밀어내지 않게
+    expect(prev.className).toContain("size-[40px]");
+    expect(next.className).toContain("size-[40px]");
     expect(group.className).not.toContain("flex-wrap");
     // 칩은 덩어리 밖 — 줄이 모자라면 칩만 아래 줄로 내려간다
     expect(

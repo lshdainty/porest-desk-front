@@ -52,7 +52,7 @@ const CalendarHeaderMobile = () => {
           variant="ghost"
           size="medium"
           layout="iconOnly"
-          className="[&_svg]:size-5"
+          className="size-[40px] [&_svg]:size-[20px]"
           onClick={handlePrevious}
         >
           <ChevronLeft />
@@ -103,14 +103,15 @@ const CalendarHeaderMobile = () => {
           variant="ghost"
           size="medium"
           layout="iconOnly"
-          className="[&_svg]:size-5"
+          className="size-[40px] [&_svg]:size-[20px]"
           onClick={handleNext}
         >
           <ChevronRight />
         </Button>
       </div>
-      <span className="min-w-x1 flex-1" />
-      <CalendarSourceToggle />
+      <div className="ml-auto">
+        <CalendarSourceToggle />
+      </div>
     </div>
   );
 };
