@@ -1188,6 +1188,33 @@ describe("ListDivider · ListHeader · ListTile", () => {
     );
   });
 
+  it("줄 제목은 색이 바뀔 때만 150ms 색 전환이 있고 모션 줄이기면 전환이 없다 — 처음 그림은 모션 없음(앱 List 와 같은 값)", () => {
+    render(
+      <List>
+        <ListItem title="제목" />
+      </List>,
+    );
+    const title = slots("list-title")[0]!;
+    expect(classes(title)).toEqual(
+      expect.arrayContaining([
+        "[transition:color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
+        "motion-reduce:transition-none",
+      ]),
+    );
+    // 전환은 color 만 — 등장 애니메이션(animation)은 없다
+    expect(classes(title).some((c) => c.startsWith("animate-"))).toBe(false);
+  });
+
+  it("목록 제목의 오른쪽 글 버튼은 위아래 −8 · 오른쪽 −14 로 스스로 번진다 — 화면이 −mr 를 따로 주지 않는다(list-header.yaml action.marginY)", () => {
+    render(<ListHeader id="h1">일반</ListHeader>);
+    expect(classes(slots("list-header")[0]!)).toEqual(
+      expect.arrayContaining([
+        "[&>button:last-child:not(:first-child)]:-my-x2",
+        "[&>button:last-child:not(:first-child)]:-mr-x3_5",
+      ]),
+    );
+  });
+
   it("목록 제목 — 14 · 500 · 옅은 색(기본) · boldSolid 는 700 · 짙은 색, 좌우 24 · 위아래 8 · 버튼과 사이 10", () => {
     render(
       <>

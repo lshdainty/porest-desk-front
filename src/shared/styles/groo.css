@@ -389,63 +389,6 @@
   }
 }
 
-/* ---------- 모바일 할일 원장 (tdm) — design todo-mobile.jsx v3 (txm 문법 재사용) ---------- */
-.tdm-check {
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  cursor: pointer;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: all var(--motion-duration-fast) var(--motion-ease-out);
-}
-.tdm-prio {
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.tdm-filter__label {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--fg-tertiary);
-  margin-bottom: 9px;
-}
-.tdm-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.tdm-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border-default);
-  background: transparent;
-  color: var(--fg-primary);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 9px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all var(--motion-duration-fast) var(--motion-ease-out);
-}
-.tdm-chip i {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-}
-.tdm-chip--on {
-  background: var(--bg-brand-subtle);
-  border-color: var(--border-brand);
-  color: var(--fg-brand-strong);
-}
-
 /* 별빛 획득 토스트 — design budget-toast (bottom-center 다크 필). */
 .star-toast {
   position: fixed;

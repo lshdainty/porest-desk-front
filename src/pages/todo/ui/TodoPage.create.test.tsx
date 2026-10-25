@@ -94,6 +94,13 @@ beforeEach(() => {
   __resetPointerBlockForTest();
   created.length = 0;
   ctx.mobile = false;
+  // 폼은 폭으로 표면이 갈린다(1280 이상 대화상자 · 미만 시트) — jsdom 은 미만(시트)이다
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -180,7 +187,7 @@ describe("편집 폼으로는 여전히 만들어진다 (D5 가 지워선 안 �
     );
     if (!input) throw new Error("편집 폼의 제목 칸을 찾지 못했다");
     setInput(input, title);
-    const save = buttonWith("save");
+    const save = buttonWith("add");
     if (!save) throw new Error("편집 폼의 저장 버튼을 찾지 못했다");
     click(save);
   }
@@ -210,5 +217,16 @@ describe("편집 폼으로는 여전히 만들어진다 (D5 가 지워선 안 �
 
     expect(created).toHaveLength(1);
     expect(created[0]?.title).toBe("장 보기");
+  });
+
+  it("모바일 흰 면은 내용을 따라 자란다 — min-h-0 이 있으면 긴 목록이 흰 면 밖(회색 바탕)으로 넘친다 (I-10 5)", () => {
+    ctx.mobile = true;
+    act(() => root.render(<TodoPage />));
+    const face = container.querySelector<HTMLElement>(
+      "div.bg-bg-layer-default",
+    );
+    expect(face).toBeTruthy();
+    expect(face!.className).toContain("flex-1");
+    expect(face!.className).not.toContain("min-h-0");
   });
 });

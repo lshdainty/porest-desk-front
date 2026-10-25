@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { i18n } from "@/shared/i18n/config";
 import { usePendingIds } from "@/shared/lib/groo/use-pending-ids";
 import { useHoldIds } from "@/shared/lib/groo/use-hold-ids";
 import { invalidateFor, todoKeys } from "@/shared/config";
@@ -81,6 +83,8 @@ export const useToggleTodoStatus = () => {
       return { previousQueries };
     },
     onError: (_err, _id, context) => {
+      // 요청이 silent 라 서버 원문 토스트가 없다 — 되돌린 자리에서 우리 글로 알린다
+      toast.error(i18n.t("todo:toggleFailed"), { id: "todo-toggle-failed" });
       // 에러 시 이전 상태로 롤백
       if (context?.previousQueries) {
         for (const [queryKey, data] of context.previousQueries) {

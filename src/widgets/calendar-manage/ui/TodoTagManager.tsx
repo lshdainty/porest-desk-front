@@ -5,20 +5,13 @@ import { SwipeActions, type SwipeAction } from "@/shared/ui/swipe-actions";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { settingsRowPadding } from "@/shared/ui/groo/manage-row-tokens";
-import { ColorSwatchGroup } from "@/shared/ui/color-swatch";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { Field, FieldLabel } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { NameCounter } from "@/shared/ui/groo/name-counter";
-import { nameIssue } from "@/shared/lib/groo/name-policy";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import {
-  CAT_PALETTE,
-  getPaletteByColor,
-} from "@/shared/lib/groo/chart-palette";
+import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import type { TodoTag } from "@/entities/todo-tag";
+import { TagEditDialog } from "./TodoTagEditDialog";
+import { TodoTagManagerMobile } from "./TodoTagManagerMobile";
 import {
   useCreateTodoTag,
   useDeleteTodoTag,
@@ -51,6 +44,12 @@ function ListShell({
  * 디자인 SoT: settings-todo-tags.jsx TodoTagManager (구조는 CalendarLabelsSection 미러).
  */
 export function TodoTagManager({ mobile }: { mobile: boolean }) {
+  // 폰은 흰 면 하나(I-10 L) — 데스크톱 갈래는 그대로(머리는 I-16, 본문은 I-15)
+  return mobile ? <TodoTagManagerMobile /> : <TodoTagManagerDesktop />;
+}
+
+function TodoTagManagerDesktop() {
+  const mobile = false;
   const { t } = useTranslation("todo");
   const { t: tc } = useTranslation("common");
   const { data: tags, isLoading } = useTodoTags();
@@ -330,7 +329,14 @@ export function TodoTagManager({ mobile }: { mobile: boolean }) {
           existing={list}
           onClose={() => setEditing(null)}
           onSave={onSave}
-          mobile={mobile}
+          onDelete={
+            editing && "rowId" in editing
+              ? () => {
+                  setConfirmDelete(editing);
+                  setEditing(null);
+                }
+              : undefined
+          }
           submitting={submitting}
         />
       )}
@@ -380,158 +386,5 @@ function TagListSkeleton({ mobile }: { mobile?: boolean }) {
         </div>
       ))}
     </>
-  );
-}
-
-function TagEditDialog({
-  tag,
-  existing,
-  onClose,
-  onSave,
-  mobile,
-  submitting,
-}: {
-  tag: TodoTag | null;
-  existing: TodoTag[];
-  onClose: () => void;
-  onSave: (values: { tagName: string; color: string }) => void;
-  mobile: boolean;
-  submitting?: boolean;
-}) {
-  const { t } = useTranslation("todo");
-  const { t: tc } = useTranslation("common");
-  const isNew = !tag;
-  const [name, setName] = useState(tag?.tagName ?? "");
-  const [paletteIdx, setPaletteIdx] = useState(() => {
-    if (!tag?.color) return 0;
-    const idx = CAT_PALETTE.findIndex((p) => p.baseHex === tag.color);
-    return idx >= 0 ? idx : 0;
-  });
-  const [touched, setTouched] = useState(false);
-
-  const palette = CAT_PALETTE[paletteIdx]!;
-  const nameTrim = name.trim();
-  // 라벨과 같은 이유 — 서버 409 는 나는데 다이얼로그가 조용했다(QA #55).
-  const issue = nameIssue(
-    name,
-    12,
-    existing.filter((x) => x.rowId !== tag?.rowId).map((x) => x.tagName),
-  );
-  const valid = issue == null;
-  const err =
-    touched && issue
-      ? issue === "required"
-        ? t("tags.nameRequired")
-        : issue === "tooLong"
-          ? t("tags.nameTooLong")
-          : t("tags.nameDuplicate")
-      : null;
-
-  const save = () => {
-    setTouched(true);
-    if (!valid) return;
-    onSave({ tagName: nameTrim, color: palette.baseHex });
-  };
-
-  const Footer = (
-    <ModalFooter
-      onSave={save}
-      saveLabel={isNew ? t("tags.new") : tc("save")}
-      saving={submitting}
-      saveDisabled={touched && !valid}
-      onCancel={onClose}
-    />
-  );
-
-  return (
-    <ModalShell
-      title={isNew ? t("tags.new") : t("tags.editTitle")}
-      onClose={onClose}
-      size="md"
-      footer={Footer}
-      mobile={mobile}
-    >
-      {/* 미리보기 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: 14,
-          background: palette.bg,
-          borderRadius: "var(--radius-tile)",
-          marginBottom: 20,
-        }}
-      >
-        <span
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: "var(--radius-md)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            background: palette.color,
-            color: "var(--fg-on-brand)",
-          }}
-        >
-          <Tag size={18} strokeWidth={2} />
-        </span>
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              color: "var(--fg-tertiary)",
-              fontWeight: "600",
-              letterSpacing: "0.02em",
-            }}
-          >
-            {t("tags.preview")}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-body-lg)",
-              fontWeight: "700",
-              color: "var(--fg-primary)",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {nameTrim || t("tags.new")}
-          </div>
-        </div>
-      </div>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("tags.name")}</FieldLabel>
-        <Input
-          aria-invalid={!!err}
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setTouched(true);
-          }}
-          placeholder={t("tags.namePlaceholder")}
-          maxLength={14}
-          autoFocus
-        />
-        <NameCounter len={nameTrim.length} max={12} err={err} />
-      </Field>
-
-      <Field>
-        <FieldLabel>{t("tags.color")}</FieldLabel>
-        <ColorSwatchGroup
-          columns={5}
-          value={String(paletteIdx)}
-          onValueChange={(v) => setPaletteIdx(Number(v))}
-          options={CAT_PALETTE.map((p, i) => ({
-            value: String(i),
-            bg: p.bg,
-            fg: p.color,
-            label: t("tags.colorN", { n: i + 1 }),
-          }))}
-        />
-      </Field>
-    </ModalShell>
   );
 }

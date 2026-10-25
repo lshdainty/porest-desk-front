@@ -789,12 +789,7 @@ const HeaderDividerDemo = () => (
               >
                 카테고리별 예산
               </h4>
-              <Button
-                variant="ghost"
-                ghostColor="neutralMuted"
-                size="small"
-                className="-my-x2 -mr-x3_5"
-              >
+              <Button variant="ghost" ghostColor="neutralMuted" size="small">
                 전체 보기
               </Button>
             </ListHeader>

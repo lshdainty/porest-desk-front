@@ -99,30 +99,17 @@ export function LedgerMonthNav({
   return <div className={cn("flex items-center", className)} {...props} />;
 }
 
-/**
- * 월 이동 · 필터 · 추가 아이콘 단추 — Button ghost medium iconOnly(보이는 40 · 아이콘 18 · 누르는 44). 이름은 aria-label.
- * `active` 는 켜짐 틴트(bg-brand-weak · fg-brand + aria-pressed 아님 — 거르기가 걸렸음을 눈으로만 알린다). 할 일 거르기만 넘긴다(I-10 이
- * 알림 점으로 바꿀 때까지) — 가계부는 칩 줄이 걸림을 말해 넘기지 않는다.
- */
+/** 월 이동 · 필터 · 추가 아이콘 단추 — Button ghost medium iconOnly(보이는 40 · 아이콘 18 · 누르는 44). 이름은 aria-label. 걸림은 부르는 쪽이 알림 점으로 알린다. */
 export function LedgerNavBtn({
   type = "button",
-  active = false,
-  className,
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "variant" | "size" | "layout"> & {
-  active?: boolean;
-}) {
+}: Omit<React.ComponentProps<typeof Button>, "variant" | "size" | "layout">) {
   return (
     <Button
       type={type}
       variant="ghost"
       size="medium"
       layout="iconOnly"
-      data-active={active || undefined}
-      className={cn(
-        active && "bg-bg-brand-weak text-fg-brand-contrast",
-        className,
-      )}
       {...props}
     />
   );
@@ -467,7 +454,10 @@ export function LedgerDayDate({
 }: React.ComponentProps<"h2"> & { relative?: React.ReactNode }) {
   return (
     <h2
-      className={cn("m-0 font-[inherit] text-[length:inherit]", className)}
+      className={cn(
+        "m-0 font-[inherit] [font-weight:inherit] text-[length:inherit]",
+        className,
+      )}
       {...props}
     >
       <span className="tabular-nums">{children}</span>

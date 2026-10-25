@@ -229,7 +229,6 @@ export function ListTitle({
           variant="ghost"
           ghostColor="neutralMuted"
           size="small"
-          className="-my-x2 -mr-x3_5"
           disabled={action.disabled}
           title={action.title}
           onClick={action.onClick}

@@ -151,9 +151,10 @@ export const listBodyVariants = cva(
   "flex min-w-[calc(var(--text-t5)+var(--spacing-x2_5))] flex-1 flex-col items-start gap-x0_5 pr-x2_5 text-left",
 );
 
+// 제목 색이 바뀔 때만(끝냄 · 막힘 · 강조) 150ms 색 전환(앱 List 와 같은 값 — 처음 그림은 바뀌는 게 없어 모션 없음, 모션 줄이기면 전환 없음).
 // 제목 · 글 설명 — 평소엔 단어 단위, 본문이 낱말 하나보다 좁아질 때만 글자 사이에서 끊는다(overflow-wrap: anywhere)
 export const listTitleVariants = cva(
-  "font-sans text-t5 font-normal [overflow-wrap:anywhere]",
+  "font-sans text-t5 font-normal [overflow-wrap:anywhere] [transition:color_var(--motion-duration-color-transition)_var(--motion-ease-easing)] motion-reduce:transition-none",
   {
     variants: {
       disabled: { true: "text-fg-disabled", false: "text-fg-neutral" },
@@ -238,9 +239,10 @@ export const listDividerVariants = cva(
 );
 
 // 목록 제목 — 목록 밖, 바로 위. 좌우 24(줄과 같다) · 위아래 8 · 제목과 오른쪽 버튼 사이 10.
+// 오른쪽 작은 글 버튼은 위아래 −8 · 오른쪽 −14 로 스스로 번져 머리가 버튼 높이(36)가 되고 글 끝이 화면 여백 24 에 선다(list-header.yaml action.marginY −8 · 보이는 36 · 누르는 44).
 // 오른쪽 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다(제목 최소 50% · 줄바꿈 — 03-G 결정 4A)
 export const listHeaderVariants = cva(
-  "m-0 flex w-full tracking-normal items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto",
+  "m-0 flex w-full tracking-normal items-center justify-between gap-x2_5 px-global-gutter py-x2 font-sans text-t4 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto [&>button:last-child:not(:first-child)]:-my-x2 [&>button:last-child:not(:first-child)]:-mr-x3_5",
   {
     variants: {
       variant: {
