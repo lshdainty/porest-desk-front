@@ -73,7 +73,7 @@ function RatioBar({
 }) {
   const fixedPct = split.total === 0 ? 0 : (split.fixed / split.total) * 100;
   const cell =
-    "flex h-full items-center justify-center overflow-hidden whitespace-nowrap text-t2 font-bold text-bg-layer-default";
+    "flex h-full items-center justify-center overflow-hidden whitespace-nowrap text-t2 font-bold text-fg-neutral-inverted";
   return (
     <div
       role="img"

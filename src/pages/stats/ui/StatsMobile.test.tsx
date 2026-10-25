@@ -344,7 +344,7 @@ describe("통계 글 · 색 규칙", () => {
     ]);
   });
 
-  it("저축률 가운데 %는 t9, 비율 막대 글은 테마를 따르는 면 색(흰색 고정 아님)", () => {
+  it("저축률 가운데 %는 t9, 비율 막대 글은 차트 색 위 글자색(fg-neutral-inverted, 흰색 고정 아님)", () => {
     state.range = q({ ...summary(), fixedExpense: 1_000_000_000 });
     render();
     clickTab("tab.trend");
@@ -353,7 +353,7 @@ describe("통계 글 · 색 규칙", () => {
     ).not.toBeNull();
     clickTab("tab.fixed");
     const bar = container.querySelector("[data-section=expense] [role=img]")!;
-    expect(bar.innerHTML).toContain("text-bg-layer-default");
+    expect(bar.innerHTML).toContain("text-fg-neutral-inverted");
     expect(bar.innerHTML).not.toContain("text-static-white");
   });
 
