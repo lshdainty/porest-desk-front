@@ -215,7 +215,7 @@ const TodoPageInner = ({
           <TopNavigationTitle>{t("pageTitle")}</TopNavigationTitle>
         </TopNavigation>
         {/* 목록이 짧아도 흰 면이 화면 아래 끝까지 닿는다 — 아래 96 은 [+] 가 마지막 줄을 가리지 않게 하는 흰 면 안 여백 */}
-        <div className="relative min-h-0 flex-1 bg-bg-layer-default pb-[96px]">
+        <div className="relative flex-1 bg-bg-layer-default pb-[96px]">
           <TodoMobileLedger
             todos={todos}
             tags={tagNames}

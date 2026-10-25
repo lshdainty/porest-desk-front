@@ -218,4 +218,15 @@ describe("편집 폼으로는 여전히 만들어진다 (D5 가 지워선 안 �
     expect(created).toHaveLength(1);
     expect(created[0]?.title).toBe("장 보기");
   });
+
+  it("모바일 흰 면은 내용을 따라 자란다 — min-h-0 이 있으면 긴 목록이 흰 면 밖(회색 바탕)으로 넘친다 (I-10 5)", () => {
+    ctx.mobile = true;
+    act(() => root.render(<TodoPage />));
+    const face = container.querySelector<HTMLElement>(
+      "div.bg-bg-layer-default",
+    );
+    expect(face).toBeTruthy();
+    expect(face!.className).toContain("flex-1");
+    expect(face!.className).not.toContain("min-h-0");
+  });
 });

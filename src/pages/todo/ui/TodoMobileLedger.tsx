@@ -449,7 +449,7 @@ export function TodoMobileLedger({
               doneToday={doneToday}
               mobile
             />
-            <div className="mt-x2 flex gap-x2">
+            <div className="mt-x2 flex flex-wrap gap-x2">
               <Button
                 variant="neutralOutline"
                 size="small"
