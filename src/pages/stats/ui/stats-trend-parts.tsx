@@ -249,7 +249,7 @@ const RING_R = 48;
 const RING_C = 2 * Math.PI * RING_R;
 
 /**
- * 저축률 — 머리 없는 구역. 고리 게이지 108 은 화면 그림(스펙 부품 없음)이라 모양 그대로, 글은 역할 이름(눈금 t2 · 값 t9 · 문장 t5).
+ * 저축률 — 머리 없는 구역. 고리 게이지 108(rem 6.75 — 글자 크기를 따라 커진다, 200% 에서 216)은 화면 그림(스펙 부품 없음)이라 모양 그대로, 글은 역할 이름(눈금 t2 · 값 t9 · 문장 t5).
  * 지출 · 저축 비율 막대는 장식 막대(8 · 끝 둥글게 · 값은 글이 말한다).
  */
 export function SavingsRateSection({
@@ -277,7 +277,7 @@ export function SavingsRateSection({
     return (
       <HeadlessBody place={place}>
         <div aria-hidden className="flex items-center gap-x4">
-          <Skeleton radius="full" className="size-[108px] shrink-0" />
+          <Skeleton radius="full" className="size-[6.75rem] shrink-0" />
           <div className="flex-1">
             <Skeleton text="t5" className="w-2/3" />
             <Skeleton className="mt-x3 h-2 w-full" radius="full" />
@@ -321,8 +321,11 @@ export function SavingsRateSection({
             place === "band" && "justify-center",
           )}
         >
-          <div className="relative size-[108px]">
-            <svg width="108" height="108" viewBox="0 0 108 108" aria-hidden>
+          <div
+            data-slot="stats-savings-ring"
+            className="relative size-[6.75rem] shrink-0"
+          >
+            <svg viewBox="0 0 108 108" className="size-full" aria-hidden>
               <circle
                 cx="54"
                 cy="54"
@@ -348,7 +351,7 @@ export function SavingsRateSection({
                 {t("trend.savingsRate")}
               </span>
               <span className="text-t9 font-bold tabular-nums text-fg-neutral">
-                {m.saveRate.toFixed(1)}%
+                {Math.round(m.saveRate)}%
               </span>
             </div>
           </div>

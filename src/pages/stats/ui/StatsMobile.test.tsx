@@ -362,4 +362,19 @@ describe("통계 글 · 색 규칙", () => {
     const panel = container.querySelector("[role=tabpanel]") as HTMLElement;
     expect(panel.style.touchAction).toBe("");
   });
+
+  it("저축률 고리 — 가운데 글은 소수 없는 정수 %, 크기는 rem 이라 글자 크기를 따라 커진다", () => {
+    render();
+    clickTab("tab.trend");
+    const ring = container.querySelector("[data-slot=stats-savings-ring]")!;
+    expect(ring.className).toContain("size-[6.75rem]");
+    expect(ring.querySelector("svg")!.getAttribute("viewBox")).toBe(
+      "0 0 108 108",
+    );
+    const center = Array.from(ring.querySelectorAll("span")).find((e) =>
+      /%/.test(e.textContent ?? ""),
+    )!;
+    expect(center.textContent).toMatch(/^\d+%$/);
+    expect(center.className).toContain("text-t9");
+  });
 });
