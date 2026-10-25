@@ -315,7 +315,6 @@ export function CategoryManager({
         variant="ghost"
         ghostColor="neutralMuted"
         size="small"
-        className="-my-x2 -mr-x3_5"
         onClick={() => startReorder(!reorder)}
       >
         {reorder ? t("reorderDone") : t("reorderEdit")}
