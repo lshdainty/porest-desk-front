@@ -170,12 +170,12 @@ describe("폰 월 격자", () => {
     expect(c.getAttribute("aria-label")).toContain("monthView.cellLabel:2");
   });
 
-  it("요일 줄은 화면을 스크롤해도 고정이고 격자만 흐른다", () => {
+  it("요일 줄은 달 줄과 함께 고정 묶음에 들고 격자만 흐른다 — 여기서는 요일 줄을 그리지 않는다", () => {
     render([]);
-    const head = container.querySelector(
-      "[data-slot=calendar-month-grid] > div",
-    )!;
-    expect(head.className).toContain("sticky");
-    expect(head.className).toContain("top-x13"); // 달 줄(52) 바로 아래
+    expect(
+      container
+        .querySelector("[data-slot=calendar-month-grid] > div")!
+        .getAttribute("role"),
+    ).toBe("group");
   });
 });

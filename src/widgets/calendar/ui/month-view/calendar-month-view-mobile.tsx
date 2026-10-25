@@ -27,7 +27,7 @@ export function WeekdayRow() {
   return (
     <div
       aria-hidden
-      className="sticky top-x13 z-30 grid h-x8 shrink-0 grid-cols-7 items-center bg-bg-layer-default px-[2px] text-center text-t3 text-fg-neutral-subtle"
+      className="grid h-x8 shrink-0 grid-cols-7 items-center px-[2px] text-center text-t3 text-fg-neutral-subtle"
     >
       {weekDays.map((day, index) => (
         <span
@@ -85,7 +85,6 @@ export function CalendarMonthViewMobile({
 
   return (
     <div data-slot="calendar-month-grid" className="flex flex-col">
-      <WeekdayRow />
       <div
         role="group"
         aria-label={formatYearMonth(selectedDate)}

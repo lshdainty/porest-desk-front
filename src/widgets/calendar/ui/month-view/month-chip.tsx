@@ -131,8 +131,9 @@ export function MonthMore({
       aria-hidden
       data-slot="month-more"
       className={cn(
-        "truncate whitespace-nowrap text-t2 font-bold text-fg-neutral-muted",
-        density === "phone" ? "px-[3px]" : "px-x2_5 pt-x0_5",
+        "whitespace-nowrap text-t2 font-bold text-fg-neutral-muted",
+        // 폰 칸은 좁아 큰 글자에서 "+N개" 가 칸보다 넓을 수 있다 — 말줄임("+…")으로 수를 잃지 않고 이웃 칸으로 살짝 넘긴다
+        density === "phone" ? "px-[3px]" : "truncate px-x2_5 pt-x0_5",
       )}
     >
       {t("monthView.moreCount", { count })}

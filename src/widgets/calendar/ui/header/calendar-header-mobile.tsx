@@ -44,7 +44,7 @@ const CalendarHeaderMobile = () => {
   const handleTodayClick = () => setSelectedDate(new Date());
 
   return (
-    <div className="sticky top-0 z-30 flex h-x13 shrink-0 items-center bg-bg-layer-default pl-x1_5 pr-x4">
+    <div className="flex min-h-x13 shrink-0 flex-wrap items-center gap-y-x1 pl-x1_5 pr-x4">
       <Button
         aria-label={t("header.prevMonth")}
         variant="ghost"
