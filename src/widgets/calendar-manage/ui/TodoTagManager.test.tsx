@@ -164,4 +164,34 @@ describe("TodoTagManager", () => {
 
     expect(screenText()).toContain("태그가 없어요");
   });
+
+  it("폰 — 안내 Callout(제목 없음) · 목록 제목 h2 + 글 버튼 · 색 타일 줄 · 줄 사이 선과 카드가 없다 (I-10 33 ~ 36)", () => {
+    state.tags = [tagOf(1, "장기프로젝트자료모으기정", 0), tagOf(2, "공부", 4)];
+    render(true);
+
+    const callout = container.querySelector("[data-slot=callout]");
+    expect(callout?.getAttribute("data-tone")).toBe("informative");
+    expect(callout?.textContent).toContain("태그를 지우면 그 할 일은");
+    expect(callout?.textContent).not.toContain("분포");
+    const h2 = container.querySelector("h2");
+    expect(h2?.textContent).toBe("할 일 태그 · 2");
+    const add = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent === "태그 추가",
+    );
+    expect(add).toBeTruthy();
+    expect(h2?.contains(add!)).toBe(false);
+    expect(container.querySelectorAll("[data-slot=list-tile]").length).toBe(2);
+    expect(container.querySelector("[data-slot=divider]")).toBeNull();
+    expect(container.querySelector("[data-slot=card]")).toBeNull();
+    // 제목은 말줄임 없이 줄바꿈
+    expect(container.innerHTML).not.toMatch(/text-ellipsis|truncate/);
+    expect(screenText()).toContain("4건에 사용 중");
+  });
+
+  it('폰 — 태그가 없으면 Result Section 안내, 버튼은 위 "태그 추가" 하나뿐이다', () => {
+    render(true);
+    const rs = container.querySelector("[data-slot=result-section]");
+    expect(rs?.textContent).toContain("태그가 없어요");
+    expect(rs?.querySelector("button")).toBeNull();
+  });
 });

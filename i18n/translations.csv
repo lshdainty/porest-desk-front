@@ -2633,7 +2633,7 @@ todo,tdm.apply,완료,Done
 todo,starToast.collected,별빛 +{{gain}} · 오늘의 별자리 수집!,+{{gain}} starlight · constellation collected!
 todo,starToast.progress,별빛 +{{gain}} · 수집까지 {{left}}별,+{{gain}} starlight · {{left}} to collect
 todo,tags.title,할 일 태그,Todo tags
-todo,tags.desc,할 일에 붙이는 태그예요. 리스트 필터와 태그별 분포에 사용돼요.,Tags for your todos — used in list filters and tag distribution.
+todo,tags.desc,할 일에 붙이는 태그예요. 할 일 화면의 거르기와 태그별 개수에 쓰여요. 태그를 지우면 그 할 일은 '태그 없음'으로 남아요.,"Tags you attach to to-dos. They are used for filtering and counts on the to-do screen. If you delete a tag, its to-dos stay as 'No tag'."
 todo,tags.new,태그 추가,Add tag
 todo,tags.usage,{{count}}건에 사용 중,Used by {{count}} todos
 todo,tags.empty,태그가 없어요,No tags yet
@@ -2649,6 +2649,7 @@ todo,tags.nameRequired,이름을 입력해주세요.,Please enter a name.
 todo,tags.nameTooLong,이름은 12자 이내로 입력해주세요.,Keep the name under 12 characters.
 todo,tags.nameDuplicate,같은 이름의 태그가 이미 있어요.,A tag with that name already exists.
 todo,tags.preview,미리보기,Preview
+todo,tags.loadFailed,태그를 불러오지 못했어요,Couldn't load tags
 constellation,strip.title,오늘의 밤하늘 · {{name}},Tonight's sky · {{name}}
 constellation,strip.done,{{name}} 수집 완료!,{{name}} collected!
 constellation,strip.streak,{{count}}일,{{count}}d
