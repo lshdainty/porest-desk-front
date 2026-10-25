@@ -84,6 +84,7 @@ import {
   CARD_TYPES,
   cardUsageOf,
   krwOf,
+  useAssetHidden,
   useAssetMask,
   useFitLimit,
   type AssetGroups,
@@ -423,7 +424,7 @@ export function AssetCompositionCard({
     colorOf: (s) => s.saved,
     groupOthers: (rest) => ({
       id: "others",
-      name: t("others"),
+      name: t("common:others"),
       amount: rest.reduce((a, c) => a + c.amount, 0),
       saved: null,
     }),
@@ -793,6 +794,7 @@ export function AssetRow({
   const { t } = useTranslation("asset");
   const dsT = useDsText();
   const m = useAssetMask(card, asset.isAmountHidden === "Y");
+  const hiddenNow = useAssetHidden(card, asset.isAmountHidden === "Y");
   const neg = asset.balance < 0;
   const isCard = CARD_TYPES.includes(asset.assetType);
   // 연결계좌형 체크카드는 결제가 계좌에서 즉시 빠져 잔액이 늘 0 이다 — 행 금액은 "이번 달 얼마 썼나"(서버 계산 당월 합계)로 바꾼다.
@@ -866,11 +868,16 @@ export function AssetRow({
         {investVal?.changePct != null && (
           <Delta
             direction={investVal.changePct >= 0 ? "up" : "down"}
-            value={`${Math.abs(investVal.changePct)}%${
-              investVal.changeAmt != null
-                ? ` (${investVal.changeAmt >= 0 ? "+" : MINUS}${won(Math.abs(investVal.changeAmt))})`
-                : ""
-            }`}
+            // 가림이 켜져도 줄은 둔다 — 값만 "•••"(다른 금액 가림과 같은 규칙)
+            value={
+              hiddenNow
+                ? "•••"
+                : `${Math.abs(investVal.changePct)}%${
+                    investVal.changeAmt != null
+                      ? ` (${investVal.changeAmt >= 0 ? "+" : MINUS}${won(Math.abs(investVal.changeAmt))})`
+                      : ""
+                  }`
+            }
             className="text-t3"
           />
         )}
@@ -1109,7 +1116,7 @@ export function SavingGoalItem({ goal }: { goal: SavingGoal }) {
               )}
             </>
           }
-          detail={`${formatDeadline(goal.deadlineDate) ?? t("anytime")} · ${m(amounts)}`}
+          detail={`${formatDeadline(goal.deadlineDate) ?? t("savingGoal.noDeadline")} · ${m(amounts)}`}
           suffix={
             <span className="text-t5 font-bold tabular-nums text-fg-neutral">
               {pct.toFixed(0)}%

@@ -51,6 +51,7 @@ const q = (data: unknown, extra: object = {}) => ({
   ...extra,
 });
 const state = {
+  invest: new Map() as Map<number, unknown>,
   assets: q(undefined) as ReturnType<typeof q>,
   summary: q(undefined) as ReturnType<typeof q>,
   trend: q(undefined) as ReturnType<typeof q>,
@@ -61,7 +62,7 @@ vi.mock("@/features/asset", () => ({
   useAssets: () => state.assets,
   useAssetSummary: () => state.summary,
   useNetWorthTrend: () => state.trend,
-  useInvestValuation: () => new Map(),
+  useInvestValuation: () => state.invest,
   holdingsOf: () => [],
 }));
 vi.mock("@/features/recurring-transaction", () => ({
@@ -75,6 +76,7 @@ vi.mock("@tanstack/react-query", () => ({
 }));
 
 const { AssetPage } = await import("./AssetPage");
+const { setHiddenCards } = await import("@/shared/lib/groo/hide-amounts-core");
 
 const asset = (
   rowId: number,
@@ -150,6 +152,7 @@ beforeEach(() => {
     });
   }
   outlet.mobile = false;
+  state.invest = new Map();
   state.assets = q({
     assets: [
       asset(1, "주거래", "BANK_ACCOUNT", 1_000_000),
@@ -188,6 +191,7 @@ beforeEach(() => {
   root = createRoot(container);
 });
 afterEach(() => {
+  act(() => setHiddenCards([]));
   act(() => root.unmount());
   container.remove();
 });
@@ -442,5 +446,60 @@ describe("폰 띠(74)", () => {
     expect(container.querySelector(".screen-bands")!.className).not.toMatch(
       /pt-|mt-/,
     );
+  });
+});
+
+describe("투자 등락 가림(I-05 56)", () => {
+  const rowDelta = () =>
+    container.querySelector(
+      '[aria-label="group.invest"] [data-slot=delta], ul [data-slot=delta]',
+    );
+  beforeEach(() => {
+    state.invest = new Map([
+      [2, { value: 500_000, changePct: 3.2, changeAmt: 16_000 }],
+    ]);
+  });
+
+  it("가림이 꺼져 있으면 등락 % 와 금액이 보인다", () => {
+    render();
+    const d = Array.from(
+      container.querySelectorAll("[data-slot=delta-value]"),
+    ).map((n) => n.textContent);
+    expect(
+      d.some((t) => /3\.2%/.test(t ?? "") && /16,000원/.test(t ?? "")),
+    ).toBe(true);
+  });
+
+  it("투자 카드를 가리면 줄은 두고 값만 '•••' 로 가린다", () => {
+    act(() => setHiddenCards(["asset.investments"]));
+    render();
+    const d = Array.from(container.querySelectorAll("[data-slot=delta]"));
+    const invest = d.find((n) => n.textContent?.includes("•••"));
+    expect(invest).toBeDefined();
+    expect(invest!.querySelector("[data-slot=delta-value]")!.textContent).toBe(
+      "▲ •••",
+    );
+    expect(text()).not.toContain("3.2%");
+    expect(text()).not.toContain("16,000원");
+    expect(rowDelta()).not.toBeNull();
+  });
+
+  it("이 자산만 가려도 같다", () => {
+    state.assets = q({
+      assets: [
+        asset(2, "증권", "INVESTMENT", 500_000, { isAmountHidden: "Y" }),
+      ],
+    });
+    render();
+    expect(text()).not.toContain("3.2%");
+    expect(text()).toContain("•••");
+  });
+});
+
+describe("저축 목표 기한 없음(I-05 60)", () => {
+  it("기한이 없으면 '기한 없음' 키를 쓴다 — 옛 '상시' 가 아니다", () => {
+    render();
+    expect(text()).toContain("savingGoal.noDeadline · ");
+    expect(text()).not.toContain("anytime");
   });
 });

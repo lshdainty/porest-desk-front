@@ -47,10 +47,14 @@ export function cardUsageOf(asset: Asset) {
   };
 }
 
+/** 이 카드가 가려졌거나 이 자산만 가렸는가 */
+export function useAssetHidden(card: HideCardKey, force = false) {
+  return useHideAmounts(card) || force;
+}
+
 /** 이 카드가 가려졌거나 이 자산만 가렸으면 "••••" — 화면 카드와 자산 하나의 합집합 */
 export function useAssetMask(card: HideCardKey, force = false) {
-  const byCard = useHideAmounts(card);
-  const hidden = byCard || force;
+  const hidden = useAssetHidden(card, force);
   return (text: string) => (hidden ? MASK : text);
 }
 
