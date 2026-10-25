@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { KRW } from "@/shared/lib/groo/format";
 import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
@@ -13,10 +11,10 @@ import {
   SegmentedControlItem,
 } from "@/shared/ds/segmented-control";
 import type { ExpenseType } from "@/entities/expense";
-import { useBulkMarkFixed, useExpenses } from "../model/useExpenses";
+import { useFixedBulk, type FixedBulkTarget } from "../model/useFixedBulk";
+import { FixedBulkPage } from "./FixedBulkPage";
 import {
   groupCheck,
-  groupForFixed,
   toggleGroup,
   type GroupCheck,
   type TxGroup,
@@ -29,8 +27,6 @@ import {
  * 그래서 **같은 이름으로 나가는 거래를 묶어서**(월세 열두 달치가 한 줄) 한 번에 고르게 한다.
  * 돈·잔액은 안 움직이고 통계의 분류만 바뀌므로, 되돌리기는 같은 화면에서 "변동으로" 를 고르면 된다.
  */
-
-type Target = "fixed" | "variable";
 
 function GroupRow({
   g,
@@ -113,46 +109,50 @@ function GroupRow({
   );
 }
 
-export function FixedBulkDialog({
-  mobile,
-  startDate,
-  endDate,
-  onClose,
-}: {
+export function FixedBulkDialog(props: {
   mobile: boolean;
   /** "YYYY-MM-DD" — 통계 화면에서 고른 기간 */
   startDate: string;
   endDate: string;
   onClose: () => void;
 }) {
+  // 폰은 대화상자가 아니라 페이지다(I-08 Q5-A) — 데스크톱(1280 이상)은 대화상자 그대로
+  return props.mobile ? (
+    <FixedBulkPage
+      startDate={props.startDate}
+      endDate={props.endDate}
+      onClose={props.onClose}
+    />
+  ) : (
+    <FixedBulkModal {...props} />
+  );
+}
+
+function FixedBulkModal({
+  mobile,
+  startDate,
+  endDate,
+  onClose,
+}: {
+  mobile: boolean;
+  startDate: string;
+  endDate: string;
+  onClose: () => void;
+}) {
   const { t } = useTranslation("stats");
   const { t: tc } = useTranslation("common");
-  const [kind, setKind] = useState<ExpenseType>("EXPENSE");
-  const [target, setTarget] = useState<Target>("fixed");
-  const [picked, setPicked] = useState<ReadonlySet<number>>(new Set());
-
-  const q = useExpenses({ startDate, endDate });
-  const mut = useBulkMarkFixed();
-
-  const groups = groupForFixed(q.data ?? [], kind, t("fixed.bulk.untitled"));
-  const toFixed = target === "fixed";
-
-  const apply = () => {
-    if (picked.size === 0 || mut.isPending) return;
-    mut.mutate(
-      { ids: [...picked], isFixed: toFixed },
-      {
-        onSuccess: ({ updatedCount }) => {
-          toast.success(
-            t(toFixed ? "fixed.bulk.doneFixed" : "fixed.bulk.doneVariable", {
-              count: updatedCount,
-            }),
-          );
-          onClose();
-        },
-      },
-    );
-  };
+  const {
+    kind,
+    setKind,
+    target,
+    setTarget,
+    picked,
+    setPicked,
+    q,
+    mut,
+    groups,
+    apply,
+  } = useFixedBulk({ startDate, endDate, onClose });
 
   return (
     <ModalShell
@@ -184,10 +184,7 @@ export function FixedBulkDialog({
       <SegmentedControl
         aria-label={t("fixed.trend.kindAria")}
         value={kind}
-        onValueChange={(v) => {
-          setKind(v as ExpenseType);
-          setPicked(new Set());
-        }}
+        onValueChange={(v) => setKind(v as ExpenseType)}
         style={{ marginBottom: 10 }}
       >
         <SegmentedControlItem value="EXPENSE">
@@ -201,7 +198,7 @@ export function FixedBulkDialog({
       <SegmentedControl
         aria-label={t("fixed.bulk.targetAria")}
         value={target}
-        onValueChange={(v) => setTarget(v as Target)}
+        onValueChange={(v) => setTarget(v as FixedBulkTarget)}
         style={{ marginBottom: 14 }}
       >
         <SegmentedControlItem value="fixed">

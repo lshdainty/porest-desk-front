@@ -25,6 +25,7 @@ export {
 export {
   HEAT_CUTS,
   HEAT_MIX,
+  HEAT_STEP_SWATCH,
   HEAT_TEXT_MIN_CELL_WIDTH,
   heatStep,
 } from "./chart-heatmap-variants";
@@ -46,5 +47,6 @@ export {
   type AssignChartColorsOptions,
   type ChartAxisOptions,
   type ChartColor,
+  type ChartTone,
   type ChartColored,
 } from "./chart-variants";

@@ -27,7 +27,7 @@ export function BandHead({
   list = false,
   as,
 }: {
-  title: string;
+  title: ReactNode;
   action?: { label: string; onClick: () => void; ariaLabel?: string };
   /** 오른쪽 자리 — 배지(ds Badge) · 보조 글(t3 · fg-neutral-subtle) */
   aside?: ReactNode;
