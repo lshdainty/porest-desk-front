@@ -29,7 +29,7 @@ describe("일정 불러오기 실패 자리", () => {
     act(() => root.render(<CalendarLoadFailed onRetry={onRetry} />));
     const r = container.querySelector("[data-slot=calendar-load-failed]")!;
     expect(r.textContent).toContain("일정을 불러오지 못했어요");
-    expect(r.textContent).toContain("다시 시도해 주세요.");
+    expect(r.textContent).toContain("다시 시도해주세요.");
     const retry = [...r.querySelectorAll("button")].find(
       (b) => b.textContent === "다시 시도",
     )!;
