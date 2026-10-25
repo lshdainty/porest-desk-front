@@ -8,7 +8,10 @@ import {
   useUpdateEvent,
 } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
-import { withOpenedOccurrence } from "@/widgets/calendar/lib/helpers";
+import {
+  eventsOnDay,
+  withOpenedOccurrence,
+} from "@/widgets/calendar/lib/helpers";
 
 import type {
   CalendarEvent,
@@ -228,27 +231,10 @@ export function useCalendarScreen(events: IEvent[]) {
 
   // 모바일 일별 시트 이벤트 — 앱 _eventsOnDay 정합 (해당 일과 겹침 + 시작시각 정렬).
   // 캘린더 이벤트 + 공휴일만 (지출/할일 pseudo-event 제외). 공휴일은 읽기 전용 행.
-  const dayEvents = useMemo(() => {
-    if (!dayDate) return [];
-    const ds = new Date(
-      dayDate.getFullYear(),
-      dayDate.getMonth(),
-      dayDate.getDate(),
-    );
-    const de = new Date(
-      dayDate.getFullYear(),
-      dayDate.getMonth(),
-      dayDate.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
-    return filteredEvents
-      .filter((e) => e.sourceType === "calendar" || e.sourceType === "holiday")
-      .filter((e) => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
-      .sort((a, b) => a.startDate.localeCompare(b.startDate));
-  }, [dayDate, filteredEvents]);
+  const dayEvents = useMemo(
+    () => (dayDate ? eventsOnDay(filteredEvents, dayDate) : []),
+    [dayDate, filteredEvents],
+  );
 
   const singleDayEvents = filteredEvents.filter((event) => {
     if (event.isAllDay) return false;

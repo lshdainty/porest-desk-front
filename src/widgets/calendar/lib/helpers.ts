@@ -216,6 +216,27 @@ export function getVisibleHours(
   return { hours, earliestEventHour, latestEventHour };
 }
 
+/**
+ * 그 날과 겹치는 일정 + 공휴일(지출/할일 pseudo-event 제외), 시작 시각 차례 — 앱 `_eventsOnDay` 정합.
+ * 폰 일별 시트와 데스크톱 · 태블릿 그날 패널이 같은 목록을 쓴다.
+ */
+export function eventsOnDay(events: IEvent[], date: Date): IEvent[] {
+  const ds = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const de = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+  return events
+    .filter((e) => e.sourceType === "calendar" || e.sourceType === "holiday")
+    .filter((e) => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate));
+}
+
 // ================ Month view helper functions ================ //
 
 /**

@@ -1,4 +1,3 @@
-import { Flag, Clock, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -8,10 +7,8 @@ import {
   BottomSheetFooter,
 } from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
-import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { formatMonthDayDow } from "@/shared/lib/date";
-import { eventBadgeTone } from "@/widgets/calendar/lib/helpers";
-import { eventLineDetail } from "@/widgets/calendar/lib/event-line";
+import { DayEventList } from "@/widgets/calendar/ui/day-event-list";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 /**
@@ -33,12 +30,7 @@ export function DayEventsDialog({
   onAdd: () => void;
   onTapEvent: (event: IEvent) => void;
 }) {
-  const { t, i18n } = useTranslation("calendar");
-  // 공휴일이 먼저, 그다음 시작 시각(같은 시각이면 들어온 차례)
-  const sorted = [...events].sort(
-    (a, b) =>
-      Number(b.sourceType === "holiday") - Number(a.sourceType === "holiday"),
-  );
+  const { t } = useTranslation("calendar");
 
   return (
     <BottomSheet open onOpenChange={(open) => !open && onClose()}>
@@ -47,7 +39,7 @@ export function DayEventsDialog({
         aria-describedby={undefined}
       >
         <BottomSheetBody scrollFog>
-          {sorted.length === 0 ? (
+          {events.length === 0 ? (
             <p
               data-slot="day-sheet-empty"
               className="m-0 py-x8 text-center text-t4 text-fg-neutral-subtle"
@@ -55,35 +47,12 @@ export function DayEventsDialog({
               {t("noEvents")}
             </p>
           ) : (
-            <List className="-mx-x6" aria-label={formatMonthDayDow(date)}>
-              {sorted.map((e) => {
-                const tone = eventBadgeTone(e);
-                const holiday = e.sourceType === "holiday";
-                const Icon = holiday ? Flag : e.isAllDay ? Sun : Clock;
-                const common = {
-                  title: e.title,
-                  detail: eventLineDetail(e, t, i18n.language),
-                  prefix: (
-                    <ListTile
-                      aria-hidden
-                      style={{ background: tone.bg, color: tone.color }}
-                    >
-                      <Icon className="size-5" />
-                    </ListTile>
-                  ),
-                };
-                // 공휴일은 읽기 전용 — 보기만 하는 줄(누를 곳 없음)
-                return holiday ? (
-                  <ListItem key={`${e.id}-${e.startDate}`} {...common} />
-                ) : (
-                  <ListButtonItem
-                    key={`${e.id}-${e.startDate}`}
-                    {...common}
-                    onClick={() => onTapEvent(e)}
-                  />
-                );
-              })}
-            </List>
+            <DayEventList
+              className="-mx-x6"
+              events={events}
+              label={formatMonthDayDow(date)}
+              onTapEvent={(e) => onTapEvent(e)}
+            />
           )}
         </BottomSheetBody>
         <BottomSheetFooter>
