@@ -17,7 +17,7 @@ import {
 import { List, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { cn } from "@/shared/lib/cn";
-import { KRW, MINUS } from "@/shared/lib/groo/format";
+import { KRW, MINUS, formatChangeRate } from "@/shared/lib/groo/format";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon } from "@/shared/ui/groo/primitives";
@@ -144,8 +144,11 @@ export function CompareSummarySection({
         delta={
           m.cmpPct != null
             ? {
-                direction: deltaDirection(m.cmpDiff),
-                value: `${m.cmpPct}%`,
+                direction:
+                  m.cmpPct === formatChangeRate(0, { sign: "none" })
+                    ? "flat"
+                    : deltaDirection(m.cmpDiff),
+                value: m.cmpPct,
               }
             : undefined
         }
@@ -351,7 +354,7 @@ export function CompareCategorySection({
                 {r.prev > 0 ? (
                   <>
                     {up ? "▲" : r.diff < 0 ? "▼" : ""}{" "}
-                    {Math.abs(r.pct).toFixed(0)}%
+                    {formatChangeRate(r.pct, { sign: "none" })}
                   </>
                 ) : (
                   "—"

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { isEn } from "@/shared/lib/groo/format";
+import { formatChangeRate, isEn } from "@/shared/lib/groo/format";
 import { assignChartColors, type ChartColored } from "@/shared/ds/chart";
 import { chartColorOf, type ChartKey } from "@/shared/lib/groo/chart-palette";
 import { amountFor, countableTx, splitFixed } from "@/entities/expense";
@@ -355,10 +355,12 @@ export function useStatsModel() {
   const avgValue = avgDivisor > 0 ? Math.round(totalExpense / avgDivisor) : 0;
   const avgLabel = t(labels.avg);
   const prevTotalExpense = prevRangeQ.data?.totalExpense ?? 0;
+  // 전월 대비 등락 % — 소수 둘째 자리까지 공용 formatChangeRate(▲ ▼ 가 방향을 말하니 부호 없음)
   const dayPct =
     prevTotalExpense > 0
-      ? Math.round(((totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
+      ? ((totalExpense - prevTotalExpense) / prevTotalExpense) * 100
       : 0;
+  const dayRate = formatChangeRate(dayPct, { sign: "none" });
 
   // ── 추이 ──
   // 단일 월(segMode === 'm') 또는 사용자 지정 기간이 1개월 이내면 일별 시리즈, 그 외엔 월별 시리즈
@@ -463,7 +465,9 @@ export function useStatsModel() {
   const noPrevText = t(labels.noPrev);
   const cmpDiff = totalNow - totalPrev;
   const cmpPct =
-    totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null;
+    totalPrev > 0
+      ? formatChangeRate((cmpDiff / totalPrev) * 100, { sign: "none" })
+      : null;
   const prevDays =
     Math.round(
       (startOfDay(prevR.to).getTime() - startOfDay(prevR.from).getTime()) /
@@ -601,6 +605,7 @@ export function useStatsModel() {
     avgValue,
     prevTotalExpense,
     dayPct,
+    dayRate,
     // 추이
     trendChartData,
     useDailyTrend,

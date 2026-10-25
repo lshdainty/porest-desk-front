@@ -26,6 +26,7 @@ import {
 import { withCommaBreaks } from "@/shared/ds/i18n";
 import { cn } from "@/shared/lib/cn";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { formatChangeRate } from "@/shared/lib/groo/format";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon } from "@/shared/ui/groo/primitives";
 import {
@@ -36,6 +37,9 @@ import {
 } from "@/shared/ui/groo/band-parts";
 import type { FixedView } from "@/entities/expense";
 import { fmt } from "./stats-range";
+
+/** 소수 둘째 자리로 반올림해 0 이 되는 등락률 — 방향 없이 "변화 없음" */
+const ZERO_RATE = formatChangeRate(0, { sign: "none" });
 import {
   HEAT_COLS,
   HEAT_ROWS,
@@ -671,8 +675,10 @@ export function HighlightsSection({
       </>
     ) : m.prevTotalExpense > 0 ? (
       <Delta
-        direction={m.dayPct > 0 ? "up" : m.dayPct < 0 ? "down" : "flat"}
-        value={`${Math.abs(m.dayPct)}%`}
+        direction={
+          m.dayRate === ZERO_RATE ? "flat" : m.dayPct > 0 ? "up" : "down"
+        }
+        value={m.dayRate}
         text={t(m.labels.mom)}
       />
     ) : m.prevRangeQ.isLoading ? (

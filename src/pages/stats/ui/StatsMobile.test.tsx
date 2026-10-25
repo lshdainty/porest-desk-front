@@ -35,7 +35,9 @@ const q = (data: unknown, extra: Partial<Q> = {}): Q => ({
   refetch: vi.fn(),
   ...extra,
 });
+let rangeCalls = 0;
 const state = {
+  prev: undefined as ReturnType<typeof q> | undefined,
   range: q(undefined),
   merchants: q(undefined),
   heatmap: q(undefined),
@@ -44,7 +46,9 @@ const state = {
   trend: q(undefined),
 };
 vi.mock("@/features/expense", () => ({
-  useRangeSummary: () => state.range,
+  // 훅은 렌더마다 두 번 부른다 — 첫째 이번 기간, 둘째 이전 기간
+  useRangeSummary: () =>
+    rangeCalls++ % 2 === 0 ? state.range : (state.prev ?? state.range),
   useMerchantSummary: () => state.merchants,
   useExpenseHeatmap: () => state.heatmap,
   useExpenseCategories: () => state.cats,
@@ -130,6 +134,8 @@ beforeEach(async () => {
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
+  rangeCalls = 0;
+  state.prev = undefined;
   state.range = q(summary());
   state.merchants = q({
     merchants: [
@@ -407,5 +413,18 @@ describe("통계 글 · 색 규칙", () => {
     const wrap = seg.parentElement as HTMLElement;
     expect(wrap.className).toContain("w-max");
     expect(wrap.className).toContain("max-w-full");
+  });
+
+  it("등락 %는 공용 formatChangeRate — 소수 둘째 자리(비교 요약 · 평균 전월 대비 · 카테고리 증감)", () => {
+    state.prev = q({ ...summary(), totalExpense: 3_000_000_000 });
+    render();
+    // 평균 전월 대비 Delta(카테고리 탭 요약)
+    expect(
+      container.querySelector("[data-section=highlights]")!.textContent,
+    ).toContain("30.41%");
+    clickTab("tab.compare");
+    expect(
+      container.querySelector("[data-section=summary]")!.textContent,
+    ).toContain("30.41%");
   });
 });
