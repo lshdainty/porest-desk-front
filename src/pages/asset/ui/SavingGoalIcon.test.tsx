@@ -31,7 +31,7 @@ vi.mock("lucide-react/dynamic", async (importOriginal) => ({
   },
 }));
 
-const { SavingGoalItem } = await import("./AssetPage");
+const { SavingGoalItem } = await import("./asset-parts");
 
 let container: HTMLDivElement;
 let root: Root;

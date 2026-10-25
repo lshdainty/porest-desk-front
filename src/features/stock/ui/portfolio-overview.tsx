@@ -14,6 +14,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
+import { formatChangeRate } from "@/shared/lib/groo/format";
 import { Card } from "@/shared/ui/card";
 import { PortfolioDonut, type DonutSlice } from "./portfolio-donut";
 import { PanelEmpty } from "./stock-row";
@@ -193,8 +194,7 @@ export function PortfolioOverview({
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {r.profitPct >= 0 ? "+" : ""}
-                  {r.profitPct.toFixed(2)}%
+                  {formatChangeRate(r.profitPct, { sign: "always" })}
                 </div>
               </div>
             ))}

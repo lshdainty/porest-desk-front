@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { tileRadius } from "@/shared/lib";
 import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
+import { formatChangeRate } from "@/shared/lib/groo/format";
 import { fmtByCurrency, trendColor } from "../lib/format";
 
 // ---- 등락률 배지 (색 + 부호 + 아이콘 3중 병기 — A11y 1.4.1) ----------------
@@ -32,8 +33,7 @@ export function PctBadge({ pct, size = 13 }: { pct: number; size?: number }) {
       }}
     >
       <Chevron size={size + 2} strokeWidth={2.6} />
-      {up ? "+" : ""}
-      {pct.toFixed(2)}%
+      {formatChangeRate(pct, { sign: "always" })}
     </span>
   );
 }

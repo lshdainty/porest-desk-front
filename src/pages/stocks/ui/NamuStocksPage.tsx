@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router-dom";
 import { Info, Unplug } from "lucide-react";
 import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
-import { money } from "@/shared/lib/groo/format";
+import { formatChangeRate, money } from "@/shared/lib/groo/format";
 import { Card } from "@/shared/ui/card";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -188,7 +188,7 @@ export function NamuStocksPage({ header }: { header?: React.ReactNode }) {
       ),
       sub: (
         <MaskAmount card="stocks.holdings">
-          {`${view.krw.profitLoss >= 0 ? "+" : "−"}${fmtByCurrency(Math.abs(view.krw.profitLoss), "KRW")} · ${view.krw.profitRatePct >= 0 ? "+" : ""}${view.krw.profitRatePct.toFixed(2)}%`}
+          {`${view.krw.profitLoss >= 0 ? "+" : "−"}${fmtByCurrency(Math.abs(view.krw.profitLoss), "KRW")} · ${formatChangeRate(view.krw.profitRatePct, { sign: "always" })}`}
         </MaskAmount>
       ),
     });
@@ -205,7 +205,7 @@ export function NamuStocksPage({ header }: { header?: React.ReactNode }) {
       ),
       sub: (
         <MaskAmount card="stocks.holdings">
-          {`${view.usd.profitLoss >= 0 ? "+" : "−"}${fmtByCurrency(Math.abs(view.usd.profitLoss), "USD")} · ${view.usd.profitRatePct >= 0 ? "+" : ""}${view.usd.profitRatePct.toFixed(2)}%`}
+          {`${view.usd.profitLoss >= 0 ? "+" : "−"}${fmtByCurrency(Math.abs(view.usd.profitLoss), "USD")} · ${formatChangeRate(view.usd.profitRatePct, { sign: "always" })}`}
         </MaskAmount>
       ),
     });
@@ -540,8 +540,7 @@ function NamuHoldingRow({
               marginTop: 1,
             }}
           >
-            {pnl >= 0 ? "+" : ""}
-            {pct.toFixed(2)}%
+            {formatChangeRate(pct, { sign: "always" })}
           </div>
         </>
       }
@@ -863,7 +862,7 @@ function NamuHoldingCard({
     ],
     [
       t("holding.returnRate"),
-      `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`,
+      `${formatChangeRate(pct, { sign: "always" })}`,
       trendColor(pnl),
     ],
     [

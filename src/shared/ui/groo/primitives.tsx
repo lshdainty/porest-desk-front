@@ -24,7 +24,7 @@ import {
   type Tx,
   type Account,
 } from "@/shared/lib/groo/data";
-import { KRW, money, isEn } from "@/shared/lib/groo/format";
+import { KRW, money, isEn, formatChangeRate } from "@/shared/lib/groo/format";
 import {
   formatYearMonth,
   formatYear,
@@ -210,7 +210,7 @@ export function Delta({
         letterSpacing: "-0.012em",
       }}
     >
-      {up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
+      {up ? "▲" : "▼"} {formatChangeRate(pct, { sign: "none" })}
       {amt != null && (
         <span
           style={{

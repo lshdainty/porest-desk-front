@@ -4,7 +4,7 @@ import { AlertTriangle, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { tileRadius } from "@/shared/lib";
-import { KRW, money } from "@/shared/lib/groo/format";
+import { KRW, formatChangeRate, money } from "@/shared/lib/groo/format";
 import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -1199,7 +1199,7 @@ function StockDetailBody({
             ],
             [
               t("holding.returnRate"),
-              `${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%`,
+              `${formatChangeRate(pnlPct, { sign: "always" })}`,
               trendColor(pnl),
             ],
             [
@@ -1457,7 +1457,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
       ),
       sub: (
         <MaskAmount card="stocks.holdings">
-          {`${totalPnl >= 0 ? "+" : "−"}${money(totalPnl, { abs: true })} · ${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(2)}% · ${t("holding.purchaseAmount")} ${money(totalCost)}`}
+          {`${totalPnl >= 0 ? "+" : "−"}${money(totalPnl, { abs: true })} · ${formatChangeRate(totalPnlPct, { sign: "always" })} · ${t("holding.purchaseAmount")} ${money(totalCost)}`}
         </MaskAmount>
       ),
     });
@@ -1468,7 +1468,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
       value: (
         <MaskAmount card="stocks.holdings">{`${dailyPnl >= 0 ? "+" : "−"}${money(dailyPnl, { abs: true })}`}</MaskAmount>
       ),
-      sub: `${dailyPnlPct >= 0 ? "+" : ""}${dailyPnlPct.toFixed(2)}% · ${t("summary.holdingsCount")} ${t("unit.count", { count: holdingItems.length })}`,
+      sub: `${formatChangeRate(dailyPnlPct, { sign: "always" })} · ${t("summary.holdingsCount")} ${t("unit.count", { count: holdingItems.length })}`,
     });
   }
   for (const i of idxQ.data ?? []) {
@@ -1487,7 +1487,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
       }),
       sub:
         trendPct != null
-          ? `${trendPct >= 0 ? "+" : ""}${trendPct.toFixed(2)}%`
+          ? `${formatChangeRate(trendPct, { sign: "always" })}`
           : t("market.indexPoint"),
       // 캔들을 못 받으면 추이선만 빠지고 숫자는 남는다.
       graphic: series ? (
@@ -1623,8 +1623,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
                     marginTop: 1,
                   }}
                 >
-                  {pnl >= 0 ? "+" : ""}
-                  {pct.toFixed(2)}%
+                  {formatChangeRate(pct, { sign: "always" })}
                 </div>
               </>
             }
@@ -1700,7 +1699,7 @@ export function TossStocksPage({ header }: { header?: React.ReactNode }) {
         mobile={mobile}
         title={t("portfolio.allTitle")}
         totalText={`${KRW(totalEval)}원`}
-        subText={`${totalPnl >= 0 ? "+" : "−"}${money(totalPnl, { abs: true })} · ${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(2)}%`}
+        subText={`${totalPnl >= 0 ? "+" : "−"}${money(totalPnl, { abs: true })} · ${formatChangeRate(totalPnlPct, { sign: "always" })}`}
         slices={holdingItems.map((h) => ({
           name: h.name || h.symbol,
           value: num(h.marketValue.amount),

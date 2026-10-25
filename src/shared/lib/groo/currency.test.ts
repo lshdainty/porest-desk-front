@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { CURRENCIES, currencySymbol, currencyUnit } from "./currency";
+import {
+  CURRENCIES,
+  currencySymbol,
+  currencyUnit,
+  formatOriginalAmount,
+} from "./currency";
 
 /**
  * 라벨 괄호 안의 통화 단위 — `잔액 (원)` · `잔액 ($)`.
@@ -95,5 +100,26 @@ describe("잔액·한도 라벨은 단위를 슬롯으로 받는다", () => {
     expect(
       i18n.t("editDialog.overdraftLimitLabel", { ns: "asset", unit: "$" }),
     ).toBe("Credit Line ($, optional)");
+  });
+});
+
+/**
+ * 원 통화 금액 — 정해진 소수 자리는 늘 보인다(사용자 결정 2026-10-25). 앱 `formatOriginalAmount` 와 같은 규칙.
+ */
+describe("formatOriginalAmount", () => {
+  it("소수 둘째 자리를 늘 보인다 — $1,000.00 · $1,000.50", () => {
+    expect(formatOriginalAmount(1000, "USD", "ko-KR")).toBe("$1,000.00");
+    expect(formatOriginalAmount(1000.5, "USD", "ko-KR")).toBe("$1,000.50");
+    expect(formatOriginalAmount(5.5, "EUR", "en-US")).toBe("€5.50");
+  });
+
+  it("소수가 없는 통화는 0자리 — ¥1,280 · ₩1,000 · 동", () => {
+    expect(formatOriginalAmount(1280, "JPY", "ko-KR")).toBe("¥1,280");
+    expect(formatOriginalAmount(1280.4, "JPY", "ko-KR")).toBe("¥1,280");
+    expect(formatOriginalAmount(1000, "KRW", "ko-KR")).toBe("₩1,000");
+  });
+
+  it("셋째 자리는 반올림한다", () => {
+    expect(formatOriginalAmount(0.126, "USD", "ko-KR")).toBe("$0.13");
   });
 });

@@ -625,21 +625,19 @@ asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 
 asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
 asset,editDialog.includeInTotalDesc,순자산·총자산 계산에 반영됩니다,Counts toward net worth and total assets
 asset,netWorth,순자산,Net worth
-asset,noTrendData,추이 데이터가 없어요,No trend data
+asset,noTrendData,추이 데이터가 없어요.,No trend data.
 asset,group.cashDeposit,현금·예금,Cash & Deposits
 asset,composition,자산 구성,Asset composition
-asset,noItems,등록된 항목이 없어요,No items registered
-asset,noAssetData,자산 데이터가 없어요,No asset data
-asset,viewSubAssets,클릭하여 하위 자산 보기,Click to view sub-assets
+asset,noItems,등록된 항목이 없어요.,No items registered.
+asset,noAssetData,자산 데이터가 없어요.,No asset data.
 asset,upcomingBills,예정된 결제 · 고정지출,Upcoming payments · Fixed expenses
 asset,viewAll,전체 보기,View all
-asset,noUpcomingBills,예정된 결제가 없어요,No upcoming payments
-asset,anytime,상시,Anytime
+asset,noUpcomingBills,예정된 결제가 없어요.,No upcoming payments.
 asset,achieved,달성,Achieved
 asset,savingGoals,저축 목표,Saving goals
 asset,addGoal,목표 추가,Add goal
 asset,manage,관리,Manage
-asset,manageGoalsPrompt,설정에서 저축 목표를 추가해보세요,Add saving goals in Settings
+asset,manageGoalsPrompt,설정에서 저축 목표를 추가해보세요.,Add saving goals in Settings.
 asset,savingGoal.noDeadline,기한 없음,No deadline
 asset,savingGoal.name,목표 이름,Goal name
 asset,savingGoal.namePlaceholder,예: 유럽 여행,e.g. Europe trip
@@ -681,8 +679,26 @@ asset,show,보이기,Show
 asset,hide,가리기,Hide
 asset,refresh,새로고침,Refresh
 asset,emptyTitle,아직 등록된 자산이 없어요,No assets yet
-asset,emptyDesc,설정 → 계좌·카드 관리에서 추가할 수 있어요,Add them in Settings → Manage accounts & cards
+asset,emptyDesc,설정 → 계좌·카드 관리에서 추가할 수 있어요.,Add them in Settings → Manage accounts & cards.
 asset,emptyCta,계좌·카드 관리로 가기,Go to manage accounts & cards
+asset,hideAmountsSettings,금액 가리기 설정,Hide amounts settings
+asset,refreshing,새로 고치는 중,Refreshing
+asset,debt,빚,Debt
+asset,assetTotal,자산 합계,Total assets
+asset,backToComposition,자산 구성으로,Back to composition
+asset,cardLimitName,{{name}} 한도,{{name}} limit
+asset,chart.netWorthName,최근 12개월 순자산 추이 — 이번 달 {{amount}},Net worth over the last 12 months — this month {{amount}}
+asset,chart.compositionName,자산 구성 — {{label}} {{amount}},Asset composition — {{label}} {{amount}}
+asset,chart.tableMonth,달,Month
+asset,chart.tableGroup,구분,Group
+asset,chart.tablePercent,비율,Share
+asset,chart.tableAmount,금액,Amount
+asset,loadFailed.summary,순자산을 불러오지 못했어요,Couldn't load net worth
+asset,loadFailed.trend,순자산 추이를 불러오지 못했어요,Couldn't load the net worth trend
+asset,loadFailed.composition,자산 구성을 불러오지 못했어요,Couldn't load the asset composition
+asset,loadFailed.assets,자산을 불러오지 못했어요,Couldn't load your assets
+asset,loadFailed.upcoming,예정된 결제를 불러오지 못했어요,Couldn't load upcoming payments
+asset,loadFailed.goals,저축 목표를 불러오지 못했어요,Couldn't load saving goals
 asset,accountDepositTitle,계좌 · 예금,Accounts & Deposits
 asset,assetDetail.statusCompleted,완료,Completed
 asset,assetDetail.statusPending,대기,Pending

@@ -67,8 +67,9 @@ export const currencyUnit = (code: string | null | undefined): string =>
 /**
  * 원 통화 금액 표기 — `$5.50` / `¥1,280`.
  *
- * 소수 자리는 통화별로 다르다(엔·원은 0). Intl 이 통화별 기본 자리수를 알고 있어
- * 직접 세지 않는다. 기호는 우리가 붙이므로 표기는 숫자만 뽑는다.
+ * 소수 자리는 통화별로 다르다(엔·원·동은 0, 그 밖은 2) — 정해진 자리는 **늘 보인다**($1,000.00 · $1,000.50,
+ * 사용자 결정 2026-10-25 — "소수가 0 이면 빼기" 는 거절). 앱 `formatOriginalAmount`(core/format/currency.dart)와 같은 규칙이다.
+ * 기호는 우리가 붙이므로 표기는 숫자만 뽑는다.
  */
 export const formatOriginalAmount = (
   amount: number,
@@ -77,7 +78,7 @@ export const formatOriginalAmount = (
 ): string => {
   const digits = code === "JPY" || code === "KRW" || code === "VND" ? 0 : 2;
   return `${currencySymbol(code)}${amount.toLocaleString(locale, {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   })}`;
 };

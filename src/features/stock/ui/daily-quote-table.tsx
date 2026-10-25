@@ -12,6 +12,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { formatChangeRate } from "@/shared/lib/groo/format";
 import { Card } from "@/shared/ui/card";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { securitiesApi } from "../api/securitiesApi";
@@ -187,8 +188,7 @@ export function DailyQuoteTable({
                   whiteSpace: "nowrap",
                 }}
               >
-                {r.chg >= 0 ? "+" : ""}
-                {r.chg.toFixed(2)}%
+                {formatChangeRate(r.chg, { sign: "always" })}
               </div>
               <div
                 className="num"

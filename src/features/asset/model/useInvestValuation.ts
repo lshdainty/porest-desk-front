@@ -104,7 +104,7 @@ export function useInvestValuation(
       const base = value - changeAmt;
       const changePct =
         hasChangeBase && base !== 0
-          ? Math.round((changeAmt / base) * 1000) / 10
+          ? Math.round((changeAmt / base) * 10000) / 100
           : null;
       map.set(a.rowId, {
         value,
