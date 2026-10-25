@@ -5,7 +5,6 @@ import { useCallback } from "react";
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import { useDragSelect } from "@/widgets/calendar/model/drag-select-context";
 import { DragSelectProvider } from "@/widgets/calendar/model/drag-select-provider";
-import { useMinWidth } from "@/widgets/calendar/model/use-min-width";
 import {
   calculateMonthEventPositions,
   getCalendarCells,
@@ -49,9 +48,8 @@ export function WeekdayHead() {
   );
 }
 
-/** 칸 높이 — 104(폭 900 이상), 96(그 미만 — 820). 화면 높이로 채우지 않는다(I-09 16) */
-const CELL_TALL = "h-[104px]";
-const CELL_SHORT = "h-[96px]";
+/** 칸 높이 104 하나 — 폭으로 갈리지 않는다. 화면 높이로 채우지 않는다(I-09 16 · 17) */
+const CELL_HEIGHT = "h-[104px]";
 
 interface IProps {
   singleDayEvents: IEvent[];
@@ -65,7 +63,6 @@ function MonthGrid({ singleDayEvents, multiDayEvents, onEventClick }: IProps) {
   const { selectedDate, setSelectedDate } = useCalendar();
   const { startSelection, updateSelection, endSelection, isDateInSelection } =
     useDragSelect();
-  const tall = useMinWidth(900);
   const { metrics, stackRef, chipRef, moreRef } =
     useChipMetrics(DESKTOP_METRICS);
 
@@ -144,7 +141,7 @@ function MonthGrid({ singleDayEvents, multiDayEvents, onEventClick }: IProps) {
               onMouseEnter={() => updateSelection(date)}
               className={cn(
                 "relative flex min-w-0 select-none flex-col pt-x1",
-                tall ? CELL_TALL : CELL_SHORT,
+                CELL_HEIGHT,
                 !lastRow && "border-b border-stroke-neutral-subtle",
                 index % 7 !== 6 && "border-r border-stroke-neutral-subtle",
                 (selected || dragging) && "bg-bg-brand-weak",
@@ -210,7 +207,7 @@ function MonthGrid({ singleDayEvents, multiDayEvents, onEventClick }: IProps) {
 }
 
 /**
- * 데스크톱 · 태블릿 월 격자 (I-09 16) — ds Card(모서리 16 · 1px · 안 여백 0) 안에 요일 머리 36 + 칸 104(820 은 96).
+ * 데스크톱 · 태블릿 월 격자 (I-09 16) — ds Card(모서리 16 · 1px · 안 여백 0) 안에 요일 머리 36 + 칸 104.
  * 칸 = 오른쪽 · 아래 1px 선. 날 숫자 원 26 왼쪽 맞춤, 칩 20 · 말줄임 · 시각 없음, "+N개" 는 칩 자리 마지막 줄.
  * 고른 날 = 칸 `bg-brand-weak` + 짙은 원. 누름 = 날 고르기, 두 날 이상 끌어 놓음 = 그 기간으로 일정 폼.
  */

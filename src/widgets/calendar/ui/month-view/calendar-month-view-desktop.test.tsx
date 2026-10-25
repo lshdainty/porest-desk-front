@@ -12,7 +12,6 @@ declare global {
 const mocks = vi.hoisted(() => ({
   setSelectedDate: vi.fn(),
   selected: new Date(2026, 9, 22),
-  tall: true,
 }));
 
 vi.mock("react-i18next", () => ({
@@ -29,9 +28,6 @@ vi.mock("@/widgets/calendar/model/calendar-context", () => ({
     setSelectedDate: mocks.setSelectedDate,
     setView: () => {},
   }),
-}));
-vi.mock("@/widgets/calendar/model/use-min-width", () => ({
-  useMinWidth: () => mocks.tall,
 }));
 // 일정 추가 폼을 끌고 오는 프로바이더는 갈음한다 — 여기서 볼 것은 칸이다
 vi.mock("@/widgets/calendar/model/drag-select-provider", async () => {
@@ -66,7 +62,6 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   mocks.setSelectedDate.mockClear();
   mocks.selected = new Date(2026, 9, 22);
-  mocks.tall = true;
   vi.stubGlobal(
     "ResizeObserver",
     class {
@@ -136,16 +131,12 @@ const cellOf = (day: string) =>
   )!;
 
 describe("데스크톱 월 격자", () => {
-  it("칸 높이는 104(폭 900 이상), 820 에서는 96 — 화면 높이로 채우지 않는다", () => {
+  it("칸 높이는 104 하나 — 폭으로 갈리지 않고 화면 높이로 채우지 않는다", () => {
     render([]);
     expect(cells()).toHaveLength(35);
-    expect(cells()[0]!.className).toContain("h-[104px]");
+    expect(cells().every((c) => c.className.includes("h-[104px]"))).toBe(true);
+    expect(container.innerHTML).not.toContain("96px");
     expect(container.innerHTML).not.toContain("auto-rows-fr");
-    act(() => root.unmount());
-    root = createRoot(container);
-    mocks.tall = false;
-    render([]);
-    expect(cells()[0]!.className).toContain("h-[96px]");
   });
 
   it("고른 날은 칸이 bg-brand-weak 이고 숫자는 짙은 원 + 700", () => {

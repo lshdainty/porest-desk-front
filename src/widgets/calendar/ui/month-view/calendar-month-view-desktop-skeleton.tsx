@@ -1,5 +1,4 @@
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
-import { useMinWidth } from "@/widgets/calendar/model/use-min-width";
 import { getCalendarCells } from "@/widgets/calendar/lib/helpers";
 import { Card } from "@/shared/ds/card";
 import { Skeleton } from "@/shared/ds/skeleton";
@@ -13,7 +12,6 @@ import { WeekdayHead } from "./calendar-month-view-desktop";
  */
 export function CalendarMonthViewDesktopSkeleton() {
   const { selectedDate } = useCalendar();
-  const tall = useMinWidth(900);
   const cells = getCalendarCells(selectedDate);
   return (
     <Card data-slot="calendar-month-grid" aria-busy="true" className="p-0">
@@ -24,7 +22,7 @@ export function CalendarMonthViewDesktopSkeleton() {
             key={i}
             className={cn(
               "flex flex-col gap-x0_5 pt-x1",
-              tall ? "h-[104px]" : "h-[96px]",
+              "h-[104px]",
               i < cells.length - 7 && "border-b border-stroke-neutral-subtle",
               i % 7 !== 6 && "border-r border-stroke-neutral-subtle",
             )}
