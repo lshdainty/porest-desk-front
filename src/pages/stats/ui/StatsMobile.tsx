@@ -1,0 +1,150 @@
+import { useTranslation } from "react-i18next";
+import { Tabs, ChipTabsList, ChipTabsTrigger } from "@/shared/ds/tabs";
+import { useSwipeNav } from "@/shared/hooks";
+import { ScreenBands } from "@/shared/ui/groo/screen-bands";
+import { HideCard } from "@/shared/lib/groo/hide-amounts";
+import { FixedBulkDialog } from "@/features/expense/ui/FixedBulkDialog";
+import {
+  CompareCategorySection,
+  CompareMetricsSection,
+  CompareSummarySection,
+  CompareWeekdaySection,
+} from "./stats-compare-parts";
+import {
+  FixedCategorySection,
+  FixedOverviewSection,
+  FixedTrendSection,
+} from "./fixed-parts";
+import {
+  DonutSection,
+  HeatmapSection,
+  HighlightsSection,
+  MerchantsSection,
+} from "./stats-parts";
+import {
+  CatTrendSection,
+  SavingsBarsSection,
+  SavingsRateSection,
+  TrendSection,
+} from "./stats-trend-parts";
+import { RangePickerSheet } from "./RangePickerSheet";
+import { useStatsModel } from "./stats-model";
+import type { TabKey } from "./stats-range";
+
+/**
+ * 폰 통계(I-08 29 ~ 31) — 가계부 묶음 Line 탭 아래 칩 탭(Chip Tabs solid large 40, 위아래 틈 0), 그 아래 구역마다 흰 띠(사이 8).
+ * 기간 버튼은 첫 띠 머리 오른쪽에 있다(따로 띠를 두지 않는다). 머리 없는 띠(요약 · 지표 · 저축률)는 위 24 에서 첫 글이 시작한다.
+ * 네 탭 모두 같은 규칙이고 앱 `stats_screen.dart` 와 같은 구조 · 같은 값이다(짝 1).
+ */
+export function StatsMobile() {
+  const { t } = useTranslation("stats");
+  const m = useStatsModel();
+  const TAB_ITEMS: { v: TabKey; l: string }[] = [
+    { v: "cat", l: t("tab.category") },
+    { v: "trend", l: t("tab.trend") },
+    { v: "compare", l: t("tab.compare") },
+    { v: "fixed", l: t("tab.fixed") },
+  ];
+  // 좌우로 밀어서 탭 이동 — 칩을 눌러야만 넘어가면 한 손으로 쓰기 불편하다. 양 끝에서는 순환하지 않는다
+  const goTabBy = (step: number) => {
+    const i = TAB_ITEMS.findIndex((x) => x.v === m.tab);
+    const next = TAB_ITEMS[i + step];
+    if (next) m.setTab(next.v);
+  };
+  const swipeNav = useSwipeNav({
+    enabled: true,
+    onPrev: () => goTabBy(-1),
+    onNext: () => goTabBy(1),
+  });
+  const band = (name: string, node: React.ReactNode) => (
+    <div data-band="flush" data-section={name}>
+      {node}
+    </div>
+  );
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <Tabs
+        value={m.tab}
+        onValueChange={(v) => m.setTab(v as TabKey)}
+        className="shrink-0 bg-bg-layer-default"
+      >
+        <ChipTabsList variant="solid" size="large" aria-label={t("tab.aria")}>
+          {TAB_ITEMS.map(({ v, l }) => (
+            <ChipTabsTrigger key={v} value={v}>
+              {l}
+            </ChipTabsTrigger>
+          ))}
+        </ChipTabsList>
+      </Tabs>
+      <div
+        role="tabpanel"
+        className="min-h-0 flex-1 overflow-y-auto"
+        style={swipeNav.style}
+        {...swipeNav.handlers}
+      >
+        <ScreenBands>
+          {m.tab === "cat" && (
+            <>
+              {band("donut", <DonutSection m={m} place="band" />)}
+              {band("merchants", <MerchantsSection m={m} place="band" />)}
+              {band("heatmap", <HeatmapSection m={m} place="band" />)}
+              {band("highlights", <HighlightsSection m={m} place="band" />)}
+            </>
+          )}
+          {m.tab === "trend" && (
+            <>
+              {band("trend", <TrendSection m={m} place="band" />)}
+              {band("rate", <SavingsRateSection m={m} place="band" />)}
+              {band("savings", <SavingsBarsSection m={m} place="band" />)}
+              {m.showCatTrend &&
+                band("catTrend", <CatTrendSection m={m} place="band" />)}
+            </>
+          )}
+          {m.tab === "compare" && (
+            <>
+              {band("summary", <CompareSummarySection m={m} place="band" />)}
+              {band("metrics", <CompareMetricsSection m={m} place="band" />)}
+              {band("delta", <CompareCategorySection m={m} place="band" />)}
+              {band("weekday", <CompareWeekdaySection m={m} place="band" />)}
+            </>
+          )}
+          {m.tab === "fixed" && (
+            <>
+              {band(
+                "expense",
+                <FixedOverviewSection m={m} kind="expense" place="band" />,
+              )}
+              {band(
+                "income",
+                <FixedOverviewSection m={m} kind="income" place="band" />,
+              )}
+              {band("trend", <FixedTrendSection m={m} place="band" />)}
+              {band("categories", <FixedCategorySection m={m} place="band" />)}
+            </>
+          )}
+        </ScreenBands>
+      </div>
+      {m.pickerOpen && (
+        <RangePickerSheet
+          mobile
+          initial={m.period}
+          onCancel={() => m.setPickerOpen(false)}
+          onConfirm={(r) => {
+            m.setPeriod(r);
+            m.setPickerOpen(false);
+          }}
+        />
+      )}
+      {m.manageOpen && (
+        <HideCard card="stats.fixed">
+          <FixedBulkDialog
+            mobile
+            startDate={m.startDate}
+            endDate={m.endDate}
+            onClose={() => m.setManageOpen(false)}
+          />
+        </HideCard>
+      )}
+    </div>
+  );
+}

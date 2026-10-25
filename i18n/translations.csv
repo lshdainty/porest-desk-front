@@ -2874,6 +2874,32 @@ stats,fixed.bulk.doneFixed,{{count}}건을 고정으로 바꿨어요,Marked {{co
 stats,fixed.bulk.doneVariable,{{count}}건을 변동으로 되돌렸어요,Changed {{count}} back to variable
 settings,hideAmounts.card.stats.fixed,고정·변동 탭,Fixed vs. variable tab
 stats,fixed.insight.tail,이에요.,.
+stats,category.others,기타,Others
+stats,chart.donutName,"{{period}} 카테고리별 지출, 합계 {{total}}","{{period}} spending by category, total {{total}}"
+stats,chart.heatName,"{{period}} 요일 · 시간대별 지출, 합계 {{total}}","{{period}} spending by day and time, total {{total}}"
+stats,chart.heatValue,지출,Spending
+stats,chart.trendName,"{{period}} 수입 · 지출 추이, 수입 {{income}} · 지출 {{expense}}","{{period}} income and spending trend, income {{income}} · spending {{expense}}"
+stats,chart.savingsName,{{period}} {{unit}},{{period}} {{unit}}
+stats,chart.catTrendName,{{period}} 주요 카테고리 월별 지출 추이,{{period}} monthly spending of top categories
+stats,chart.weekdayName,{{period}} 요일별 지출 비교,{{period}} spending by weekday compared
+stats,chart.fixedName,{{kind}} 월별 고정 · 변동 추이,Monthly fixed and variable {{kind}}
+stats,chart.tableCategory,카테고리,Category
+stats,chart.tablePercent,비율,Share
+stats,chart.tableAmount,금액,Amount
+stats,chart.tableDate,날짜,Date
+stats,chart.tableMonth,월,Month
+stats,chart.tableTime,시간대,Time of day
+stats,chart.tableWeekday,요일,Weekday
+stats,loadFailed.category,카테고리별 지출을 불러오지 못했어요,Couldn't load spending by category
+stats,loadFailed.merchant,가맹점 순위를 불러오지 못했어요,Couldn't load top merchants
+stats,loadFailed.heatmap,요일 · 시간대 지출을 불러오지 못했어요,Couldn't load spending by day and time
+stats,loadFailed.highlights,요약을 불러오지 못했어요,Couldn't load the summary
+stats,loadFailed.trend,추이를 불러오지 못했어요,Couldn't load the trend
+stats,loadFailed.compare,비교할 내용을 불러오지 못했어요,Couldn't load the comparison
+stats,loadFailed.weekday,요일별 지출을 불러오지 못했어요,Couldn't load spending by weekday
+stats,loadFailed.fixed,고정 · 변동 내용을 불러오지 못했어요,Couldn't load fixed and variable spending
+stats,period.buttonAria,기간 {{period}} 바꾸기,Change period ({{period}})
+stats,tab.aria,통계 보기,Statistics views
 layout,notificationsUnread,"알림, 새 알림 있음","Notifications, new notifications"
 notification,row.unread,안 읽음,Unread
 notification,popover.unreadPlain,읽지 않은 알림 {{count}}개,{{count}} unread
