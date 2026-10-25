@@ -46,7 +46,7 @@ export function WeekPicker({ m, place }: { m: ReportModel; place: Place }) {
         >
           <ChevronLeft aria-hidden />
         </Button>
-        <span className="whitespace-nowrap text-t5 font-bold tabular-nums text-fg-neutral">
+        <span className="min-w-0 text-center text-t5 font-bold tabular-nums text-fg-neutral">
           {m.rangeLabel}
         </span>
         <Button
