@@ -2,7 +2,7 @@ import { ResponsivePair } from "@/shared/ds/button";
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Drawer as DrawerPrimitive } from "vaul";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 import { cn } from "@/shared/lib/cn";
 import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
@@ -33,6 +33,8 @@ import {
   SHEET_TITLE,
   SHEET_TITLE_WITH_CLOSE,
   SHEET_TITLE_WITH_ACTION,
+  SHEET_TITLE_WITH_BACK,
+  SHEET_BACK,
   SHEET_HEADER_ACTION,
 } from "./bottom-sheet-variants";
 import { useDsText } from "@/shared/ds/i18n";
@@ -430,6 +432,8 @@ export interface BottomSheetContentProps extends Omit<
   showCloseButton?: boolean;
   /** 머리 오른쪽 동작 하나 — ghost iconOnly 36 단추(⋮ "{항목 이름} 더보기"). 닫기 단추 왼쪽 사이 4, 제목은 남은 폭에서 줄을 바꾼다. 초점 차례: 제목 → 동작 → 닫기 */
   headerAction?: React.ReactNode;
+  /** 머리 왼쪽 뒤로 가기 — 같은 시트 안에서 한 단계 되돌아갈 때(← 아이콘 단추 "뒤로", 보이는 40 · 누르는 44). 제목은 그 오른쪽 사이 4 에서 시작한다 */
+  onBack?: () => void;
 }
 
 const BottomSheetContent = React.forwardRef<
@@ -442,6 +446,7 @@ const BottomSheetContent = React.forwardRef<
       description,
       showCloseButton = true,
       headerAction,
+      onBack,
       children,
       ...props
     },
@@ -457,6 +462,18 @@ const BottomSheetContent = React.forwardRef<
         {...(description == null ? { "aria-describedby": undefined } : null)}
         {...props}
       >
+        {/* 뒤로 가기 — DOM 맨 앞이라 초점 차례도 맨 앞: 뒤로 → 제목 → 동작 → 닫기 */}
+        {onBack && (
+          <button
+            type="button"
+            aria-label={dsT("topNavigation.back")}
+            data-slot="bottom-sheet-back"
+            className={SHEET_BACK}
+            onClick={onBack}
+          >
+            <ArrowLeft aria-hidden strokeWidth={2} />
+          </button>
+        )}
         <div data-slot="bottom-sheet-header" className={SHEET_HEADER}>
           <DrawerPrimitive.Title
             data-slot="bottom-sheet-title"
@@ -464,6 +481,7 @@ const BottomSheetContent = React.forwardRef<
               SHEET_TITLE,
               showCloseButton && SHEET_TITLE_WITH_CLOSE,
               headerAction != null && SHEET_TITLE_WITH_ACTION,
+              onBack && SHEET_TITLE_WITH_BACK,
             )}
           >
             {title}

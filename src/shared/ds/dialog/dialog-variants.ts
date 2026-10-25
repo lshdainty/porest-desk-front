@@ -43,6 +43,15 @@ export const DIALOG_HEADER_ACTION_CLOSE =
   "absolute right-[calc(var(--spacing-x6)+22px+var(--spacing-x1))] top-[39px] z-1 flex -translate-y-1/2 items-center";
 export const DIALOG_HEADER_ACTION =
   "absolute right-x4 top-[39px] z-1 flex -translate-y-1/2 items-center";
+// 머리 왼쪽 뒤로 가기(onBack) — 시트와 같은 값: 보이는 40 · 아이콘 24 · 누르는 44, 아이콘이 왼쪽 24 에 오고 제목은 상자 오른쪽 사이 4 에서 시작한다
+export const DIALOG_TITLE_WITH_BACK = "pl-[36px]";
+export const DIALOG_BACK = [
+  "absolute left-[calc(var(--spacing-x6)-8px)] top-[calc(var(--spacing-x6)+15px)] z-1 flex size-[40px] -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-fg-neutral [&>svg]:size-[24px]",
+  "before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
+  "hover:bg-bg-neutral-weak-pressed active:bg-bg-neutral-weak-pressed",
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
+].join(" ");
 export const DIALOG_TITLE = "m-0 text-t8 font-bold text-fg-neutral";
 export const DIALOG_DESCRIPTION =
   "m-0 text-t5 font-normal text-fg-neutral-muted";
