@@ -58,7 +58,6 @@ vi.mock("@/features/constellation", () => ({
   useConstellationSky: () => ({ data: [] }),
 }));
 vi.mock("@/widgets/constellation", () => ({
-  ForestReport: () => null,
   ForestStrip: () => null,
   NightSkyPanel: () => null,
 }));

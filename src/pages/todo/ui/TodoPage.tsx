@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toLocalDateKey, todayLocalKey } from "@/shared/lib/date";
 import { Plus, Sparkles } from "lucide-react";
@@ -15,11 +15,7 @@ import {
   useConstellationSky,
   useConstellationToday,
 } from "@/features/constellation";
-import {
-  ForestReport,
-  ForestStrip,
-  NightSkyPanel,
-} from "@/widgets/constellation";
+import { ForestStrip, NightSkyPanel } from "@/widgets/constellation";
 import { isDone } from "@/pages/todo/model/todo-ledger";
 import { todoTagOptions } from "@/pages/todo/lib/todo-tags";
 import { TodoMobileLedger } from "./TodoMobileLedger";
@@ -101,9 +97,10 @@ const TodoPageInner = ({
   const [editing, setEditing] = useState<Todo | { _new: true } | null>(null);
   // viewing: 행 클릭 → 읽기 전용 상세 (수정 버튼으로 editing 전환)
   const [viewing, setViewing] = useState<Todo | null>(null);
-  // 밤하늘 화면 / 관측 리포트 오버레이
+  // 밤하늘 화면 오버레이(관측 리포트는 주소로 열린다 — 덮개가 아니라 화면)
   const [nightSky, setNightSky] = useState(false);
-  const [forestReport, setForestReport] = useState(false);
+  const navigate = useNavigate();
+  const openReport = () => navigate("/desk/todo/night-sky/report");
   // 별빛 획득 토스트 — 완료 시 "+N · 수집까지 N별"
   const [starToast, setStarToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -166,11 +163,8 @@ const TodoPageInner = ({
           mobile={mobile}
           doneToday={doneToday}
           onClose={() => setNightSky(false)}
-          onOpenReport={() => setForestReport(true)}
+          onOpenReport={openReport}
         />
-      )}
-      {forestReport && (
-        <ForestReport mobile={mobile} onClose={() => setForestReport(false)} />
       )}
     </>
   );
@@ -231,7 +225,7 @@ const TodoPageInner = ({
             onEdit={setEditing}
             onDelete={(td) => deleteTodo.mutateAsync(td.rowId)}
             openNightSky={() => setNightSky(true)}
-            openReport={() => setForestReport(true)}
+            openReport={openReport}
           />
           <FloatingActionButton
             icon={<Plus />}
@@ -265,7 +259,7 @@ const TodoPageInner = ({
         constellationToday={constellationTodayQ.data}
         doneToday={doneToday}
         openNightSky={() => setNightSky(true)}
-        openReport={() => setForestReport(true)}
+        openReport={openReport}
       />
       {dialog}
       {overlays}

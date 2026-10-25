@@ -6,4 +6,12 @@ export { ConstellationDetailDialog } from "./ui/ConstellationDetailDialog";
 export { ForestStrip } from "./ui/ForestStrip";
 export { ForestWeekEntry } from "./ui/ForestWeekEntry";
 export { NightSkyPanel } from "./ui/NightSkyPanel";
-export { ForestReport } from "./ui/ForestReport";
+export {
+  AnalysisSection,
+  MissedSection,
+  ReportSkeleton,
+  ResultSection,
+  StarlightSection,
+  WeekPicker,
+} from "./ui/report-parts";
+export { useReportModel } from "./model/use-report-model";
