@@ -37,7 +37,7 @@ const MonthYearPickerContent = ({
         >
           <ChevronLeft size={16} />
         </Button>
-        <span className="text-sm font-semibold">{formatYear(pickerYear)}</span>
+        <span className="text-t4 font-bold">{formatYear(pickerYear)}</span>
         <Button
           aria-label={t("common:next")}
           variant="ghost"
@@ -88,17 +88,17 @@ const MonthYearPickerContent = ({
         <button
           // 오늘로 = primary-light(다크에서 --fg-brand-strong→primary-light swap)로 가독성 확보.
           // primary(--color-primary)는 다크 배경에서 잘 안 보임. 선택 월 박스는 브랜드 채움(bg-bg-brand-solid).
-          className="flex items-center gap-1 text-sm font-medium text-[var(--fg-brand-strong)] hover:opacity-80"
+          className="flex items-center gap-1 text-t4 font-medium text-fg-brand hover:opacity-80"
           onClick={() => {
             onToday();
             onClose();
           }}
         >
-          <Navigation size={13} />
+          <Navigation size={16} />
           {t("goToToday")}
         </button>
         <button
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="text-t4 text-fg-neutral-muted hover:text-fg-neutral"
           onClick={onClose}
         >
           {t("close")}
