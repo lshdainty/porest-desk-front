@@ -13,13 +13,22 @@ import type { IEvent } from "@/widgets/calendar/model/interfaces";
 interface IProps {
   events: IEvent[];
   isLoading?: boolean;
+  /** 일정 질의가 내용 없이 실패했다 */
+  isFailed?: boolean;
+  /** 일정 질의만 다시 받는다 */
+  onRetry?: () => void;
 }
 
 /**
  * 캘린더 화면의 뼈대 — 상태(`useCalendarScreen`)를 들고 폰 · 데스크톱/태블릿 표면을 고르며,
  * 둘이 함께 쓰는 일정 폼(그날 추가 · 수정)과 삭제 확인을 그린다.
  */
-const CalendarContainer = ({ events, isLoading = false }: IProps) => {
+const CalendarContainer = ({
+  events,
+  isLoading = false,
+  isFailed = false,
+  onRetry = () => {},
+}: IProps) => {
   const { t } = useTranslation("calendar");
   const isMobile = useIsMobile();
   const screen = useCalendarScreen(events);
@@ -42,9 +51,19 @@ const CalendarContainer = ({ events, isLoading = false }: IProps) => {
   return (
     <div className="flex w-full flex-col">
       {isMobile ? (
-        <CalendarMobile screen={screen} isLoading={isLoading} />
+        <CalendarMobile
+          screen={screen}
+          isLoading={isLoading}
+          isFailed={isFailed}
+          onRetry={onRetry}
+        />
       ) : (
-        <CalendarDesktop screen={screen} isLoading={isLoading} />
+        <CalendarDesktop
+          screen={screen}
+          isLoading={isLoading}
+          isFailed={isFailed}
+          onRetry={onRetry}
+        />
       )}
 
       {/* 일별 시트 [+] → 해당 날짜 기본값 이벤트 생성 폼 */}

@@ -5,7 +5,11 @@ import { useBackClose } from "@/shared/lib/groo/use-back-close";
 import { DayEventsDialog } from "@/widgets/calendar/ui/DayEventsDialog";
 import { EventDetailPopover } from "@/widgets/calendar/ui/EventDetailPopover";
 import { CalendarHeaderMobile } from "@/widgets/calendar/ui/header/calendar-header-mobile";
-import { CalendarMonthViewMobile } from "@/widgets/calendar/ui/month-view/calendar-month-view-mobile";
+import { CalendarLoadFailed } from "@/widgets/calendar/ui/calendar-load-failed";
+import {
+  CalendarMonthViewMobile,
+  WeekdayRow,
+} from "@/widgets/calendar/ui/month-view/calendar-month-view-mobile";
 import { CalendarMonthViewMobileSkeleton } from "@/widgets/calendar/ui/month-view/calendar-month-view-mobile-skeleton";
 import {
   Drawer,
@@ -21,10 +25,12 @@ import type { CalendarScreen } from "@/widgets/calendar/model/use-calendar-scree
 interface IProps {
   screen: CalendarScreen;
   isLoading: boolean;
+  isFailed: boolean;
+  onRetry: () => void;
 }
 
 /** 폰(768 미만) 캘린더 — 달 줄 + 월 격자만. 날을 누르면 일별 시트, 일정을 누르면 상세 Drawer. */
-const CalendarMobile = ({ screen, isLoading }: IProps) => {
+const CalendarMobile = ({ screen, isLoading, isFailed, onRetry }: IProps) => {
   const { t } = useTranslation("calendar");
   const {
     selectedEvent,
@@ -48,6 +54,11 @@ const CalendarMobile = ({ screen, isLoading }: IProps) => {
 
       {isLoading ? (
         <CalendarMonthViewMobileSkeleton />
+      ) : isFailed ? (
+        <>
+          <WeekdayRow />
+          <CalendarLoadFailed onRetry={onRetry} />
+        </>
       ) : (
         <CalendarMonthViewMobile
           singleDayEvents={singleDayEvents}

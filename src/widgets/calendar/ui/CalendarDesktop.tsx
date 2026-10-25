@@ -8,12 +8,16 @@ import { PageHead } from "@/shared/ui/groo/page-head";
 import { eventsOnDay } from "@/widgets/calendar/lib/helpers";
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import { DndProviderWrapper } from "@/widgets/calendar/ui/dnd/dnd-provider";
+import { CalendarLoadFailed } from "@/widgets/calendar/ui/calendar-load-failed";
 import { DayPanel } from "@/widgets/calendar/ui/day-panel";
 import { EventDetailPopover } from "@/widgets/calendar/ui/EventDetailPopover";
 import { CalendarAgendaView } from "@/widgets/calendar/ui/agenda-view/calendar-agenda-view";
 import { CalendarAgendaViewSkeleton } from "@/widgets/calendar/ui/agenda-view/calendar-agenda-view-skeleton";
 import { CalendarHeaderDesktop } from "@/widgets/calendar/ui/header/calendar-header-desktop";
-import { CalendarMonthViewDesktop } from "@/widgets/calendar/ui/month-view/calendar-month-view-desktop";
+import {
+  CalendarMonthViewDesktop,
+  WeekdayHead,
+} from "@/widgets/calendar/ui/month-view/calendar-month-view-desktop";
 import { CalendarMonthViewDesktopSkeleton } from "@/widgets/calendar/ui/month-view/calendar-month-view-desktop-skeleton";
 import { CalendarDayView } from "@/widgets/calendar/ui/week-and-day-view/calendar-day-view";
 import { CalendarDayViewSkeleton } from "@/widgets/calendar/ui/week-and-day-view/calendar-day-view-skeleton";
@@ -28,6 +32,8 @@ import type { CalendarScreen } from "@/widgets/calendar/model/use-calendar-scree
 interface IProps {
   screen: CalendarScreen;
   isLoading: boolean;
+  isFailed: boolean;
+  onRetry: () => void;
 }
 
 /**
@@ -36,7 +42,7 @@ interface IProps {
  * 월 보기: 1280 이상은 격자 카드 + 오른쪽 그날 패널 320(사이 24), 미만은 격자 카드 아래 그날 목록 카드(사이 8).
  * 주 · 일 · 연 · 목록 보기는 카드 하나 폭 전체(안 모양은 그대로). 일정 칩을 누르면 상세 Popover.
  */
-const CalendarDesktop = ({ screen, isLoading }: IProps) => {
+const CalendarDesktop = ({ screen, isLoading, isFailed, onRetry }: IProps) => {
   const { t } = useTranslation("calendar");
   const { t: tl } = useTranslation("layout");
   const { view, selectedDate } = useCalendar();
@@ -61,6 +67,11 @@ const CalendarDesktop = ({ screen, isLoading }: IProps) => {
     <>
       {isLoading ? (
         <CalendarMonthViewDesktopSkeleton />
+      ) : isFailed ? (
+        <Card data-slot="calendar-month-grid" className="p-0">
+          <WeekdayHead />
+          <CalendarLoadFailed onRetry={onRetry} />
+        </Card>
       ) : (
         <CalendarMonthViewDesktop
           singleDayEvents={singleDayEvents}
@@ -68,13 +79,16 @@ const CalendarDesktop = ({ screen, isLoading }: IProps) => {
           onEventClick={handleEventClick}
         />
       )}
-      <DayPanel
-        date={selectedDate}
-        events={dayEvents}
-        loading={isLoading}
-        onAdd={() => setCreatingDate(selectedDate)}
-        onTapEvent={handleEventClick}
-      />
+      {/* 실패는 "일정 없음" 이 아니다 — 그날 패널은 불러온 일정이 있을 때만 */}
+      {!isFailed && (
+        <DayPanel
+          date={selectedDate}
+          events={dayEvents}
+          loading={isLoading}
+          onAdd={() => setCreatingDate(selectedDate)}
+          onTapEvent={handleEventClick}
+        />
+      )}
     </>
   );
 
@@ -84,7 +98,7 @@ const CalendarDesktop = ({ screen, isLoading }: IProps) => {
       data-slot="calendar-view-card"
       className="h-[max(560px,calc(100dvh-14rem))] p-0"
     >
-      {body}
+      {isFailed && !isLoading ? <CalendarLoadFailed onRetry={onRetry} /> : body}
     </Card>
   );
 
