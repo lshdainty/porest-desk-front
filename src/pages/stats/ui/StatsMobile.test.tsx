@@ -388,4 +388,13 @@ describe("통계 글 · 색 규칙", () => {
     expect(btn.lastElementChild).toBe(svgs[0]);
     expect(btn.className).toContain("[&_svg]:size-4");
   });
+
+  it("요일 인사이트 — 요일마다 변화가 없으면 줄을 숨기지 않고 '비슷해요' 로 보인다", () => {
+    render();
+    clickTab("tab.compare");
+    const weekday = container.querySelector("[data-section=weekday]")!;
+    expect(weekday.textContent).toContain("compare.weekdayInsightSame");
+    expect(weekday.textContent).not.toContain("compare.weekdayInsightUp");
+    expect(weekday.textContent).not.toContain("compare.weekdayInsightDown");
+  });
 });

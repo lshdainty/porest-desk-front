@@ -35,6 +35,12 @@ import { WK_KEYS, type StatsModel } from "./stats-model";
  * 증감은 ds Delta(▲ fg-critical · ▼ fg-informative), "좋은지 나쁜지" 는 글이 말한다(색 강조를 걷는다).
  */
 
+/** 마지막 글자에 받침이 있는가 — 과 · 와 고르기(한글이 아니면 받침 없음으로 본다) */
+const withBatchim = (text: string) => {
+  const code = text.charCodeAt(text.length - 1) - 0xac00;
+  return code >= 0 && code <= 11171 && code % 28 !== 0;
+};
+
 const deltaDirection = (d: number) => (d > 0 ? "up" : d < 0 ? "down" : "flat");
 
 /** 비교 탭 질의 둘(이번 기간 · 이전 기간) 중 실패한 것만 다시 받는다 */
@@ -481,29 +487,29 @@ export function CompareWeekdaySection({
   const name = t("chart.weekdayName", { period: m.periodNow });
   const legendId = `stats-weekday-legend-${place}`;
   const dk = m.wkDelta.idx >= 0 ? WK_KEYS[m.wkDelta.idx] : undefined;
-  let insight: ReactNode = null;
-  if (dk && m.wkDelta.delta !== 0) {
-    insight = (
-      <p className="m-0 mt-x3 flex items-start gap-x1_5 text-t3 text-fg-neutral-muted">
-        <Sparkles
-          aria-hidden
-          className="mt-x0_5 size-4 shrink-0 text-fg-brand"
-        />
-        <span>
-          {t(
-            m.wkDelta.delta < 0
-              ? "compare.weekdayInsightDown"
-              : "compare.weekdayInsightUp",
-            {
-              dow: t(dk),
-              amt: mask(KRW(Math.abs(m.wkDelta.delta))),
-              prev: m.periodPrev,
-            },
-          )}
-        </span>
-      </p>
-    );
-  }
+  // 변화가 가장 큰 요일(절댓값) 한 줄 — 요일마다 변화가 없으면 "{기간}과 비슷해요." 로 줄을 그대로 보인다
+  const changed = dk != null && m.wkDelta.delta !== 0;
+  const text = changed
+    ? t(
+        m.wkDelta.delta < 0
+          ? "compare.weekdayInsightDown"
+          : "compare.weekdayInsightUp",
+        {
+          dow: t(dk),
+          amt: mask(KRW(Math.abs(m.wkDelta.delta))),
+          prev: m.periodPrev,
+        },
+      )
+    : t("compare.weekdayInsightSame", {
+        prev: m.periodPrev,
+        josa: withBatchim(m.periodPrev) ? "과" : "와",
+      });
+  const insight: ReactNode = (
+    <p className="m-0 mt-x3 flex items-start gap-x1_5 text-t3 text-fg-neutral-muted">
+      <Sparkles aria-hidden className="mt-x0_5 size-4 shrink-0 text-fg-brand" />
+      <span>{text}</span>
+    </p>
+  );
   return (
     <>
       {head}
