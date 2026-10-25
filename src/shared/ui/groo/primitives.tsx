@@ -329,7 +329,7 @@ export function MonthPicker({
         className="month-picker__trigger ml-x2_5 mr-x2_5 inline-flex min-h-11 cursor-pointer items-center gap-x1 border-0 bg-transparent p-0 font-sans text-t5 font-bold text-fg-neutral"
       >
         {label}
-        <ChevronDown aria-hidden size={16} className="text-fg-neutral-subtle" />
+        <ChevronDown aria-hidden size={16} className="text-fg-neutral-muted" />
       </button>
     ) : (
       <button
