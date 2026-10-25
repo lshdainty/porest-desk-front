@@ -357,8 +357,9 @@ describe("카드마다 따로 불러오고 실패한다(62)", () => {
     expect(
       container.querySelectorAll("[data-slot=result-section]"),
     ).toHaveLength(1);
-    expect(text()).toContain("loadFailed.summary");
-    expect(text()).not.toContain("loadFailed.assets");
+    // 한 상자의 글은 앱과 같은 "자산을 불러오지 못했어요"(loadFailed.assets)
+    expect(text()).toContain("loadFailed.assets");
+    expect(text()).not.toContain("loadFailed.summary");
     const bands = Array.from(
       container.querySelectorAll(".screen-bands > *"),
     ).map((b) => b.getAttribute("data-section"));

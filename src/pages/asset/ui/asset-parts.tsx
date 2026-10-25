@@ -232,7 +232,12 @@ export function SummarySection({
     return (
       <Body place={place} className={band ? "pt-x6" : undefined}>
         <BandFailure
-          title={t("loadFailed.summary")}
+          title={
+            // 폰은 목록 질의 실패가 요약 띠의 상자 하나로 모인다 — 앱과 같은 글 "자산을 불러오지 못했어요"
+            band && g.assetsFailed
+              ? t("loadFailed.assets")
+              : t("loadFailed.summary")
+          }
           onRetry={g.retrySummary}
           band={false}
         />
