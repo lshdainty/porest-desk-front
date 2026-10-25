@@ -299,6 +299,12 @@ describe("수정 시트 머리 ⋮ (10-25 줄 끝 ⋮ 원칙)", () => {
     const b = headMore("교통")!;
     expect(b.tagName).toBe("BUTTON");
     expect(b.tabIndex).toBeGreaterThanOrEqual(0);
+    // ds 머리 동작 자리(닫기 왼쪽 사이 4)에 서 있다
+    expect(
+      b.closest(
+        "[data-slot=bottom-sheet-header-action],[data-slot=dialog-header-action]",
+      ),
+    ).not.toBeNull();
     // 닫기 단추와 같은 머리 안(시트 머리 오른쪽)에 서 있다
     expect(
       b.closest("[data-slot=bottom-sheet-content],[data-slot=dialog-content]"),

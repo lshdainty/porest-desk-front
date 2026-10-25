@@ -30,7 +30,6 @@ import {
   ResponsiveMenuItem,
   ResponsiveMenuTrigger,
 } from "@/shared/ds/menu";
-import { useInputButtonSurface } from "@/shared/ds/input-button";
 import { PickList } from "@/shared/ui/groo/pick-list";
 import { PickerRow } from "@/shared/ui/groo/picker-row";
 import { Icon } from "@/shared/ui/groo/primitives";
@@ -113,7 +112,6 @@ export function CategoryEditDialog({
   const { t } = useTranslation("category");
   const { t: tc } = useTranslation("common");
   const { t: te } = useTranslation("expense");
-  const wide = useInputButtonSurface() === "popover";
   const isNew = !cat;
 
   const [initial] = useState(() => {
@@ -215,27 +213,16 @@ export function CategoryEditDialog({
     >
       <ResponsiveDialogContent
         title={isNew ? te("addCategory") : t("editTitle")}
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          nameRef.current?.focus({ preventScroll: true });
-        }}
-      >
-        {cat && (
-          // 머리 오른쪽 ⋮ — 시트는 닫기 단추(28) 왼쪽 4, 대화상자는 닫기 단추가 없어 오른쪽 끝
-          <div
-            className={
-              wide
-                ? "absolute right-x4 top-x5 z-1"
-                : "absolute right-x14 top-[22px] z-1"
-            }
-          >
+        // 머리 오른쪽 ⋮ — ds 머리 동작 자리(닫기 왼쪽 사이 4 · 닫기 없는 입력 폼은 오른쪽 끝). 새 카테고리에는 없다
+        headerAction={
+          cat ? (
             <ResponsiveMenu>
               <ResponsiveMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   ghostColor="neutralSubtle"
                   layout="iconOnly"
-                  size="xsmall"
+                  size="small"
                   aria-label={t("moreOf", { name: cat.categoryName })}
                 >
                   <EllipsisVertical aria-hidden />
@@ -270,8 +257,13 @@ export function CategoryEditDialog({
                 </ResponsiveMenuGroup>
               </ResponsiveMenuContent>
             </ResponsiveMenu>
-          </div>
-        )}
+          ) : undefined
+        }
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          nameRef.current?.focus({ preventScroll: true });
+        }}
+      >
         <ResponsiveDialogBody>
           <div className="mb-x2 flex items-start gap-x3">
             <span
