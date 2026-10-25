@@ -47,5 +47,6 @@ export {
   type AssignChartColorsOptions,
   type ChartAxisOptions,
   type ChartColor,
+  type ChartTone,
   type ChartColored,
 } from "./chart-variants";

@@ -35,10 +35,13 @@ export const CHART_ORDER: readonly ChartColor[] = [
 /** 항목이 이 개수를 넘으면 상위 9 + 회색 "기타" 로 묶는다 */
 export const CHART_MAX_ITEMS = 10;
 
-export const chartVar = (color: ChartColor) => `var(--color-chart-${color})`;
+/** 차트 색 + 같은 색의 옅은 단계(v111) — 강조하지 않는 비교 계열(지난 기간)의 색 */
+export type ChartTone = ChartColor | `${ChartColor}-weak`;
+
+export const chartVar = (color: ChartTone) => `var(--color-chart-${color})`;
 
 // Tailwind 는 소스의 글자 그대로를 읽으므로 열을 다 적는다
-export const DOT_BG: Record<ChartColor, string> = {
+export const DOT_BG: Record<ChartTone, string> = {
   blue: "bg-chart-blue",
   green: "bg-chart-green",
   orange: "bg-chart-orange",
@@ -49,9 +52,19 @@ export const DOT_BG: Record<ChartColor, string> = {
   yellow: "bg-chart-yellow",
   brown: "bg-chart-brown",
   gray: "bg-chart-gray",
+  "blue-weak": "bg-chart-blue-weak",
+  "green-weak": "bg-chart-green-weak",
+  "orange-weak": "bg-chart-orange-weak",
+  "violet-weak": "bg-chart-violet-weak",
+  "pink-weak": "bg-chart-pink-weak",
+  "indigo-weak": "bg-chart-indigo-weak",
+  "red-weak": "bg-chart-red-weak",
+  "yellow-weak": "bg-chart-yellow-weak",
+  "brown-weak": "bg-chart-brown-weak",
+  "gray-weak": "bg-chart-gray-weak",
 };
 
-export const SUBTLE_BG: Record<ChartColor, string> = {
+export const SUBTLE_BG: Record<ChartTone, string> = {
   blue: "bg-chart-blue-subtle",
   green: "bg-chart-green-subtle",
   orange: "bg-chart-orange-subtle",
@@ -62,6 +75,16 @@ export const SUBTLE_BG: Record<ChartColor, string> = {
   yellow: "bg-chart-yellow-subtle",
   brown: "bg-chart-brown-subtle",
   gray: "bg-chart-gray-subtle",
+  "blue-weak": "bg-chart-blue-subtle",
+  "green-weak": "bg-chart-green-subtle",
+  "orange-weak": "bg-chart-orange-subtle",
+  "violet-weak": "bg-chart-violet-subtle",
+  "pink-weak": "bg-chart-pink-subtle",
+  "indigo-weak": "bg-chart-indigo-subtle",
+  "red-weak": "bg-chart-red-subtle",
+  "yellow-weak": "bg-chart-yellow-subtle",
+  "brown-weak": "bg-chart-brown-subtle",
+  "gray-weak": "bg-chart-gray-subtle",
 };
 
 export type ChartColored<T> = T & {

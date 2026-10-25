@@ -16,6 +16,7 @@ import {
   TOOLTIP_SURFACE,
   formatWon,
   type ChartColor,
+  type ChartTone,
 } from "./chart-variants";
 import { withSeriesDefaults } from "./chart-series";
 import { ChartTooltipRow } from "./chart-tooltip-row";
@@ -362,7 +363,8 @@ ChartTooltip.displayName = "ChartTooltip";
 export interface ChartLegendItem {
   key: string;
   label: React.ReactNode;
-  color: ChartColor;
+  /** 계열 색 — 강조하지 않는 비교 계열(지난 기간)은 같은 색의 `-weak`(예: "blue-weak") */
+  color: ChartTone;
   /** 합계 — 원까지 만든 글("4,200,000원") */
   total: React.ReactNode;
 }
