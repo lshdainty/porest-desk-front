@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pie, PieChart } from "recharts";
-import { Calendar, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/shared/ds/button";
 import { Card, CardContent, Delta } from "@/shared/ds/card";
 import {
@@ -101,7 +101,7 @@ function useFitLimit(limit: number) {
   return [ref, fits] as const;
 }
 
-/** 기간 버튼(31) — ds Button neutralOutline small 36 · 앞 달력 16 · 뒤 꺾쇠 16 · t4 · 700. 다른 해 직접 기간의 두 줄 글은 "~" 뒤에서만 줄을 바꾼다 */
+/** 기간 버튼(31) — ds Button neutralOutline small 36 · 뒤 꺾쇠 16 하나(앞 · 뒤 아이콘을 함께 쓰지 않는다 — button.md:67) · t4 · 700. 다른 해 직접 기간의 두 줄 글은 "~" 뒤에서만 줄을 바꾼다 */
 export function PeriodButton({ m }: { m: StatsModel }) {
   const { t } = useTranslation("stats");
   const { period } = m;
@@ -121,7 +121,6 @@ export function PeriodButton({ m }: { m: StatsModel }) {
       className="h-auto min-h-9 shrink-0 whitespace-pre-line py-x1_5 text-center [&_svg]:size-4"
       onClick={() => m.setPickerOpen(true)}
     >
-      <Calendar aria-hidden />
       <span>{text}</span>
       <ChevronDown aria-hidden />
     </Button>

@@ -377,4 +377,15 @@ describe("통계 글 · 색 규칙", () => {
     expect(center.textContent).toMatch(/^\d+%$/);
     expect(center.className).toContain("text-t9");
   });
+
+  it("기간 버튼 — 뒤 꺾쇠 하나만(앞 아이콘 없음), 아이콘 16", () => {
+    render();
+    const btn = container.querySelector(
+      "[data-section=donut] [data-slot=card-header] button",
+    ) as HTMLElement;
+    const svgs = btn.querySelectorAll("svg");
+    expect(svgs).toHaveLength(1);
+    expect(btn.lastElementChild).toBe(svgs[0]);
+    expect(btn.className).toContain("[&_svg]:size-4");
+  });
 });
