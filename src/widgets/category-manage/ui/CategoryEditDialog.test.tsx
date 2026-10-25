@@ -194,6 +194,23 @@ describe("추가 폼", () => {
     });
   });
 
+  it("상위 고르기의 '최상위' 줄도 다른 줄과 같은 타일을 갖는다(제목이 한 세로선)", async () => {
+    mount({ defaultParentRowId: 1 });
+    await click(pressable("parentCategory")!);
+    await tick();
+    const sheets = document.querySelectorAll(
+      "[data-slot=bottom-sheet-content]",
+    );
+    const rows = Array.from(
+      sheets[sheets.length - 1]!.querySelectorAll("[data-slot=list-item]"),
+    );
+    expect(rows.length).toBeGreaterThan(1);
+    for (const r of rows) {
+      expect(r.querySelector("[data-slot=list-tile]")).not.toBeNull();
+    }
+    expect(rows[0]!.textContent).toContain("rootOption");
+  });
+
   it("하위 추가로 열면 받은 상위가 채워진다", () => {
     mount({ defaultParentRowId: 2 });
     expect(valueOf("parentCategory")).toBe("교통");

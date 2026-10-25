@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Folder, Palette, Tag, Tags } from "lucide-react";
+import { Folder, ListTree, Palette, Tag, Tags } from "lucide-react";
 import { Button } from "@/shared/ds/button";
 import { firstUnusedColor } from "@/shared/ds/color-swatch";
 import {
@@ -291,7 +291,18 @@ export function CategoryEditDialog({
                       }
                       items={[
                         ...(isNew
-                          ? [{ value: ROOT, title: t("rootOption") }]
+                          ? [
+                              {
+                                value: ROOT,
+                                title: t("rootOption"),
+                                // 다른 줄과 같은 40 타일 — 중립 바탕 + 나무 위 아이콘(제목이 한 세로선에 선다)
+                                prefix: (
+                                  <ListTile className="bg-chart-gray-weak text-chart-gray">
+                                    <ListTree aria-hidden />
+                                  </ListTile>
+                                ),
+                              },
+                            ]
                           : []),
                         ...parentOptions.map((c) => ({
                           value: String(c.rowId),

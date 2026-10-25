@@ -264,8 +264,7 @@ export function CategoryTree({
                     collapsible={false}
                     title={parent.categoryName}
                     prefix={<Tile cat={parent} />}
-                    className="pointer-events-none"
-                    tabIndex={-1}
+                    disabled
                     suffix={grip}
                   >
                     {children.length > 0 && (

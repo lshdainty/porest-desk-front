@@ -1476,8 +1476,8 @@ category,deleteBlockedTitle,삭제할 수 없어요,Can't delete
 category,deleteHasChildren,"""{{name}}"" 카테고리에 하위 카테고리가 있어 삭제할 수 없어요. 먼저 하위 카테고리를 정리해주세요.","The ""{{name}}"" category has subcategories and cannot be deleted. Clear them first."
 category,deleteConfirm,"""{{name}}"" 카테고리를 삭제할까요?","Delete the ""{{name}}"" category?"
 category,overBudgetTitle,예산 초과 확인,Budget exceeded
-category,overBudgetMessage,"옮기면 ""{{parent}}"" 예산을 {{amount}}원 넘어요. 그래도 옮길까요?","Moving it will put ""{{parent}}"" {{amount}}원 over budget. Move anyway?"
-category,move,이동,Move
+category,overBudgetMessage,"옮기면 ""{{parent}}"" 예산을 {{amount}}원 넘어요. 그래도 옮길까요?","Moving it will put ""{{parent}}"" {{amount}} over budget. Move anyway?"
+category,move,옮기기,Move
 category,addSub,하위 카테고리 추가,Add subcategory
 category,edit,수정,Edit
 category,nameRequired,이름을 입력해주세요.,Please enter a name.
