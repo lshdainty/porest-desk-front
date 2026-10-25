@@ -169,4 +169,13 @@ describe("폰 월 격자", () => {
     const c = cells().find((b) => numberOf(b).textContent === "22")!;
     expect(c.getAttribute("aria-label")).toContain("monthView.cellLabel:2");
   });
+
+  it("요일 줄은 화면을 스크롤해도 고정이고 격자만 흐른다", () => {
+    render([]);
+    const head = container.querySelector(
+      "[data-slot=calendar-month-grid] > div",
+    )!;
+    expect(head.className).toContain("sticky");
+    expect(head.className).toContain("top-x13"); // 달 줄(52) 바로 아래
+  });
 });
