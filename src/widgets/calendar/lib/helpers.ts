@@ -437,32 +437,43 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
 /**
  * Holiday (공휴일 데이터)를 IEvent 인터페이스로 변환
  */
-/**
- * 이벤트 칩/뱃지/점 색 — 공휴일은 일요일 색과 동일한 error 토큰 고정.
- * (앱 _CellHolidayLabel 의 tokens.statusDanger 정합 — 라이트/다크 동일 base.)
- * 일반 이벤트는 label 색 우선 + chart palette alias(다크 자동 swap).
- */
-export function eventBadgeColor(
-  event?: Pick<IEvent, "sourceType" | "labelColor" | "color"> | null,
+/** 일정 색을 고르는 차례 — 라벨 색 → 캘린더 색 → 일정에 저장된 색(I-09 5). 격자 칩 · 그날 시트 · 상세가 모두 이 식 하나를 쓴다 */
+export function eventColorKey(
+  event: Pick<IEvent, "labelColor" | "calendarColor" | "color">,
 ): string {
-  if (!event) return getPaletteByColor(undefined).color;
-  if (event.sourceType === "holiday") return "var(--color-fg-critical)";
-  return getPaletteByColor(event.labelColor ?? event.color).color;
+  return event.labelColor ?? event.calendarColor ?? event.color;
 }
 
-/** 이벤트 칩 바탕 · 글 — 팔레트 색은 v111 짝(chart-{hue}-weak · -contrast), 공휴일은 critical 짝. */
-export function eventBadgeTone(
-  event?: Pick<IEvent, "sourceType" | "labelColor" | "color"> | null,
-): { color: string; bg: string; fg: string } {
-  if (event?.sourceType === "holiday")
-    return {
-      color: "var(--color-fg-critical)",
-      bg: "var(--color-bg-critical-weak)",
-      fg: "var(--color-fg-critical)",
-    };
-  return getPaletteByColor(
-    event ? (event.labelColor ?? event.color) : undefined,
-  );
+/** 공휴일은 `chart-red` 짝(글 · 옅은 바탕 · 바탕 위 글) — 모든 칩 · 타일 · 점이 같은 빨강이다 */
+const HOLIDAY_TONE = {
+  color: "var(--color-chart-red)",
+  bg: "var(--color-chart-red-weak)",
+  fg: "var(--color-chart-red-contrast)",
+} as const;
+
+type ToneSource = Pick<
+  IEvent,
+  "sourceType" | "labelColor" | "calendarColor" | "color"
+>;
+
+/**
+ * 이벤트 칩/뱃지/점 색 — 공휴일은 `chart-red`. 일반 이벤트는 `eventColorKey` 순서로 고른 색의
+ * chart palette alias(다크 자동 swap).
+ */
+export function eventBadgeColor(event?: ToneSource | null): string {
+  if (!event) return getPaletteByColor(undefined).color;
+  if (event.sourceType === "holiday") return HOLIDAY_TONE.color;
+  return getPaletteByColor(eventColorKey(event)).color;
+}
+
+/** 이벤트 칩 바탕 · 글 — 팔레트 색은 v111 짝(chart-{hue}-weak · -contrast), 공휴일은 chart-red 짝. */
+export function eventBadgeTone(event?: ToneSource | null): {
+  color: string;
+  bg: string;
+  fg: string;
+} {
+  if (event?.sourceType === "holiday") return { ...HOLIDAY_TONE };
+  return getPaletteByColor(event ? eventColorKey(event) : undefined);
 }
 
 export function convertHolidayToIEvent(holiday: Holiday): IEvent {
