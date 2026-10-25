@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode, type Ref } from "react";
+import { useRef, useState, type Ref } from "react";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Asset } from "@/entities/asset";
@@ -7,16 +7,14 @@ import {
   BottomSheet,
   BottomSheetBody,
   BottomSheetContent,
-  BottomSheetFooter,
 } from "@/shared/ds/bottom-sheet";
-import { Button } from "@/shared/ds/button";
 import { Chip, ChipGroup, InputChip, type ChipSize } from "@/shared/ds/chip";
+import { ConditionPanel as SharedConditionPanel } from "@/shared/ui/groo/condition-panel";
 import { formatRangeValue, parseDayKey } from "@/shared/ds/date-picker";
 import {
   Popover,
   PopoverBody,
   PopoverContent,
-  PopoverFooter,
   PopoverTrigger,
 } from "@/shared/ds/popover";
 import { money } from "@/shared/lib/groo/format";
@@ -46,139 +44,20 @@ import {
  * 조건 본문은 07-1 이 만든 조건 부품(`./filter/*`)을 그대로 나눠 담는다.
  */
 
-function assignRef<T>(ref: Ref<T> | undefined, node: T | null) {
-  if (typeof ref === "function") ref(node);
-  else if (ref) (ref as { current: T | null }).current = node;
-}
-
-/** 칩 하나가 여는 조건 면 — 열릴 때 마운트되어 초안(draft)을 새로 쥔다 */
-function ConditionPanel<T>({
-  chipLabel,
-  active,
-  title,
-  size,
-  wide,
-  initial,
-  empty,
-  canApply = () => true,
-  onApply,
-  body,
-  chipRef,
-}: {
-  chipLabel: string;
-  active: boolean;
-  title: string;
-  size: ChipSize;
-  wide: boolean;
-  initial: T;
-  /** "초기화" 가 만드는 값 — 그 조건만 비운다 */
-  empty: T;
-  canApply?: (draft: T) => boolean;
-  onApply: (draft: T) => void;
-  body: (draft: T, set: (next: T) => void) => ReactNode;
-  chipRef?: Ref<HTMLButtonElement>;
-}) {
-  const [open, setOpen] = useState(false);
-  const own = useRef<HTMLButtonElement | null>(null);
-  const setRefs = (node: HTMLButtonElement | null) => {
-    own.current = node;
-    assignRef(chipRef, node);
-  };
-  const chip = (
-    <Chip
-      ref={setRefs}
-      variant="solid"
-      size={size}
-      selected={active}
-      className="max-w-full"
-      suffixIcon={<ChevronDown />}
-      aria-haspopup="dialog"
-      onClick={wide ? undefined : () => setOpen(true)}
-    >
-      {chipLabel}
-    </Chip>
-  );
-  const close = () => {
-    setOpen(false);
-    // 시트는 트리거가 따로 없어 초점을 직접 돌린다(팝오버는 스스로 돌린다)
-    if (!wide) requestAnimationFrame(() => own.current?.focus());
-  };
-  const inner = (
-    <PanelInner
-      wide={wide}
-      initial={initial}
-      empty={empty}
-      canApply={canApply}
-      onApply={(d) => {
-        onApply(d);
-        close();
-      }}
-      body={body}
-    />
-  );
-  if (wide) {
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>{chip}</PopoverTrigger>
-        <PopoverContent title={title} align="start" className="w-[400px]">
-          {inner}
-        </PopoverContent>
-      </Popover>
-    );
-  }
-  return (
-    <>
-      {chip}
-      <BottomSheet
-        open={open}
-        form
-        onOpenChange={(o) => (o ? setOpen(true) : close())}
-      >
-        <BottomSheetContent title={title} aria-describedby={undefined}>
-          {inner}
-        </BottomSheetContent>
-      </BottomSheet>
-    </>
-  );
-}
-
-function PanelInner<T>({
-  wide,
-  initial,
-  empty,
-  canApply,
-  onApply,
-  body,
-}: {
-  wide: boolean;
-  initial: T;
-  empty: T;
-  canApply: (draft: T) => boolean;
-  onApply: (draft: T) => void;
-  body: (draft: T, set: (next: T) => void) => ReactNode;
-}) {
+/** 가계부 조건 면 — 공용 껍데기에 가계부 바닥 버튼 글을 준다 */
+function ConditionPanel<T>(
+  props: Omit<
+    Parameters<typeof SharedConditionPanel<T>>[0],
+    "resetLabel" | "doneLabel"
+  >,
+) {
   const { t } = useTranslation("expense");
-  const [draft, setDraft] = useState<T>(initial);
-  const footer = (
-    <>
-      <Button variant="neutralWeak" onClick={() => setDraft(empty)}>
-        {t("filter.reset")}
-      </Button>
-      <Button disabled={!canApply(draft)} onClick={() => onApply(draft)}>
-        {t("filter.done")}
-      </Button>
-    </>
-  );
-  return wide ? (
-    <>
-      <PopoverBody>{body(draft, setDraft)}</PopoverBody>
-      <PopoverFooter>{footer}</PopoverFooter>
-    </>
-  ) : (
-    <>
-      <BottomSheetBody scrollFog>{body(draft, setDraft)}</BottomSheetBody>
-      <BottomSheetFooter>{footer}</BottomSheetFooter>
-    </>
+  return (
+    <SharedConditionPanel<T>
+      {...props}
+      resetLabel={t("filter.reset")}
+      doneLabel={t("filter.done")}
+    />
   );
 }
 
