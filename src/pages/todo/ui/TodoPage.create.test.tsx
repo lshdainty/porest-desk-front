@@ -94,6 +94,13 @@ beforeEach(() => {
   __resetPointerBlockForTest();
   created.length = 0;
   ctx.mobile = false;
+  // 폼은 폭으로 표면이 갈린다(1280 이상 대화상자 · 미만 시트) — jsdom 은 미만(시트)이다
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -180,7 +187,7 @@ describe("편집 폼으로는 여전히 만들어진다 (D5 가 지워선 안 �
     );
     if (!input) throw new Error("편집 폼의 제목 칸을 찾지 못했다");
     setInput(input, title);
-    const save = buttonWith("save");
+    const save = buttonWith("add");
     if (!save) throw new Error("편집 폼의 저장 버튼을 찾지 못했다");
     click(save);
   }

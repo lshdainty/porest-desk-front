@@ -1,12 +1,8 @@
-import { useId, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  toLocalDateKey,
-  toLocalDateTime,
-  todayLocalKey,
-} from "@/shared/lib/date";
-import { Plus, Sparkles, CheckCheck, CircleDot } from "lucide-react";
+import { toLocalDateKey, todayLocalKey } from "@/shared/lib/date";
+import { Plus, Sparkles } from "lucide-react";
 import {
   useTodos,
   useCreateTodo,
@@ -24,23 +20,13 @@ import {
   ForestStrip,
   NightSkyPanel,
 } from "@/widgets/constellation";
-import { dueKey, isDone } from "@/pages/todo/lib/visible-todos";
-import {
-  NO_TAG_KEY,
-  tagValueToPayload,
-  todoTagInitialValue,
-  todoTagOptions,
-} from "@/pages/todo/lib/todo-tags";
-import {
-  PRIO,
-  PRIO_ORDER,
-  kDate,
-  relativeDate,
-  todoTagLabel,
-} from "@/pages/todo/model/todo-view";
+import { isDone } from "@/pages/todo/lib/visible-todos";
+import { todoTagOptions } from "@/pages/todo/lib/todo-tags";
 import { TodoMobileLedger } from "./TodoMobileLedger";
 import { TodoDesktop } from "./TodoDesktop";
-import type { Todo, TodoFormValues, TodoPriority } from "@/entities/todo";
+import { TodoDetailDialog } from "./TodoDetailDialog";
+import { TodoFormDialog } from "./TodoFormDialog";
+import type { Todo, TodoFormValues } from "@/entities/todo";
 import { Button, DOUBLE_CLICK_GUARD_MS } from "@/shared/ui/button";
 import { FloatingActionButton } from "@/shared/ds/floating-action-button";
 import {
@@ -48,33 +34,9 @@ import {
   TopNavigationBackButton,
   TopNavigationTitle,
 } from "@/shared/ds/top-navigation";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Field, FieldLabel } from "@/shared/ui/field";
 import { Card } from "@/shared/ui/card";
-import { InputDatePicker } from "@/shared/ui/input-date-picker";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter, ModalViewFooter } from "@/shared/ui/groo/modal-footer";
 import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
 import { PageHead } from "@/shared/ui/groo/page-head";
-
-/**
- * 제목·본문 입력 상한 — 서버 `FieldLimits`(TITLE_MAX 200 · CONTENT_MAX 10,000)와 같은 값.
- *
- * 종전엔 제한이 없어 500자 제목이 그대로 나갔고 서버가 컬럼 초과를 500 으로 냈다(QA #24).
- * 서버는 이제 400 으로 거절하지만, 다이얼로그가 열린 채 아무 말도 안 하는 건 그대로라
- * 애초에 못 넘게 막는다. `maxLength` 는 타이핑·붙여넣기를 브라우저가 자르고,
- * `slice` 는 프로그램 입력(자동완성·확장)까지 자른다.
- */
-const TITLE_MAX = 200;
-const CONTENT_MAX = 10_000;
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
@@ -220,7 +182,6 @@ const TodoPageInner = ({
       {viewing != null && (
         <TodoDetailDialog
           todo={viewing}
-          mobile={mobile}
           today={today}
           onClose={() => setViewing(null)}
           onEdit={(td) => {
@@ -228,15 +189,13 @@ const TodoPageInner = ({
             setEditing(td);
           }}
           onDelete={(id) =>
-            deleteTodo.mutate(id, { onSuccess: () => setViewing(null) })
+            deleteTodo.mutateAsync(id).then(() => setViewing(null))
           }
-          deleting={deleteTodo.isPending}
         />
       )}
       {editing != null && (
-        <TodoEditDialog
+        <TodoFormDialog
           todo={"_new" in editing ? null : editing}
-          mobile={mobile}
           today={today}
           tags={tagNames}
           onClose={() => setEditing(null)}
@@ -307,437 +266,6 @@ const TodoPageInner = ({
     </>
   );
 };
-
-// ───────────────────────────── 상세 다이얼로그 ─────────────────────────────
-
-/** 행 클릭 → 읽기 전용 상세. TxDetailDialog 패턴 미러 (hero + 필드 행 + 뷰 footer). */
-function TodoDetailDialog({
-  todo,
-  mobile,
-  today,
-  onClose,
-  onEdit,
-  onDelete,
-  deleting,
-}: {
-  todo: Todo;
-  mobile: boolean;
-  today: string;
-  onClose: () => void;
-  onEdit: (todo: Todo) => void;
-  onDelete: (id: number) => void;
-  deleting?: boolean;
-}) {
-  const { t } = useTranslation("todo");
-  const { t: tc } = useTranslation("common");
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const prio = PRIO[todo.priority];
-  const done = isDone(todo);
-  const key = dueKey(todo.dueDate);
-  const overdue = !done && !!key && key < today;
-
-  const Footer = (
-    <ModalViewFooter
-      onDelete={() => setConfirmDelete(true)}
-      deleting={deleting}
-      onEdit={() => onEdit(todo)}
-    />
-  );
-
-  return (
-    <>
-      <ModalShell
-        title={t("detailTitle")}
-        onClose={onClose}
-        size="md"
-        footer={Footer}
-        mobile={mobile}
-      >
-        {/* Hero — 우선순위 틴트 */}
-        <div
-          style={{
-            background: `linear-gradient(135deg, ${prio.bg}, var(--bg-surface))`,
-            border: `1px solid color-mix(in oklch, ${prio.color} 20%, transparent)`,
-            borderRadius: "var(--radius-xl)",
-            padding: 22,
-            marginBottom: 18,
-            textAlign: "center",
-          }}
-        >
-          <div style={{ display: "inline-flex", marginBottom: 12 }}>
-            <span
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "var(--radius-tile)",
-                background: prio.bg,
-                color: prio.color,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {done ? <CheckCheck size={20} /> : <CircleDot size={20} />}
-            </span>
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-title-md)",
-              fontWeight: "800",
-              letterSpacing: "-0.015em",
-              color: "var(--fg-primary)",
-              textDecoration: done ? "line-through" : "none",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {todo.title}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-caption)",
-              color: overdue ? "var(--color-chart-red)" : "var(--fg-tertiary)",
-              fontWeight: overdue ? "600" : "400",
-              marginTop: 6,
-            }}
-          >
-            {key ? relativeDate(key, today) : t("noDueDate")}
-          </div>
-        </div>
-
-        {/* Field rows */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: "var(--radius-lg)",
-            overflow: "hidden",
-          }}
-        >
-          <DetailFieldRow
-            label={t("form.dueDate")}
-            value={
-              <span style={{ fontWeight: "500" }}>
-                {key ? kDate(key).full : t("noDueDate")}
-              </span>
-            }
-          />
-          <DetailFieldRow
-            label={t("tag")}
-            value={
-              <span style={{ fontWeight: "500" }}>{todoTagLabel(todo)}</span>
-            }
-          />
-          <DetailFieldRow
-            label={t("form.priority")}
-            value={
-              <span
-                style={{
-                  padding: "3px 8px",
-                  borderRadius: "var(--radius-sm)",
-                  background: prio.bg,
-                  color: prio.color,
-                  fontSize: 11,
-                  fontWeight: "600",
-                }}
-              >
-                {t(prio.labelKey)}
-              </span>
-            }
-          />
-          <DetailFieldRow
-            label={t("detail.status")}
-            value={
-              <span
-                style={{
-                  fontWeight: "600",
-                  color: done ? "var(--fg-brand)" : "var(--fg-secondary)",
-                }}
-              >
-                {done ? t("status.COMPLETED") : t("status.PENDING")}
-              </span>
-            }
-          />
-          {done && todo.completedAt && (
-            <DetailFieldRow
-              label={t("detail.completedAt")}
-              value={
-                <span style={{ fontWeight: "500" }}>
-                  {/* completedAt 은 `[UTC]` — 파싱해서 로컬 시각으로 찍는다.
-                      못 읽으면 원문을 그대로 보여 준다(앱 todo_detail_dialog 와 같은 폴백) —
-                      값 칸을 비우면 "완료 시각이 없다" 로 읽혀 서버가 준 값이 사라진다 */}
-                  {toLocalDateTime(todo.completedAt) ?? todo.completedAt}
-                </span>
-              }
-            />
-          )}
-          <DetailFieldRow
-            label={t("form.memo")}
-            value={
-              <span
-                style={{
-                  fontWeight: "500",
-                  color: todo.content
-                    ? "var(--fg-primary)"
-                    : "var(--fg-tertiary)",
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
-                  textAlign: "right",
-                }}
-              >
-                {todo.content || t("detail.none")}
-              </span>
-            }
-          />
-        </div>
-      </ModalShell>
-
-      {confirmDelete && (
-        <ConfirmDialog
-          title={t("deleteConfirm.title")}
-          message={t("deleteConfirm.message", { name: todo.title })}
-          confirmLabel={tc("delete")}
-          danger
-          loading={deleting}
-          onCancel={() => !deleting && setConfirmDelete(false)}
-          onConfirm={() => onDelete(todo.rowId)}
-        />
-      )}
-    </>
-  );
-}
-
-/** 상세 필드 행 — TxDetailDialog FieldRow 미러. */
-function DetailFieldRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "14px 16px",
-        background: "var(--bg-surface)",
-        fontSize: "var(--text-label-sm)",
-        gap: 12,
-      }}
-    >
-      <span
-        style={{ color: "var(--fg-tertiary)", minWidth: 72, flexShrink: 0 }}
-      >
-        {label}
-      </span>
-      <div style={{ marginLeft: "auto" }}>{value}</div>
-    </div>
-  );
-}
-
-// ───────────────────────────── 편집 다이얼로그 ─────────────────────────────
-
-function TodoEditDialog({
-  todo,
-  mobile,
-  today,
-  tags,
-  onClose,
-  onSave,
-  submitting,
-}: {
-  todo: Todo | null;
-  mobile: boolean;
-  today: string;
-  tags: string[];
-  onClose: () => void;
-  onSave: (values: TodoFormValues, id?: number) => void;
-  submitting?: boolean;
-}) {
-  const uid = useId(); // 태그 칸 이름 잇기
-  const { t } = useTranslation("todo");
-  const { t: tc } = useTranslation("common");
-  const isNew = !todo;
-  const [title, setTitle] = useState(todo?.title ?? "");
-  const [due, setDue] = useState(dueKey(todo?.dueDate) ?? today);
-  // 있는 할 일은 지금 태그(없으면 '태그 없음'), 새 할 일도 '태그 없음' — 규칙은 lib 에.
-  const [tag, setTag] = useState(todoTagInitialValue(todo));
-  const [priority, setPriority] = useState<TodoPriority>(
-    todo?.priority ?? "MEDIUM",
-  );
-  const [note, setNote] = useState(todo?.content ?? "");
-  const [error, setError] = useState(false);
-
-  const save = () => {
-    if (!title.trim()) {
-      setError(true);
-      return;
-    }
-    onSave(
-      {
-        title: title.trim(),
-        content: note,
-        priority,
-        // sentinel 은 서버로 안 나간다 — 태그를 떼는 건 null 이다(키를 빼면 옛 값이 남는다).
-        category: tagValueToPayload(tag),
-        // 마감일도 같다 — 이 편집기가 그리는 칸이라 비운 채 저장하면 지워져야 한다.
-        // `undefined` 로 키를 빼면 화면은 지워진 척 닫히고 옛 마감일이 남았다(QA #111).
-        dueDate: due || null,
-      },
-      todo?.rowId,
-    );
-  };
-
-  const Footer = (
-    <ModalFooter
-      onSave={save}
-      saveLabel={tc("save")}
-      saving={submitting}
-      onCancel={onClose}
-    />
-  );
-
-  return (
-    <ModalShell
-      title={isNew ? t("newTodo") : t("editTodoTitle")}
-      onClose={onClose}
-      size="md"
-      footer={Footer}
-      mobile={mobile}
-    >
-      <Field style={{ marginBottom: 14 }}>
-        <Input
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value.slice(0, TITLE_MAX));
-            if (error) setError(false);
-          }}
-          placeholder={t("editTitlePlaceholder")}
-          aria-invalid={error}
-          maxLength={TITLE_MAX}
-          autoFocus
-        />
-        {error && (
-          <div
-            style={{
-              marginTop: 8,
-              padding: "8px 12px",
-              background: "var(--status-danger-subtle)",
-              color: "var(--status-danger-fg)",
-              borderRadius: "var(--radius-sm)",
-              fontSize: 13,
-            }}
-          >
-            {t("form.titleRequired")}
-          </div>
-        )}
-      </Field>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 12,
-          marginBottom: 14,
-        }}
-      >
-        <Field>
-          <FieldLabel>{t("form.dueDate")}</FieldLabel>
-          <InputDatePicker
-            value={due}
-            onValueChange={setDue}
-            placeholder="yyyy-mm-dd"
-          />
-        </Field>
-        <Field>
-          <FieldLabel id={`${uid}tag-label`}>{t("tag")}</FieldLabel>
-          <Select value={tag} onValueChange={setTag}>
-            <SelectTrigger
-              id={`${uid}tag`}
-              aria-labelledby={`${uid}tag-label ${uid}tag`}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(tags.includes(tag) || tag === NO_TAG_KEY
-                ? tags
-                : [tag, ...tags]
-              ).map((opt) => (
-                <SelectItem key={opt} value={opt}>
-                  {opt}
-                </SelectItem>
-              ))}
-              <SelectItem value={NO_TAG_KEY}>{t("noTag")}</SelectItem>
-            </SelectContent>
-          </Select>
-          {tags.length === 0 && (
-            <div
-              style={{
-                marginTop: 6,
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-tertiary)",
-              }}
-            >
-              {t("tagEmptyHint")}
-            </div>
-          )}
-        </Field>
-      </div>
-
-      <Field style={{ marginBottom: 14 }}>
-        <FieldLabel>{t("form.priority")}</FieldLabel>
-        <div
-          style={{
-            display: "inline-flex",
-            gap: 2,
-            padding: 3,
-            background: "var(--bg-sunken)",
-            borderRadius: "var(--radius-md)",
-          }}
-        >
-          {PRIO_ORDER.map((k) => {
-            const p = PRIO[k];
-            const active = priority === k;
-            return (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setPriority(k)}
-                style={{
-                  background: active ? "var(--bg-surface)" : "transparent",
-                  color: active ? p.color : "var(--fg-secondary)",
-                  border: 0,
-                  padding: "6px 14px",
-                  borderRadius: "var(--radius-sm)",
-                  fontSize: 13,
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  boxShadow: active ? "var(--shadow-sm)" : "none",
-                  fontFamily: "inherit",
-                }}
-              >
-                {t(p.labelKey)}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-
-      <Field>
-        <FieldLabel>{t("form.memo")}</FieldLabel>
-        <Textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value.slice(0, CONTENT_MAX))}
-          placeholder={t("form.memoPlaceholder")}
-          maxLength={CONTENT_MAX}
-          rows={3}
-        />
-      </Field>
-    </ModalShell>
-  );
-}
 
 // ───────────────────────────── 로딩 스켈레톤 ─────────────────────────────
 

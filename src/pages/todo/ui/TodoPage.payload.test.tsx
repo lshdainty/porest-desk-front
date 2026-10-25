@@ -98,6 +98,13 @@ beforeEach(() => {
   __resetPointerBlockForTest();
   sent.values = null;
   sent.id = undefined;
+  // 폼 · 상세는 폭으로 표면이 갈린다(1280 이상 대화상자 · 미만 시트) — jsdom 은 미만(시트)이다
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}
@@ -146,22 +153,15 @@ function openEditor() {
   click(edit);
 }
 
-/** 마감일 입력 — 편집기가 `yyyy-mm-dd` 자리표시자를 단 칸이다. */
-const dueInput = () =>
-  document.body.querySelector<HTMLInputElement>(
-    'input[placeholder="yyyy-mm-dd"]',
+/** 마감일 칸 — Input Button(값은 "9월 30일 (수)" 꼴). 지우기 버튼은 값이 있을 때만 뜬다. */
+const dueButton = () =>
+  document.body.querySelector<HTMLButtonElement>(
+    '[data-slot="input-button-trigger"]',
   );
-
-function setInput(el: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value",
-  )?.set;
-  act(() => {
-    setter?.call(el, value);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
+const clearDue = () =>
+  document.body.querySelector<HTMLButtonElement>(
+    '[data-slot="input-button-clear"]',
+  );
 
 function save() {
   const btn = buttonWith("save");
@@ -172,9 +172,11 @@ function save() {
 describe("마감일 (QA #111)", () => {
   it("비우면 null 이 나간다 — 키를 빼면 옛 마감일이 남는다", () => {
     openEditor();
-    const el = dueInput();
-    expect(el?.value).toBe("2026-09-30");
-    setInput(el!, "");
+    expect(
+      document.body.querySelector('[data-slot="input-button-value"]')
+        ?.textContent,
+    ).toContain("30");
+    click(clearDue()!);
     save();
 
     expect(sent.id).toBe(42);
@@ -185,9 +187,23 @@ describe("마감일 (QA #111)", () => {
 
   it("고른 마감일은 그대로 나간다", () => {
     openEditor();
-    setInput(dueInput()!, "2026-10-15");
+    click(dueButton()!);
+    const day = document.body.querySelector<HTMLButtonElement>(
+      'button[data-date="2026-09-15"]',
+    );
+    if (!day) throw new Error("달력에서 15일을 찾지 못했다");
+    click(day);
+    const done = buttonWith("tdm.apply");
+    if (!done) throw new Error("달력의 완료 버튼을 찾지 못했다");
+    click(done);
     save();
 
-    expect(sent.values!.dueDate).toBe("2026-10-15");
+    expect(sent.values!.dueDate).toBe("2026-09-15");
+  });
+
+  it("고르지 않고 저장하면 지금 마감일 그대로 나간다", () => {
+    openEditor();
+    save();
+    expect(sent.values!.dueDate).toBe("2026-09-30");
   });
 });
