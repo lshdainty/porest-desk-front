@@ -144,6 +144,7 @@ export function TagEditDialog({
                 variant="ghost"
                 ghostColor="critical"
                 size="medium"
+                flush="left"
                 className="self-start"
                 onClick={onDelete}
               >
