@@ -668,6 +668,25 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
     expect(document.activeElement).toBe(done);
   });
 
+  it("삭제가 성공해 확인창이 닫히고 바가 사라져도 초점은 [완료] 에 남는다(I-07 34)", async () => {
+    vi.useRealTimers();
+    render();
+    enter();
+    const done = byNameLike("완료")!;
+    click(checks()[0]!);
+    click(byName("삭제"));
+    const confirm = Array.from(
+      document.querySelectorAll("[role=alertdialog] button"),
+    ).find((b) => b.textContent === "삭제") as HTMLElement;
+    await act(async () => confirm.click());
+    // 확인창이 닫히며 초점을 돌려받는 시간까지 기다린다
+    await act(async () => new Promise<void>((r) => setTimeout(r, 100)));
+
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+    expect(bulk()).toBeNull();
+    expect(document.activeElement).toBe(done);
+  });
+
   it("삭제 알림은 제목과 환급 설명을 따로 둔다 — 두 문장을 이어 붙이지 않는다", async () => {
     st.refund = 12_000;
     render();
