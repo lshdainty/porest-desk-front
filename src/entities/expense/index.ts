@@ -19,6 +19,7 @@ export type {
   StatsPeriod,
   BudgetVsActualItem,
   HeatmapCell,
+  BulkDeleteExpenseResult,
   DeleteExpenseResult,
 } from "./model/types";
 

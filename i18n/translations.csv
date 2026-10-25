@@ -1741,25 +1741,12 @@ expense,filter.addAmountRange,구간 추가,Add range
 expense,filter.periodAlwaysAnd,기간은 항상 함께 적용돼요.,Periods always apply on top of the other conditions.
 expense,filter.removeRow,이 줄 지우기,Remove this row
 expense,filter.excluded,{{count}}개 빼고,{{count}} excluded
-expense,filter.summaryFiltered,필터 적용,Filtered
 expense,filter.chipPeriods,기간 {{count}},{{count}} periods
 expense,filter.chipCats,카테고리 {{count}},{{count}} categories
 expense,filter.chipAssets,계좌·카드 {{count}},{{count}} accounts
 expense,filter.chipExcludeOne,{{name}} 빼고,Excluding {{name}}
 expense,filter.chipAmountRanges,금액 {{count}}구간,{{count}} amount ranges
-expense,subtitle,모든 거래 내역,All transactions
-expense,chip.all,전체,All
-expense,dayCount,{{count}}건,{{count}} items
-expense,emptyDay,이 날의 거래가 없어요,No transactions on this day
-expense,emptyList,내역이 없어요,No transactions
-expense,viewList,목록,List
-expense,viewCalendar,달력,Calendar
-expense,listViewLabel,목록 보기,List view
-expense,calendarViewLabel,달력 보기,Calendar view
-expense,clearFilter,필터 해제,Clear filter
-expense,export,내보내기,Export
 expense,assetFilterBadge,{{name}} 필터 중,Filtering by {{name}}
-expense,filterAppliedBadge,필터 {{count}}개 적용 중,{{count}} filters applied
 expense,prevMonth,이전 달,Previous month
 expense,nextMonth,다음 달,Next month
 expense,preset.introTitle,프리셋이란?,What are presets?
@@ -3055,3 +3042,26 @@ common,searchBadPeriod,시작일을 종료일보다 앞으로 해주세요,Make 
 common,searchFailed,검색하지 못했어요,Search failed
 common,searchEmptyHint,"키워드, 가맹점, 메모로 검색해보세요","Search by keyword, merchant, or memo"
 common,searchNoResults,결과가 없어요,No results
+expense,calendar.miniLabel,작은 달력,Month calendar
+expense,calendar.dayLabel,"{{date}}, 지출 {{amount}}","{{date}}, spent {{amount}}"
+expense,calendar.dayLabelNone,{{date}},{{date}}
+expense,calendar.legend,막대가 진할수록 많이 쓴 날 · 누르면 그 날로 옮겨요,Darker bars mean more spent · Tap a day to jump to it
+expense,list.count,거래 {{count}}건,{{count}} transactions
+expense,list.select,고르기,Select
+expense,list.selectDone,완료,Done
+expense,bulk.sum,합계,Total
+expense,bulk.markFixed,고정으로 표시,Mark as fixed
+expense,bulk.delete,삭제,Delete
+expense,bulk.limit,한 번에 500건까지 할 수 있어요,Up to 500 at a time
+expense,bulk.fixedDone,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
+expense,bulk.deleteTitle,거래 {{count}}건을 삭제할까요?,Delete {{count}} transactions?
+expense,bulk.deleteMessage,지운 거래는 되돌릴 수 없어요. 합계 {{amount}}이 {{month}}에서 빠져요.,Deleted transactions can't be restored. The total {{amount}} will be removed from {{month}}.
+expense,bulk.deleted,{{count}}건을 삭제했어요,Deleted {{count}} transactions
+expense,filter.barLabel,거래 거르기,Filter transactions
+expense,filter.clearAll,필터 지우기,Clear filters
+expense,filter.assetClear,{{name}} 지우기,Remove {{name}}
+expense,filter.amountChip,금액,Amount
+expense,filter.chipMore,{{first}} 외 {{count}}개,{{first}} +{{count}} more
+expense,filter.chipExcludeMore,{{first}} 외 {{count}}개 빼고,Excluding {{first}} +{{count}} more
+expense,filter.chipRange,{{min}} ~ {{max}},{{min}} – {{max}}
+expense,list.title,거래,Transactions

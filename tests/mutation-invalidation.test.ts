@@ -163,6 +163,13 @@ const ROWS: Row[] = [
     change: "ledger",
     call: () => expenses.useBulkMarkFixed(),
   },
+  // 일괄 삭제 — 단건 삭제와 같은 범위다(카드 청구 · 잔액 · 목록 · 요약이 함께 움직인다)
+  {
+    file: EXPENSES,
+    hook: "useBulkDeleteExpenses",
+    change: "ledger",
+    call: () => expenses.useBulkDeleteExpenses(),
+  },
   // 고쳐 쓰기 — 옛 거래가 사라지고 새 거래가 생긴다(D13). 삭제·생성과 같은 범위다.
   {
     file: EXPENSES,

@@ -8,6 +8,7 @@ import type {
   MonthlyTrend,
   MerchantSummary,
   HeatmapCell,
+  BulkDeleteExpenseResult,
   DeleteExpenseResult,
 } from "@/entities/expense";
 
@@ -121,6 +122,18 @@ export const expenseApi = {
     const resp: ApiResponse<DeleteExpenseResult | null> =
       await apiClient.delete(`/v1/expense/${id}`);
     return resp.data ?? { refundedAmount: null };
+  },
+
+  /**
+   * 일괄 삭제 — 한 트랜잭션이라 전부 지우거나 아무것도 안 지운다(남의 것 · 없는 것 · 시스템 거래가 섞이면 전체 거절).
+   * 한 번에 500건까지. 응답은 지운 건수와 결제계좌로 돌려준 금액 합(없으면 null).
+   */
+  bulkDeleteExpenses: async (
+    expenseIds: number[],
+  ): Promise<BulkDeleteExpenseResult> => {
+    const resp: ApiResponse<BulkDeleteExpenseResult | null> =
+      await apiClient.post("/v1/expenses/delete", { expenseIds });
+    return resp.data ?? { deletedCount: 0, refundedAmount: null };
   },
 
   getRangeSummary: async (

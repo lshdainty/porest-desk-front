@@ -103,6 +103,16 @@ export const useDeleteExpense = () => {
   });
 };
 
+/** 고른 거래를 한 번에 지운다. 단건 삭제와 같은 범위(`"ledger"`)를 턴다 — 카드 청구 · 잔액 · 목록 · 요약이 함께 움직인다 */
+export const useBulkDeleteExpenses = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: number[]) => expenseApi.bulkDeleteExpenses(ids),
+    onSuccess: () => invalidateFor(queryClient, "ledger"),
+  });
+};
+
 export const useRangeSummary = (
   startDate: string,
   endDate: string,

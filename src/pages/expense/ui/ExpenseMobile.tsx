@@ -827,7 +827,6 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
               setFilterValue(v);
               setFilterOpen(false);
             }}
-            mobile
           />
         )}
         <SwipeConfirmDialog

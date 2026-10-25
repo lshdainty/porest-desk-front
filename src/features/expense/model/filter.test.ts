@@ -362,3 +362,51 @@ describe("보고 있는 달의 기본 기간", () => {
     ).toBe(false);
   });
 });
+
+describe("고르지 않은 기간은 조건이 아니다 (I-07 Q5-C)", () => {
+  it("기간 칸이 비어 있고 걸린 조건이 없으면 필터가 아니다", async () => {
+    const { hasActiveFilter, periodMonthBounds, DEFAULT_FILTER } =
+      await import("./filter");
+    expect(hasActiveFilter(null)).toBe(false);
+    expect(hasActiveFilter(DEFAULT_FILTER)).toBe(false);
+    expect(periodMonthBounds(DEFAULT_FILTER)).toBeNull();
+  });
+
+  it("기간 · 종류 하나 · 빼기 중 하나라도 있으면 필터다", async () => {
+    const { hasActiveFilter, DEFAULT_FILTER } = await import("./filter");
+    const period = {
+      preset: "custom" as const,
+      start: "2026-08-10",
+      end: "2026-09-02",
+    };
+    expect(hasActiveFilter({ ...DEFAULT_FILTER, periods: [period] })).toBe(
+      true,
+    );
+    expect(hasActiveFilter({ ...DEFAULT_FILTER, types: ["EXPENSE"] })).toBe(
+      true,
+    );
+    expect(
+      hasActiveFilter({
+        ...DEFAULT_FILTER,
+        categories: { include: [], exclude: [3] },
+      }),
+    ).toBe(true);
+    // 조건 맞추기만 바뀐 값은 걸린 조건이 아니다
+    expect(hasActiveFilter({ ...DEFAULT_FILTER, match: "any" })).toBe(false);
+  });
+
+  it("기간이 걸치는 달의 처음과 끝을 돌려준다 — 여러 칸이면 최소 시작 ~ 최대 종료", async () => {
+    const { periodMonthBounds, DEFAULT_FILTER } = await import("./filter");
+    const p = (start: string, end: string) => ({
+      preset: "custom" as const,
+      start,
+      end,
+    });
+    expect(
+      periodMonthBounds({
+        ...DEFAULT_FILTER,
+        periods: [p("2026-09-20", "2026-10-02"), p("2026-07-01", "2026-07-31")],
+      }),
+    ).toEqual({ first: "2026-07", last: "2026-10" });
+  });
+});

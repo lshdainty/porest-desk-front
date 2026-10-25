@@ -2,7 +2,13 @@ import type { ReactNode } from "react";
 import { Split } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/shared/ds/badge";
-import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
+import {
+  List,
+  ListButtonItem,
+  ListCheckItem,
+  ListItem,
+  ListTile,
+} from "@/shared/ds/list";
 import { TagGroup, TagGroupItem } from "@/shared/ds/tag-group";
 import { cn } from "@/shared/lib/cn";
 import { KRW, MINUS, isEn } from "@/shared/lib/groo/format";
@@ -36,6 +42,7 @@ export function ExpenseRow({
   maskCard = "ledger.txList",
   gutter = false,
   highlighted = false,
+  select,
 }: {
   expense: Expense;
   onClick?: (e: Expense) => void;
@@ -53,6 +60,11 @@ export function ExpenseRow({
   gutter?: boolean;
   /** 알림 · 검색에서 들어온 줄 — ds List 강조(brand-weak 바탕 · 누름 brand-weak-pressed · 설명 글 보정). 줄을 누를 수 있을 때만 의미가 있다 */
   highlighted?: boolean;
+  /**
+   * 고르기 모드(I-07 33) — 앞에 체크 24(체크 ↔ 타일 12), 줄 어디를 눌러도 바뀌고 상세는 열리지 않는다.
+   * `"space"` 는 고를 수 없는 줄(시스템이 만든 거래)이 체크 자리만 비워 글자 자리를 다른 줄과 맞춘다. 고른 줄은 바탕을 칠하지 않는다.
+   */
+  select?: RowSelect;
 }) {
   const { t } = useTranslation("common");
   const isIncome = expense.expenseType === "INCOME";
@@ -164,7 +176,26 @@ export function ExpenseRow({
         !gutter && "[&_[data-slot=list-content]]:px-0",
       )}
     >
-      {onClick ? (
+      {select != null && select !== "space" ? (
+        <ListCheckItem
+          markPosition="prefix"
+          prefix={prefix}
+          title={title}
+          detail={detail}
+          suffix={suffix}
+          align="top"
+          checked={select.checked}
+          onCheckedChange={(on) => select.onCheckedChange(on === true)}
+        />
+      ) : select === "space" ? (
+        <ListItem
+          title={title}
+          detail={detail}
+          prefix={<SelectSpace>{prefix}</SelectSpace>}
+          suffix={suffix}
+          align="top"
+        />
+      ) : onClick ? (
         <ListButtonItem
           title={title}
           detail={detail}
@@ -185,6 +216,20 @@ export function ExpenseRow({
         />
       )}
     </List>
+  );
+}
+
+/** 고르기 모드의 줄 선택 — 체크 상태, 또는 고를 수 없는 줄의 자리 비움 */
+export type RowSelect =
+  { checked: boolean; onCheckedChange: (on: boolean) => void } | "space";
+
+/** 체크 자리(24)만큼 비운 앞 붙이개 — 체크가 없는 줄이 글자 자리를 맞춘다 */
+export function SelectSpace({ children }: { children: ReactNode }) {
+  return (
+    <span className="flex items-center gap-x3">
+      <span aria-hidden className="size-x6 shrink-0" />
+      {children}
+    </span>
   );
 }
 

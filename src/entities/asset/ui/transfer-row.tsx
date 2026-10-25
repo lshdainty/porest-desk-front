@@ -32,6 +32,7 @@ export function TransferRow({
   onClick,
   showDate,
   gutter = false,
+  selectSpace = false,
 }: {
   transfer: AssetTransfer;
   perspectiveAssetRowId?: number;
@@ -42,6 +43,8 @@ export function TransferRow({
    * 호스트(가계부 · 자산 상세 · 거래 상세)가 아직 바깥 24 를 쥐고 있어서다. I-06 이 머지된 뒤 가계부가 두 줄을 함께 켠다(I-07 4).
    */
   gutter?: boolean;
+  /** 고르기 모드 — 이체는 고를 수 없어 체크 자리만 비운다(글자 자리는 거래 줄과 같다, I-07 Q6-A) */
+  selectSpace?: boolean;
 }) {
   const { t } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
@@ -145,7 +148,20 @@ export function TransferRow({
         "[&_[data-slot=list-detail]]:w-0 [&_[data-slot=list-detail]]:min-w-full",
       )}
     >
-      {onClick ? (
+      {selectSpace ? (
+        <ListItem
+          title={title}
+          detail={detail}
+          prefix={
+            <span className="flex items-center gap-x3">
+              <span aria-hidden className="size-x6 shrink-0" />
+              {prefix}
+            </span>
+          }
+          suffix={suffix}
+          align="top"
+        />
+      ) : onClick ? (
         <ListButtonItem
           title={title}
           detail={detail}

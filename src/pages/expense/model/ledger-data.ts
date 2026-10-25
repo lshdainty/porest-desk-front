@@ -132,6 +132,13 @@ export function useExpenseData(
   const monthEnd = `${year}-${String(m).padStart(2, "0")}-${String(monthEndDay).padStart(2, "0")}`;
   // 자산 필터를 합계에도 건다 — 목록·캘린더만 걸러지고 상단 수입/지출은 전체 값이었다.
   const monthlyQ = useRangeSummary(monthStart, monthEnd, assetId ?? null);
+  // 그 달 거래 전체(필터와 무관) — 데스크톱 · 태블릿 작은 달력의 날마다 세기 막대와 주 달력이 센다.
+  // 필터가 없으면 위 목록과 같은 요청이라 한 번만 받는다(같은 질의 키)
+  const monthExpensesQ = useExpenses({
+    startDate: monthStart,
+    endDate: monthEnd,
+    assetId,
+  });
 
   // 부모 카테고리를 고르면 자식 rowId 까지 함께 본다 — **빼고(exclude)에도 같이** 건다.
   // 한쪽만 펼치면 "식비 빼고" 가 하위 '카페' 를 못 걸러 낸다.
@@ -232,6 +239,12 @@ export function useExpenseData(
     transfers: filteredTransfers,
     monthIn,
     monthOut,
+    /** 그 달 서버 요약 — 필터와 무관한 달 값(작은 달력 · 요약 카드). `monthIn` · `monthOut` 은 필터가 걸리면 거른 목록의 값이다 */
+    monthTotalIn: monthlyQ.data?.totalIncome ?? 0,
+    monthTotalOut: monthlyQ.data?.totalExpense ?? 0,
+    /** 그 달 거래 전체(필터와 무관) — 달력 막대가 센다 */
+    monthExpenses: monthExpensesQ.data ?? [],
+    isLoadingMonthExpenses: monthExpensesQ.isLoading,
     filterActive,
     isLoadingList: expensesQ.isLoading || transfersQ.isLoading,
     isLoadingSummary: monthlyQ.isLoading,

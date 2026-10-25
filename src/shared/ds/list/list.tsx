@@ -731,15 +731,28 @@ type MarkPlacement<Default extends "prefix" | "suffix"> =
     : | { markPosition?: "suffix"; prefix?: React.ReactNode }
       | { markPosition: "prefix"; prefix?: never };
 
+// 앞에 체크를 둔 줄은 내용 줄(거래 · 이체)의 고르기 모드에도 쓴다 — 체크 다음에 앞 타일(prefix)을 잇고, 뒤에 값(suffix, 금액)을 보이기만 한다.
+// 따로 누르는 것은 두지 않는다(값은 글 · 금액만). 체크가 뒤에 있으면(markPosition "suffix") 지금처럼 뒤 붙이개는 체크 하나다
 export type ListCheckItemProps = Omit<
   CheckmarkProps,
   "title" | "prefix" | "size" | "shape" | "children"
 > &
   Omit<ControlRowProps, "suffix" | "prefix"> &
-  MarkPlacement<"prefix"> & {
-    /** 뒤 값 글자 — 체크를 뒤(markPosition "suffix")에 둘 때 체크 앞에 놓인다(건수 · 개수). 값 + 조작 요소는 Fragment 로 넘기는 규칙 그대로 */
-    suffixValue?: React.ReactNode;
-  };
+  (
+    | {
+        markPosition?: "prefix";
+        prefix?: React.ReactNode;
+        suffix?: React.ReactNode;
+        suffixValue?: never;
+      }
+    | {
+        markPosition: "suffix";
+        prefix?: React.ReactNode;
+        suffix?: never;
+        /** 뒤 값 글자 — 체크를 뒤에 둘 때 체크 앞에 놓인다(건수 · 개수). 값 + 조작 요소는 Fragment 로 넘기는 규칙 그대로 */
+        suffixValue?: React.ReactNode;
+      }
+  );
 
 // 체크 줄 — 여럿 고르기. 체크 24 를 앞(기본)이나 뒤에. 저장해야 적용되는 선택에 쓴다
 const ListCheckItem = React.forwardRef<
@@ -755,6 +768,7 @@ const ListCheckItem = React.forwardRef<
       highlighted,
       rootProps,
       markPosition = "prefix",
+      suffix,
       suffixValue,
       className,
       id,
@@ -780,7 +794,20 @@ const ListCheckItem = React.forwardRef<
       <ControlRow
         title={title}
         detail={detail}
-        prefix={markPosition === "prefix" ? mark : prefix}
+        prefix={
+          markPosition === "prefix" ? (
+            has(prefix) ? (
+              <span className="flex items-center gap-x3">
+                {mark}
+                {prefix}
+              </span>
+            ) : (
+              mark
+            )
+          ) : (
+            prefix
+          )
+        }
         suffix={
           markPosition === "suffix" ? (
             suffixValue != null && suffixValue !== false ? (
@@ -791,7 +818,9 @@ const ListCheckItem = React.forwardRef<
             ) : (
               mark
             )
-          ) : undefined
+          ) : (
+            suffix
+          )
         }
         align={align}
         highlighted={highlighted}
