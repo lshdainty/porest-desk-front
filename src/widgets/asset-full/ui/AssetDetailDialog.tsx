@@ -73,6 +73,7 @@ import {
   formatChartAxis,
   isEn,
   formatDay,
+  formatChangeRate,
 } from "@/shared/lib/groo/format";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
 import { niceAxis } from "@/shared/lib/groo/chartAxis";
@@ -1782,7 +1783,7 @@ function HoldingRow({
             : `${price.price.toLocaleString()} ${price.currency}`;
       if (unitKrw != null && prevUnitKrw != null && prevUnitKrw > 0) {
         changePct =
-          Math.round(((unitKrw - prevUnitKrw) / prevUnitKrw) * 1000) / 10;
+          Math.round(((unitKrw - prevUnitKrw) / prevUnitKrw) * 10000) / 100;
       }
     }
   } else {
@@ -1866,8 +1867,7 @@ function HoldingRow({
                 changePct >= 0 ? "var(--status-danger-fg)" : "var(--fg-brand)",
             }}
           >
-            {changePct >= 0 ? "+" : ""}
-            {changePct}%
+            {formatChangeRate(changePct, { sign: "always" })}
           </div>
         )}
       </div>
@@ -2522,8 +2522,9 @@ export function AssetDetailDialog({
                             : "var(--fg-brand)",
                       }}
                     >
-                      {investVal.changePct >= 0 ? "+" : ""}
-                      {investVal.changePct}%
+                      {formatChangeRate(investVal.changePct, {
+                        sign: "always",
+                      })}
                     </span>
                     {investVal.changeAmt != null && (
                       <span

@@ -52,7 +52,7 @@ import {
   formatOriginalAmount,
   isForeignCurrency,
 } from "@/shared/lib/groo/currency";
-import { MINUS } from "@/shared/lib/groo/format";
+import { MINUS, formatChangeRate } from "@/shared/lib/groo/format";
 import type { HideCardKey } from "@/shared/lib/groo/hide-amounts-cards";
 import { useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
@@ -253,7 +253,7 @@ export function SummarySection({
     ) : (
       <Delta
         direction={isUp ? "up" : "down"}
-        value={`${Math.abs(g.changePercent).toFixed(1)}%${
+        value={`${formatChangeRate(g.changePercent, { sign: "none" })}${
           hidden ? "" : ` (${won(Math.abs(g.changeAmount))})`
         }`}
         text={t("vsLastMonth")}
@@ -877,7 +877,7 @@ export function AssetRow({
             value={
               hiddenNow
                 ? "•••"
-                : `${Math.abs(investVal.changePct)}%${
+                : `${formatChangeRate(investVal.changePct, { sign: "none" })}${
                     investVal.changeAmt != null
                       ? ` (${investVal.changeAmt >= 0 ? "+" : MINUS}${won(Math.abs(investVal.changeAmt))})`
                       : ""

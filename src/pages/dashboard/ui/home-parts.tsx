@@ -29,7 +29,7 @@ import { toggleVariants } from "@/shared/ds/toggle";
 import { Badge } from "@/shared/ds/badge";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { cn } from "@/shared/lib/cn";
-import { MINUS } from "@/shared/lib/groo/format";
+import { MINUS, formatChangeRate } from "@/shared/lib/groo/format";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { ExpenseRow, type Expense } from "@/entities/expense";
@@ -243,7 +243,7 @@ export function HeroCard({ data, band }: { data: HeroData; band?: boolean }) {
               <>
                 <Delta
                   direction={dir}
-                  value={`${Math.abs(data.changePercent).toFixed(1)}%`}
+                  value={formatChangeRate(data.changePercent, { sign: "none" })}
                   text={t("lastMonthThan")}
                 />
                 {data.showChangeAmount && data.changeAmount !== 0 && (

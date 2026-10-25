@@ -17,7 +17,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { KRW, money, isEn, formatChartAxis } from "@/shared/lib/groo/format";
+import {
+  KRW,
+  money,
+  isEn,
+  formatChartAxis,
+  formatChangeRate,
+} from "@/shared/lib/groo/format";
 import { heatCellLabel } from "@/pages/stats/lib/heat-label";
 import {
   formatYearMonth,
@@ -3114,7 +3120,9 @@ export const StatsPage = () => {
     ? "var(--color-fg-informative)"
     : "var(--color-fg-critical)";
   const cmpPct =
-    totalPrev > 0 ? Math.abs((cmpDiff / totalPrev) * 100).toFixed(1) : null;
+    totalPrev > 0
+      ? formatChangeRate((cmpDiff / totalPrev) * 100, { sign: "none" })
+      : null;
   const cmpBarMax = Math.max(1, totalNow, totalPrev);
   const prevDays =
     Math.round(
@@ -3191,7 +3199,7 @@ export const StatsPage = () => {
               background: `color-mix(in oklab, ${cmpColor} 12%, transparent)`,
             }}
           >
-            {cmpLess ? "▼" : "▲"} {cmpPct}%
+            {cmpLess ? "▼" : "▲"} {cmpPct}
           </span>
         )}
       </div>
@@ -3652,7 +3660,8 @@ export const StatsPage = () => {
                   >
                     {r.prev > 0 ? (
                       <>
-                        {up ? "▲" : "▼"} {Math.abs(r.pct).toFixed(0)}%
+                        {up ? "▲" : "▼"}{" "}
+                        {formatChangeRate(r.pct, { sign: "none" })}
                       </>
                     ) : (
                       "—"

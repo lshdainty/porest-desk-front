@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { i18n } from "@/shared/i18n/config";
 import * as format from "./format";
-import { KRW, MINUS, formatChartAxis, minusOf, plusOf } from "./format";
+import {
+  KRW,
+  MINUS,
+  formatChangeRate,
+  formatChartAxis,
+  minusOf,
+  plusOf,
+} from "./format";
 import { niceAxis, niceCeil } from "./chartAxis";
 
 describe("MINUS / minusOf", () => {
@@ -258,5 +265,40 @@ describe("formatChartAxis (en)", () => {
     expect(formatChartAxis(120000000)).toBe("120M");
     expect(formatChartAxis(52000)).toBe("52K");
     expect(formatChartAxis(-52000)).toBe("-52K");
+  });
+});
+
+/**
+ * 등락률 — 어디서나 소수 둘째 자리(사용자 결정 2026-10-25). 증권 · 홈 · 자산 · 통계가 이 함수 하나를 쓴다.
+ */
+describe("formatChangeRate", () => {
+  it("소수 둘째 자리를 늘 보인다 — 0.43% · 5.00% · 8.90%", () => {
+    expect(formatChangeRate(0.43)).toBe("0.43%");
+    expect(formatChangeRate(5)).toBe("5.00%");
+    expect(formatChangeRate(8.9)).toBe("8.90%");
+    expect(formatChangeRate(12.3456)).toBe("12.35%");
+  });
+
+  it("음수는 U+2212 — 하이픈이 아니다", () => {
+    expect(formatChangeRate(-12.3)).toBe(`${MINUS}12.30%`);
+    expect(formatChangeRate(-12.3)).not.toContain("-");
+  });
+
+  it("sign: always 는 양수 · 0 에 + 를 붙인다, none 은 절댓값(▲ ▼ 가 방향을 말하는 자리)", () => {
+    expect(formatChangeRate(2.5, { sign: "always" })).toBe("+2.50%");
+    expect(formatChangeRate(0, { sign: "always" })).toBe("+0.00%");
+    expect(formatChangeRate(-2.5, { sign: "always" })).toBe(`${MINUS}2.50%`);
+    expect(formatChangeRate(-2.5, { sign: "none" })).toBe("2.50%");
+  });
+
+  it("반올림해서 0.00 이 되는 음수는 −0.00% 가 아니다", () => {
+    expect(formatChangeRate(-0.001)).toBe("0.00%");
+    expect(formatChangeRate(-0.001, { sign: "always" })).toBe("+0.00%");
+  });
+
+  it("천 단위 쉼표 · 유한하지 않은 값은 —", () => {
+    expect(formatChangeRate(1234.5)).toBe("1,234.50%");
+    expect(formatChangeRate(NaN)).toBe("—");
+    expect(formatChangeRate(Infinity)).toBe("—");
   });
 });

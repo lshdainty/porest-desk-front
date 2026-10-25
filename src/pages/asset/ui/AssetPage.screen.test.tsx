@@ -215,6 +215,18 @@ describe("순자산 요약(55)", () => {
     expect(container.querySelector("[data-slot=skeleton]")).not.toBeNull();
   });
 
+  it("순자산 증감률은 소수 둘째 자리 — 이전 달 대비 11.11%(예전 11.1%)", () => {
+    state.summary = q({
+      netWorth: 1_000_000,
+      changeAmount: 100_000,
+      changePercent: 0,
+      lastMonthNetWorth: 900_000,
+    });
+    render();
+    expect(text()).toContain("11.11%");
+    expect(text()).not.toMatch(/11\.1%/);
+  });
+
   it("지표 셋(계좌 · 투자 · 카드)이 있다", () => {
     render();
     expect(text()).toContain("tab.accountDeposit");
@@ -467,7 +479,7 @@ describe("투자 등락 가림(I-05 56)", () => {
       container.querySelectorAll("[data-slot=delta-value]"),
     ).map((n) => n.textContent);
     expect(
-      d.some((t) => /3\.2%/.test(t ?? "") && /16,000원/.test(t ?? "")),
+      d.some((t) => /3\.20%/.test(t ?? "") && /16,000원/.test(t ?? "")),
     ).toBe(true);
   });
 
@@ -480,7 +492,7 @@ describe("투자 등락 가림(I-05 56)", () => {
     expect(invest!.querySelector("[data-slot=delta-value]")!.textContent).toBe(
       "▲ •••",
     );
-    expect(text()).not.toContain("3.2%");
+    expect(text()).not.toContain("3.20%");
     expect(text()).not.toContain("16,000원");
     expect(rowDelta()).not.toBeNull();
   });
@@ -492,7 +504,7 @@ describe("투자 등락 가림(I-05 56)", () => {
       ],
     });
     render();
-    expect(text()).not.toContain("3.2%");
+    expect(text()).not.toContain("3.20%");
     expect(text()).toContain("•••");
   });
 });

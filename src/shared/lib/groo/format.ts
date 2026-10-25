@@ -14,6 +14,36 @@ export const isEn = (): boolean => (i18n.language ?? "").startsWith("en");
 export const MINUS = "−";
 
 /**
+ * 등락률(%) — **어디서나 소수 둘째 자리**(0.43% · 5.00% · −12.30%, 사용자 결정 2026-10-25). 증권 · 홈 · 자산 · 통계가 한 함수를 쓴다.
+ * "첫째 자리" · "소수가 0 이면 빼기" 는 거절. 사용률 · 비중 · 달성률 같은 **등락이 아닌 비율**은 이 함수가 아니다.
+ *
+ * `sign`: `"auto"`(기본 — 음수만 U+2212) · `"always"`(양수 · 0 은 `+`, 음수는 `−`) · `"none"`(절댓값 — ▲ ▼ 화살표가 방향을 말하는 자리).
+ * 반올림해서 0.00 이 되는 음수는 `−0.00%` 가 아니라 `0.00%` 다. 유한하지 않은 값은 `—`.
+ */
+export function formatChangeRate(
+  pct: number,
+  { sign = "auto" }: { sign?: "auto" | "always" | "none" } = {},
+): string {
+  if (!Number.isFinite(pct)) return "—";
+  const body = Math.abs(pct).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const zero = Number(body.replace(/,/g, "")) === 0;
+  const prefix =
+    sign === "none" || zero
+      ? sign === "always" && zero
+        ? "+"
+        : ""
+      : pct < 0
+        ? MINUS
+        : sign === "always"
+          ? "+"
+          : "";
+  return `${prefix}${body}%`;
+}
+
+/**
  * **크기만** 들고 있는 값(총 부채·지출처럼 절대값으로 오는 값) 앞에 붙일 부호.
  * `−{KRW(v)}` 처럼 마이너스를 문자로 박아 두던 자리를 이걸로 바꾼다.
  *

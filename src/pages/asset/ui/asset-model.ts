@@ -149,7 +149,7 @@ export function useAssetGroups() {
   const lastMonth = summaryQ.data?.lastMonthNetWorth ?? 0;
   const changePercent =
     lastMonth !== 0
-      ? Math.round((changeAmount / Math.abs(lastMonth)) * 1000) / 10
+      ? Math.round((changeAmount / Math.abs(lastMonth)) * 10000) / 100
       : (summaryQ.data?.changePercent ?? 0);
 
   const assetsFailed = assetsQ.isError === true;
