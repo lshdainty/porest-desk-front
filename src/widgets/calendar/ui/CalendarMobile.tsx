@@ -93,7 +93,6 @@ const CalendarMobile = ({ screen, isLoading }: IProps) => {
         <DayEventsDialog
           date={dayDate}
           events={dayEvents}
-          mobile
           onClose={() => setDayDate(null)}
           onAdd={() => {
             setCreatingDate(dayDate);

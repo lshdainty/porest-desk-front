@@ -222,7 +222,7 @@ calendar,editEvent,일정 수정,Edit event
 calendar,deleteEvent,일정 삭제,Delete Event
 calendar,today,오늘,Today
 calendar,allDay,종일,All Day
-calendar,noEvents,이 날짜에 일정이 없습니다,No events for this date
+calendar,noEvents,이 날에 일정이 없어요.,No events on this day.
 calendar,events,일정,Events
 calendar,todos,할일,Todos
 calendar,expenses,지출,Expenses
