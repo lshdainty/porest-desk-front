@@ -32,6 +32,8 @@ import {
   SHEET_OVERLAY,
   SHEET_TITLE,
   SHEET_TITLE_WITH_CLOSE,
+  SHEET_TITLE_WITH_ACTION,
+  SHEET_HEADER_ACTION,
 } from "./bottom-sheet-variants";
 import { useDsText } from "@/shared/ds/i18n";
 
@@ -426,53 +428,80 @@ export interface BottomSheetContentProps extends Omit<
   description?: React.ReactNode;
   /** 오른쪽 위 닫기 버튼(기본 켬) — 조회 · 고르기 · 시트의 입력 폼 모두에 둔다 */
   showCloseButton?: boolean;
+  /** 머리 오른쪽 동작 하나 — ghost iconOnly 36 단추(⋮ "{항목 이름} 더보기"). 닫기 단추 왼쪽 사이 4, 제목은 남은 폭에서 줄을 바꾼다. 초점 차례: 제목 → 동작 → 닫기 */
+  headerAction?: React.ReactNode;
 }
 
 const BottomSheetContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   BottomSheetContentProps
->(({ title, description, showCloseButton = true, children, ...props }, ref) => {
-  const dsT = useDsText();
-  const ctx = useSheetContext("BottomSheetContent");
-  return (
-    <BottomSheetSurface
-      ref={ref}
-      data-form={ctx.form || undefined}
-      // 설명이 없으면 aria-describedby 를 걷는다(가리킬 곳이 없다)
-      {...(description == null ? { "aria-describedby": undefined } : null)}
-      {...props}
-    >
-      <div data-slot="bottom-sheet-header" className={SHEET_HEADER}>
-        <DrawerPrimitive.Title
-          data-slot="bottom-sheet-title"
-          className={cn(SHEET_TITLE, showCloseButton && SHEET_TITLE_WITH_CLOSE)}
-        >
-          {title}
-        </DrawerPrimitive.Title>
-        {description != null && (
-          <DrawerPrimitive.Description
-            data-slot="bottom-sheet-description"
-            className={SHEET_DESCRIPTION}
+>(
+  (
+    {
+      title,
+      description,
+      showCloseButton = true,
+      headerAction,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const dsT = useDsText();
+    const ctx = useSheetContext("BottomSheetContent");
+    return (
+      <BottomSheetSurface
+        ref={ref}
+        data-form={ctx.form || undefined}
+        // 설명이 없으면 aria-describedby 를 걷는다(가리킬 곳이 없다)
+        {...(description == null ? { "aria-describedby": undefined } : null)}
+        {...props}
+      >
+        <div data-slot="bottom-sheet-header" className={SHEET_HEADER}>
+          <DrawerPrimitive.Title
+            data-slot="bottom-sheet-title"
+            className={cn(
+              SHEET_TITLE,
+              showCloseButton && SHEET_TITLE_WITH_CLOSE,
+              headerAction != null && SHEET_TITLE_WITH_ACTION,
+            )}
           >
-            {description}
-          </DrawerPrimitive.Description>
+            {title}
+          </DrawerPrimitive.Title>
+          {description != null && (
+            <DrawerPrimitive.Description
+              data-slot="bottom-sheet-description"
+              className={SHEET_DESCRIPTION}
+            >
+              {description}
+            </DrawerPrimitive.Description>
+          )}
+        </div>
+        {/* 머리 오른쪽 동작 — DOM 차례가 초점 차례: 제목 → 동작 → 닫기 */}
+        {headerAction != null && (
+          <div
+            data-slot="bottom-sheet-header-action"
+            className={SHEET_HEADER_ACTION}
+          >
+            {headerAction}
+          </div>
         )}
-      </div>
-      {showCloseButton && (
-        <button
-          type="button"
-          aria-label={dsT("common.close")}
-          data-slot="bottom-sheet-close"
-          className={SHEET_CLOSE}
-          onClick={() => ctx.requestClose()}
-        >
-          <X aria-hidden strokeWidth={2} />
-        </button>
-      )}
-      {children}
-    </BottomSheetSurface>
-  );
-});
+        {showCloseButton && (
+          <button
+            type="button"
+            aria-label={dsT("common.close")}
+            data-slot="bottom-sheet-close"
+            className={SHEET_CLOSE}
+            onClick={() => ctx.requestClose()}
+          >
+            <X aria-hidden strokeWidth={2} />
+          </button>
+        )}
+        {children}
+      </BottomSheetSurface>
+    );
+  },
+);
 BottomSheetContent.displayName = "BottomSheetContent";
 
 export interface BottomSheetBodyProps extends React.HTMLAttributes<HTMLDivElement> {
