@@ -127,6 +127,13 @@ describe("그날 시트", () => {
     expect(fns.onTapEvent).toHaveBeenCalledTimes(1);
   });
 
+  it("줄 목록은 시트 본문 좌우 여백(24)을 넘어 화면 끝까지 닿는 상자에 담긴다", () => {
+    render([event(1)]);
+    expect(
+      sheet().querySelector("[data-slot=day-sheet-list]")!.className,
+    ).toContain("-mx-x6");
+  });
+
   it("긴 제목 · 설명은 줄을 바꿔 다 보인다(말줄임 없음)", () => {
     render([event(1, { title: "아".repeat(50) })]);
     expect(sheet().innerHTML).not.toContain("truncate");

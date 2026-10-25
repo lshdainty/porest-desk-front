@@ -47,12 +47,13 @@ export function DayEventsDialog({
               {t("noEvents")}
             </p>
           ) : (
-            <DayEventList
-              className="-mx-x6"
-              events={events}
-              label={formatMonthDayDow(date)}
-              onTapEvent={(e) => onTapEvent(e)}
-            />
+            <div data-slot="day-sheet-list" className="-mx-x6">
+              <DayEventList
+                events={events}
+                label={formatMonthDayDow(date)}
+                onTapEvent={(e) => onTapEvent(e)}
+              />
+            </div>
           )}
         </BottomSheetBody>
         <BottomSheetFooter>
