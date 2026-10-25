@@ -30,6 +30,7 @@ vi.mock("react-i18next", () => ({
 }));
 vi.mock("react-router-dom", () => ({
   useOutletContext: () => ({ mobile: false, onAddTx: () => {} }),
+  useNavigate: () => () => {},
 }));
 vi.mock("@/features/todo", () => ({
   useTodos: () => ({ data: state.todos, isLoading: false }),
