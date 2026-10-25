@@ -28,8 +28,17 @@ export function shiftYm(ym: string, dir: -1 | 1): string {
 export function isDone(t: Todo): boolean {
   return t.status === "COMPLETED";
 }
+/** dueDate(날짜 또는 datetime) → 'YYYY-MM-DD'. 없으면 null */
+export function dueKey(due: string | null | undefined): string | null {
+  return due ? due.slice(0, 10) : null;
+}
 export function dueOf(t: Todo): string | null {
-  return t.dueDate ? t.dueDate.slice(0, 10) : null;
+  return dueKey(t.dueDate);
+}
+
+/** 두 'YYYY-MM-DD' 사이 일수 차이 (b − a) */
+export function dayDiff(a: string, b: string): number {
+  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 }
 export function tagOf(t: Todo): string {
   return t.category || "";
@@ -157,9 +166,35 @@ export function relKindOf(
   d: string,
   today: string,
 ): "today" | "tomorrow" | "yesterday" | null {
-  const diff = Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
+  const diff = dayDiff(today, d);
   if (diff === 0) return "today";
   if (diff === 1) return "tomorrow";
   if (diff === -1) return "yesterday";
   return null;
+}
+
+/**
+ * 남은(안 끝낸) 할 일의 태그별 수(I-10 32) — 태그 이름 차례(설정 태그 → 할 일에만 남은 이름)대로, 태그 없는 할 일은 맨 뒤에 `tag: ""` 로.
+ * 남은 것이 0 인 태그는 줄을 내지 않는다. 달 · 거르기와 상관없이 전체를 센다 — 우선순위별 수(`remainByPrio`)와 합이 같다.
+ */
+export function remainByTag(
+  todos: readonly Todo[],
+  tagNames: readonly string[],
+): { tag: string; count: number }[] {
+  const open = todos.filter((td) => !isDone(td));
+  const rows = tagNames
+    .map((tag) => ({
+      tag,
+      count: open.filter((td) => tagOf(td) === tag).length,
+    }))
+    .filter((r) => r.count > 0);
+  const none = open.filter((td) => tagOf(td) === "").length;
+  return none > 0 ? [...rows, { tag: "", count: none }] : rows;
+}
+
+/** 남은(안 끝낸) 할 일의 우선순위별 수 — 셋 모두 늘 낸다(0 이어도). 달 · 거르기와 상관없이 전체 */
+export function remainByPrio(todos: readonly Todo[]): Record<PrioKey, number> {
+  const out: Record<PrioKey, number> = { HIGH: 0, MEDIUM: 0, LOW: 0 };
+  for (const td of todos) if (!isDone(td)) out[td.priority] += 1;
+  return out;
 }

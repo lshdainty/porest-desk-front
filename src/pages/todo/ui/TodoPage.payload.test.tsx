@@ -25,7 +25,7 @@ const sent = vi.hoisted(() => ({
 }));
 
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k: string) => k }),
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("react-router-dom", () => ({
@@ -96,6 +96,9 @@ beforeEach(() => {
   // 앞 케이스의 다이얼로그가 닫히면 그 뒤 POINTER_BLOCK_MS 동안 클릭이 삼켜진다
   // (모달 닫힘 직후 오클릭 방어) — 케이스끼리 옮지 않게 여기서 푼다.
   __resetPointerBlockForTest();
+  // 고정한 오늘 — 할 일 마감일(2026-09-30)과 같은 달. 날짜만 고정하고 타이머는 그대로 둔다
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-09-15T09:00:00"));
   sent.values = null;
   sent.id = undefined;
   // 폼 · 상세는 폭으로 표면이 갈린다(1280 이상 대화상자 · 미만 시트) — jsdom 은 미만(시트)이다
@@ -120,6 +123,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
+  vi.useRealTimers();
 });
 
 const click = (el: Element) =>
@@ -133,20 +137,11 @@ const buttonWith = (label: string) =>
 /** 목록 → 상세 → 수정 순으로 편집기를 연다(화면에서 실제로 가는 길). */
 function openEditor() {
   act(() => root.render(<TodoPage />));
-  // 기본 탭은 '오늘' 이라 마감일이 오늘인 것만 보인다 — 오늘 날짜에 기대지 않으려고
-  // '전체' 로 옮긴다(그래야 이 테스트가 달력을 안 탄다).
-  const allTab = [...container.querySelectorAll("button")].find((b) =>
-    b.textContent?.startsWith("status.ALL"),
+  // 넓은 화면은 보고 있는 달의 날짜 묶음을 그린다 — 오늘 날짜에 기대지 않으려고 시계를 고정했다(beforeEach).
+  const row = [...container.querySelectorAll("button")].find((b) =>
+    b.textContent?.includes("세금 신고"),
   );
-  if (!allTab) throw new Error("전체 탭을 찾지 못했다");
-  // radix Tabs 는 mousedown 에서 탭을 바꾼다 — click 만 쏘면 아무 일도 안 일어난다.
-  act(() =>
-    allTab.dispatchEvent(new MouseEvent("mousedown", { bubbles: true })),
-  );
-  const row = [...container.querySelectorAll("div")].find(
-    (d) => d.textContent?.includes("세금 신고") && d.style.cursor === "pointer",
-  );
-  if (!row) throw new Error("할 일 행을 찾지 못했다");
+  if (!row) throw new Error("할 일 줄을 찾지 못했다");
   click(row);
   const edit = buttonWith("edit");
   if (!edit) throw new Error("상세의 수정 버튼을 찾지 못했다");

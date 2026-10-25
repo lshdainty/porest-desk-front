@@ -11,7 +11,7 @@ import {
 import { List, ListHeader, ListItem } from "@/shared/ds/list";
 import { cn } from "@/shared/lib/cn";
 import { toLocalDateTime } from "@/shared/lib/date";
-import { dueKey } from "@/pages/todo/lib/visible-todos";
+import { dueKey } from "@/pages/todo/model/todo-ledger";
 import { isDone } from "@/pages/todo/model/todo-ledger";
 import { kDate, todoTagLabel } from "@/pages/todo/model/todo-view";
 import { TodoDeleteConfirm } from "./TodoDeleteConfirm";

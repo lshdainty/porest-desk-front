@@ -5,10 +5,15 @@ import type { Todo, TodoPriority, TodoStatus } from "@/entities/todo";
 import {
   NO_DUE,
   cellMarkOf,
+  dayDiff,
+  dueKey,
   groupByDay,
+  isDone,
   isFilterActive,
   monthTodos,
   relKindOf,
+  remainByPrio,
+  remainByTag,
   sortDayItems,
   todayLeft,
   type TodoFilter,
@@ -223,5 +228,65 @@ describe("칸 표시 판정 (I-10 9)", () => {
     expect(relKindOf("2026-10-23", TODAY)).toBe("tomorrow");
     expect(relKindOf("2026-10-21", TODAY)).toBe("yesterday");
     expect(relKindOf("2026-10-24", TODAY)).toBeNull();
+  });
+});
+
+describe("날짜 유틸 (옛 visible-todos 에서 옮김)", () => {
+  it("dueKey 는 datetime 에서 날짜만 뽑고 없으면 null 이다", () => {
+    expect(dueKey("2026-09-03T13:20:00")).toBe("2026-09-03");
+    expect(dueKey("2026-09-03")).toBe("2026-09-03");
+    expect(dueKey(null)).toBeNull();
+    expect(dueKey(undefined)).toBeNull();
+    expect(dueKey("")).toBeNull();
+  });
+
+  it("dayDiff 는 b−a 일수다", () => {
+    expect(dayDiff(TODAY, TODAY)).toBe(0);
+    expect(dayDiff(TODAY, "2026-10-29")).toBe(7);
+    expect(dayDiff(TODAY, "2026-10-21")).toBe(-1);
+  });
+
+  it("isDone 은 COMPLETED 만 참이다", () => {
+    expect(isDone(todo(1, { status: "COMPLETED" }))).toBe(true);
+    expect(isDone(todo(1, { status: "PENDING" }))).toBe(false);
+  });
+});
+
+describe("남은 할 일 (I-10 32)", () => {
+  const list = [
+    todo(1, { category: "업무", priority: "HIGH" }),
+    todo(2, { category: "업무", priority: "MEDIUM" }),
+    todo(3, { category: "공부", priority: "LOW" }),
+    todo(4, { category: null, priority: "MEDIUM" }),
+    todo(5, { category: "업무", priority: "HIGH", status: "COMPLETED" }),
+    todo(6, { category: "생활", priority: "LOW", status: "COMPLETED" }),
+    // 마감이 다른 달이어도 센다 — 달 · 거르기와 상관없이 전체
+    todo(7, { category: "공부", priority: "LOW", dueDate: "2027-01-05" }),
+    todo(8, { category: "공부", dueDate: null }),
+  ];
+
+  it("태그별: 끝낸 것은 세지 않고, 남은 것이 0 인 태그는 줄이 없으며, 태그 없음은 맨 뒤다", () => {
+    expect(remainByTag(list, ["업무", "공부", "생활"])).toEqual([
+      { tag: "업무", count: 2 },
+      { tag: "공부", count: 3 },
+      { tag: "", count: 1 },
+    ]);
+  });
+
+  it("태그 없는 할 일이 없으면 태그 없음 줄이 없다", () => {
+    expect(
+      remainByTag([todo(1, { category: "업무" })], ["업무"]).map((r) => r.tag),
+    ).toEqual(["업무"]);
+  });
+
+  it("우선순위별: 셋 다 늘 낸다(0 이어도) — 합이 태그별 합과 같다", () => {
+    const prio = remainByPrio(list);
+    expect(prio).toEqual({ HIGH: 1, MEDIUM: 3, LOW: 2 });
+    const tagSum = remainByTag(list, ["업무", "공부", "생활"]).reduce(
+      (n, r) => n + r.count,
+      0,
+    );
+    expect(prio.HIGH + prio.MEDIUM + prio.LOW).toBe(tagSum);
+    expect(remainByPrio([])).toEqual({ HIGH: 0, MEDIUM: 0, LOW: 0 });
   });
 });
