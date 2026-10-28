@@ -191,6 +191,37 @@ const KindsDemo = () => {
             </ListCheckGroup>
           </Specimen>
         </Cell>
+        <Cell>
+          {/* 견본(Specimen)이 아니다 — 막힌 칸의 not-allowed 커서는 줄 스펙의 pointer 와 다르다(칸만 막힌 켬이라 줄 값은 그대로 · 시험이 맡는다) */}
+          <div>
+            <ListCheckGroup aria-label="캘린더 · 끌 수 없는 켬(locked)">
+              <ListCheckItem
+                locked
+                prefix={
+                  <span
+                    aria-hidden
+                    className="size-2.5 rounded-full bg-chart-blue"
+                  />
+                }
+                title={
+                  <>
+                    개인 <Badge>기본</Badge>
+                  </>
+                }
+              />
+              <ListCheckItem
+                prefix={
+                  <span
+                    aria-hidden
+                    className="size-2.5 rounded-full bg-chart-green"
+                  />
+                }
+                title="가족"
+                defaultChecked
+              />
+            </ListCheckGroup>
+          </div>
+        </Cell>
       </DemoRow>
       <DemoRow label="라디오 줄 · 하나 고르기">
         <Cell>
