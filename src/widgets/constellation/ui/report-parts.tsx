@@ -183,7 +183,7 @@ export function ResultSection({ m, place }: { m: ReportModel; place: Place }) {
             role="img"
             aria-label={t("report.stampName", { count: streak })}
             data-slot="report-stamp"
-            className="grid aspect-square min-h-[72px] min-w-[72px] shrink-0 -rotate-[8deg] place-content-center rounded-full bg-bg-critical-weak p-x1 text-center text-fg-critical-contrast shadow-[inset_0_0_0_2px_var(--color-stroke-critical-solid)]"
+            className="grid aspect-square min-h-[4.5rem] min-w-[4.5rem] shrink-0 -rotate-[8deg] place-content-center rounded-full bg-bg-critical-weak p-[0.75rem] text-center text-fg-critical-contrast shadow-[inset_0_0_0_2px_var(--color-stroke-critical-solid)]"
           >
             <span aria-hidden className="text-t4 font-bold">
               {t("report.stampDays", { count: streak })}

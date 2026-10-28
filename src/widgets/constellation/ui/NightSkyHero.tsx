@@ -200,9 +200,11 @@ export function NightSkyHero({
       <p className="relative m-0 text-t3 text-fg-neutral-inverted">
         {t("hero.todayTarget")}
       </p>
-      <p className="relative m-0 mt-x0_5 pr-x6 text-t8 font-bold break-keep text-fg-neutral-inverted [overflow-wrap:break-word]">
-        {done ? t("hero.collectedBang", { name }) : name}
-        <span className="ml-x2 whitespace-nowrap text-t4 font-bold tabular-nums">
+      <p className="relative m-0 mt-x0_5 flex flex-wrap items-baseline gap-x-x2 pr-x6 text-t8 font-bold break-keep text-fg-neutral-inverted [overflow-wrap:break-word]">
+        <span className="min-w-0">
+          {done ? t("hero.collectedBang", { name }) : name}
+        </span>
+        <span className="whitespace-nowrap text-t4 font-bold tabular-nums">
           {t("hero.starlightCount", { lit, goal: today.goal })}
         </span>
       </p>
@@ -210,12 +212,16 @@ export function NightSkyHero({
         {caption}
       </p>
       <p className="relative m-0 mt-x2 flex flex-wrap items-center gap-x-x3 gap-y-x1_5 text-t3 text-fg-neutral-inverted">
-        <span className="inline-flex items-center gap-x1 font-bold">
-          <Sparkles aria-hidden className="size-x3_5 shrink-0" />
+        <span className="inline-flex items-start gap-x1 font-bold">
+          <span aria-hidden className="flex h-[1lh] items-center">
+            <Sparkles className="size-x3_5 shrink-0" />
+          </span>
           {t("hero.streak", { count: today.streak })}
         </span>
-        <span className="inline-flex items-center gap-x1">
-          <Cloud aria-hidden className="size-x3_5 shrink-0" />
+        <span className="inline-flex items-start gap-x1">
+          <span aria-hidden className="flex h-[1lh] items-center">
+            <Cloud className="size-x3_5 shrink-0" />
+          </span>
           {t("hero.guardInfo", { count: today.guardCount })}
         </span>
       </p>
