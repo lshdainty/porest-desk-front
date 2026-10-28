@@ -1,11 +1,4 @@
-import {
-  differenceInCalendarDays,
-  endOfDay,
-  getDay,
-  isSameDay,
-  parseISO,
-  startOfDay,
-} from "date-fns";
+import { endOfDay, isSameDay, parseISO, startOfDay } from "date-fns";
 
 import {
   getEventUniqueKey,
@@ -107,24 +100,26 @@ export function buildMonthModel(
     return { cell, slots, hidden, total: here.length } satisfies CellModel;
   });
 
-  // 이어지는 일정의 제목은 행(주)마다 한 번, 그 행에서 띠가 처음 보이는 칸에 그린다 —
-  // 첫 칸에서 접혔어도 뒤 칸에 보이는 조각에 제목이 남는다.
+  // 이어지는 일정의 제목은 행(주)마다, 띠가 이어서 보이는 조각 묶음마다 한 번 그 묶음의 첫 칸에 그린다 —
+  // 제목 띠는 보이는 칸까지만 덮는다(중간 칸이 접혀 "+N개" 만 남았으면 거기서 끊고, 그 뒤 보이는 조각이 제목을 따로 맡는다).
   for (let row = 0; row * 7 < base.length; row += 1) {
     const week = base.slice(row * 7, row * 7 + 7);
-    const hosted = new Set<string>();
-    week.forEach((c, i) => {
+    const open = new Map<string, ChipSlot>(); // 지금 이어지고 있는 보이는 조각 묶음의 제목 칸
+    week.forEach((c) => {
+      const here = new Set<string>();
       for (const slot of c.slots) {
         if (!slot || slot.part === "none") continue;
         const key = getEventUniqueKey(slot.event);
-        if (hosted.has(key)) continue;
-        hosted.add(key);
-        const end = startOfDay(parseISO(slot.event.endDate));
-        slot.labelDays = Math.min(
-          differenceInCalendarDays(end, startOfDay(c.cell.date)) + 1,
-          7 - getDay(c.cell.date),
-          7 - i,
-        );
+        here.add(key);
+        const host = open.get(key);
+        if (host) host.labelDays += 1;
+        else {
+          slot.labelDays = 1;
+          open.set(key, slot);
+        }
       }
+      // 이 칸에서 안 보인 띠는 묶음이 끊긴다
+      for (const key of [...open.keys()]) if (!here.has(key)) open.delete(key);
     });
   }
   return base;

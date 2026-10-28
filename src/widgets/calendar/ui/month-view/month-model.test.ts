@@ -141,3 +141,35 @@ describe("buildMonthModel — 이어지는 일정", () => {
     expect(short17!.labelDays).toBe(1); // 17(토) 이 그 행의 첫 보이는 칸이라 제목을 맡는다
   });
 });
+
+describe("buildMonthModel — 가운데 칸이 접힌 띠의 제목", () => {
+  const bar = (id: number, from: number, to: number) =>
+    event(id, from, {
+      isAllDay: true,
+      startDate: `2026-10-${from}T00:00:00`,
+      endDate: `2026-10-${to}T23:59:59`,
+    });
+  // 긴 띠 둘(위치 0 · 1) 아래 짧은 띠(12 ~ 14, 위치 2), 13 일에만 일정 둘이 더 붙어(위치 3 · 4) 그 칸만 접힌다
+  const events = [
+    bar(1, 11, 17),
+    bar(2, 11, 17),
+    bar(3, 12, 14),
+    event(8, 13),
+    event(9, 13),
+  ];
+
+  it('제목 띠는 보이는 칸까지만 — 접힌 칸의 "+N개" 를 덮지 않는다', () => {
+    const model = build(events, PHONE);
+    const target = (d: number) =>
+      cellOf(model, d).slots.find((s) => s?.event.id === 3);
+    expect(target(13)).toBeUndefined(); // 13 일은 접혀 "+N개" 만 있다
+    expect(cellOf(model, 13).hidden).toBeGreaterThan(0);
+    expect(target(12)!.labelDays).toBe(1); // 12 만 덮는다(13 을 건너뛰지 않는다)
+  });
+
+  it("접힌 칸 뒤에 다시 보이는 조각은 제목을 따로 맡는다", () => {
+    const model = build(events, PHONE);
+    const s14 = cellOf(model, 14).slots.find((s) => s?.event.id === 3);
+    expect(s14!.labelDays).toBe(1);
+  });
+});
