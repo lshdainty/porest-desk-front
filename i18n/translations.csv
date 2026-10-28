@@ -1790,6 +1790,9 @@ settings,hideAmounts.unlockDesc,금액을 다시 보려면 비밀번호로 본�
 settings,hideAmounts.password,비밀번호,Password
 settings,hideAmounts.passwordPlaceholder,비밀번호 입력,Enter password
 settings,hideAmounts.passwordError,비밀번호가 일치하지 않아요.,The password does not match.
+settings,hideAmounts.verifyFailed,확인하지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not verify. Please try again in a moment.
+settings,hideAmounts.cancel,취소,Cancel
+settings,hideAmounts.viewAmounts,금액 보기,View amounts
 settings,hideAmounts.sectionDesc,가릴 카드를 골라 두세요. 저장할 때 한 번만 본인 확인을 해요.,Pick the cards to hide. You'll verify once when you save.
 settings,hideAmounts.tabAll,전체,All
 settings,hideAmounts.selectAll,모두 선택,Select all

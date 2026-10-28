@@ -1,8 +1,15 @@
 import { useRef, useState } from "react";
 import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
 import { ResponsiveDialog, ResponsiveDialogContent } from "@/shared/ds/dialog";
-import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
-import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/shared/ds/alert-dialog";
 import { formatDay } from "@/shared/lib/groo/format";
 import { formatMonthShort, todayLocalKey } from "@/shared/lib/date";
 import { pendingCycleOnOldDay } from "@/entities/expense";
@@ -20,7 +27,9 @@ import {
 import { useAssetForm } from "./asset-form/use-asset-form";
 import { KindStep } from "./asset-form/KindStep";
 import { FormStep } from "./asset-form/FormStep";
+import { UnlockStep } from "./asset-form/UnlockStep";
 import { focusFirstField } from "./asset-form/focus";
+import { useTranslation } from "react-i18next";
 
 export type { AssetGroup } from "../lib/asset-kind";
 
@@ -35,7 +44,7 @@ export interface AssetEditDialogProps {
   isSubmitting?: boolean;
 }
 
-type Step = "kind" | "form";
+type Step = "kind" | "form" | "unlock";
 
 /**
  * 자산 추가 · 수정 폼(I-17 B) — ds 입력 폼(1280 미만 Bottom Sheet · 이상 Dialog 480). 추가는 1단계(종류 고르기) → [다음] → 같은
@@ -64,8 +73,6 @@ export function AssetEditDialog({
     isIncludedInTotal,
     isAmountHidden,
     needsUnlock,
-    unlockOpen,
-    setUnlockOpen,
     unlockedRef,
     balanceStr,
     paymentDayConfirmedRef,
@@ -142,7 +149,7 @@ export function AssetEditDialog({
   const handleSubmit = () => {
     if (!canSubmit) return;
     if (needsUnlock && !unlockedRef.current) {
-      setUnlockOpen(true);
+      setStep("unlock");
       return;
     }
     // 결제일을 바꾸면 바로 적용되지 않는다 — 아직 결제 전인 회차는 옛 결제일에 결제되고
@@ -354,19 +361,22 @@ export function AssetEditDialog({
   };
 
   const kindName = kind ? t(KIND_LABEL_KEY[kind]) : "";
+  const { t: tSettings } = useTranslation("settings");
   const title =
     step === "kind"
       ? t("editDialog.firstTitle")
-      : isNew
-        ? t("editDialog.titleAddKind", { kind: kindName })
-        : t("editDialog.titleEditKind", { kind: kindName });
+      : step === "unlock"
+        ? tSettings("hideAmounts.unlockTitle")
+        : isNew
+          ? t("editDialog.titleAddKind", { kind: kindName })
+          : t("editDialog.titleEditKind", { kind: kindName });
 
   return (
     <>
       <ResponsiveDialog
         open
         form
-        dirty={step === "form" && (f.changed || (!isNew && f.kindChanged))}
+        dirty={step !== "kind" && (f.changed || (!isNew && f.kindChanged))}
         onOpenChange={(next) => {
           if (!next) handleClose();
         }}
@@ -376,7 +386,11 @@ export function AssetEditDialog({
           title={title}
           // 추가 2단계의 ← 는 1단계로 — 수정에는 1단계가 없어 ← 도 없다
           onBack={
-            step === "form" && isNew ? () => backToKind.request() : undefined
+            step === "unlock"
+              ? () => setStep("form")
+              : step === "form" && isNew
+                ? () => backToKind.request()
+                : undefined
           }
           onOpenAutoFocus={(e) => {
             e.preventDefault();
@@ -385,6 +399,16 @@ export function AssetEditDialog({
         >
           {step === "kind" ? (
             <KindStep f={f} showError={showKindError} onNext={goNext} />
+          ) : step === "unlock" ? (
+            <UnlockStep
+              onBack={() => setStep("form")}
+              onVerified={() => {
+                // 확인되면 2단계로 돌아가 저장을 이어 간다 — 저장이 실패해도 폼에 남는다
+                unlockedRef.current = true;
+                setStep("form");
+                handleSubmit();
+              }}
+            />
           ) : (
             <FormStep
               f={f}
@@ -395,36 +419,33 @@ export function AssetEditDialog({
         </ResponsiveDialogContent>
       </ResponsiveDialog>
       {backToKind.node}
-      {/* 확인을 취소하면 저장도 하지 않는다 — 폼 체크는 끈 채로 남고, 창을 닫으면
-        서버 값(숨김)이 그대로다. */}
-      {/* 열릴 때만 마운트한다 — 이 창은 비밀번호 확인 훅을 물고 있어, 늘 매달아 두면
-        편집 폼을 그리는 모든 자리(테스트 포함)가 그 훅까지 갖춰야 한다. */}
-      {unlockOpen && (
-        <HideAmountsUnlockDialog
-          open
-          onOpenChange={setUnlockOpen}
-          onVerified={() => {
-            unlockedRef.current = true;
-            setUnlockOpen(false);
-            handleSubmit();
-          }}
-        />
-      )}
-      {/* 결제일 변경 — 다음 회차부터다(D5). 취소하면 저장도 안 한다(폼은 그대로 남는다). */}
-      {paymentDayConfirm && (
-        <ConfirmDialog
-          title={t("editDialog.paymentDayChangeTitle")}
-          message={paymentDayConfirm}
-          confirmLabel={tCommon("save")}
-          loading={isSubmitting}
-          onCancel={() => setPaymentDayConfirm(null)}
-          onConfirm={() => {
-            paymentDayConfirmedRef.current = true;
-            setPaymentDayConfirm(null);
-            handleSubmit();
-          }}
-        />
-      )}
+      {/* 결제일 변경 — 다음 회차부터다(D5). 취소하면 저장도 안 한다(폼은 그대로 남는다). 확인창은 폼 위에 겹쳐 떠도 된다. */}
+      <AlertDialog
+        open={paymentDayConfirm != null}
+        onOpenChange={(open) => {
+          if (!open) setPaymentDayConfirm(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>
+            {t("editDialog.paymentDayChangeTitle")}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{paymentDayConfirm}</AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              loading={isSubmitting}
+              onClick={() => {
+                paymentDayConfirmedRef.current = true;
+                setPaymentDayConfirm(null);
+                handleSubmit();
+              }}
+            >
+              {tCommon("save")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

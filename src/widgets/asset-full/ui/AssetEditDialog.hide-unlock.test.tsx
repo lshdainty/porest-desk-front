@@ -44,31 +44,21 @@ vi.mock("@/features/subscription/model/useSubscription", () => ({
 }));
 vi.mock("@/features/user", () => ({ useDefaultCurrency: () => "KRW" }));
 
-// 확인창은 껍데기로 바꾼다 — 비밀번호 입력·검증은 이 테스트의 주장이 아니다.
-vi.mock("@/widgets/account-settings/ui/HideAmountsUnlockDialog", () => ({
-  HideAmountsUnlockDialog: ({
-    open,
-    onOpenChange,
-    onVerified,
-  }: {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onVerified: () => void;
-  }) =>
-    open ? (
-      <div data-unlock="open">
-        <button type="button" data-unlock="verify" onClick={onVerified}>
-          확인됨
-        </button>
-        <button
-          type="button"
-          data-unlock="cancel"
-          onClick={() => onOpenChange(false)}
-        >
-          취소
-        </button>
-      </div>
-    ) : null,
+// 본인 확인 본문은 껍데기로 바꾼다 — 비밀번호 입력·검증은 이 테스트의 주장이 아니다(그 부품의 테스트다).
+// 껍데기의 `submit` 은 확인이 끝난 것으로 친다.
+vi.mock("@/widgets/account-settings/ui/HideAmountsUnlockBody", () => ({
+  HideAmountsUnlockFields: () => <div data-unlock="open" />,
+}));
+vi.mock("@/widgets/account-settings/ui/use-hide-amounts-unlock", () => ({
+  useHideAmountsUnlock: ({ onVerified }: { onVerified: () => void }) => ({
+    password: "x",
+    setPassword: () => {},
+    error: null,
+    clearError: () => {},
+    pending: false,
+    canSubmit: true,
+    submit: onVerified,
+  }),
 }));
 
 const { AssetEditDialog } = await import("./AssetEditDialog");
@@ -138,8 +128,13 @@ const saveButton = () =>
     (b) => b.textContent?.trim() === "save",
   );
 const unlockOpen = () => !!document.body.querySelector('[data-unlock="open"]');
+// 인증 단계의 바닥 [금액 보기](확인됨) · 머리 ←(뒤로 — 저장하지 않고 2단계로)
 const unlockBtn = (act: "verify" | "cancel") =>
-  document.body.querySelector(`[data-unlock="${act}"]`);
+  act === "verify"
+    ? [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "hideAmounts.viewAmounts",
+      )
+    : document.body.querySelector("[data-slot=bottom-sheet-back]");
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;

@@ -183,7 +183,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
   // 없으면 "풀 때는 비밀번호" 규칙 자체가 없는 것과 같다(QA 22차 #2).
   const needsUnlock =
     !isNew && item?.isAmountHidden === "Y" && isAmountHidden === "N";
-  const [unlockOpen, setUnlockOpen] = useState(false);
   // state 가 아니라 ref 다 — 확인창의 `onVerified` 에서 곧바로 `handleSubmit()` 을
   // 다시 부르는데, setState 로 두면 그 호출이 아직 `false` 인 값을 읽는다.
   const unlockedRef = useRef(false);
@@ -504,8 +503,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     isAmountHidden,
     setIsAmountHidden,
     needsUnlock,
-    unlockOpen,
-    setUnlockOpen,
     unlockedRef,
     balanceStr,
     setBalanceStr,
