@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   SwipeActions,
-  SwipeActionsMenu,
   SwipeActionsProvider,
   type SwipeAction,
 } from "./swipe-actions";
@@ -621,99 +620,6 @@ describe("모양 클래스(스펙) — 잴 수 없는 값", () => {
     expect(w!.className).toContain("touch-pan-y");
     expect(w!.className).toContain("select-none");
     expect(w!.className).toContain("[-webkit-touch-callout:none]");
-  });
-});
-
-describe("줄 끝 ⋮ — 같은 동작의 다른 길", () => {
-  const actions = [pin(), edit(), del()];
-
-  it('이름은 "{줄 제목} 더보기" — 줄을 누르면 시트가 열리고 같은 동작이 같은 차례로 있다', async () => {
-    await render(<SwipeActionsMenu actions={actions} rowLabel="스타벅스" />);
-    const more = container.querySelector<HTMLButtonElement>(
-      "[data-slot=swipe-actions-more]",
-    )!;
-    expect(more.getAttribute("aria-label")).toBe("스타벅스 더보기");
-    await act(async () => {
-      more.click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    const names = Array.from(
-      document.querySelectorAll("[data-slot=menu-sheet-item]"),
-    ).map((b) => b.textContent);
-    expect(names).toEqual(["고정", "수정", "삭제"]);
-    const title = document.querySelector("[data-slot=menu-sheet-title]");
-    expect(title?.textContent).toBe("스타벅스");
-  });
-
-  it("⋮ 는 Button ghost · iconOnly · medium 이다(보이는 40 · 누르는 44)", async () => {
-    await render(<SwipeActionsMenu actions={actions} rowLabel="스타벅스" />);
-    const more = container.querySelector<HTMLButtonElement>(
-      "[data-slot=swipe-actions-more]",
-    )!;
-    // medium iconOnly 는 40 × 40, 누르는 영역은 44(before:min-h-11) — button 스펙의 ds:check 가 잰 값
-    expect(more.className).toContain("h-10");
-    expect(more.className).toContain("w-10");
-    expect(more.className).toContain("before:min-h-11");
-    expect(more.className).toContain("before:min-w-11");
-    expect(more.className).toContain("bg-transparent");
-  });
-
-  it("시트에서 고른 동작은 시트가 닫힌 뒤 한 번 불린다 — 확인 창이 겹치지 않는다", async () => {
-    const onSelect = vi.fn();
-    await render(
-      <SwipeActionsMenu
-        actions={[pin(), edit(), del(onSelect)]}
-        rowLabel="스타벅스"
-      />,
-    );
-    await act(async () => {
-      container
-        .querySelector<HTMLButtonElement>("[data-slot=swipe-actions-more]")!
-        .click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    const item = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-slot=menu-sheet-item]",
-      ),
-    ).find((b) => b.textContent === "삭제")!;
-    await act(async () => {
-      item.click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    // 시트가 다 닫혀(모션이 끝나) 초점이 ⋮ 로 돌아온 뒤에 부른다 — vaul 의 내려가는 모션을 jsdom 은 끝내지 않으니 알려 준다
-    await act(async () => {
-      for (const el of document.querySelectorAll<HTMLElement>(
-        "[data-state=closed]",
-      )) {
-        const e = new Event("animationend", { bubbles: true });
-        Object.assign(e, { animationName: getComputedStyle(el).animationName });
-        el.dispatchEvent(e);
-      }
-      await new Promise((r) => setTimeout(r, 1100));
-    });
-    expect(onSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it("막힌 동작은 시트에서도 막힌다", async () => {
-    await render(
-      <SwipeActionsMenu
-        actions={[{ ...pin(), disabled: true }, del()]}
-        rowLabel="스타벅스"
-      />,
-    );
-    await act(async () => {
-      container
-        .querySelector<HTMLButtonElement>("[data-slot=swipe-actions-more]")!
-        .click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    const first = document.querySelector<HTMLButtonElement>(
-      "[data-slot=menu-sheet-item]",
-    )!;
-    expect(
-      first.disabled || first.getAttribute("aria-disabled") === "true",
-    ).toBe(true);
   });
 });
 

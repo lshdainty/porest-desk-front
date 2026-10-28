@@ -3,7 +3,7 @@
   "source": "specs/components/bottom-sheet.yaml",
   "design": {
     "file": "DESIGN.desk.md",
-    "sha256": "a3df9fd00e94"
+    "sha256": "b21bcc4ffd72"
   },
   "slots": {
     "overlay": "딤 — 시트 뒤 화면 전체",
@@ -315,7 +315,7 @@
       "state": "enabled",
       "slot": "footer",
       "prop": "gap",
-      "note": "버튼 둘이면 반씩 나눈다"
+      "note": "버튼 둘이면 반씩 나눈다 — 확인을 여는 [삭제](ghost critical)는 왼쪽에 글자만큼, 주 버튼이 남은 폭(2026-10-25)"
     },
     {
       "rule": 0,

@@ -12,7 +12,6 @@
 //   - badge.borderWidth · borderColor(neutral)   안쪽 1px 은 inset box-shadow 다 — 계산된 box-shadow 는 색이 앞에 오는 글이다. 테스트가 클래스를 본다
 //   - label.typography · label.lineHeight   스펙 typography 는 t2(12 / 16)이고 이 컴포넌트는 줄 높이만 1.3 으로 덮는다(15.6) — 크기 · 굵기는
 //     label.fontWeight 가 잰다, 줄 높이 1.3 은 테스트가 클래스로 본다
-//   - moreButton.size(40)   줄 끝 ⋮ 는 Button ghost · iconOnly · medium 그대로다 — 크기는 button 스펙의 ds:check 가 잰다(테스트가 그 세 속성을 맞춘다)
 //   - 열림 · 닫힘 모션(150ms · motion-ease-enter)   시간은 문장이다 — 테스트가 클래스를 본다
 const BADGE = "[data-slot=swipe-action-badge]";
 const ICON = "[data-slot=swipe-action-badge] > svg";

@@ -1,11 +1,9 @@
 export {
   SwipeActions,
   SwipeActionCell,
-  SwipeActionsMenu,
   SwipeActionsProvider,
   type SwipeAction,
   type SwipeActionCellProps,
-  type SwipeActionsMenuProps,
   type SwipeActionsProps,
 } from "./swipe-actions";
 export {

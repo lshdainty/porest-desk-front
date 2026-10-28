@@ -7,7 +7,6 @@ import { DemoBlock, DemoRow, Specimen } from "@/shared/ds/catalog/DemoKit";
 import {
   SwipeActionCell,
   SwipeActions,
-  SwipeActionsMenu,
   SwipeActionsProvider,
   type SwipeAction,
 } from "./swipe-actions";
@@ -169,7 +168,7 @@ export const SwipeActionsDemo = () => {
         </DemoRow>
       </DemoBlock>
 
-      <DemoBlock title="직접 밀어 보기 — 폰 화면(터치)에서 줄을 왼쪽으로 밀어 본다. 한 번에 한 줄 · 스크롤하면 닫힘 · 끝까지 밀어도 실행하지 않음. 키보드는 줄 끝 ⋮">
+      <DemoBlock title="직접 밀어 보기 — 폰 화면(터치)에서 줄을 왼쪽으로 밀어 본다. 한 번에 한 줄 · 스크롤하면 닫힘 · 끝까지 밀어도 실행하지 않음">
         <SwipeActionsProvider>
           <Phone>
             {["스타벅스", "쿠팡", "지하철"].map((title) => {
@@ -180,11 +179,6 @@ export const SwipeActionsDemo = () => {
                     <div className="min-w-0 flex-1">
                       <Row title={title} meta="식비 · 오늘" />
                     </div>
-                    <SwipeActionsMenu
-                      actions={actions}
-                      rowLabel={title}
-                      className="me-x3"
-                    />
                   </div>
                 </SwipeActions>
               );
@@ -208,18 +202,13 @@ export const SwipeActionsDemo = () => {
         </div>
       </DemoBlock>
 
-      <DemoBlock title="768 이상 — enabled={false} 로 줄만 그린다(트레이 없음, 동작은 줄 끝 ⋮)">
+      <DemoBlock title="768 이상 — enabled={false} 로 줄만 그린다(트레이 없음)">
         <Phone>
           <SwipeActions actions={act("스타벅스")} enabled={false}>
             <div className="flex items-center">
               <div className="min-w-0 flex-1">
                 <Row title="스타벅스" meta="식비 · 오늘" />
               </div>
-              <SwipeActionsMenu
-                actions={act("스타벅스")}
-                rowLabel="스타벅스"
-                className="me-x3"
-              />
             </div>
           </SwipeActions>
         </Phone>
