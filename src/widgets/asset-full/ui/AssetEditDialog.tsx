@@ -1,12 +1,14 @@
-import { Fragment } from "react";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
+import { useRef, useState } from "react";
+import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
+import { ResponsiveDialog, ResponsiveDialogContent } from "@/shared/ds/dialog";
+import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
 import { formatDay } from "@/shared/lib/groo/format";
 import { formatMonthShort, todayLocalKey } from "@/shared/lib/date";
 import { pendingCycleOnOldDay } from "@/entities/expense";
 import { MAX_BALANCE, sanitizeAmountInput } from "@/shared/lib/groo/amount";
 import { signedBalanceOf, subToAssetType } from "../lib/account-sub";
+import { KIND_LABEL_KEY, type AssetKind } from "../lib/asset-kind";
 import {
   type Asset,
   type AssetFormValues,
@@ -15,38 +17,45 @@ import {
   type AssetType,
   type AssetUpdateFormValues,
 } from "@/entities/asset";
-import { type AssetGroup } from "./asset-form/form-lib";
 import { useAssetForm } from "./asset-form/use-asset-form";
-import { PreviewTile } from "./asset-form/PreviewTile";
-import { AccountFields } from "./asset-form/AccountFields";
-import { CardFields } from "./asset-form/CardFields";
-import { InvestFields } from "./asset-form/InvestFields";
+import { KindStep } from "./asset-form/KindStep";
+import { FormStep } from "./asset-form/FormStep";
+import { focusFirstField } from "./asset-form/focus";
 
-export type { AssetGroup };
+export type { AssetGroup } from "../lib/asset-kind";
 
 export interface AssetEditDialogProps {
+  /** 수정할 자산 — 없으면 추가 */
   item: Asset | null;
-  group: AssetGroup;
+  /** 추가 때 미리 정한 종류 — 없으면 1단계("무엇을 추가할까요?")부터 연다 */
+  kind?: AssetKind | null;
   onClose: () => void;
   onCreate: (values: AssetFormValues) => void;
   onUpdate: (values: AssetUpdateFormValues) => void;
-  mobile: boolean;
   isSubmitting?: boolean;
 }
 
+type Step = "kind" | "form";
+
+/**
+ * 자산 추가 · 수정 폼(I-17 B) — ds 입력 폼(1280 미만 Bottom Sheet · 이상 Dialog 480). 추가는 1단계(종류 고르기) → [다음] → 같은
+ * 표면의 2단계(그 종류의 칸) → [추가], 수정은 2단계로 바로 → [저장]. 단계가 바뀌어도 표면은 하나다(새 시트를 띄우지 않는다).
+ * 바깥 누름 · 끌어내림으로 안 닫히고, 쓴 값이 있는 채 닫거나 1단계로 돌아가면 "작성한 내용이 사라져요" 를 묻는다.
+ * 저장 본문(`handleSubmit`) · 요청 · 무효화는 한 글자도 바꾸지 않는다(I-17 24).
+ */
 export function AssetEditDialog({
   item,
-  group,
+  kind: kindArg = null,
   onClose,
   onCreate,
   onUpdate,
-  mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
-  const f = useAssetForm({ item, group });
+  const f = useAssetForm({ item, kind: kindArg });
   const {
     t,
     tCommon,
+    kind,
     isNew,
     editingGroup,
     brand,
@@ -75,13 +84,35 @@ export function AssetEditDialog({
     cardBrandColor,
     brandColor,
     canSubmit,
-    title,
     isOverdraft,
     isExistingCreditCard,
     carryoverLocked,
     dueField,
     dueAmount,
   } = f;
+
+  const [step, setStep] = useState<Step>(item || kindArg ? "form" : "kind");
+  const [showKindError, setShowKindError] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // 2단계에서 ← 로 1단계에 돌아간다 — 쓴 값이 있으면 먼저 묻고 버린다. 고른 종류는 그대로 골라진 채다(I-17 7).
+  const backToKind = useLeaveConfirm({
+    dirty: f.changed,
+    contentRef,
+    leave: () => {
+      f.reset();
+      setShowKindError(false);
+      setStep("kind");
+    },
+  });
+
+  const goNext = () => {
+    if (kind == null) {
+      setShowKindError(true);
+      return;
+    }
+    setStep("form");
+  };
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -322,48 +353,49 @@ export function AssetEditDialog({
     else onUpdate(common);
   };
 
-  const bodyContent = (
-    <Fragment>
-      <PreviewTile f={f} />
-      {editingGroup === "card" ? (
-        <CardFields f={f} />
-      ) : editingGroup === "invest" ? (
-        <InvestFields f={f} />
-      ) : (
-        <AccountFields f={f} />
-      )}
-    </Fragment>
-  );
-
-  // 어느 폭에서든 [취소][저장] — 삭제는 상세로 옮겼다
-  // (spec drawer.md: 상세 = 삭제·편집 / 편집 폼 = 취소·저장).
-  const footerInner = (
-    <ModalFooter
-      onSave={handleSubmit}
-      saveLabel={isNew ? t("addAction") : tCommon("save")}
-      saving={isSubmitting}
-      saveDisabled={!canSubmit}
-      onCancel={handleClose}
-      cancelLabel={tCommon("cancel")}
-    />
-  );
+  const kindName = kind ? t(KIND_LABEL_KEY[kind]) : "";
+  const title =
+    step === "kind"
+      ? t("editDialog.firstTitle")
+      : isNew
+        ? t("editDialog.titleAddKind", { kind: kindName })
+        : t("editDialog.titleEditKind", { kind: kindName });
 
   return (
     <>
-      <ModalShell
-        title={title}
-        onClose={handleClose}
-        mobile={mobile}
-        size="md"
-        // ModalShell 이 footer 컨테이너를 쥔다 — 감싸면 안 된다. 모바일 균등분배가
-        // `[&>button]:flex-1`(직계 자식) 이라 div 를 한 겹 끼우면 버튼이 손자가 돼
-        // 선택자에서 빠지고, 데스크탑도 컨테이너의 justify-end 대신 그 div 의 배치를
-        // 따른다. 다른 다이얼로그처럼 footer 를 그대로 넘긴다.
-        footer={footerInner}
+      <ResponsiveDialog
+        open
+        form
+        dirty={step === "form" && (f.changed || (!isNew && f.kindChanged))}
+        onOpenChange={(next) => {
+          if (!next) handleClose();
+        }}
       >
-        <div className="flex flex-col gap-5">{bodyContent}</div>
-      </ModalShell>
-      {/* 확인을 취소하면 저장도 하지 않는다 — 폼 스위치는 끈 채로 남고, 창을 닫으면
+        <ResponsiveDialogContent
+          ref={contentRef}
+          title={title}
+          // 추가 2단계의 ← 는 1단계로 — 수정에는 1단계가 없어 ← 도 없다
+          onBack={
+            step === "form" && isNew ? () => backToKind.request() : undefined
+          }
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            focusFirstField(contentRef.current);
+          }}
+        >
+          {step === "kind" ? (
+            <KindStep f={f} showError={showKindError} onNext={goNext} />
+          ) : (
+            <FormStep
+              f={f}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+            />
+          )}
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+      {backToKind.node}
+      {/* 확인을 취소하면 저장도 하지 않는다 — 폼 체크는 끈 채로 남고, 창을 닫으면
         서버 값(숨김)이 그대로다. */}
       {/* 열릴 때만 마운트한다 — 이 창은 비밀번호 확인 훅을 물고 있어, 늘 매달아 두면
         편집 폼을 그리는 모든 자리(테스트 포함)가 그 훅까지 갖춰야 한다. */}

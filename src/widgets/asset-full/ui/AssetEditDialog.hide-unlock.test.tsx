@@ -11,6 +11,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
+import { installDomStubs } from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -109,8 +110,6 @@ function open(item: Asset) {
     root.render(
       <AssetEditDialog
         item={item}
-        group="account"
-        mobile={false}
         onClose={() => {}}
         onCreate={() => {}}
         onUpdate={(v) => {
@@ -144,6 +143,7 @@ const unlockBtn = (act: "verify" | "cancel") =>
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  installDomStubs();
 });
 
 afterEach(() => {

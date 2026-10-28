@@ -14,6 +14,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import { formatDay } from "@/shared/lib/groo/format";
 import type { Asset } from "@/entities/asset";
+import {
+  bodyText,
+  buttons,
+  chooseSelect,
+  click,
+  fieldControl,
+  installDomStubs,
+  setInput,
+} from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -98,15 +107,7 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   __resetPointerBlockForTest();
   update = null;
-  // Radix Select 는 포인터 캡처·스크롤 API 를 쓴다 — jsdom 엔 없어서 채워 준다.
-  const proto = window.HTMLElement.prototype as unknown as Record<
-    string,
-    unknown
-  >;
-  proto.hasPointerCapture = () => false;
-  proto.setPointerCapture = () => {};
-  proto.releasePointerCapture = () => {};
-  proto.scrollIntoView = () => {};
+  installDomStubs();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -122,8 +123,6 @@ function open(item: Asset) {
     root.render(
       <AssetEditDialog
         item={item}
-        group="card"
-        mobile={false}
         onClose={() => {}}
         onCreate={() => {}}
         onUpdate={(v) => {
@@ -134,61 +133,23 @@ function open(item: Asset) {
   );
 }
 
-const buttons = (text: string) =>
-  [...document.body.querySelectorAll("button")].filter(
-    (b) => b.textContent?.trim() === text,
-  );
-const click = (el: Element) =>
-  act(() => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
 /** 폼의 저장 — 확인창이 뜨면 그 저장이 나중에 붙는다. */
 const lastSave = () => {
   const all = buttons("save");
   return all[all.length - 1]!;
 };
-const amountInput = () =>
-  document.body.querySelector<HTMLInputElement>("#asset-edit-balance")!;
-const bodyText = () => document.body.textContent ?? "";
+const amountInput = () => fieldControl("editDialog.balanceLabelCard")!;
 
-function setInput(el: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value",
-  )?.set;
-  act(() => {
-    setter?.call(el, value);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
-
-/** 결제일 select 를 키보드로 열어 고른다(포인터는 jsdom 에서 안 뜬다). */
-function pickPaymentDay(day: number) {
-  const trigger = [
-    ...document.body.querySelectorAll<HTMLButtonElement>("[role='combobox']"),
-  ].find((b) => (b.textContent ?? "").includes("editDialog.dayUnit"));
-  if (!trigger) throw new Error("결제일 select 를 찾지 못했다");
-  act(() => {
-    trigger.focus();
-    trigger.dispatchEvent(
-      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
-    );
-  });
-  const option = [...document.body.querySelectorAll("[role='option']")].find(
-    (el) => el.textContent?.trim() === `editDialog.dayUnit|day=${day}`,
-  );
-  if (!option) throw new Error(`결제일 항목을 찾지 못했다: ${day}`);
-  act(() =>
-    option.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-    ),
-  );
-}
+/** 결제일 Select 를 열어 고른다. */
+const pickPaymentDay = (day: number) =>
+  chooseSelect("editDialog.paymentDay", `editDialog.dayUnit|day=${day}`);
 
 describe("이월 금액 칸(D7)", () => {
   it("칸은 이월 금액으로 열리고 지금 미결제 잔액은 옆에 읽기 전용이다", () => {
     open(card);
 
     expect(amountInput().value).toBe("50,000");
-    expect(amountInput().disabled).toBe(false);
+    expect(amountInput().readOnly).toBe(false);
     const unpaid = document.body.querySelector(
       "[data-testid='current-unpaid']",
     );
@@ -225,7 +186,7 @@ describe("이월 회차가 결제됐으면 읽기 전용(D15)", () => {
   it("칸이 잠기고 이유를 말하며, 저장 본문에서 키째 빠진다", () => {
     open({ ...card, carryoverLocked: true });
 
-    expect(amountInput().disabled).toBe(true);
+    expect(amountInput().readOnly).toBe(true);
     expect(
       document.body.querySelector("[data-testid='carryover-locked']")
         ?.textContent,

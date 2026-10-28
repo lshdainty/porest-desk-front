@@ -1,30 +1,30 @@
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { NameCounter } from "@/shared/ui/groo/name-counter";
+import { Field } from "@/shared/ds/field";
+import { Input } from "@/shared/ds/input";
 import { ASSET_NAME_MAX } from "./form-lib";
 import type { AssetForm } from "./use-asset-form";
 
+/** 별칭 — 30자(Field 글자 수가 세고 최대에서 멈춘다) · 중복 오류는 Field 꼬리. 카드는 선택(비우면 상품 이름) */
 export function NameField({ f }: { f: AssetForm }) {
-  const { name, setName, nameTrim, nameErr, nameLabel, namePlaceholder } = f;
+  const { t, editingGroup, name, setName, nameErr, selectedCard } = f;
+  const placeholder =
+    editingGroup === "invest"
+      ? t("editDialog.namePlaceholderInvest")
+      : editingGroup === "card"
+        ? (selectedCard?.cardName ?? t("editDialog.namePlaceholderCard"))
+        : t("editDialog.namePlaceholderAccount");
   return (
-    <>
-      <div>
-        <Label
-          htmlFor="asset-edit-name"
-          className="text-[13px] font-medium mb-2 block"
-        >
-          {nameLabel}
-        </Label>
-        <Input
-          id="asset-edit-name"
-          aria-invalid={!!nameErr}
-          value={name}
-          onChange={(e) => setName(e.target.value.slice(0, ASSET_NAME_MAX))}
-          placeholder={namePlaceholder}
-          maxLength={ASSET_NAME_MAX}
-        />
-        <NameCounter len={nameTrim.length} max={ASSET_NAME_MAX} err={nameErr} />
-      </div>
-    </>
+    <Field
+      label={t("editDialog.nameLabel")}
+      indicator={editingGroup === "card" ? t("editDialog.optional") : undefined}
+      maxGraphemeCount={ASSET_NAME_MAX}
+      invalid={!!nameErr}
+      errorMessage={nameErr}
+    >
+      <Input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={placeholder}
+      />
+    </Field>
   );
 }

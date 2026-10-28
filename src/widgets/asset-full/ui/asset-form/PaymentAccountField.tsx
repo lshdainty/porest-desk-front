@@ -1,75 +1,45 @@
-import { Label } from "@/shared/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-
+import { Field } from "@/shared/ds/field";
+import { Select, SelectItem } from "@/shared/ds/select";
 import type { AssetForm } from "./use-asset-form";
 
+/** 결제 출금계좌(신용카드) · 연결 계좌(체크카드) — 입출금 계좌만 고른다. 신용카드는 결제일에 한 번에, 체크카드는 긁는 즉시 빠져 뜻이 달라 이름을 나눈다 */
 export function PaymentAccountField({ f }: { f: AssetForm }) {
-  const {
-    uid,
-    t,
-    editingGroup,
-    cardType,
-    paymentAssetRowId,
-    setPaymentAssetRowId,
-    bankAccounts,
-  } = f;
+  const { t, kind, paymentAssetRowId, setPaymentAssetRowId, bankAccounts } = f;
+  const check = kind === "체크카드";
   return (
-    <>
-      {/* 신용카드는 결제일에 여기서 한 번에 빠지고, 체크카드는 긁는 즉시 빠진다 — 의미가 달라 라벨을 나눈다. */}
-      {editingGroup === "card" && (
-        <div>
-          <Label
-            id={`${uid}payacct-label`}
-            className="text-[13px] font-medium mb-2 block"
-          >
-            {cardType === "CHECK"
-              ? t("editDialog.linkedAccount")
-              : t("editDialog.paymentAccount")}
-          </Label>
-          <Select
-            value={
-              paymentAssetRowId != null ? String(paymentAssetRowId) : undefined
+    <Field
+      label={
+        check ? t("editDialog.linkedAccount") : t("editDialog.paymentAccount")
+      }
+      indicator={t("editDialog.optional")}
+      description={
+        check
+          ? t("editDialog.linkedAccountHelp")
+          : t("editDialog.paymentAccountHelp")
+      }
+    >
+      <Select
+        value={paymentAssetRowId != null ? String(paymentAssetRowId) : ""}
+        onValueChange={(v) => setPaymentAssetRowId(v ? Number(v) : null)}
+        disabled={bankAccounts.length === 0}
+        placeholder={
+          bankAccounts.length === 0
+            ? t("editDialog.noCheckingAccount")
+            : check
+              ? t("editDialog.selectLinkedAccount")
+              : t("editDialog.selectPaymentAccount")
+        }
+      >
+        {bankAccounts.map((a) => (
+          <SelectItem
+            key={a.rowId}
+            value={String(a.rowId)}
+            label={
+              a.institution ? `${a.institution} · ${a.assetName}` : a.assetName
             }
-            onValueChange={(v) => setPaymentAssetRowId(v ? Number(v) : null)}
-            disabled={bankAccounts.length === 0}
-          >
-            <SelectTrigger
-              id={`${uid}payacct`}
-              aria-labelledby={`${uid}payacct-label ${uid}payacct`}
-            >
-              <SelectValue
-                placeholder={
-                  bankAccounts.length === 0
-                    ? t("editDialog.noCheckingAccount")
-                    : cardType === "CHECK"
-                      ? t("editDialog.selectLinkedAccount")
-                      : t("editDialog.selectPaymentAccount")
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {bankAccounts.map((a) => (
-                <SelectItem key={a.rowId} value={String(a.rowId)}>
-                  {a.institution
-                    ? `${a.institution} · ${a.assetName}`
-                    : a.assetName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {cardType === "CHECK" && (
-            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-              {t("editDialog.linkedAccountHelp")}
-            </p>
-          )}
-        </div>
-      )}
-    </>
+          />
+        ))}
+      </Select>
+    </Field>
   );
 }

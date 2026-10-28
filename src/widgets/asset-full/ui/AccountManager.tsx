@@ -53,8 +53,7 @@ const groupOfAsset = (a: Asset): AssetGroup => {
   return "account";
 };
 
-type EditingState =
-  { mode: "create"; group: AssetGroup } | { mode: "edit"; asset: Asset } | null;
+type EditingState = { mode: "create" } | { mode: "edit"; asset: Asset } | null;
 
 /**
  * 모바일 행 구분선 제거 — 관리 리스트가 줄마다 선으로 잘려 보이던 걸 걷어낸다.
@@ -307,7 +306,7 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
             <Button
               variant="accent"
               size="sm"
-              onClick={() => setEditing({ mode: "create", group: tab })}
+              onClick={() => setEditing({ mode: "create" })}
             >
               <Plus size={14} strokeWidth={2.4} />
               {t("addToGroup", { group: groupLabel(tab) })}
@@ -476,15 +475,9 @@ export function AccountManager({ mobile }: { mobile: boolean }) {
       {editing && (
         <AssetEditDialog
           item={editing.mode === "edit" ? editing.asset : null}
-          group={
-            editing.mode === "edit"
-              ? groupOfAsset(editing.asset)
-              : editing.group
-          }
           onClose={() => setEditing(null)}
           onCreate={handleCreate}
           onUpdate={handleUpdate}
-          mobile={mobile}
           isSubmitting={isSubmitting}
         />
       )}

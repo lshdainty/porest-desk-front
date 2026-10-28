@@ -22,6 +22,13 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
+import type { AssetKind } from "../lib/asset-kind";
+import {
+  chooseSelect,
+  fieldControl,
+  installDomStubs,
+  setInput,
+} from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -157,15 +164,7 @@ function mount() {
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   prefs.defaultCurrency = "KRW";
-  // Radix Select 는 포인터 캡처·스크롤 API 를 쓴다 — jsdom 엔 없어서 채워 준다.
-  const proto = window.HTMLElement.prototype as unknown as Record<
-    string,
-    unknown
-  >;
-  proto.hasPointerCapture = () => false;
-  proto.setPointerCapture = () => {};
-  proto.releasePointerCapture = () => {};
-  proto.scrollIntoView = () => {};
+  installDomStubs();
 });
 
 afterEach(unmountAll);
@@ -175,7 +174,7 @@ type Payload = Record<string, unknown>;
 /** 다이얼로그를 띄우고 저장을 눌러, 그때 나간 본문을 돌려준다. */
 function submit(
   item: Asset | null,
-  group: "account" | "card" | "invest",
+  kind?: AssetKind,
   before?: () => void,
 ): { create: Payload | null; update: Payload | null } {
   let create: Payload | null = null;
@@ -185,8 +184,7 @@ function submit(
     root.render(
       <AssetEditDialog
         item={item}
-        group={group}
-        mobile={false}
+        kind={kind}
         onClose={() => {}}
         onCreate={(v) => {
           create = v as unknown as Payload;
@@ -212,55 +210,22 @@ function submit(
   return { create, update };
 }
 
-/** 리액트가 관리하는 input 에 값을 넣는다(setter 를 우회하면 상태가 안 바뀐다). */
-function setInput(el: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value",
-  )?.set;
-  act(() => {
-    setter?.call(el, value);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
-
-const memoInput = () =>
-  document.body.querySelector<HTMLInputElement>("#asset-edit-memo");
+const memoInput = () => fieldControl("editDialog.memo");
+const nameInput = () => fieldControl("editDialog.nameLabel")!;
 
 /** 화면에 그려진 통화 select 가 보여 주는 값(`$ USD` 꼴). */
 const currencyTriggerText = () =>
-  document.body.querySelector("#asset-edit-currency")?.textContent?.trim() ??
-  null;
+  fieldControl("form.currency")?.textContent?.trim() ?? null;
 
-const fxInput = () =>
-  document.body.querySelector<HTMLInputElement>("#asset-edit-fx-rate");
+const fxInput = () => fieldControl("form.exchangeRate");
 
-/** 통화 select 를 실제로 연다 — 키보드로 연다(포인터는 jsdom 에서 안 뜬다). */
-function pickCurrency(optionText: string) {
-  const trigger = document.body.querySelector<HTMLButtonElement>(
-    "#asset-edit-currency",
-  );
-  if (!trigger) throw new Error("통화 select 를 찾지 못했다");
-  act(() => {
-    trigger.focus();
-    trigger.dispatchEvent(
-      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
-    );
-  });
-  const option = [...document.body.querySelectorAll("[role='option']")].find(
-    (el) => el.textContent?.trim() === optionText,
-  );
-  if (!option) throw new Error(`통화 항목을 찾지 못했다: ${optionText}`);
-  act(() =>
-    option.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-    ),
-  );
-}
+/** 통화 select 를 실제로 연다. */
+const pickCurrency = (optionText: string) =>
+  chooseSelect("form.currency", optionText);
 
 describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 연다 (D1)", () => {
   it("투자 수정: 지금 통화·환율이 그대로 나간다", () => {
-    const { update } = submit(usdInvest, "invest");
+    const { update } = submit(usdInvest);
     expect(update).not.toBeNull();
     expect(update!.currency).toBe("USD");
     expect(update!.exchangeRate).toBe(1_380);
@@ -269,24 +234,20 @@ describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 
   });
 
   it("계좌 수정: 지금 통화·환율이 그대로 나간다", () => {
-    const { update } = submit(usdAccount, "account");
+    const { update } = submit(usdAccount);
     expect(update!.currency).toBe("USD");
     expect(update!.exchangeRate).toBe(1_380);
   });
 
   it("카드 수정: 지금 통화·환율이 그대로 나간다", () => {
-    const { update } = submit(usdCard, "card");
+    const { update } = submit(usdCard);
     expect(update!.currency).toBe("USD");
     expect(update!.exchangeRate).toBe(1_380);
   });
 
   it("세 묶음 다 서버 값으로 열린다 — 안 채우면 저장만으로 원화가 된다", () => {
-    for (const [item, group] of [
-      [usdInvest, "invest"],
-      [usdAccount, "account"],
-      [usdCard, "card"],
-    ] as const) {
-      submit(item, group, () => {
+    for (const item of [usdInvest, usdAccount, usdCard]) {
+      submit(item, undefined, () => {
         expect(currencyTriggerText()).toBe("$ USD");
         expect(fxInput()?.value).toBe("1380");
       });
@@ -294,14 +255,14 @@ describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 
   });
 
   it("원화 자산은 환율 칸이 아예 안 보인다", () => {
-    submit(krwAccount, "account", () => {
+    submit(krwAccount, undefined, () => {
       expect(currencyTriggerText()).toBe("₩ KRW");
       expect(fxInput()).toBeNull();
     });
   });
 
   it("환율을 고치면 고친 값이 나간다", () => {
-    const { update } = submit(usdAccount, "account", () => {
+    const { update } = submit(usdAccount, undefined, () => {
       setInput(fxInput()!, "1425.5");
     });
     expect(update!.exchangeRate).toBe(1_425.5);
@@ -310,49 +271,41 @@ describe("통화 — 칸이 생겼으니 싣는다, 대신 읽어 온 값으로 
   it("환율에 쉼표를 찍어도 읽는다 — 금액 칸을 보고 온 손이 그렇게 친다", () => {
     // `Number("1,425")` 는 NaN 이다. 조용히 null 로 빠지면 서버가 환산율 1 로 잡아
     // 외화 잔액이 원화로 그대로 더해진다 — 화면엔 아무 표시도 안 난다.
-    const { update } = submit(usdAccount, "account", () => {
+    const { update } = submit(usdAccount, undefined, () => {
       setInput(fxInput()!, "1,425");
     });
     expect(update!.exchangeRate).toBe(1_425);
   });
 
   it("원화 자산 수정에도 통화가 실린다 — 서버가 지금 값을 그대로 받는다", () => {
-    const { update } = submit(krwAccount, "account");
+    const { update } = submit(krwAccount);
     expect(update!.currency).toBe("KRW");
     expect(update!.exchangeRate).toBeNull();
   });
 
   it("생성도 싣는다 — 고른 칸이 있으니 지어낸 값이 아니다", () => {
-    const nameIt = () =>
-      setInput(
-        document.body.querySelector<HTMLInputElement>("#asset-edit-name")!,
-        "새 자산",
-      );
-    const invest = submit(null, "invest", nameIt);
+    const nameIt = () => setInput(nameInput(), "새 자산");
+    const invest = submit(null, "투자", nameIt);
     expect(invest.create).not.toBeNull();
     expect(invest.create!.currency).toBe("KRW");
-    const account = submit(null, "account", nameIt);
+    const account = submit(null, "입출금", nameIt);
     expect(account.create).not.toBeNull();
     expect(account.create!.currency).toBe("KRW");
   });
 });
 
 describe("기본 통화 — 새 자산만 설정 값으로 연다 (D7 · QA #124)", () => {
-  const nameIt = () =>
-    setInput(
-      document.body.querySelector<HTMLInputElement>("#asset-edit-name")!,
-      "새 자산",
-    );
+  const nameIt = () => setInput(nameInput(), "새 자산");
 
   // 카드 생성은 카탈로그를 고르는 단계가 앞에 있어 이 헬퍼로는 저장까지 못 간다
   // (위 "생성도 싣는다" 도 같은 이유로 계좌·투자만 본다). 통화 칸은 세 묶음이 한 벌을
   // 공유하므로 여기서 갈릴 자리가 없다.
   it("새 자산은 설정의 기본 통화로 열린다", () => {
     prefs.defaultCurrency = "USD";
-    for (const group of ["account", "invest"] as const) {
-      const { create } = submit(null, group, nameIt);
-      expect(create, group).not.toBeNull();
-      expect(create!.currency, group).toBe("USD");
+    for (const kind of ["입출금", "투자"] as const) {
+      const { create } = submit(null, kind, nameIt);
+      expect(create, kind).not.toBeNull();
+      expect(create!.currency, kind).toBe("USD");
     }
   });
 
@@ -366,8 +319,7 @@ describe("기본 통화 — 새 자산만 설정 값으로 연다 (D7 · QA #124
         root.render(
           <AssetEditDialog
             item={null}
-            group="account"
-            mobile={false}
+            kind="입출금"
             onClose={() => {}}
             onCreate={() => {}}
             onUpdate={() => {}}
@@ -385,7 +337,7 @@ describe("기본 통화 — 새 자산만 설정 값으로 연다 (D7 · QA #124
 
   it("기존 자산은 설정이 뭐든 제 통화로 연다 — 저장해도 안 바뀐다", () => {
     prefs.defaultCurrency = "USD";
-    const { update } = submit(krwAccount, "account");
+    const { update } = submit(krwAccount);
     expect(update!.currency).toBe("KRW");
     // 원화니까 환율은 명시적 null 로 지운다(키를 빼면 옛 환율이 남는다).
     expect(update!.exchangeRate).toBeNull();
@@ -399,8 +351,7 @@ describe("기본 통화 — 새 자산만 설정 값으로 연다 (D7 · QA #124
         root.render(
           <AssetEditDialog
             item={null}
-            group="account"
-            mobile={false}
+            kind="입출금"
             onClose={() => {}}
             onCreate={() => {}}
             onUpdate={() => {}}
@@ -419,7 +370,7 @@ describe("기본 통화 — 새 자산만 설정 값으로 연다 (D7 · QA #124
 
 describe("메모 — 칸이 있으면 비운 상태로, 없으면 키째 (QA #110)", () => {
   it("투자: 메모를 비우면 null 이 나간다", () => {
-    const { update } = submit(usdInvest, "invest", () => {
+    const { update } = submit(usdInvest, undefined, () => {
       const el = memoInput();
       expect(el?.value).toBe("해외 배당 계좌");
       setInput(el!, "");
@@ -428,14 +379,14 @@ describe("메모 — 칸이 있으면 비운 상태로, 없으면 키째 (QA #11
   });
 
   it("계좌: 메모를 비우면 null 이 나간다", () => {
-    const { update } = submit(usdAccount, "account", () => {
+    const { update } = submit(usdAccount, undefined, () => {
       setInput(memoInput()!, "");
     });
     expect(update!.memo).toBeNull();
   });
 
   it("계좌: 적어 둔 메모는 그대로 나간다", () => {
-    const { update } = submit(usdAccount, "account", () => {
+    const { update } = submit(usdAccount, undefined, () => {
       setInput(memoInput()!, "출장비 계좌 2");
     });
     expect(update!.memo).toBe("출장비 계좌 2");
@@ -445,7 +396,7 @@ describe("메모 — 칸이 있으면 비운 상태로, 없으면 키째 (QA #11
     // 이 묶음엔 메모 입력이 없다(입력은 `editingGroup !== "card"` 안에 있다).
     // 그래도 키를 싣는다 — 상태가 서버 값에서 출발하므로 되돌려 보내면 아무것도
     // 안 바뀌고, 이 칸을 무조건 대입하는 옛 서버에서도 값이 안 지워진다.
-    const { update } = submit(usdCard, "card");
+    const { update } = submit(usdCard);
     expect(memoInput()).toBeNull();
     expect(update!.memo).toBe("계좌 화면에서 적어 둔 메모");
   });
@@ -465,12 +416,12 @@ describe("자산별 금액 숨김 — 폼 payload", () => {
 
   it("수정: 가려 둔 자산은 그 값이 그대로 실린다 — 이름만 고쳐도 안 풀린다", () => {
     const hidden: Asset = { ...usdAccount, isAmountHidden: "Y" };
-    const { update } = submit(hidden, "account");
+    const { update } = submit(hidden);
     expect(update!.isAmountHidden).toBe("Y");
   });
 
   it("수정: 안 가려 둔 자산은 N 으로 나간다", () => {
-    const { update } = submit(usdAccount, "account");
+    const { update } = submit(usdAccount);
     expect(update!.isAmountHidden).toBe("N");
   });
 });

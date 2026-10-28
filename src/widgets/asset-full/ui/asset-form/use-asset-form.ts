@@ -2,13 +2,19 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAssets } from "@/features/asset";
 import { useDefaultCurrency } from "@/features/user";
-import { KRW } from "@/shared/lib/groo/format";
 import { todayLocalKey } from "@/shared/lib/date";
 import { pendingBillWindow } from "@/entities/expense";
 import { parseAmount } from "@/shared/lib/groo/amount";
 import { currencyUnit, isForeignCurrency } from "@/shared/lib/groo/currency";
 import { nameIssue } from "@/shared/lib/groo/name-policy";
-import { assetTypeToSub, type AccountSub } from "../../lib/account-sub";
+import type { AccountSub } from "../../lib/account-sub";
+import {
+  groupOfKind,
+  isAccountKind,
+  kindOfAsset,
+  type AssetGroup,
+  type AssetKind,
+} from "../../lib/asset-kind";
 import {
   getBrandColor,
   BANK_ENTRIES,
@@ -28,137 +34,60 @@ import { useLivePrices } from "@/features/stock/model/useLivePrices";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import {
   INVEST_CATEGORY_SET,
-  type AssetGroup,
   type EditHolding,
   nextHoldingKey,
   ASSET_NAME_MAX,
   trimRate,
-  GROUP_NOUN_KEY,
-  groupOfType,
   INVEST_BRANDS,
   cardSummaryOf,
 } from "./form-lib";
 
 export interface UseAssetFormArgs {
   item: Asset | null;
-  group: AssetGroup;
+  /** 추가 때 미리 정한 종류 — 없으면 1단계에서 고른다. 수정은 자산에서 잰다 */
+  kind?: AssetKind | null;
 }
 
-/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
+/** 쓴 값의 모음을 글 하나로 — 처음 값과 견줘 바뀐 값이 있는지 본다. 보유 줄의 react key 는 뺀다 */
+function valuesKey(v: {
+  name: string;
+  memo: string;
+  isIncludedInTotal: string;
+  isAmountHidden: string;
+  balanceStr: string;
+  dueStr: string;
+  currencyPick: string | null;
+  exchangeRate: string;
+  brandPick: string | null;
+  holdings: EditHolding[];
+  selectedCard: CardCatalogSummary | null;
+  creditLimit: string;
+  paymentDay: string;
+  paymentAssetRowId: number | null;
+}): string {
+  return JSON.stringify([
+    v.name,
+    v.memo,
+    v.isIncludedInTotal,
+    v.isAmountHidden,
+    v.balanceStr,
+    v.dueStr,
+    v.currencyPick,
+    v.exchangeRate,
+    v.brandPick,
+    v.holdings.map(({ key: _key, ...rest }) => rest),
+    v.selectedCard?.rowId ?? null,
+    v.creditLimit,
+    v.paymentDay,
+    v.paymentAssetRowId,
+  ]);
 }
 
-export function useAssetForm({ item, group }: UseAssetFormArgs) {
-  const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
-  const { t, i18n } = useTranslation("asset");
-  const { t: tCommon } = useTranslation("common");
-  const isNew = !item;
-  const editingGroup: AssetGroup = item ? groupOfType(item.assetType) : group;
-
-  // 설정의 기본 통화 — 새 자산이 먼저 골라 두는 값이다(D7).
-  const defaultCurrency = useDefaultCurrency();
-
-  // 공통
-  const [brand, setBrand] = useState<string>(
-    item?.institution ??
-      (editingGroup === "invest"
-        ? (INVEST_BRANDS[0]?.name ?? "삼성증권")
-        : (BANK_ENTRIES[0]?.name ?? "신한")),
-  );
-  const [query, setQuery] = useState("");
-  const [name, setName] = useState(item?.assetName ?? "");
-  const [memo, setMemo] = useState(item?.memo ?? "");
-  const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
-    item?.isIncludedInTotal ?? "Y",
-  );
-  // 새 자산은 가리지 않는다 — 만들자마자 금액이 안 보이면 잘못 만든 줄 안다.
-  const [isAmountHidden, setIsAmountHidden] = useState<YNType>(
-    item?.isAmountHidden ?? "N",
-  );
-  // 숨김을 **푸는** 쪽에만 본인 확인을 건다 — 켜는 건 그냥 된다(카드 가리기·상세 토글과
-  // 같은 규칙). 모바일은 상세에 토글이 없어 이 폼이 유일한 해제 경로다. 여기에 확인이
-  // 없으면 "풀 때는 비밀번호" 규칙 자체가 없는 것과 같다(QA 22차 #2).
-  const needsUnlock =
-    !isNew && item?.isAmountHidden === "Y" && isAmountHidden === "N";
-  const [unlockOpen, setUnlockOpen] = useState(false);
-  // state 가 아니라 ref 다 — 확인창의 `onVerified` 에서 곧바로 `handleSubmit()` 을
-  // 다시 부르는데, setState 로 두면 그 호출이 아직 `false` 인 값을 읽는다.
-  const unlockedRef = useRef(false);
-  // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
-  //
-  // 신용카드는 이 칸이 **이월 금액**(카드를 등록할 때 적은 이전 미결제 사용액)이다(D7).
-  // 지금 잔액(이월 + 그 뒤 사용)으로 채우면 이름만 고쳐 저장해도 서버가 그 값을 이월로
-  // 받아 빚이 두 배가 됐다(QA 23차 1). 이월이 없으면 0 이다.
-  const [balanceStr, setBalanceStr] = useState<string>(
-    item
-      ? KRW(
-          Math.abs(
-            (item.assetType === "CREDIT_CARD"
-              ? item.carryoverAmount
-              : item.balance) ?? 0,
-          ),
-        )
-      : "0",
-  );
-  /**
-   * 신용카드의 결제 대기 청구분 칸(2026-09-22) — 기존 카드는 서버가 준 값으로 연다. 칸이 없으면
-   * 쓰지 않는다(`dueField` 가 정한다).
-   */
-  const [dueStr, setDueStr] = useState<string>(
-    item?.assetType === "CREDIT_CARD" && item.dueCarryover
-      ? KRW(Math.abs(item.dueCarryover.amount))
-      : "0",
-  );
-  /**
-   * 결제일을 바꿀 때 한 번 받는 확인(D5). state 가 아니라 ref 다 — 확인창의
-   * `onConfirm` 에서 곧바로 `handleSubmit()` 을 다시 부르는데, setState 로 두면 그 호출이
-   * 아직 `false` 인 값을 읽는다(금액 숨김 해제 확인과 같은 자리).
-   */
-  const paymentDayConfirmedRef = useRef(false);
-  const [paymentDayConfirm, setPaymentDayConfirm] = useState<string | null>(
-    null,
-  );
-
-  // 통화·환율 — 세 묶음(계좌·카드·투자) 모두에 칸이 있다(D1).
-  //
-  // **읽어 온 값으로 연다.** 이게 이 칸의 안전장치다 — 안 채우고 열면 그대로 저장하는
-  // 것만으로 외화 자산이 원화가 된다. 칸이 생겨서 오히려 위험해지는 자리라, 앱도
-  // 같은 순서로 잠갔다(desk-app #330).
-  //
-  // **새로 만들 때만** 설정의 기본 통화가 들어온다(D7 · QA #124). 기존 자산에까지
-  // 쓰면 기본 통화를 USD 로 바꾼 순간 원화 계좌들이 전부 USD 로 열리고, 그대로 저장만
-  // 해도 통화가 바뀐다 — 고치라고 만든 칸이 고장을 내는 쪽이다.
-  const [currencyPick, setCurrency] = useState<string | null>(null);
-  // 우선순위는 **고른 값 > 이 자산의 값 > 설정의 기본 통화**다.
-  //
-  // 기본 통화를 `useState` 초기값으로 굳히면 안 된다(D7) — `/me/preferences` 는 설정
-  // 화면을 안 들른 세션에서 이 폼보다 늦게 도착해서, 초기값으로 받으면 첫 렌더의
-  // `KRW` 에 잠긴 채 열린다. 매 렌더 읽어야 늦게 온 값이 반영된다.
-  const currency = currencyPick ?? item?.currency ?? defaultCurrency;
-  const [exchangeRate, setExchangeRate] = useState<string>(
-    item?.exchangeRate != null ? trimRate(item.exchangeRate) : "",
-  );
-  // 환율은 통화가 원화가 아닐 때만 의미가 있다 — 서버도 KRW 의 환산율은 1 로
-  // 정규화한다(`Asset.normalizeRate`). 칸을 숨길 뿐 값은 들고 있는다:
-  // 통화를 잘못 눌렀다 되돌렸을 때 적어 둔 환율이 사라지면 곤란하다.
-  const isForeign = isForeignCurrency(currency);
-
-  // 계좌 sub
-  const [accountSub, setAccountSub] = useState<AccountSub>(
-    item && editingGroup === "account"
-      ? assetTypeToSub(item.assetType, item.balance ?? 0)
-      : "입출금",
-  );
-
-  // 투자 — 보유 종목 다건 편집 (design AssetEditDialog invest 분기 미러).
-  // 기존 holdings 우선, 구버전 단일 연동(tossSymbol)은 linked 1건으로 합성(하위호환).
-  const [holdings, setHoldings] = useState<EditHolding[]>(() => {
+/** 폼 칸의 처음 값 — 다시 시작(reset)과 바뀐 값 판정(dirty)이 같은 값을 본다 */
+function initialOf(item: Asset | null, kindArg: AssetKind | null) {
+  const kind: AssetKind | null = item ? kindOfAsset(item) : kindArg;
+  const group: AssetGroup = kind ? groupOfKind(kind) : "account";
+  const holdings: EditHolding[] = (() => {
     if (item?.holdings && item.holdings.length > 0) {
       return item.holdings.map((h) => ({
         key: nextHoldingKey(),
@@ -187,7 +116,136 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
       ];
     }
     return [];
-  });
+  })();
+  return {
+    kind,
+    brandPick: item?.institution ?? null,
+    name: item?.assetName ?? "",
+    memo: item?.memo ?? "",
+    isIncludedInTotal: (item?.isIncludedInTotal ?? "Y") as YNType,
+    // 새 자산은 가리지 않는다 — 만들자마자 금액이 안 보이면 잘못 만든 줄 안다.
+    isAmountHidden: (item?.isAmountHidden ?? "N") as YNType,
+    // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
+    //
+    // 신용카드는 이 칸이 **이월 금액**(카드를 등록할 때 적은 이전 미결제 사용액)이다(D7).
+    // 지금 잔액(이월 + 그 뒤 사용)으로 채우면 이름만 고쳐 저장해도 서버가 그 값을 이월로
+    // 받아 빚이 두 배가 됐다(QA 23차 1). 이월이 없으면 0 이다.
+    // 값은 쉼표 없는 숫자 문자열이다 — 금액 칸(AmountInput)이 쓰는 동안 쉼표를 찍는다.
+    balanceStr: item
+      ? String(
+          Math.abs(
+            (item.assetType === "CREDIT_CARD"
+              ? item.carryoverAmount
+              : item.balance) ?? 0,
+          ),
+        )
+      : "",
+    // 신용카드의 결제 대기 청구분 칸(2026-09-22) — 기존 카드는 서버가 준 값으로 연다.
+    dueStr:
+      item?.assetType === "CREDIT_CARD" && item.dueCarryover
+        ? String(Math.abs(item.dueCarryover.amount))
+        : "",
+    exchangeRate: item?.exchangeRate != null ? trimRate(item.exchangeRate) : "",
+    holdings,
+    selectedCard: cardSummaryOf(item, group),
+    creditLimit: item?.creditLimit != null ? String(item.creditLimit) : "",
+    paymentDay: item?.paymentDay != null ? String(item.paymentDay) : "",
+    paymentAssetRowId: item?.paymentAssetRowId ?? null,
+  };
+}
+
+/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
+export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
+  const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
+  const { t, i18n } = useTranslation("asset");
+  const { t: tCommon } = useTranslation("common");
+  const isNew = !item;
+  const [init] = useState(() => initialOf(item, kindArg));
+
+  // 종류(I-17 6 · 9) — 1단계가 고르고(추가), 수정의 "종류" 칸이 같은 묶음 안에서 바꾼다.
+  // 계좌 종류 · 카드 종류는 이 값에서 나온다.
+  const [kind, setKind] = useState<AssetKind | null>(init.kind);
+  const editingGroup: AssetGroup = kind ? groupOfKind(kind) : "account";
+
+  // 설정의 기본 통화 — 새 자산이 먼저 골라 두는 값이다(D7).
+  const defaultCurrency = useDefaultCurrency();
+
+  // 공통
+  // 처음 값은 이 자산의 기관, 없으면 묶음의 첫 기관이다(지금 그대로). 묶음은 1단계가 정하므로 고른 값만 들고 나머지는 읽을 때 정한다.
+  const [brandPick, setBrand] = useState<string | null>(init.brandPick);
+  const brand =
+    brandPick ??
+    (editingGroup === "invest"
+      ? (INVEST_BRANDS[0]?.name ?? "삼성증권")
+      : (BANK_ENTRIES[0]?.name ?? "신한"));
+  const [query, setQuery] = useState("");
+  const [name, setName] = useState(init.name);
+  const [memo, setMemo] = useState(init.memo);
+  const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
+    init.isIncludedInTotal,
+  );
+  // 새 자산은 가리지 않는다 — 만들자마자 금액이 안 보이면 잘못 만든 줄 안다.
+  const [isAmountHidden, setIsAmountHidden] = useState<YNType>(
+    init.isAmountHidden,
+  );
+  // 숨김을 **푸는** 쪽에만 본인 확인을 건다 — 켜는 건 그냥 된다(카드 가리기·상세 토글과
+  // 같은 규칙). 모바일은 상세에 토글이 없어 이 폼이 유일한 해제 경로다. 여기에 확인이
+  // 없으면 "풀 때는 비밀번호" 규칙 자체가 없는 것과 같다(QA 22차 #2).
+  const needsUnlock =
+    !isNew && item?.isAmountHidden === "Y" && isAmountHidden === "N";
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  // state 가 아니라 ref 다 — 확인창의 `onVerified` 에서 곧바로 `handleSubmit()` 을
+  // 다시 부르는데, setState 로 두면 그 호출이 아직 `false` 인 값을 읽는다.
+  const unlockedRef = useRef(false);
+  const [balanceStr, setBalanceStr] = useState<string>(init.balanceStr);
+  const [dueStr, setDueStr] = useState<string>(init.dueStr);
+  /**
+   * 결제일을 바꿀 때 한 번 받는 확인(D5). state 가 아니라 ref 다 — 확인창의
+   * `onConfirm` 에서 곧바로 `handleSubmit()` 을 다시 부르는데, setState 로 두면 그 호출이
+   * 아직 `false` 인 값을 읽는다(금액 숨김 해제 확인과 같은 자리).
+   */
+  const paymentDayConfirmedRef = useRef(false);
+  const [paymentDayConfirm, setPaymentDayConfirm] = useState<string | null>(
+    null,
+  );
+
+  // 통화·환율 — 세 묶음(계좌·카드·투자) 모두에 칸이 있다(D1).
+  //
+  // **읽어 온 값으로 연다.** 이게 이 칸의 안전장치다 — 안 채우고 열면 그대로 저장하는
+  // 것만으로 외화 자산이 원화가 된다. 칸이 생겨서 오히려 위험해지는 자리라, 앱도
+  // 같은 순서로 잠갔다(desk-app #330).
+  //
+  // **새로 만들 때만** 설정의 기본 통화가 들어온다(D7 · QA #124). 기존 자산에까지
+  // 쓰면 기본 통화를 USD 로 바꾼 순간 원화 계좌들이 전부 USD 로 열리고, 그대로 저장만
+  // 해도 통화가 바뀐다 — 고치라고 만든 칸이 고장을 내는 쪽이다.
+  const [currencyPick, setCurrency] = useState<string | null>(null);
+  // 우선순위는 **고른 값 > 이 자산의 값 > 설정의 기본 통화**다.
+  //
+  // 기본 통화를 `useState` 초기값으로 굳히면 안 된다(D7) — `/me/preferences` 는 설정
+  // 화면을 안 들른 세션에서 이 폼보다 늦게 도착해서, 초기값으로 받으면 첫 렌더의
+  // `KRW` 에 잠긴 채 열린다. 매 렌더 읽어야 늦게 온 값이 반영된다.
+  const currency = currencyPick ?? item?.currency ?? defaultCurrency;
+  const [exchangeRate, setExchangeRate] = useState<string>(init.exchangeRate);
+  // 환율은 통화가 원화가 아닐 때만 의미가 있다 — 서버도 KRW 의 환산율은 1 로
+  // 정규화한다(`Asset.normalizeRate`). 칸을 숨길 뿐 값은 들고 있는다:
+  // 통화를 잘못 눌렀다 되돌렸을 때 적어 둔 환율이 사라지면 곤란하다.
+  const isForeign = isForeignCurrency(currency);
+
+  // 계좌 종류 · 카드 종류 — 종류(kind)에서 나온다
+  const accountSub: AccountSub = kind && isAccountKind(kind) ? kind : "입출금";
+
+  // 투자 — 보유 종목 다건 편집 (design AssetEditDialog invest 분기 미러).
+  // 기존 holdings 우선, 구버전 단일 연동(tossSymbol)은 linked 1건으로 합성(하위호환).
+  const [holdings, setHoldings] = useState<EditHolding[]>(init.holdings);
   const [stockQ, setStockQ] = useState("");
   const debouncedStockQ = useDebounced(stockQ.trim(), 300);
   const { data: features } = useMyFeatures();
@@ -240,9 +298,7 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
   );
 
   // 카드
-  const [cardType, setCardType] = useState<CardType>(
-    item?.assetType === "CHECK_CARD" ? "CHECK" : "CREDIT",
-  );
+  const cardType: CardType = kind === "체크카드" ? "CHECK" : "CREDIT";
   const [cardKeyword, setCardKeyword] = useState("");
   const [includeDiscontinued, setIncludeDiscontinued] = useState(false);
   // 편집 진입 시 기존 카드 카탈로그를 선택 상태처럼 보이도록 채움.
@@ -251,18 +307,14 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
   // (`cardType`·`creditLimit`·…). 이것만 effect 였고, 그래서 의존성을 `item?.rowId`
   // 하나로 좁히려 규칙을 꺼야 했다. 다이얼로그는 자산 하나마다 새로 열린다.
   const [selectedCard, setSelectedCard] = useState<CardCatalogSummary | null>(
-    () => cardSummaryOf(item, editingGroup),
+    init.selectedCard,
   );
 
   // 신용카드 청구사이클 (CREDIT_CARD 전용)
-  const [creditLimit, setCreditLimit] = useState<string>(
-    item?.creditLimit != null ? String(item.creditLimit) : "",
-  );
-  const [paymentDay, setPaymentDay] = useState<string>(
-    item?.paymentDay != null ? String(item.paymentDay) : "",
-  );
+  const [creditLimit, setCreditLimit] = useState<string>(init.creditLimit);
+  const [paymentDay, setPaymentDay] = useState<string>(init.paymentDay);
   const [paymentAssetRowId, setPaymentAssetRowId] = useState<number | null>(
-    item?.paymentAssetRowId ?? null,
+    init.paymentAssetRowId,
   );
 
   const { data: assetsData } = useAssets();
@@ -358,30 +410,6 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
     return getBrandColor(brand);
   }, [editingGroup, brand, cardBrandColor]);
 
-  const previewBg = brandColor?.bg ?? item?.color ?? "var(--border-brand)";
-  const previewFg = brandColor?.fg ?? "#fff";
-
-  const previewName = (() => {
-    const trimmed = name.trim();
-    if (trimmed) return trimmed;
-    if (editingGroup === "card")
-      return selectedCard?.cardName || t("editDialog.newCard");
-    if (editingGroup === "invest") return t("editDialog.newInvest");
-    return t("editDialog.newAccount");
-  })();
-
-  const previewSub = (() => {
-    if (editingGroup === "card") {
-      const company = cardCompanyName;
-      const typeLabel =
-        cardType === "CREDIT"
-          ? t("assetType.creditcard")
-          : t("assetType.checkcard");
-      return `${company ? `${company} · ` : ""}${typeLabel}`;
-    }
-    return t("editDialog.previewSub", { brand });
-  })();
-
   // 별칭 — 길이·중복. 서버에 자산 이름 중복 코드가 없어 여기서 볼 수밖에 없다(QA #16).
   // 카드는 별칭이 선택 입력이라(비우면 카드명으로 폴백) 빈 이름은 계속 허용한다.
   const nameTrim = name.trim();
@@ -416,26 +444,6 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
     return (nameTrim.length > 0 || !isNew) && brand.trim().length > 0;
   })();
 
-  const title = (() => {
-    const group = t(GROUP_NOUN_KEY[editingGroup]);
-    return isNew
-      ? t("editDialog.titleAdd", { group })
-      : t("editDialog.titleEdit", { group });
-  })();
-
-  const nameLabel =
-    editingGroup === "invest"
-      ? t("editDialog.nameLabelInvest")
-      : editingGroup === "card"
-        ? t("editDialog.nameLabelCard")
-        : t("editDialog.nameLabelAccount");
-  const namePlaceholder =
-    editingGroup === "invest"
-      ? t("editDialog.namePlaceholderInvest")
-      : editingGroup === "card"
-        ? (selectedCard?.cardName ?? t("editDialog.namePlaceholderCard"))
-        : t("editDialog.namePlaceholderAccount");
-
   const isOverdraft =
     editingGroup === "account" && accountSub === "마이너스통장";
   /**
@@ -446,16 +454,6 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
    * 표기 규칙은 `currencyUnit` 한 곳에 있다 — 앱도 같은 규칙을 쓴다.
    */
   const unit = currencyUnit(currency);
-  const balanceLabel =
-    editingGroup === "card"
-      ? t("editDialog.balanceLabelCard", { unit })
-      : editingGroup === "invest"
-        ? t("editDialog.balanceLabelInvest", { unit })
-        : isOverdraft
-          ? // 마이너스통장은 '잔액' 이 아니라 '쓴 돈' 을 묻는다 — 그래야 양수로 받는다.
-            t("editDialog.balanceLabelOverdraft", { unit })
-          : t("editDialog.balanceLabelAccount", { unit });
-
   /**
    * 한도 초과 — **저장은 막지 않는다**(사용자 결정, QA #125). 넘겼다는 사실만 보인다.
    *
@@ -521,9 +519,58 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
   const overLimitBy =
     limitAmount > 0 ? Math.max(0, usageForLimit - limitAmount) : 0;
 
+  // 바뀐 값 — 닫기 · 뒤로 가기 전에 "작성한 내용이 사라져요" 를 묻는다. 종류는 따로 본다(1단계가 고른 종류만으로는 쓴 글이 아니다).
+  // 찾기 글(query · stockQ · cardKeyword)은 쓴 값이 아니라 빼고, 보유 줄의 react key 도 뺀다.
+  const changed =
+    valuesKey({
+      name,
+      memo,
+      isIncludedInTotal,
+      isAmountHidden,
+      balanceStr,
+      dueStr,
+      currencyPick,
+      exchangeRate,
+      brandPick,
+      holdings,
+      selectedCard,
+      creditLimit,
+      paymentDay,
+      paymentAssetRowId,
+    }) !== valuesKey({ ...init, currencyPick: null });
+  const kindChanged = kind !== init.kind;
+
+  /** 쓴 값을 버리고 처음으로 — 추가 2단계에서 ← 로 1단계에 돌아갈 때(종류는 고른 채 둔다) */
+  const reset = () => {
+    unlockedRef.current = false;
+    paymentDayConfirmedRef.current = false;
+    setBrand(init.brandPick);
+    setQuery("");
+    setName(init.name);
+    setMemo(init.memo);
+    setIsIncludedInTotal(init.isIncludedInTotal);
+    setIsAmountHidden(init.isAmountHidden);
+    setBalanceStr(init.balanceStr);
+    setDueStr(init.dueStr);
+    setCurrency(null);
+    setExchangeRate(init.exchangeRate);
+    setHoldings(init.holdings);
+    setStockQ("");
+    setCardKeyword("");
+    setIncludeDiscontinued(false);
+    setSelectedCard(init.selectedCard);
+    setCreditLimit(init.creditLimit);
+    setPaymentDay(init.paymentDay);
+    setPaymentAssetRowId(init.paymentAssetRowId);
+  };
+
   return {
     item,
-    group,
+    kind,
+    setKind,
+    changed,
+    kindChanged,
+    reset,
     uid,
     t,
     i18n,
@@ -561,7 +608,6 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
     setExchangeRate,
     isForeign,
     accountSub,
-    setAccountSub,
     holdings,
     setHoldings,
     stockQ,
@@ -579,7 +625,6 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
     holdingValueOf,
     holdingsTotal,
     cardType,
-    setCardType,
     cardKeyword,
     setCardKeyword,
     includeDiscontinued,
@@ -607,20 +652,12 @@ export function useAssetForm({ item, group }: UseAssetFormArgs) {
     manualHoldingType,
     manualAddTypes,
     brandColor,
-    previewBg,
-    previewFg,
-    previewName,
-    previewSub,
     nameTrim,
     nameIssueKind,
     nameErr,
     canSubmit,
-    title,
-    nameLabel,
-    namePlaceholder,
     isOverdraft,
     unit,
-    balanceLabel,
     isCreditCardEdit,
     isExistingCreditCard,
     carryoverLocked,

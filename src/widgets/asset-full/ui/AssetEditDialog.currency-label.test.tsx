@@ -1,6 +1,6 @@
 // 금액 칸의 단위는 **고른 통화**를 따른다 (QA 12차 결정).
 //
-// 라벨이 `잔액 (원)` 으로 박혀 있어 통화를 USD 로 골라도 원화처럼 보였다. 잔액도
+// 단위는 칸 뒤 글자다(I-17 12 — 라벨 괄호에서 옮겼다). 예전엔 라벨이 `잔액 (원)` 으로 박혀 있어 통화를 USD 로 골라도 원화처럼 보였다. 잔액도
 // 한도도 이 폼의 통화로 적는 값이다 — 초과 안내는 이미 그 통화로 나가고 있었으므로
 // (`formatOriginalAmount(…, currency)`) 한 폼 안에서 단위가 갈려 있었다.
 //
@@ -23,6 +23,8 @@ import {
 import { i18n } from "@/shared/i18n/config";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
+import type { AssetKind } from "../lib/asset-kind";
+import { installDomStubs, unitOf } from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -139,28 +141,19 @@ const investWithHoldings = (currency: string): Asset =>
 let container: HTMLDivElement;
 let root: Root;
 
-function open(item: Asset | null, group: "account" | "card" | "invest") {
+function open(item: Asset | null, kind?: AssetKind) {
   __resetPointerBlockForTest();
   act(() =>
     root.render(
       <AssetEditDialog
         item={item}
-        group={group}
-        mobile={false}
+        kind={kind}
         onClose={() => {}}
         onCreate={() => {}}
         onUpdate={() => {}}
       />,
     ),
   );
-}
-
-/** `<Label>` 은 키를 그대로 들고 있다 — 그 라벨에 실린 단위를 읽는다. */
-function unitOf(key: string): string | null {
-  const label = [...document.body.querySelectorAll("label")].find((l) =>
-    l.textContent?.startsWith(`${key}|`),
-  );
-  return label ? (label.textContent?.split("|")[1] ?? null) : null;
 }
 
 /**
@@ -178,6 +171,7 @@ afterAll(async () => {
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   state.defaultCurrency = "KRW";
+  installDomStubs();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -190,50 +184,50 @@ afterEach(() => {
 
 describe("금액 칸의 단위는 고른 통화를 따른다", () => {
   it("원화 계좌는 `원` — 한국어 화면은 `₩` 를 안 쓴다", () => {
-    open(account("KRW"), "account");
+    open(account("KRW"));
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("원");
   });
 
   it("달러 계좌는 `$` — 여기가 `원` 이면 통화를 골라도 원화로 읽힌다", () => {
-    open(account("USD"), "account");
+    open(account("USD"));
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("$");
   });
 
   it("유로·엔도 같은 매핑을 탄다", () => {
-    open(account("EUR"), "account");
+    open(account("EUR"));
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("€");
-    open(account("JPY"), "account");
+    open(account("JPY"));
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("¥");
   });
 
   it("마이너스통장은 쓴 돈과 약정 한도가 **같은 단위**다", () => {
-    open(overdraft("USD"), "account");
+    open(overdraft("USD"));
     expect(unitOf("editDialog.balanceLabelOverdraft")).toBe("$");
     expect(unitOf("editDialog.overdraftLimitLabel")).toBe("$");
   });
 
   it("카드는 사용액과 신용한도가 **같은 단위**다", () => {
-    open(card("USD"), "card");
+    open(card("USD"));
     expect(unitOf("editDialog.balanceLabelCard")).toBe("$");
     expect(unitOf("editDialog.creditLimit")).toBe("$");
   });
 
   it("새 자산은 설정의 기본 통화를 따른다 — 적어 둔 통화가 없다(D7)", () => {
     state.defaultCurrency = "USD";
-    open(null, "account");
+    open(null, "입출금");
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("$");
   });
 
   it("연동 합계만은 안 따른다 — 시세를 원화로 환산해 더한 값이다", () => {
-    open(investWithHoldings("USD"), "invest");
+    open(investWithHoldings("USD"));
     expect(unitOf("editDialog.balanceLabelInvest")).toBe("원");
   });
 
   it("영어 화면의 원화는 `₩` — `Balance (원)` 은 남의 글자다", async () => {
     await i18n.changeLanguage("en");
-    open(account("KRW"), "account");
+    open(account("KRW"));
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("₩");
-    open(account("USD"), "account");
+    open(account("USD"));
     expect(unitOf("editDialog.balanceLabelAccount")).toBe("$");
     await i18n.changeLanguage("ko");
   });

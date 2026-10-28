@@ -5,7 +5,7 @@ import {
   type BankEntry,
 } from "@/shared/lib/groo/bank-colors";
 import type { CardCatalogSummary } from "@/entities/card";
-import { type Asset, type HoldingType, type AssetType } from "@/entities/asset";
+import { type Asset, type HoldingType } from "@/entities/asset";
 
 export const INVEST_CATEGORY_SET = new Set<BankCategory>(INVEST_CATEGORIES);
 
@@ -24,7 +24,7 @@ export const CATEGORY_LABEL_KEY: Record<BankCategory, string> = {
   가상자산: "editDialog.category.cryptoExchange",
 };
 
-export type AssetGroup = "account" | "card" | "invest";
+export type { AssetGroup } from "../../lib/asset-kind";
 
 // 투자 보유 편집 행 — 로컬 편집용(react key + 검색 시 확보한 표시명 보관).
 export type EditHolding = {
@@ -61,18 +61,6 @@ export const trimRate = (rate: number): string => {
   return s.includes(".") ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
 };
 
-export const GROUP_NOUN_KEY: Record<AssetGroup, string> = {
-  account: "group.account",
-  card: "group.card",
-  invest: "group.invest",
-};
-
-export const groupOfType = (t: AssetType): AssetGroup => {
-  if (t === "CREDIT_CARD" || t === "CHECK_CARD") return "card";
-  if (t === "INVESTMENT") return "invest";
-  return "account";
-};
-
 export const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
   (cat) => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
 );
@@ -80,7 +68,7 @@ export const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
 /** 자산에 붙어 있는 카드 카탈로그 → 선택 상태로 쓸 요약. 카드 편집이 아니면 없음. */
 export function cardSummaryOf(
   item: Asset | null | undefined,
-  editingGroup: AssetGroup,
+  editingGroup: "account" | "card" | "invest",
 ): CardCatalogSummary | null {
   if (!item || editingGroup !== "card" || !item.cardCatalog) return null;
   return {
