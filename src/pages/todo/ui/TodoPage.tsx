@@ -15,7 +15,6 @@ import {
   useConstellationSky,
   useConstellationToday,
 } from "@/features/constellation";
-import { ForestStrip } from "@/widgets/constellation";
 import { NIGHT_SKY_PATH, REPORT_PATH } from "@/shared/config";
 import { isDone } from "@/pages/todo/model/todo-ledger";
 import { todoTagOptions } from "@/pages/todo/lib/todo-tags";
@@ -144,10 +143,6 @@ const TodoPageInner = ({
     else createTodo.mutate(values, { onSuccess: () => setEditing(null) });
   };
 
-  // ── 밤하늘 진입점 — 스트립(데스크톱)·토글(모바일 원장). 상세는 오버레이 화면 ──
-  const Strip = constellationTodayQ.data ? (
-    <ForestStrip today={constellationTodayQ.data} onOpen={openNightSky} />
-  ) : null;
   const overlays = (
     <>
       {starToast && (
@@ -243,7 +238,6 @@ const TodoPageInner = ({
         onToggle={onToggleTodo}
         onOpen={setViewing}
         onAdd={() => setEditing({ _new: true })}
-        strip={Strip}
         sky={skyQ.data ?? []}
         constellationToday={constellationTodayQ.data}
         doneToday={doneToday}

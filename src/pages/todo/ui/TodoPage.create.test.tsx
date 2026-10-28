@@ -54,9 +54,7 @@ vi.mock("@/features/constellation", () => ({
   useConstellationToday: () => ({ data: undefined }),
   useConstellationSky: () => ({ data: [] }),
 }));
-vi.mock("@/widgets/constellation", () => ({
-  ForestStrip: () => null,
-}));
+vi.mock("@/widgets/constellation", () => ({}));
 // 모바일 원장에는 빠른 추가가 없다 — 이 테스트가 보는 건 원장 밖의 생성 동선(Fab)이다.
 vi.mock("./TodoMobileLedger", () => ({ TodoMobileLedger: () => null }));
 
