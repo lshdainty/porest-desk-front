@@ -177,9 +177,11 @@ const pickPaymentDay = (day: number) =>
 /** 새 신용카드 — 카탈로그에서 카드를 고르고 결제일을 정한다. */
 function newCard(paymentDay: number) {
   open(null);
-  const pick = [
-    ...document.body.querySelectorAll("button, [role='button'], li"),
-  ].find((el) => el.textContent?.includes("현대 ZERO"));
+  // 카드 상품 칸 → 고르기 시트(검색 줄) → 카드 줄을 누르면 닫히며 값이 들어간다(I-17 19)
+  click(fieldControl("editDialog.cardProduct"));
+  const pick = [...document.body.querySelectorAll("[role='option']")].find(
+    (el) => el.textContent?.includes("현대 ZERO"),
+  );
   if (!pick) throw new Error("카탈로그 카드를 찾지 못했다");
   click(pick);
   pickPaymentDay(paymentDay);

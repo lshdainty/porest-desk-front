@@ -1,6 +1,4 @@
-import { Plus, Search, Trash2 } from "lucide-react";
-import { Input as LegacyInput } from "@/shared/ui/input";
-import { Button as LegacyButton } from "@/shared/ui/button";
+import { Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/shared/ds/badge";
 import { Button } from "@/shared/ds/button";
 import { Input } from "@/shared/ds/input";
@@ -17,8 +15,8 @@ import {
 } from "@/entities/asset";
 import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
 import { type EditHolding, nextHoldingKey } from "./form-lib";
+import { StockAddButton } from "./StockAddButton";
 import type { AssetForm } from "./use-asset-form";
-import { type HoldingType } from "@/entities/asset";
 
 /** 연동 항목 이름 — 저장돼 있던 항목은 심볼→마스터 이름 조회(캐시), 검색 추가분은 displayName. */
 function LinkedHoldingName({ holding }: { holding: EditHolding }) {
@@ -39,15 +37,9 @@ export function HoldingsEditor({ f }: { f: AssetForm }) {
     tCommon,
     holdings,
     setHoldings,
-    stockQ,
-    setStockQ,
-    liveEnabled,
-    stockSearching,
-    stockResults,
     holdingValueOf,
     holdingsTotal,
     allowStock,
-    manualHoldingType,
     manualAddTypes,
   } = f;
   const patch = (key: string, p: Partial<EditHolding>) =>
@@ -68,139 +60,33 @@ export function HoldingsEditor({ f }: { f: AssetForm }) {
           })}
         </span>
       </div>
-      <div>
-        {allowStock && (
-          <div className="relative mb-1">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-            />
-            <LegacyInput
-              search
-              value={stockQ}
-              onChange={(e) => setStockQ(e.target.value)}
-              placeholder={t("holdings.searchPlaceholder")}
-              className="pl-9"
-            />
-          </div>
-        )}
-        {allowStock && stockQ.trim().length > 0 && (
-          <div
-            className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] mb-2"
-            style={{ maxHeight: 240, overflowY: "auto" }}
+      {/* 종목 추가 — 주식은 검색 시트, 금 · 코인은 검색 대상이 아니라 직접 추가로만 담는다(토스 · 마스터 모두 미제공).
+          기관이 유형을 정하므로 증권사면 금 · 코인 단추가 없다. */}
+      <div className="flex flex-wrap gap-x2">
+        {allowStock && <StockAddButton f={f} />}
+        {manualAddTypes.map((type) => (
+          <Button
+            key={type}
+            type="button"
+            variant="neutralOutline"
+            size="small"
+            onClick={() =>
+              setHoldings((prev) => [
+                ...prev,
+                {
+                  key: nextHoldingKey(),
+                  holdingType: type,
+                  linked: false,
+                  holdingName: "",
+                  holdingValue: 0,
+                },
+              ])
+            }
           >
-            {stockResults.map((s) => (
-              <button
-                key={`${s.marketCode}:${s.symbol}`}
-                type="button"
-                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--color-bg-layer-default-pressed)] transition-colors"
-                style={{
-                  background: "transparent",
-                  border: 0,
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  // 시세 게이트 OFF(비구독·토스 미연결)면 연동해도 평가액을 못 구하므로
-                  // 검색 결과도 수동 항목으로 추가 — 사용자가 평가액을 직접 입력해 합계에 반영(사용자 결정).
-                  setHoldings((prev) => [
-                    ...prev,
-                    liveEnabled
-                      ? {
-                          key: nextHoldingKey(),
-                          holdingType: "STOCK" as HoldingType,
-                          linked: true,
-                          // 검색 결과가 시장을 알고 있다 — 여기서 안 담으면 서버는
-                          // 심볼로 되짚어야 하고, 여러 시장에 걸리면 확정하지 못한다.
-                          marketCode: s.marketCode,
-                          tossSymbol: s.symbol,
-                          quantity: "1",
-                          displayName: s.nameKr,
-                        }
-                      : {
-                          key: nextHoldingKey(),
-                          holdingType: manualHoldingType,
-                          linked: false,
-                          holdingName: s.nameKr,
-                          holdingValue: 0,
-                        },
-                  ]);
-                  setStockQ("");
-                }}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-semibold text-[var(--fg-primary)]">
-                    {s.nameKr}
-                  </div>
-                  <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
-                    {s.symbol} · {s.marketCode}
-                  </div>
-                </div>
-              </button>
-            ))}
-            {stockSearching && stockResults.length === 0 && (
-              <div className="py-4 text-center text-[12px] text-[var(--fg-tertiary)]">
-                …
-              </div>
-            )}
-            <button
-              type="button"
-              className="flex w-full items-center gap-1.5 px-3 py-2.5 text-[12.5px] font-bold text-[var(--fg-brand)]"
-              style={{
-                background: "transparent",
-                border: 0,
-                borderTop: stockResults.length
-                  ? "1px solid var(--border-subtle)"
-                  : "none",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setHoldings((prev) => [
-                  ...prev,
-                  {
-                    key: nextHoldingKey(),
-                    holdingType: manualHoldingType,
-                    linked: false,
-                    holdingName: stockQ.trim(),
-                    holdingValue: 0,
-                  },
-                ]);
-                setStockQ("");
-              }}
-            >
-              <Plus size={13} strokeWidth={2.4} />{" "}
-              {t("holdings.addManual", { name: stockQ.trim() })}
-            </button>
-          </div>
-        )}
-        {/* 금·코인은 검색 대상이 아니다(토스·마스터 모두 미제공) — 직접 추가로만 담는다.
-                  기관이 유형을 정하므로 증권사면 아무것도 안 뜬다(주식은 위 검색으로 담는다). */}
-        <div className="flex gap-1.5 mb-1">
-          {manualAddTypes.map((type) => (
-            <LegacyButton
-              key={type}
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setHoldings((prev) => [
-                  ...prev,
-                  {
-                    key: nextHoldingKey(),
-                    holdingType: type,
-                    linked: false,
-                    holdingName: "",
-                    holdingValue: 0,
-                  },
-                ])
-              }
-            >
-              <Plus size={13} strokeWidth={2.4} />
-              {type === "GOLD"
-                ? t("holdings.addGold")
-                : t("holdings.addCrypto")}
-            </LegacyButton>
-          ))}
-        </div>
+            <Plus aria-hidden />
+            {type === "GOLD" ? t("holdings.addGold") : t("holdings.addCrypto")}
+          </Button>
+        ))}
       </div>
       {holdings.length === 0 ? (
         <p className="m-0 px-x0_5 font-sans text-t4 text-fg-neutral-subtle">

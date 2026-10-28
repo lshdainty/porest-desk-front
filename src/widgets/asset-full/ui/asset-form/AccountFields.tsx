@@ -1,5 +1,5 @@
 import type { AssetForm } from "./use-asset-form";
-import { InstitutionBox } from "./InstitutionBox";
+import { InstitutionField } from "./InstitutionField";
 import { NameField } from "./NameField";
 import { MemoField } from "./MemoField";
 import { BalanceField } from "./BalanceField";
@@ -10,7 +10,7 @@ import { CurrencyFields } from "./CurrencyFields";
 export function AccountFields({ f }: { f: AssetForm }) {
   return (
     <>
-      <InstitutionBox f={f} />
+      <InstitutionField f={f} />
       <NameField f={f} />
       <MemoField f={f} />
       <BalanceField f={f} />

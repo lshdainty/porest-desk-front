@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAssets } from "@/features/asset";
 import { useDefaultCurrency } from "@/features/user";
@@ -18,22 +18,14 @@ import {
 import {
   getBrandColor,
   BANK_ENTRIES,
-  BANK_ENTRIES_BY_CATEGORY,
-  BANK_CATEGORY_ORDER,
-  INVEST_CATEGORIES,
   CATEGORY_HOLDING_TYPE,
-  type BankCategory,
-  type BankEntry,
 } from "@/shared/lib/groo/bank-colors";
-import { useCardCatalogs } from "@/features/card-catalog";
 import type { CardCatalogSummary, CardType } from "@/entities/card";
 import { type Asset, type HoldingType, qtyNumber } from "@/entities/asset";
 import type { YNType } from "@/shared/types";
-import { useStockSearch } from "@/features/stock/model/useStockMaster";
 import { useLivePrices } from "@/features/stock/model/useLivePrices";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import {
-  INVEST_CATEGORY_SET,
   type EditHolding,
   nextHoldingKey,
   ASSET_NAME_MAX,
@@ -154,16 +146,6 @@ function initialOf(item: Asset | null, kindArg: AssetKind | null) {
   };
 }
 
-/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
-}
-
 export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
   const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
   const { t, i18n } = useTranslation("asset");
@@ -187,7 +169,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     (editingGroup === "invest"
       ? (INVEST_BRANDS[0]?.name ?? "삼성증권")
       : (BANK_ENTRIES[0]?.name ?? "신한"));
-  const [query, setQuery] = useState("");
   const [name, setName] = useState(init.name);
   const [memo, setMemo] = useState(init.memo);
   const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
@@ -246,23 +227,10 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
   // 투자 — 보유 종목 다건 편집 (design AssetEditDialog invest 분기 미러).
   // 기존 holdings 우선, 구버전 단일 연동(tossSymbol)은 linked 1건으로 합성(하위호환).
   const [holdings, setHoldings] = useState<EditHolding[]>(init.holdings);
-  const [stockQ, setStockQ] = useState("");
-  const debouncedStockQ = useDebounced(stockQ.trim(), 300);
   const { data: features } = useMyFeatures();
   const liveEnabled =
     (features?.features?.includes("SECURITIES") ?? false) &&
     (features?.connectedBrokers?.length ?? 0) > 0;
-  const { data: stockMatches = [], isFetching: stockSearching } =
-    useStockSearch(editingGroup === "invest" ? debouncedStockQ : "");
-  const stockResults = useMemo(
-    () =>
-      stockMatches
-        .filter(
-          (s) => !holdings.some((h) => h.linked && h.tossSymbol === s.symbol),
-        )
-        .slice(0, 6),
-    [stockMatches, holdings],
-  );
   // 연동 항목 라이브 평가 — 시세(10초 폴링)×수량, 외화는 환율 환산. 게이트 밖이면 미평가.
   const holdingSymbols = useMemo(
     () => [
@@ -299,8 +267,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
 
   // 카드
   const cardType: CardType = kind === "체크카드" ? "CHECK" : "CREDIT";
-  const [cardKeyword, setCardKeyword] = useState("");
-  const [includeDiscontinued, setIncludeDiscontinued] = useState(false);
   // 편집 진입 시 기존 카드 카탈로그를 선택 상태처럼 보이도록 채움.
   //
   // 초기값으로 넣는다 — 이 컴포넌트의 `item` 기반 상태는 전부 그렇게 시드된다
@@ -324,53 +290,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
         (a) => a.assetType === "BANK_ACCOUNT" && a.rowId !== item?.rowId,
       ),
     [assetsData, item?.rowId],
-  );
-
-  const catalogQ = useCardCatalogs({
-    keyword: cardKeyword.trim() || undefined,
-    cardType,
-    includeDiscontinued: includeDiscontinued || undefined,
-    page: 0,
-    size: 40,
-  });
-  const catalogItems = catalogQ.data?.content ?? [];
-
-  // 은행 검색 (category 묶음 — 투자용 카테고리는 제외)
-  const matchesQuery = (e: BankEntry, q: string) => {
-    if (!q) return true;
-    const needle = q.toLowerCase().replace(/\s+/g, "");
-    if (e.name.toLowerCase().replace(/\s+/g, "").includes(needle)) return true;
-    return (e.aliases ?? []).some((a) =>
-      a.toLowerCase().replace(/\s+/g, "").includes(needle),
-    );
-  };
-
-  const bankFilteredByCategory = useMemo(() => {
-    const result: [BankCategory, BankEntry[]][] = [];
-    for (const cat of BANK_CATEGORY_ORDER) {
-      if (INVEST_CATEGORY_SET.has(cat)) continue;
-      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter((e) =>
-        matchesQuery(e, query),
-      );
-      if (list.length > 0) result.push([cat, list]);
-    }
-    return result;
-  }, [query]);
-
-  const investFilteredByCategory = useMemo(() => {
-    const result: [BankCategory, BankEntry[]][] = [];
-    for (const cat of INVEST_CATEGORIES) {
-      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter((e) =>
-        matchesQuery(e, query),
-      );
-      if (list.length > 0) result.push([cat, list]);
-    }
-    return result;
-  }, [query]);
-
-  const investFilteredCount = investFilteredByCategory.reduce(
-    (sum, [, list]) => sum + list.length,
-    0,
   );
 
   // 색/미리보기
@@ -545,7 +464,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     unlockedRef.current = false;
     paymentDayConfirmedRef.current = false;
     setBrand(init.brandPick);
-    setQuery("");
     setName(init.name);
     setMemo(init.memo);
     setIsIncludedInTotal(init.isIncludedInTotal);
@@ -555,9 +473,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     setCurrency(null);
     setExchangeRate(init.exchangeRate);
     setHoldings(init.holdings);
-    setStockQ("");
-    setCardKeyword("");
-    setIncludeDiscontinued(false);
     setSelectedCard(init.selectedCard);
     setCreditLimit(init.creditLimit);
     setPaymentDay(init.paymentDay);
@@ -580,8 +495,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     defaultCurrency,
     brand,
     setBrand,
-    query,
-    setQuery,
     name,
     setName,
     memo,
@@ -610,14 +523,8 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     accountSub,
     holdings,
     setHoldings,
-    stockQ,
-    setStockQ,
-    debouncedStockQ,
     features,
     liveEnabled,
-    stockMatches,
-    stockSearching,
-    stockResults,
     holdingSymbols,
     priceActive,
     activeHoldingSymbols,
@@ -625,10 +532,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     holdingValueOf,
     holdingsTotal,
     cardType,
-    cardKeyword,
-    setCardKeyword,
-    includeDiscontinued,
-    setIncludeDiscontinued,
     selectedCard,
     setSelectedCard,
     creditLimit,
@@ -639,12 +542,6 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     setPaymentAssetRowId,
     assetsData,
     bankAccounts,
-    catalogQ,
-    catalogItems,
-    matchesQuery,
-    bankFilteredByCategory,
-    investFilteredByCategory,
-    investFilteredCount,
     cardCompanyName,
     cardBrandColor,
     brandHoldingType,

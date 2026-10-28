@@ -1,5 +1,5 @@
 import type { AssetForm } from "./use-asset-form";
-import { InstitutionBox } from "./InstitutionBox";
+import { InstitutionField } from "./InstitutionField";
 import { NameField } from "./NameField";
 import { HoldingsEditor } from "./HoldingsEditor";
 import { BalanceField } from "./BalanceField";
@@ -11,7 +11,7 @@ import { MemoField } from "./MemoField";
 export function InvestFields({ f }: { f: AssetForm }) {
   return (
     <>
-      <InstitutionBox f={f} />
+      <InstitutionField f={f} />
       <NameField f={f} />
       <HoldingsEditor f={f} />
       {f.holdings.length > 0 ? (

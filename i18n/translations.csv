@@ -539,9 +539,11 @@ asset,editDialog.overdraftHelp,쓴 만큼을 양수로 넣어주세요. 빚으�
 asset,editDialog.loanHelp,아직 갚지 않은 금액을 적어주세요.,Enter the amount you still owe.
 asset,editDialog.overdraftLimitLabel,약정 한도,Credit line
 asset,editDialog.cardProduct,카드 상품,Card Product
-asset,editDialog.cardSearchPlaceholder,카드명 또는 발급사 검색,Search by card name or issuer
-asset,editDialog.includeDiscontinuedTooltip,단종된 카드 상품도 검색 결과에 포함합니다,Include discontinued cards in search results
-asset,editDialog.includeDiscontinued,단종 포함,Include discontinued
+asset,editDialog.cardSearchPlaceholder,카드 이름 검색,Search card name
+asset,editDialog.cardPlaceholder,카드 선택,Select card
+asset,editDialog.pickCardTitle,카드 상품 고르기,Choose card
+asset,editDialog.cardEmptyHint,카드사 이름으로도 찾아보세요.,Try searching by issuer name too.
+asset,editDialog.includeDiscontinued,단종 카드도 보기,Show discontinued cards
 asset,editDialog.discontinued,단종,Discontinued
 asset,cardTypeShort.credit,신용,Credit
 asset,cardTypeShort.check,체크,Check
@@ -577,8 +579,7 @@ asset,editDialog.selectLinkedAccount,연결 계좌 선택,Select linked account
 asset,editDialog.linkedAccountHelp,이 카드로 결제하면 이 계좌에서 바로 빠져나가요.,Spending on this card is deducted from this account right away.
 asset,editDialog.brokerExchange,증권사 · 거래소,Brokerage / exchange
 asset,editDialog.institutionBrand,기관,Institution
-asset,editDialog.totalCount,총 {{count}}개,{{count}} total
-asset,editDialog.investSearchPlaceholder,증권사·상품거래소·가상자산거래소 검색,Search brokerage/commodity/crypto exchange
+asset,editDialog.investSearchPlaceholder,증권사 이름 검색,Search brokerage name
 asset,editDialog.category.commercialBank,시중은행,Commercial bank
 asset,editDialog.category.internetBank,인터넷은행,Internet bank
 asset,editDialog.category.localBank,지방은행,Local bank
@@ -589,8 +590,10 @@ asset,editDialog.category.other,기타,Other
 asset,editDialog.category.brokerage,증권사,Brokerage
 asset,editDialog.category.commodityExchange,상품거래소,Commodity exchange
 asset,editDialog.category.cryptoExchange,가상자산거래소,Crypto exchange
-asset,editDialog.bankSearchPlaceholder,은행명 검색,Search bank name
-asset,editDialog.noSearchResults,검색 결과가 없어요,No search results
+asset,editDialog.bankSearchPlaceholder,기관 이름 검색,Search institution name
+asset,editDialog.institutionPlaceholder,기관 선택,Select institution
+asset,editDialog.pickInstitutionTitle,기관 고르기,Choose institution
+asset,editDialog.pickBrokerTitle,증권사 고르기,Choose brokerage
 asset,accountSub.checking,입출금,Checking
 asset,accountSub.overdraft,마이너스 통장,Overdraft account
 asset,accountSub.savings,적금,Savings
@@ -2742,7 +2745,9 @@ asset,holdings.manualSub,직접 입력,Manual entry
 asset,holdings.emptyDetail,보유 종목이 없어요. 편집에서 종목을 추가해보세요.,No holdings yet. Add them from Edit.
 asset,holdings.todayChange,오늘 {{sign}}{{amount}}원,Today {{sign}}₩{{amount}}
 asset,holdings.editSummary,{{n}}종목 · {{total}}원,{{n}} holdings · ₩{{total}}
-asset,holdings.searchPlaceholder,"종목명·티커 검색 후 추가 (예: 삼성전자, NVDA)","Search name/ticker to add (e.g. Samsung, NVDA)"
+asset,holdings.searchPlaceholder,종목 이름 검색,Search stock name
+asset,holdings.addStock,종목 추가,Add stock
+asset,holdings.addStockTitle,종목 추가,Add stock
 asset,holdings.addManual,"""{{name}}"" 직접 추가 — 평가액 입력","Add ""{{name}}"" manually — enter value"
 asset,holdings.editEmptyHelp,검색으로 보유 종목을 추가하세요. 연동 종목은 현재가 × 수량으로 평가액이 자동 계산돼요.,Add holdings via search. Linked items are valued automatically at live price × quantity.
 asset,holdings.editEmptyHelpManual,위 버튼으로 보유분을 추가하세요. 시세 연동이 없어 평가액은 직접 입력해요.,Add your holdings with the button above. No live price — enter the value yourself.

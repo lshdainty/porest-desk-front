@@ -1,5 +1,5 @@
 import type { AssetForm } from "./use-asset-form";
-import { CardProductList } from "./CardProductList";
+import { CardProductField } from "./CardProductField";
 import { NameField } from "./NameField";
 import { LimitField } from "./LimitField";
 import { PaymentDayField } from "./PaymentDayField";
@@ -15,7 +15,7 @@ import { PaymentAccountField } from "./PaymentAccountField";
 export function CardFields({ f }: { f: AssetForm }) {
   return (
     <>
-      <CardProductList f={f} />
+      <CardProductField f={f} />
       <NameField f={f} />
       <LimitField f={f} />
       <PaymentDayField f={f} />
