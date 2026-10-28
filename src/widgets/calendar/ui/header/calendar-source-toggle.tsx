@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Check, ChevronDown, ChevronRight, Flag } from "lucide-react";
+import { ChevronDown, ChevronRight, Flag } from "lucide-react";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import { Badge } from "@/shared/ds/badge";
@@ -43,32 +43,22 @@ const CalendarDot = ({ color }: { color: string }) => (
 );
 
 /**
- * 기본 캘린더 행 — **표시 스위치를 두지 않는다.**
+ * 기본 캘린더 행 — **끌 수 없는 켬(`locked`)이다.**
  *
  * 기본 캘린더는 서버가 자동으로 대입하는 자리라 숨기면 방금 만든 일정이 곧바로 안 보인다.
- * 서버도 이 캘린더의 표시 토글을 400 으로 막으므로 스위치를 남겨 두면 누르는 순간 에러만
- * 난다. 회색으로 잠근 스위치도 두지 않는다 — 누를 수 없는 컨트롤은 "왜 안 되지" 를 만든다.
- * 대신 늘 켜진 표식(체크 글리프)과 `기본` 배지를 둬서 이 행이 왜 다른지 그 자리에서 읽히게 한다.
- * 누르는 줄이 아니라 보기만 하는 줄(ListItem)이다.
+ * 서버도 이 캘린더의 표시 토글을 400 으로 막으므로 켜고 끄는 칸을 살려 두면 누르는 순간 에러만 난다.
+ * 그래서 칸만 막힌 켬(체크 + 막힘 — 포커스에서 빠지고 줄은 누르지 못한다)으로 두고, 제목 · 색 점 · `기본` 배지는
+ * 보통 색 그대로 둔다 — 줄 전체를 회색으로 막으면 "꺼진 것" 으로 읽히고 색 점이 사라진다. 끌 수 없는 까닭은 `기본` 배지가 말한다
+ * (list.md "끌 수 없는 켬 — 칸만 막는다", 2026-10-29 사용자 결정 B). 낭독은 "{이름}, 기본, 체크됨, 사용할 수 없음".
  */
 const DefaultCalendarItem = ({ calendar }: { calendar: UserCalendar }) => {
   const { t } = useTranslation("calendar");
   const color = getPaletteByColor(calendar.color).color;
 
   return (
-    <ListItem
-      prefix={
-        <span className="flex items-center gap-x3">
-          <span
-            aria-hidden
-            className="grid size-6 shrink-0 place-items-center"
-            style={{ color }}
-          >
-            <Check className="size-4" strokeWidth={2.5} />
-          </span>
-          <CalendarDot color={color} />
-        </span>
-      }
+    <ListCheckItem
+      locked
+      prefix={<CalendarDot color={color} />}
       title={
         <>
           {calendar.calendarName}{" "}

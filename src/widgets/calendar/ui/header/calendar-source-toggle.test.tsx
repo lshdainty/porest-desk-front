@@ -150,22 +150,44 @@ afterEach(() => {
   container.remove();
 });
 
-describe("기본 캘린더 행", () => {
-  it("표시 스위치가 없다 — 누를 수 있는 자리 자체를 두지 않는다", () => {
+describe("기본 캘린더 행 — 끌 수 없는 켬(locked)", () => {
+  it('칸만 막힌 켬이다 — 체크됨 + 막힘이라 포커스에서 빠지고, 낭독은 "업무, 기본, 체크됨, 사용할 수 없음"', () => {
     render([WORK, PRIVATE]);
-    expect(rowOf("업무")).toBeTruthy();
-    expect(rowButton("업무")).toBeUndefined();
+    const row = rowOf("업무")!;
+    const box = row.querySelector<HTMLButtonElement>("[role=checkbox]")!;
+    expect(box.getAttribute("aria-checked")).toBe("true");
+    expect(box.disabled).toBe(true);
+    // 이름은 제목 · `기본` 배지(라벨)이고 상태는 체크됨 · 막힘
+    const name = (box.labels?.[0]?.textContent ?? "").replace(/\s+/g, " ");
+    expect(name).toContain("업무 기본");
+  });
+
+  it("상자 없는 파란 체크 표식을 걷었다 — 칸 하나뿐이다", () => {
+    render([WORK, PRIVATE]);
+    const row = rowOf("업무")!;
+    expect(row.querySelectorAll("[role=checkbox]")).toHaveLength(1);
+    // 체크 글리프는 칸 안에만 있다 — 칸 밖 자유 체크 표식(파란 체크)이 없다
+    for (const g of row.querySelectorAll("svg.lucide-check"))
+      expect(g.closest("[role=checkbox]")).not.toBeNull();
   });
 
   it("행을 눌러도 표시 토글이 나가지 않는다", () => {
     render([WORK, PRIVATE]);
     click(rowOf("업무")!);
+    click(rowOf("업무")!.querySelector("[data-slot=list-content]")!);
     expect(mocks.toggle).not.toHaveBeenCalled();
   });
 
-  it("`기본` 표를 달아 왜 다른 행인지 그 자리에서 읽히게 한다", () => {
+  it("제목 · 색 점 · `기본` 배지는 보통 색이다 — 줄 전체가 회색으로 막히지 않는다", () => {
     render([WORK, PRIVATE]);
-    expect(rowOf("업무")!.textContent).toContain("기본");
+    const row = rowOf("업무")!;
+    expect(row.querySelector("[data-slot=list-title]")!.className).not.toMatch(
+      /disabled/,
+    );
+    expect(row.querySelector("[data-slot=badge]")!.textContent).toBe("기본");
+    expect(row.querySelector("[data-slot=list-prefix]")!.className).not.toMatch(
+      /disabled/,
+    );
   });
 });
 
