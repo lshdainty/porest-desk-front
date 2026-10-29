@@ -11,6 +11,7 @@ import {
   LedgerDayHead,
   LedgerDaySum,
   LedgerExpand,
+  LedgerHead,
   LedgerNavBtn,
   LedgerPin,
   LedgerSumBtn,
@@ -133,6 +134,22 @@ describe("날 숫자 · 날짜 머리", () => {
     expect(
       container.querySelector("[data-slot=list-header]")!.className,
     ).not.toContain("px-0");
+  });
+});
+
+describe("머리 단추 내림", () => {
+  it("왼쪽 묶음 기본 폭이 절반 − 간격이라 단추가 절반을 넘을 때만 아래로 내려간다(앱 LedgerTotalRow)", () => {
+    render(
+      <LedgerHead>
+        <div>합계</div>
+        <LedgerSumBtn>소비 요약</LedgerSumBtn>
+      </LedgerHead>,
+    );
+    const head = container.firstElementChild!;
+    expect(head.className).toContain("flex-wrap");
+    expect(head.className).toContain(
+      "[&>:first-child]:basis-[calc(50%-var(--spacing-x3))]",
+    );
   });
 });
 

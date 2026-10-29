@@ -117,14 +117,21 @@ export function LedgerNavBtn({
 
 // ─── 헤드(총액/타이틀 + 우측 토글) ──────────────────────────
 
-/** 머리 — 내용 폭 기준으로 감는다: 숫자가 한 줄을 다 쓰면 오른쪽 단추가 아래 줄 오른쪽으로 내려간다. 왼쪽 묶음은 `min-w-0 flex-auto`. */
+/**
+ * 머리 — 단추가 머리 폭의 절반을 넘을 때만 아래 줄 오른쪽으로 내려간다(03G-029 A · 앱 LedgerTotalRow 와 같은 반 폭 판정, I-29 P8).
+ * 왼쪽 묶음(첫 자식)의 기본 폭을 `절반 − 간격`으로 잡아, 단추 + 간격이 남은 절반에 안 들어갈 때(단추 > 절반)만 감는다.
+ * 왼쪽 묶음의 글 길이는 판정에 들어가지 않는다 — 별빛 줄이 길다고 단추가 내려가지 않는다. 왼쪽 묶음은 `min-w-0 flex-auto`.
+ */
 export function LedgerHead({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-wrap items-start gap-x3 pt-x2", className)}
+      className={cn(
+        "flex flex-wrap items-start gap-x3 pt-x2 [&>:first-child]:basis-[calc(50%-var(--spacing-x3))]",
+        className,
+      )}
       {...props}
     />
   );
