@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Apple, Check, Copy, Download, Smartphone } from "lucide-react";
-import { Card } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Apple, Copy, Download, Smartphone } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/shared/ds/button";
+import { Callout } from "@/shared/ds/callout";
+import { Divider } from "@/shared/ds/divider";
 
 /**
  * 앱 받기 — 로그인 없이 열리는 공개 페이지.
@@ -12,6 +14,8 @@ import { Button } from "@/shared/ui/button";
  *
  * <p>iOS 는 서명 없이 빌드한 IPA 라 받는 사람이 자기 Apple ID 로 서명해 넣어야 한다.
  * 일반 사용자에게 권할 경로가 아니라서 안내만 하고 웹으로 유도한다.
+ *
+ * <p>셸 밖 화면 — 모든 폭에서 흰 면 하나, 가운데 한 칸(최대 512)(I-12 5-A).
  */
 
 const DOWNLOAD_BASE = "/download";
@@ -28,7 +32,6 @@ export const DownloadPage = () => {
   const { t } = useTranslation("download");
   const [release, setRelease] = useState<AppRelease | null>(null);
   const [failed, setFailed] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   // AltStore 에 붙여 넣을 주소. 이 페이지가 어디에 떠 있든 그 호스트를 그대로 쓴다.
   const sourceUrl = `${window.location.origin}${DOWNLOAD_BASE}/altstore.json`;
@@ -36,15 +39,21 @@ export const DownloadPage = () => {
   const copySource = async () => {
     try {
       await navigator.clipboard.writeText(sourceUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      toast.success(t("ios.copiedToast"), { id: "download-copy" });
     } catch {
-      // 클립보드가 막힌 브라우저(비 HTTPS 등) — 주소는 눈에 보이니 직접 긁으면 된다.
+      // 클립보드가 막힌 브라우저(비 HTTPS 등) — 주소는 눈에 보이니 직접 골라 복사하면 된다.
+      toast.error(t("ios.copyFailed"), { id: "download-copy" });
     }
   };
 
+  // 셸 밖이라 셸이 문서 제목을 정하지 않는다 — 이 화면이 둔다.
+  const docTitle = t("docTitle");
   useEffect(() => {
-    // 배포 전이거나 파일이 아직 없으면 조용히 접는다 — 링크는 그대로 두고 버전만 감춘다.
+    document.title = docTitle;
+  }, [docTitle]);
+
+  useEffect(() => {
+    // 배포 전이거나 파일이 아직 없으면 조용히 접는다 — 버전을 감추고 내려받기 버튼을 막는다.
     fetch(`${DOWNLOAD_BASE}/version.json`, { cache: "no-store" })
       .then((r) =>
         r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
@@ -54,40 +63,13 @@ export const DownloadPage = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        minHeight: "100dvh",
-        background: "var(--bg-canvas)",
-        display: "flex",
-        justifyContent: "center",
-        padding: "48px 20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "32rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--spacing-lg)",
-        }}
-      >
-        <header style={{ textAlign: "center" }}>
-          <div
-            style={{
-              fontSize: "var(--text-display-sm)",
-              fontWeight: 800,
-              color: "var(--fg-primary)",
-            }}
-          >
-            {t("title")}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-body-sm)",
-              color: "var(--fg-tertiary)",
-              marginTop: 6,
-            }}
+    <div className="flex min-h-dvh justify-center bg-bg-layer-default px-x6 pt-x12 pb-x10">
+      <main className="w-full max-w-[32rem] break-keep [overflow-wrap:break-word]">
+        <header className="text-center">
+          <h1 className="text-screen-title text-fg-neutral">{t("title")}</h1>
+          <p
+            aria-live="polite"
+            className="mt-x1 text-t4 text-fg-neutral-subtle"
           >
             {release
               ? t("subtitleWithVersion", {
@@ -97,155 +79,111 @@ export const DownloadPage = () => {
               : failed
                 ? t("subtitleNoRelease")
                 : t("subtitleLoading")}
-          </div>
+          </p>
         </header>
 
         {/* 안드로이드 — 받아서 바로 설치된다. */}
-        <Card
-          style={{
-            padding: 20,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Smartphone size={18} style={{ color: "var(--fg-secondary)" }} />
-            <span
-              style={{
-                fontSize: "var(--text-body-lg)",
-                fontWeight: 700,
-                color: "var(--fg-primary)",
-              }}
-            >
-              {t("android.title")}
-            </span>
-          </div>
-          <p
-            style={{
-              fontSize: "var(--text-body-sm)",
-              color: "var(--fg-secondary)",
-              lineHeight: 1.7,
-              margin: 0,
-            }}
-          >
+        <section className="mt-x8">
+          <h2 className="flex items-center gap-x2 text-t6 font-bold text-fg-neutral">
+            <Smartphone
+              aria-hidden
+              className="size-5 shrink-0 text-fg-neutral"
+            />
+            {t("android.title")}
+          </h2>
+          <p className="mt-x3 mb-x4 text-t5 text-fg-neutral-muted">
             {t("android.desc")}
           </p>
-          <Button asChild size="md" disabled={!release}>
-            <a
-              href={release ? `${DOWNLOAD_BASE}/${release.android}` : undefined}
+          {release ? (
+            <Button
+              asChild
+              variant="neutralSolid"
+              size="large"
+              className="w-full"
             >
-              <Download size={16} /> {t("android.cta")}
-            </a>
-          </Button>
-          <p
-            style={{
-              fontSize: "var(--text-caption)",
-              color: "var(--fg-tertiary)",
-              lineHeight: 1.7,
-              margin: 0,
-            }}
-          >
+              <a href={`${DOWNLOAD_BASE}/${release.android}`} download>
+                <Download aria-hidden /> {t("android.cta")}
+              </a>
+            </Button>
+          ) : (
+            <Button
+              variant="neutralSolid"
+              size="large"
+              className="w-full"
+              disabled
+            >
+              <Download aria-hidden /> {t("android.cta")}
+            </Button>
+          )}
+          <p className="mt-x3 text-t4 text-fg-neutral-subtle">
             {t("android.note")}
           </p>
-        </Card>
+        </section>
+
+        <Divider className="mt-x8" />
 
         {/* iOS — 서명이 없어 그대로는 안 깔린다. 무엇이 필요한지 먼저 알린다. */}
-        <Card
-          style={{
-            padding: 20,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Apple size={18} style={{ color: "var(--fg-secondary)" }} />
-            <span
-              style={{
-                fontSize: "var(--text-body-lg)",
-                fontWeight: 700,
-                color: "var(--fg-primary)",
-              }}
-            >
-              {t("ios.title")}
-            </span>
-          </div>
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: "var(--radius-md)",
-              background: "var(--bg-sunken)",
-              fontSize: "var(--text-caption)",
-              color: "var(--fg-secondary)",
-              lineHeight: 1.7,
-            }}
-          >
+        <section className="mt-x8">
+          <h2 className="flex items-center gap-x2 text-t6 font-bold text-fg-neutral">
+            <Apple aria-hidden className="size-5 shrink-0 text-fg-neutral" />
+            {t("ios.title")}
+          </h2>
+          <Callout tone="warning" className="mt-x3 mb-x4">
             {t("ios.warning")}
-          </div>
+          </Callout>
 
           {/* AltStore 소스 — 7일마다 다시 서명하는 수고를 없애는 유일한 길이라 먼저 권한다. */}
-          <p
-            style={{
-              fontSize: "var(--text-body-sm)",
-              color: "var(--fg-secondary)",
-              lineHeight: 1.7,
-              margin: 0,
-            }}
-          >
+          <p className="text-t5 text-fg-neutral-muted">
             {t("ios.altstoreDesc")}
           </p>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="mt-x3 flex flex-wrap items-center gap-x2">
             <code
-              style={{
-                flex: 1,
-                minWidth: 0,
-                overflowX: "auto",
-                whiteSpace: "nowrap",
-                padding: "8px 10px",
-                borderRadius: "var(--radius-md)",
-                background: "var(--bg-sunken)",
-                fontSize: "var(--text-caption)",
-                color: "var(--fg-primary)",
-              }}
+              data-testid="download-source-url"
+              className="min-w-0 flex-1 basis-48 rounded-r2 bg-bg-neutral-weak px-x3 py-x2_5 font-mono text-t3 text-fg-neutral [overflow-wrap:anywhere]"
             >
               {sourceUrl}
             </code>
-            <Button size="md" variant="secondary" onClick={copySource}>
-              {copied ? <Check size={16} /> : <Copy size={16} />}
-              {copied ? t("ios.copied") : t("ios.copy")}
+            <Button
+              variant="neutralWeak"
+              size="medium"
+              className="shrink-0"
+              onClick={copySource}
+            >
+              <Copy aria-hidden /> {t("ios.copy")}
             </Button>
           </div>
 
           {/* 직접 받는 길도 남겨 둔다 — Sideloadly 처럼 IPA 를 직접 먹이는 도구를 쓸 때. */}
-          <p
-            style={{
-              fontSize: "var(--text-caption)",
-              color: "var(--fg-tertiary)",
-              lineHeight: 1.7,
-              margin: 0,
-            }}
-          >
+          <p className="my-x3 text-t4 text-fg-neutral-subtle">
             {t("ios.desc")}
           </p>
-          <Button asChild size="md" variant="ghost" disabled={!release}>
-            <a href={release ? `${DOWNLOAD_BASE}/${release.ios}` : undefined}>
-              <Download size={16} /> {t("ios.cta")}
-            </a>
-          </Button>
-        </Card>
+          {release ? (
+            <Button
+              asChild
+              variant="neutralWeak"
+              size="large"
+              className="w-full"
+            >
+              <a href={`${DOWNLOAD_BASE}/${release.ios}`} download>
+                <Download aria-hidden /> {t("ios.cta")}
+              </a>
+            </Button>
+          ) : (
+            <Button
+              variant="neutralWeak"
+              size="large"
+              className="w-full"
+              disabled
+            >
+              <Download aria-hidden /> {t("ios.cta")}
+            </Button>
+          )}
+        </section>
 
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "var(--text-caption)",
-            color: "var(--fg-tertiary)",
-            lineHeight: 1.7,
-          }}
-        >
+        <p className="mt-x8 text-center text-t4 text-fg-neutral-subtle">
           {t("webHint")}
         </p>
-      </div>
+      </main>
     </div>
   );
 };
