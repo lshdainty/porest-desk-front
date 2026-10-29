@@ -1351,10 +1351,12 @@ budget,deleteMessage,삭제한 예산은 되돌릴 수 없어요.,A deleted budg
 budget,thisFallback,이,this
 budget,copyTitle,지난달 예산을 복사할까요?,Copy last month's budget?
 budget,copyOverwriteMessage,이번 달 예산 {{count}}개가 지난달 예산으로 바뀌어요. 바꾼 뒤에는 되돌릴 수 없어요.,{{count}} budgets this month will be replaced with last month's. This can't be undone once it's changed.
-budget,copyPartial,가져오지 못한 예산이 {{count}}개 있어요,{{count}} budget(s) couldn't be copied
+budget,copyPartial_one,가져오지 못한 예산이 {{count}}개 있어요,1 budget couldn't be copied
+budget,copyPartial_other,가져오지 못한 예산이 {{count}}개 있어요,{{count}} budgets couldn't be copied
 budget,copiedDone,지난달 예산을 가져왔어요,Last month's budget was copied
 budget,copyUndo,되돌리기,Undo
-budget,copyUndoFailed,되돌리지 못한 예산이 {{count}}개 남았어요,{{count}} budget(s) couldn't be undone
+budget,copyUndoFailed_one,되돌리지 못한 예산이 {{count}}개 남았어요,1 budget couldn't be undone
+budget,copyUndoFailed_other,되돌리지 못한 예산이 {{count}}개 남았어요,{{count}} budgets couldn't be undone
 budget,deleteFailed,예산을 삭제하지 못했어요,Couldn't delete the budget
 budget,edit.addTitle,카테고리 예산 추가,Add category budget
 budget,edit.editTitle,카테고리 예산 수정,Edit category budget
