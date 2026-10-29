@@ -9,7 +9,9 @@ import {
   constellationDesc,
   constellationName,
   type CollectionEntry,
+  type ConstellationToday,
 } from "@/features/constellation";
+import { ProgressBar } from "@/shared/ds/progress";
 import { SKY_BG } from "../lib/sky";
 import { ConstellationSVG } from "./ConstellationSVG";
 import { cn } from "@/shared/lib/cn";
@@ -38,13 +40,25 @@ const SKY_DIM_STARS: [number, number][] = [
 
 export function ConstellationDetailDialog({
   entry,
+  today,
   onClose,
 }: {
   entry: CollectionEntry;
+  /** 오늘의 목표 별자리면 하늘 카드 · 도감이 같은 값을 넘긴다 — 켠 별 + 고리 · 진행 막대(10-29 결정 2 · 3) */
+  today?: ConstellationToday;
   onClose: () => void;
 }) {
   const { t, i18n } = useTranslation("constellation");
-  const collected = entry.collectCount > 0;
+  const isToday =
+    !!today &&
+    today.constellation.constellationKey ===
+      entry.constellation.constellationKey;
+  // 오늘의 목표면 켠 별 + 남은 별 고리, 아니면 모은 별자리는 전부 · 못 모은 별자리는 빈 고리
+  const collected = entry.collectCount > 0 || isToday;
+  const litNow = isToday ? Math.min(today.points, today.goal) : undefined;
+  const pct = isToday
+    ? Math.min(100, Math.round((litNow! / Math.max(1, today.goal)) * 100))
+    : 0;
   const name = constellationName(entry.constellation, i18n.language);
   const description = constellationDesc(entry.constellation, i18n.language);
 
@@ -55,7 +69,10 @@ export function ConstellationDetailDialog({
         if (!next) onClose();
       }}
     >
-      <ResponsiveDialogContent title={name}>
+      <ResponsiveDialogContent
+        title={name}
+        description={isToday ? t("hero.todayTarget") : undefined}
+      >
         <ResponsiveDialogBody>
           {/* 하늘 패널 — 역할 색 그라디언트(8 과 같다). 그림은 이름 붙은 img, 안내 글은 그 밖의 글이다 */}
           <div
@@ -99,7 +116,7 @@ export function ConstellationDetailDialog({
               >
                 <ConstellationSVG
                   starMap={entry.constellation.starMap}
-                  lit={collected ? undefined : 0}
+                  lit={isToday ? litNow : collected ? undefined : 0}
                   size={180}
                 />
               </div>
@@ -110,6 +127,35 @@ export function ConstellationDetailDialog({
               </p>
             )}
           </div>
+          {isToday && (
+            <div className="pt-x4">
+              <div className="flex items-baseline justify-between gap-x2">
+                <span className="min-w-0 text-t4 font-medium text-fg-neutral">
+                  {t("detail.todayProgress")}
+                </span>
+                <span className="shrink-0 text-t3 tabular-nums text-fg-neutral-subtle">
+                  {t("detail.todayPct", { pct })}
+                </span>
+              </div>
+              <ProgressBar
+                className="mt-x1_5"
+                value={litNow!}
+                max={today.goal}
+                meaning="goal"
+                aria-label={t("detail.todayProgress")}
+                aria-valuetext={t("detail.todayPct", { pct })}
+              />
+              <p className="m-0 mt-x1_5 text-t2 tabular-nums text-fg-neutral-subtle">
+                {today.goal - litNow! > 0
+                  ? t("detail.todayCount", {
+                      lit: litNow,
+                      goal: today.goal,
+                      left: today.goal - litNow!,
+                    })
+                  : t("hero.starlightCount", { lit: litNow, goal: today.goal })}
+              </p>
+            </div>
+          )}
           <p className="m-0 break-keep pb-x1 pt-x4 text-t5 text-fg-neutral-muted [overflow-wrap:break-word]">
             {description}
           </p>

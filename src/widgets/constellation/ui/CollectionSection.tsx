@@ -10,6 +10,7 @@ import {
   constellationName,
   type CollectionEntry,
   type ConstellationCollection,
+  type ConstellationToday,
 } from "@/features/constellation";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { newestKeyOf } from "../lib/collection";
@@ -31,12 +32,15 @@ export function CollectionSection({
   onRetry,
   collection,
   todayKey,
+  today,
 }: {
   place: Place;
   state: "ready" | "loading" | "failed";
   onRetry: () => void;
   collection?: ConstellationCollection;
   todayKey: string;
+  /** 오늘의 목표 별자리를 열면 하늘 카드와 같은 상세로 보인다(10-29 결정 3) */
+  today?: ConstellationToday;
 }) {
   const { t, i18n } = useTranslation("constellation");
   const [detail, setDetail] = useState<CollectionEntry | null>(null);
@@ -175,6 +179,7 @@ export function CollectionSection({
       {detail && (
         <ConstellationDetailDialog
           entry={detail}
+          today={today}
           onClose={() => setDetail(null)}
         />
       )}

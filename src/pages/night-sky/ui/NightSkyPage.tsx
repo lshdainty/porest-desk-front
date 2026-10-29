@@ -81,6 +81,7 @@ function NightSkyMobile() {
               onRetry={() => void m.collectionQ.refetch()}
               collection={m.collectionQ.data}
               todayKey={today?.constellation.constellationKey ?? ""}
+              today={today}
             />
           </div>
         </ScreenBands>
@@ -184,6 +185,7 @@ function NightSkyDesktop() {
             onRetry={() => void m.collectionQ.refetch()}
             collection={m.collectionQ.data}
             todayKey={today?.constellation.constellationKey ?? ""}
+            today={today}
           />
         </Card>
       </div>

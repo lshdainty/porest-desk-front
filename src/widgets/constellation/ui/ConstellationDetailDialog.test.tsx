@@ -114,4 +114,34 @@ describe("ConstellationDetailDialog", () => {
     expect(note?.className).not.toMatch(/opacity/);
     expect(document.querySelector("[data-slot$=footer]")).toBeNull();
   });
+  it("오늘의 목표 별자리는 머리 설명 · 진행 막대 · 둘 다의 글을 보인다(10-29 결정 2 · 3)", () => {
+    const entry = make(0);
+    const today = {
+      constellation: entry.constellation,
+      points: 12,
+      goal: 15,
+      collected: false,
+      todoPoints: 10,
+      memoPoints: 2,
+      streak: 3,
+      guardCount: 1,
+      totalCollected: 4,
+    };
+    act(() =>
+      root.render(
+        <ConstellationDetailDialog
+          entry={entry}
+          today={today}
+          onClose={() => {}}
+        />,
+      ),
+    );
+    expect(text()).toContain("오늘의 목표 별자리");
+    expect(text()).toContain("오늘 모은 별빛");
+    expect(text()).toContain("80%");
+    expect(text()).toContain("12/15 별빛 · 3별 남음");
+    expect(text()).not.toContain("아직 만나지 못한");
+    const bar = document.querySelector("[role=meter]");
+    expect(bar?.getAttribute("aria-valuenow")).toBe("12");
+  });
 });

@@ -1,19 +1,23 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Cloud, Moon, Sparkles } from "lucide-react";
+import { ChevronRight, Cloud, Sparkles } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 import { SKY_BG } from "../lib/sky";
 import {
   constellationName,
   parseStarMap,
+  useConstellationCollection,
+  type CollectionEntry,
   type ConstellationToday,
 } from "@/features/constellation";
+import { ConstellationDetailDialog } from "./ConstellationDetailDialog";
 
 /**
- * 밤하늘 히어로 — 오늘의 목표 별자리가 별빛만큼 점등된다.
- * 하늘 바탕은 역할 색 그라디언트(01-033 C — `SKY_BG`), 글은 흐르는 차례로 쌓아 겹치지 않고(I-11 8), 글 · 아이콘 색은
- * `fg-neutral-inverted` 하나다 — 불투명도로 흐리지 않는다. 점 · 선 · 달빛 같은 장식(aria-hidden)만 투명도를 남긴다.
- * 폰 · 원장 펼침은 안 여백 20 · 최소 168, 데스크톱 카드(`wide`)는 24 · 220.
+ * 밤하늘 하늘 카드(I-11 8 · 10-29 결정 1 = P2) — 오늘의 목표 별자리가 별빛만큼 점등된다.
+ * 하늘 바탕은 역할 색 그라디언트(01-033 C — `SKY_BG`), 글은 흐르는 차례로 쌓아 겹치지 않고, 글 · 아이콘 색은 `fg-neutral-inverted` 하나다 —
+ * 불투명도로 흐리지 않는다(달빛 · 잔별 · 그림 같은 장식 `aria-hidden` 만 투명도를 남긴다).
+ * 배경 층 별자리는 걷고, 오른쪽 위에 별자리 썸네일 88(켠 별 밝게 · 남은 별 고리)을 둔다. 카드 전체(썸네일 포함)를 누르면 상세 시트.
+ * 폰 · 원장 펼침은 안 여백 20, 데스크톱 카드(`wide`)는 24.
  */
 const SKY_DIM_STARS: [number, number][] = [
   [5, 18],
@@ -38,6 +42,78 @@ const SKY_DIM_STARS: [number, number][] = [
   [86, 44],
 ];
 
+const SIZE = 88;
+
+/** 썸네일 — 정비율 88 안에 별자리(켠 별 + 글로 · 남은 별 고리 · 켠 별끼리만 점선). 장식이라 읽지 않는다 */
+function HeroFigure({
+  starMap,
+  lit,
+  done,
+}: {
+  starMap: string;
+  lit: number;
+  done: boolean;
+}) {
+  const map = useMemo(() => parseStarMap(starMap), [starMap]);
+  const k = 100 / SIZE;
+  const lineColor = done
+    ? "color-mix(in srgb, var(--color-fg-neutral-inverted) 85%, transparent)"
+    : "color-mix(in srgb, var(--color-fg-neutral-inverted) 50%, transparent)";
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 100 100"
+      width={SIZE}
+      height={SIZE}
+      className="block shrink-0 overflow-visible"
+    >
+      {map.edges.map(([a, b], i) => {
+        const pa = map.pts[a];
+        const pb = map.pts[b];
+        if (!pa || !pb || a >= lit || b >= lit) return null;
+        return (
+          <line
+            key={i}
+            x1={pa[0]}
+            y1={pa[1]}
+            x2={pb[0]}
+            y2={pb[1]}
+            stroke={lineColor}
+            strokeWidth={1 * k}
+            strokeLinecap="round"
+            strokeDasharray={done ? "none" : `${3 * k} ${4 * k}`}
+          />
+        );
+      })}
+      {map.pts.map(([x, y], i) =>
+        i < lit ? (
+          <circle
+            key={i}
+            cx={x}
+            cy={y}
+            r={2.5 * k}
+            fill="var(--color-fg-neutral-inverted)"
+            style={{
+              filter:
+                "drop-shadow(0 0 3px color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent))",
+            }}
+          />
+        ) : (
+          <circle
+            key={i}
+            cx={x}
+            cy={y}
+            r={1.8 * k}
+            fill="none"
+            stroke="color-mix(in srgb, var(--color-fg-neutral-inverted) 45%, transparent)"
+            strokeWidth={1 * k}
+          />
+        ),
+      )}
+    </svg>
+  );
+}
+
 export function NightSkyHero({
   today,
   doneToday,
@@ -45,20 +121,29 @@ export function NightSkyHero({
 }: {
   today: ConstellationToday;
   doneToday: number;
-  /** 데스크톱 카드 — 안 여백 24 · 최소 높이 220 (폰 20 · 168) */
+  /** 데스크톱 카드 — 안 여백 24 (폰 20) */
   wide?: boolean;
 }) {
   const { t, i18n } = useTranslation("constellation");
-  const map = useMemo(
-    () => parseStarMap(today.constellation.starMap),
-    [today.constellation.starMap],
-  );
+  const collectionQ = useConstellationCollection();
+  const [open, setOpen] = useState(false);
   const lit = Math.min(today.points, today.goal);
   const done = today.collected;
   const name = constellationName(today.constellation, i18n.language);
-  const lineColor = done
-    ? "color-mix(in srgb, var(--color-fg-neutral-inverted) 85%, transparent)"
-    : "color-mix(in srgb, var(--color-fg-neutral-inverted) 50%, transparent)";
+  // 상세 시트가 읽는 도감 줄 — 도감이 아직 없으면 오늘 값으로 만든다
+  const entry: CollectionEntry = useMemo(
+    () =>
+      collectionQ.data?.entries.find(
+        (e) =>
+          e.constellation.constellationKey ===
+          today.constellation.constellationKey,
+      ) ?? {
+        constellation: today.constellation,
+        collectCount: 0,
+        lastCollectedDate: null,
+      },
+    [collectionQ.data, today.constellation],
+  );
 
   const caption = done
     ? t("hero.captionDone")
@@ -75,156 +160,100 @@ export function NightSkyHero({
       : t("hero.captionEmpty");
 
   return (
-    <div
-      role="group"
-      aria-label={t("hero.label", { name, lit, goal: today.goal })}
-      data-slot="night-sky-hero"
-      className={cn(
-        "relative flex min-h-[168px] flex-col overflow-hidden rounded-r4 p-x5 text-fg-neutral-inverted",
-        wide && "min-h-[220px] p-x6",
-        SKY_BG,
-      )}
-    >
-      {/* 장식 — 달빛 · 잔별 · 별자리 그림(aria-hidden, 투명도 남김) */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          style={{
-            position: "absolute",
-            top: -40,
-            right: -20,
-            width: 180,
-            height: 180,
-            borderRadius: 999,
-            background:
-              "radial-gradient(circle, color-mix(in srgb, var(--color-fg-neutral-inverted) 16%, transparent) 0%, transparent 65%)",
-          }}
-        />
-        {SKY_DIM_STARS.map(([x, y], i) => (
-          <span
-            key={i}
+    <>
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+        data-slot="night-sky-hero"
+        className={cn(
+          "relative flex w-full min-h-[168px] cursor-pointer flex-col overflow-hidden rounded-r4 border-0 p-x5 text-left font-sans text-fg-neutral-inverted",
+          wide && "p-x6",
+          SKY_BG,
+        )}
+      >
+        {/* 장식 — 달빛 · 잔별(aria-hidden, 투명도 남김) */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div
             style={{
               position: "absolute",
-              left: `${x}%`,
-              top: `${y}%`,
-              width: i % 3 === 0 ? 2.5 : 1.5,
-              height: i % 3 === 0 ? 2.5 : 1.5,
+              top: -40,
+              right: -20,
+              width: 180,
+              height: 180,
               borderRadius: 999,
               background:
-                "color-mix(in srgb, var(--color-fg-neutral-inverted) 32%, transparent)",
-              transform: "translate(-50%, -50%)",
+                "radial-gradient(circle, color-mix(in srgb, var(--color-fg-neutral-inverted) 16%, transparent) 0%, transparent 65%)",
             }}
           />
-        ))}
-        {/* 별자리 figure — 비율 유지 박스 (중앙), 글 아래 배경 층 */}
-        <div
-          style={{
-            position: "absolute",
-            top: "10%",
-            bottom: "24%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            aspectRatio: "1.45",
-          }}
-        >
-          <svg
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-            }}
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            {map.edges.map(([a, b], i) => {
-              const pa = map.pts[a];
-              const pb = map.pts[b];
-              if (!pa || !pb || a >= lit || b >= lit) return null;
-              return (
-                <line
-                  key={i}
-                  x1={pa[0]}
-                  y1={pa[1]}
-                  x2={pb[0]}
-                  y2={pb[1]}
-                  stroke={lineColor}
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinecap="round"
-                  strokeDasharray={done ? "none" : "3 4"}
-                />
-              );
-            })}
-          </svg>
-          {map.pts.map(([x, y], i) => {
-            const on = i < lit;
-            // 별 수 적응형 점 크기 — 실좌표 별자리(최대 27별)의 밀집 구간 겹침 방지
-            const dense = map.pts.length > 15;
-            const onSize = dense ? (wide ? 6 : 5) : wide ? 8 : 7;
-            const offSize = dense ? 3.5 : 5;
-            return (
-              <span
-                key={i}
-                className={on ? "constellation-pop" : undefined}
-                style={{
-                  position: "absolute",
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  width: on ? onSize : offSize,
-                  height: on ? onSize : offSize,
-                  borderRadius: 999,
-                  transform: "translate(-50%, -50%)",
-                  background: on
-                    ? "var(--color-fg-neutral-inverted)"
-                    : "transparent",
-                  border: on
-                    ? "none"
-                    : "1px solid color-mix(in srgb, var(--color-fg-neutral-inverted) 45%, transparent)",
-                  boxShadow: on
-                    ? `0 0 ${done ? 14 : 9}px 2px color-mix(in srgb, var(--color-fg-neutral-inverted) ${done ? 80 : 55}%, transparent)`
-                    : "none",
-                  transition:
-                    "all var(--motion-duration-fast) var(--motion-ease-out)",
-                }}
-              />
-            );
-          })}
+          {SKY_DIM_STARS.map(([x, y], i) => (
+            <span
+              key={i}
+              style={{
+                position: "absolute",
+                left: `${x}%`,
+                top: `${y}%`,
+                width: i % 3 === 0 ? 2.5 : 1.5,
+                height: i % 3 === 0 ? 2.5 : 1.5,
+                borderRadius: 999,
+                background:
+                  "color-mix(in srgb, var(--color-fg-neutral-inverted) 32%, transparent)",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          ))}
         </div>
-      </div>
-      <Moon
-        aria-hidden
-        className="absolute right-x4 top-x4 size-x5 text-fg-neutral-inverted"
-      />
 
-      {/* 글은 흐르는 차례로 — 오늘의 목표 → 이름 + 별빛 → (남는 높이) → 캡션 → 연속 · 보호 */}
-      <p className="relative m-0 text-t3 text-fg-neutral-inverted">
-        {t("hero.todayTarget")}
-      </p>
-      <p className="relative m-0 mt-x0_5 flex flex-wrap items-baseline gap-x-x2 pr-x6 text-t8 font-bold break-keep text-fg-neutral-inverted [overflow-wrap:break-word]">
-        <span className="min-w-0">
-          {done ? t("hero.collectedBang", { name }) : name}
-        </span>
-        <span className="whitespace-nowrap text-t4 font-bold tabular-nums">
-          {t("hero.starlightCount", { lit, goal: today.goal })}
-        </span>
-      </p>
-      <p className="relative m-0 mt-auto pt-x6 text-t3 break-keep text-fg-neutral-inverted [overflow-wrap:break-word]">
-        {caption}
-      </p>
-      <p className="relative m-0 mt-x2 flex flex-wrap items-center gap-x-x3 gap-y-x1_5 text-t3 text-fg-neutral-inverted">
-        <span className="inline-flex items-start gap-x1 font-bold">
-          <span aria-hidden className="flex h-[1lh] items-center">
-            <Sparkles className="size-x3_5 shrink-0" />
+        {/* 글 왼쪽 · 썸네일 오른쪽 위(안 여백에서 −4, 글과 12) */}
+        <span className="relative flex items-start gap-x3">
+          <span className="min-w-0 flex-1">
+            <span className="block text-t3 text-fg-neutral-inverted">
+              {t("hero.todayTarget")}
+            </span>
+            <span className="mt-x0_5 block break-keep text-t8 font-bold text-fg-neutral-inverted [overflow-wrap:break-word]">
+              {done ? t("hero.collectedBang", { name }) : name}
+              <ChevronRight
+                aria-hidden
+                className="ml-x0_5 inline size-x5 align-[-3px]"
+              />
+            </span>
+            <span className="mt-x0_5 block whitespace-nowrap text-t4 font-bold tabular-nums text-fg-neutral-inverted">
+              {t("hero.starlightCount", { lit, goal: today.goal })}
+            </span>
           </span>
-          {t("hero.streak", { count: today.streak })}
-        </span>
-        <span className="inline-flex items-start gap-x1">
-          <span aria-hidden className="flex h-[1lh] items-center">
-            <Cloud className="size-x3_5 shrink-0" />
+          <span className="-mr-x1 -mt-x1">
+            <HeroFigure
+              starMap={today.constellation.starMap}
+              lit={lit}
+              done={done}
+            />
           </span>
-          {t("hero.guardInfo", { count: today.guardCount })}
         </span>
-      </p>
-    </div>
+        <span className="relative mt-auto block break-keep pt-x4 text-t3 text-fg-neutral-inverted [overflow-wrap:break-word]">
+          {caption}
+        </span>
+        <span className="relative mt-x2 flex flex-wrap items-center gap-x-x3 gap-y-x1_5 text-t3 text-fg-neutral-inverted">
+          <span className="inline-flex items-start gap-x1 font-bold">
+            <span aria-hidden className="flex h-[1lh] items-center">
+              <Sparkles className="size-x3_5 shrink-0" />
+            </span>
+            {t("hero.streak", { count: today.streak })}
+          </span>
+          <span className="inline-flex items-start gap-x1">
+            <span aria-hidden className="flex h-[1lh] items-center">
+              <Cloud className="size-x3_5 shrink-0" />
+            </span>
+            {t("hero.guardInfo", { count: today.guardCount })}
+          </span>
+        </span>
+      </button>
+      {open && (
+        <ConstellationDetailDialog
+          entry={entry}
+          today={today}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
   );
 }

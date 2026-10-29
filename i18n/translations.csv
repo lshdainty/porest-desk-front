@@ -2671,6 +2671,9 @@ constellation,strip.desc,별빛 {{lit}}/{{goal}} · 연속 {{count}}일,Starligh
 constellation,collection.viewOwnedNamed,{{name}} 감상하기,View {{name}}
 constellation,collection.viewLockedNamed,{{name}} 미리보기,Preview {{name}}
 constellation,detail.skyName,{{name}} 별자리 그림,Constellation {{name}} drawing
+constellation,detail.todayProgress,오늘 모은 별빛,Starlight today
+constellation,detail.todayPct,{{pct}}%,{{pct}}%
+constellation,detail.todayCount,{{lit}}/{{goal}} 별빛 · {{left}}별 남음,{{lit}}/{{goal}} starlight · {{left}} to go
 constellation,detail.starCountLabel,별 개수,Stars
 constellation,detail.starCountValue,{{count}}개,{{count}}
 constellation,detail.collectLabel,수집,Collected
