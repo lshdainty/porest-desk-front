@@ -119,4 +119,25 @@ describe("ConstellationSVG 기하(웹 ↔ 앱 같은 식)", () => {
       );
     }
   });
+
+  it("glow 는 그림 상자 밖으로 번져도 자르지 않는다(앱 캔버스와 같다 — 도감 줄 타일 30 + glow)", () => {
+    const info = byKey.get("dipper")!;
+    act(() =>
+      root.render(
+        <ConstellationSVG
+          starMap={JSON.stringify(info.star_map)}
+          size={30}
+          glow
+        />,
+      ),
+    );
+    const svg = container.querySelector("svg")!;
+    expect(svg.style.overflow).toBe("visible");
+    // 켄 별마다 글로우 원(r × 2, 블러 6px = viewBox 20 단위)
+    const glows = [...svg.querySelectorAll("circle[filter]")];
+    expect(glows).toHaveLength(info.star_map.pts.length);
+    expect(
+      svg.querySelector("feGaussianBlur")?.getAttribute("stdDeviation"),
+    ).toBe(String((6 * 100) / 30));
+  });
 });

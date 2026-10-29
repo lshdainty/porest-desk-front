@@ -42,7 +42,7 @@ export function ConstellationSVG({
       width={size}
       height={size}
       aria-hidden="true"
-      style={{ display: "block" }}
+      style={{ display: "block", overflow: glow ? "visible" : undefined }}
     >
       {map.edges.map(([a, b], i) => {
         const pa = map.pts[a];

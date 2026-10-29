@@ -102,7 +102,7 @@ export function ReportRow({
                       color: constellationColorVar(colorKey),
                     }}
                   >
-                    <Star fill="currentColor" strokeWidth={0} />
+                    <Star />
                   </span>
                 );
               if (d.status === "WITHERED")
