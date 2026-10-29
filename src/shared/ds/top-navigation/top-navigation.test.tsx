@@ -275,7 +275,7 @@ describe("TopNavigationActions · 버튼", () => {
     const button = slot("top-navigation-primary-button") as HTMLElement;
     expect(button.textContent).toBe("내역 추가");
     expect(button.className).toContain("mr-x2");
-    expect(button.className).toContain("h-9");
+    expect(button.className).toContain("h-[36px]");
   });
 });
 

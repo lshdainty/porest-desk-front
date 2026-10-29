@@ -241,13 +241,13 @@ describe("Card — 머리 동작", () => {
       </Card>,
     );
     const action = slot("card-action")!;
-    expect(action.className).toContain("h-9");
+    expect(action.className).toContain("min-h-[36px]");
     expect(action.className).toContain("px-x3_5");
     expect(action.className).toContain("-mr-x3_5");
     expect(action.className).toContain("font-bold");
     expect(action.className).toContain("text-fg-neutral-muted");
-    expect(action.className).toContain("before:h-11");
-    expect(action.className).toContain("before:min-w-11");
+    expect(action.className).toContain("before:h-[44px]");
+    expect(action.className).toContain("before:min-w-[44px]");
     expect(action.querySelector("svg")).toBeNull();
   });
 

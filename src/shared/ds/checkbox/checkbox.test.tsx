@@ -57,17 +57,17 @@ describe("Checkbox", () => {
     expect(control().dataset.state).toBe("unchecked");
     expect(classes(control())).toEqual(
       expect.arrayContaining([
-        "size-5",
+        "size-[20px]",
         "rounded-r1",
         "border",
         "border-stroke-neutral-solid",
         "bg-transparent",
-        "[&_svg]:size-3",
+        "[&_svg]:size-[12px]",
         "data-[state=checked]:bg-bg-neutral-inverted",
       ]),
     );
     expect(classes(row)).toEqual(
-      expect.arrayContaining(["min-h-8", "gap-x2", "self-start"]),
+      expect.arrayContaining(["min-h-[32px]", "gap-x2", "self-start"]),
     );
     expect(text(row).textContent).toBe("단종된 카드도 보기");
     expect(classes(text(row))).toEqual(
@@ -143,7 +143,7 @@ describe("Checkbox", () => {
         "border-0",
         "bg-transparent",
         "text-fg-placeholder",
-        "[&_svg]:size-3.5",
+        "[&_svg]:size-[14px]",
         "data-[state=checked]:text-fg-neutral",
         "data-[state=checked]:hover:bg-bg-neutral-weak",
       ]),
@@ -162,7 +162,7 @@ describe("Checkbox", () => {
     );
     expect(classes(control())).toEqual(
       expect.arrayContaining([
-        "size-6",
+        "size-[24px]",
         "[&_svg]:size-[18px]",
         "data-[state=checked]:text-fg-brand",
         "data-[state=checked]:group-hover/checkbox:bg-bg-brand-weak-pressed",
@@ -180,11 +180,11 @@ describe("Checkbox", () => {
         label="데이터 내보내기"
       />,
     );
-    expect(classes(row)).toContain("min-h-9");
+    expect(classes(row)).toContain("min-h-[36px]");
     expect(classes(control())).toEqual(
       expect.arrayContaining([
-        "size-6",
-        "[&_svg]:size-3.5",
+        "size-[24px]",
+        "[&_svg]:size-[14px]",
         "data-[state=checked]:bg-bg-brand-solid",
         "data-[state=checked]:text-static-white",
         "data-[state=checked]:group-active/checkbox:bg-bg-brand-solid-pressed",
@@ -241,8 +241,8 @@ describe("Checkbox", () => {
         "before:-translate-y-1/2",
         "before:h-full",
         "before:w-full",
-        "before:min-h-11",
-        "before:min-w-11",
+        "before:min-h-[44px]",
+        "before:min-w-[44px]",
         "before:content-['']",
       ]),
     );

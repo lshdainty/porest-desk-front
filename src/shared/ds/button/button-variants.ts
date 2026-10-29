@@ -38,7 +38,7 @@ export const buttonVariants = cva(
   [
     "relative inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-sans font-bold",
     // 누르는 영역 44 — 보이는 상자보다 작으면 ::before 가 넓힌다
-    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     // 색은 color-transition, 축소는 pressed-scale
     "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
     "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
@@ -62,18 +62,22 @@ export const buttonVariants = cva(
         criticalSolid:
           "bg-bg-critical-solid text-static-white hover:bg-bg-critical-solid-pressed active:bg-bg-critical-solid-pressed aria-busy:bg-bg-critical-solid-pressed [--progress-track:color-mix(in_srgb,var(--color-static-white)_30%,transparent)] [--progress-range:var(--color-static-white)]",
         brandOutline:
-          "border border-stroke-neutral-weak bg-transparent text-fg-brand hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-bg-brand-weak-pressed)] [--progress-range:var(--color-stroke-brand-solid)]",
+          "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] bg-transparent text-fg-brand hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-bg-brand-weak-pressed)] [--progress-range:var(--color-stroke-brand-solid)]",
         neutralOutline:
-          "border border-stroke-neutral-weak bg-transparent text-fg-neutral hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-gray-500)] [--progress-range:var(--color-fg-neutral)]",
+          "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] bg-transparent text-fg-neutral hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-transparent disabled:bg-transparent [--progress-track:var(--color-gray-500)] [--progress-range:var(--color-fg-neutral)]",
         ghost:
           "bg-transparent text-fg-neutral hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed aria-busy:bg-bg-layer-default-pressed disabled:bg-transparent [--progress-track:var(--color-gray-500)] [--progress-range:var(--color-fg-neutral)]",
       },
       size: {
-        xsmall: "h-8 rounded-full [--press-basis:32] [--progress-size:14px]",
-        small: "h-9 rounded-r2 [--press-basis:36] [--progress-size:14px]",
-        medium: "h-10 rounded-r2 [--press-basis:40] [--progress-size:16px]",
+        xsmall:
+          "min-h-[32px] rounded-full [--press-basis:32] [--progress-size:14px]",
+        small:
+          "min-h-[36px] rounded-r2 [--press-basis:36] [--progress-size:14px]",
+        medium:
+          "min-h-[40px] rounded-r2 [--press-basis:40] [--progress-size:16px]",
         // SEED large 는 52 — groo 는 48(button.md "SEED 와 다른 점")
-        large: "h-12 rounded-r3 [--press-basis:48] [--progress-size:18px]",
+        large:
+          "min-h-[48px] rounded-r3 [--press-basis:48] [--progress-size:18px]",
       },
       layout: {
         withText: "",
@@ -98,17 +102,17 @@ export const buttonVariants = cva(
       {
         size: "xsmall",
         layout: "withText",
-        className: "px-x3_5 py-x1_5 gap-x1 text-t3 [&_svg]:size-3.5",
+        className: "px-x3_5 py-x1_5 gap-x1 text-t3 [&_svg]:size-[14px]",
       },
       {
         size: "small",
         layout: "withText",
-        className: "px-x3_5 py-x2 gap-x1 text-t4 [&_svg]:size-3.5",
+        className: "px-x3_5 py-x2 gap-x1 text-t4 [&_svg]:size-[14px]",
       },
       {
         size: "medium",
         layout: "withText",
-        className: "px-x4 py-x2_5 gap-x1_5 text-t4 [&_svg]:size-4",
+        className: "px-x4 py-x2_5 gap-x1_5 text-t4 [&_svg]:size-[16px]",
       },
       {
         size: "large",
@@ -118,22 +122,22 @@ export const buttonVariants = cva(
       {
         size: "xsmall",
         layout: "iconOnly",
-        className: "w-8 p-x1_5 [&_svg]:size-3.5",
+        className: "w-[32px] p-x1_5 [&_svg]:size-[14px]",
       },
       {
         size: "small",
         layout: "iconOnly",
-        className: "w-9 p-x2 [&_svg]:size-4",
+        className: "w-[36px] p-x2 [&_svg]:size-[16px]",
       },
       {
         size: "medium",
         layout: "iconOnly",
-        className: "w-10 p-x2_5 [&_svg]:size-[18px]",
+        className: "w-[40px] p-x2_5 [&_svg]:size-[18px]",
       },
       {
         size: "large",
         layout: "iconOnly",
-        className: "w-12 p-x3 [&_svg]:size-[22px]",
+        className: "w-[48px] p-x3 [&_svg]:size-[22px]",
       },
       // 가장자리 맞춤 — 크기 × 배치의 px 보다 뒤에 둬야 tailwind-merge 가 pl-0 · pr-0 을 남긴다
       { flush: "left", className: "pl-0" },

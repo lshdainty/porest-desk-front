@@ -106,7 +106,7 @@ export const LIST = "m-0 flex list-none items-start gap-x2 p-0";
 
 // 첨부 타일 — 80 · 모서리 12 · 안쪽 1px. 다 참 · 읽기 전용(aria-disabled) · 막힘(disabled)은 바탕 · 축소 없이 아이콘 · 개수만 fg-disabled
 export const TRIGGER = [
-  "group/attachment-trigger relative flex size-20 shrink-0 cursor-pointer flex-col items-center justify-center gap-x1 rounded-r3 bg-transparent font-sans",
+  "group/attachment-trigger relative flex size-[80px] shrink-0 cursor-pointer flex-col items-center justify-center gap-x1 rounded-r3 bg-transparent font-sans",
   "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] [--press-basis:80]",
   "hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
@@ -115,7 +115,7 @@ export const TRIGGER = [
   "disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:active:bg-transparent disabled:active:[scale:1]",
 ].join(" ");
 export const TRIGGER_ICON =
-  "size-6 shrink-0 text-fg-neutral-subtle group-aria-disabled/attachment-trigger:text-fg-disabled group-disabled/attachment-trigger:text-fg-disabled";
+  "size-[24px] shrink-0 text-fg-neutral-subtle group-aria-disabled/attachment-trigger:text-fg-disabled group-disabled/attachment-trigger:text-fg-disabled";
 export const COUNT = "text-t2 font-normal";
 export const COUNT_NOW =
   "text-fg-neutral group-aria-disabled/attachment-trigger:text-fg-disabled group-disabled/attachment-trigger:text-fg-disabled";
@@ -129,7 +129,7 @@ export const MASK =
 // 항목 상자 — 높이 80 · 모서리 12 · 윤곽(::after, 그림 위). 끄는 동안 2px 거리 축소(기준 80).
 // 누를 수 있는 항목(메뉴 · 순서 바꾸기)은 role="button" — 키보드 포커스 링은 안쪽 2px
 export const ITEM = [
-  "relative flex h-20 shrink-0 items-center justify-center gap-x2_5 rounded-r3 bg-transparent",
+  "relative flex h-[80px] shrink-0 items-center justify-center gap-x2_5 rounded-r3 bg-transparent",
   "after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:content-['']",
   MASK,
   "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] [--press-basis:80]",
@@ -141,18 +141,18 @@ export const ITEM = [
 // 흐림 · 축소는 motion-duration-d4 · ease-easing 으로 서서히(모션 줄이기면 바로)
 export const ITEM_KIND = {
   image:
-    "w-20 after:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-overlay)] [transition:opacity_var(--motion-duration-d4)_var(--motion-ease-easing),scale_var(--motion-duration-d4)_var(--motion-ease-easing)] motion-reduce:[transition:none] group-data-[readonly]/attachment-item:opacity-50 group-data-[dragging]/attachment-item:opacity-50",
-  file: "w-40 px-x4 after:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
+    "w-[80px] after:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-overlay)] [transition:opacity_var(--motion-duration-d4)_var(--motion-ease-easing),scale_var(--motion-duration-d4)_var(--motion-ease-easing)] motion-reduce:[transition:none] group-data-[readonly]/attachment-item:opacity-50 group-data-[dragging]/attachment-item:opacity-50",
+  file: "w-[160px] px-x4 after:shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
 } as const;
 
 export const IMAGE =
   "pointer-events-none size-full select-none rounded-[inherit] object-cover";
 export const IMAGE_FALLBACK =
-  "flex size-full items-center justify-center rounded-[inherit] bg-bg-neutral-weak text-fg-neutral-subtle [&>svg]:size-6";
+  "flex size-full items-center justify-center rounded-[inherit] bg-bg-neutral-weak text-fg-neutral-subtle [&>svg]:size-[24px]";
 
 // 파일 카드 — 썸네일 칸 48 · 이름 · 크기. 실패면 다시 시도가 채운다. 읽기 전용 · 끄는 동안 글 · 아이콘 fg-disabled(SEED — 13B)
 export const THUMBNAIL =
-  "flex size-12 shrink-0 items-center justify-center rounded-r2 bg-bg-neutral-weak text-fg-neutral-subtle [&>svg]:size-6 group-data-[readonly]/attachment-item:text-fg-disabled group-data-[dragging]/attachment-item:text-fg-disabled group-data-[status=error]/attachment-item:hidden";
+  "flex size-[48px] shrink-0 items-center justify-center rounded-r2 bg-bg-neutral-weak text-fg-neutral-subtle [&>svg]:size-[24px] group-data-[readonly]/attachment-item:text-fg-disabled group-data-[dragging]/attachment-item:text-fg-disabled group-data-[status=error]/attachment-item:hidden";
 export const META =
   "flex min-w-0 flex-1 flex-col gap-0 group-data-[status=error]/attachment-item:hidden";
 // 이름은 글자 단위로 줄을 바꾼다(break-all — SEED 레시피 그대로, 사용자 결정 2026-10-15 마무리 11D)
@@ -181,7 +181,7 @@ export const BADGE_LABEL = "truncate";
 
 // 다시 시도 — 항목 위에 겹친 형제(항목이 단추일 수 있다). 누르면 이것만 2px 거리 축소(기준 80)
 export const ACTION = [
-  "absolute inset-0 flex cursor-pointer flex-col items-center justify-center gap-x1 rounded-r3 bg-transparent font-sans text-t2 font-medium [&>svg]:size-6",
+  "absolute inset-0 flex cursor-pointer flex-col items-center justify-center gap-x1 rounded-r3 bg-transparent font-sans text-t2 font-medium [&>svg]:size-[24px]",
   MASK,
   "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] [--press-basis:80]",
   "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
@@ -195,7 +195,7 @@ export const ACTION_KIND = {
 
 // × — 20 원이 모서리 밖으로 위 4 · 오른쪽 4. 누르는 자리 44(::before 12 씩). 끄는 동안 사라진다. 이웃 항목 위로 올린다
 export const REMOVE = [
-  "absolute -right-x1 -top-x1 z-[1] flex size-5 cursor-pointer items-center justify-center rounded-full bg-bg-layer-default text-fg-neutral",
+  "absolute -right-x1 -top-x1 z-[1] flex size-[20px] cursor-pointer items-center justify-center rounded-full bg-bg-layer-default text-fg-neutral",
   "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] [&>svg]:size-[10px]",
   "before:absolute before:-inset-x3 before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] [--press-basis:24]",

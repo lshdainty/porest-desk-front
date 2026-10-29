@@ -288,7 +288,7 @@ describe("Tabs (Line)", () => {
     const list = container.querySelector("[role=tablist]")!;
     expect(list.firstElementChild).toBe(bar());
     expect(bar().getAttribute("aria-hidden")).toBe("true");
-    expect(bar().className).toContain("h-0.5");
+    expect(bar().className).toContain("h-[2px]");
     expect(bar().className).toContain("rounded-none");
     expect(bar().className).toContain("bg-fg-neutral");
     // 200ms 로 left · width 만 미끄러진다(글자색은 전환 없이 바로)
@@ -556,11 +556,11 @@ describe("Chip Tabs", () => {
   it("칩은 Chip 그대로다 — Solid 는 Chip Solid · Outline 은 Chip Outline Strong, medium 36 · large 40", () => {
     render(<Broker />);
     expect(tab("보유").className).toContain("bg-bg-neutral-weak");
-    expect(tab("보유").className).toContain("h-9");
+    expect(tab("보유").className).toContain("h-[36px]");
     act(() => root.render(<Broker variant="outline" size="large" />));
     expect(tab("보유").className).toContain("bg-transparent");
     expect(tab("보유").className).toContain("shadow-none");
-    expect(tab("보유").className).toContain("h-10");
+    expect(tab("보유").className).toContain("h-[40px]");
     expect(tab("보유").className).toContain("shrink-0");
   });
 

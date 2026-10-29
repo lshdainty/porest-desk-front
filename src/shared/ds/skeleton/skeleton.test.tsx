@@ -61,7 +61,7 @@ const status = () =>
 
 describe("Skeleton", () => {
   it("늘 보조 기술에 숨긴 블록 span — 기본 모서리 8, 크기는 className", () => {
-    const el = render(<Skeleton aria-hidden={false} className="w-20" />);
+    const el = render(<Skeleton aria-hidden={false} className="w-[80px]" />);
     expect(el.tagName).toBe("SPAN");
     // 부르는 쪽이 aria-hidden 을 바꿔도 숨긴다 — 회색 면에는 읽을 것이 없다
     expect(el.getAttribute("aria-hidden")).toBe("true");
@@ -69,7 +69,7 @@ describe("Skeleton", () => {
     expect(el.dataset.radius).toBe("8");
     expect(el.className).toContain("rounded-r2");
     expect(el.className).toContain("bg-bg-neutral-weak");
-    expect(el.className).toContain("w-20");
+    expect(el.className).toContain("w-[80px]");
     // 띠 — 면 위를 지나가고, 모션 줄이기면 멈추고 지운다
     const shimmer = el.querySelector("[data-slot=skeleton-shimmer]")!;
     expect(shimmer.className).toContain("animate-[shimmer_");
@@ -98,7 +98,7 @@ describe("Skeleton", () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const p = render(
       <p>
-        <Skeleton text="t5" className="w-32" />
+        <Skeleton text="t5" className="w-[128px]" />
       </p>,
     );
     const el = p.firstElementChild as HTMLElement;
@@ -137,7 +137,7 @@ describe("useWaitPhase", () => {
 });
 
 describe("LoadingRegion", () => {
-  const rows = <Skeleton text="t5" className="w-32" />;
+  const rows = <Skeleton text="t5" className="w-[128px]" />;
 
   it("0 ~ 1초 — 대체 모습을 보이지 않게 그려 높이를 지키고, 영역에 aria-busy", () => {
     render(

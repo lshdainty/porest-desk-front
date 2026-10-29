@@ -575,7 +575,7 @@ describe("ChartTooltip · ChartTooltipContent", () => {
     );
     const swatch = q("[data-slot=chart-tooltip-swatch]")!;
     expect(swatch.style.background).toBe("rgb(9, 9, 9)");
-    expect(swatch.className).toContain("size-2");
+    expect(swatch.className).toContain("size-[8px]");
     expect(swatch.className).toContain("rounded-[2px]");
   });
 
@@ -846,7 +846,7 @@ describe("ChartDonutLegend · ChartDonutCenter", () => {
   });
 
   it("누르는 줄은 카드 끝까지 내고 안쪽 6 알약에 호버 · 누름 바탕, 키보드 포커스에만 안쪽 링", () => {
-    expect(DONUT_ROW).toContain("min-h-11");
+    expect(DONUT_ROW).toContain("min-h-[44px]");
     expect(DONUT_ROW).toContain("text-t4");
     expect(DONUT_ROW).toContain("gap-x2");
     expect(DONUT_ROW_PRESSABLE).toContain("-mx-x6");

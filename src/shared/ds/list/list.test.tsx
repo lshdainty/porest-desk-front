@@ -783,7 +783,7 @@ describe("ListSwitchItem", () => {
     );
     const toggle = container.querySelector<HTMLElement>("[role=switch]")!;
     expect(classes(toggle)).toEqual(
-      expect.arrayContaining(["h-8", "w-[3.25rem]", "active:[scale:1]"]),
+      expect.arrayContaining(["h-[32px]", "w-[3.25rem]", "active:[scale:1]"]),
     );
     expect(toggle.getAttribute("aria-checked")).toBe("true");
     expect(toggle.getAttribute("data-list-action")).toBe("");
@@ -871,7 +871,7 @@ describe("ListCheckItem · ListCheckGroup", () => {
     const check =
       container.querySelector<HTMLButtonElement>("[role=checkbox]")!;
     expect(classes(check)).toEqual(
-      expect.arrayContaining(["size-6", "active:[scale:1]"]),
+      expect.arrayContaining(["size-[24px]", "active:[scale:1]"]),
     );
     expect(slot("list-prefix", items[0]).contains(check)).toBe(true);
     expect(check.labels?.[0]?.textContent).toBe("거래 내역날짜별");
@@ -1005,7 +1005,7 @@ describe("ListRadioItem · ListRadioGroup", () => {
     expect(group.querySelector("li")).toBeNull();
     expect(radios()).toHaveLength(2);
     expect(classes(radios()[0]!)).toEqual(
-      expect.arrayContaining(["size-6", "active:[scale:1]"]),
+      expect.arrayContaining(["size-[24px]", "active:[scale:1]"]),
     );
     expect(slot("list-suffix", items[0]).contains(radios()[0]!)).toBe(true);
     expect(radios()[0]!.labels?.[0]?.textContent).toBe("대한민국 원KRW");
@@ -1405,7 +1405,7 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
     render(<Food />);
     expect(classes(expandButton())).toEqual(
       expect.arrayContaining([
-        "size-11",
+        "size-[44px]",
         "rounded-r2_5",
         "mr-x1",
         "text-fg-neutral-subtle",
@@ -1520,7 +1520,7 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
     const spot = slot("list-expand-slot", second);
     expect(spot.getAttribute("aria-hidden")).toBe("true");
     expect(classes(spot)).toEqual(
-      expect.arrayContaining(["size-11", "mr-x1", "shrink-0"]),
+      expect.arrayContaining(["size-[44px]", "mr-x1", "shrink-0"]),
     );
     expect(spot.nextElementSibling).toBe(slot("list-prefix", second));
     // 접힌 부모와 같은 자리에서 시작한다
@@ -1537,7 +1537,7 @@ describe("ListParentItem — 하위 줄을 접는 부모 줄", () => {
     for (const el of slotEls) {
       expect(el.getAttribute("aria-hidden")).toBe("true");
       expect(classes(el)).toEqual(
-        expect.arrayContaining(["size-11", "mr-x1", "shrink-0"]),
+        expect.arrayContaining(["size-[44px]", "mr-x1", "shrink-0"]),
       );
     }
     expect(subList().hidden).toBe(false);

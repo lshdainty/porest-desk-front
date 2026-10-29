@@ -150,10 +150,10 @@ describe("Progress", () => {
     expect(part("progress-status").textContent).toBe("0%");
     expect(part("progress-amount").textContent).toBe("0원 / 100,000원");
     expect(part("progress-fill").style.width).toBe("0%");
-    expect(part("progress-fill").className).not.toContain("min-w-2");
+    expect(part("progress-fill").className).not.toContain("min-w-[8px]");
 
     render(<Progress label="문화 예산" value={100} max={100000} />);
-    expect(part("progress-fill").className).toContain("min-w-2");
+    expect(part("progress-fill").className).toContain("min-w-[8px]");
   });
 
   it("목표가 0 이면 — 값이 있으면 끝까지, 없으면 비운다", () => {

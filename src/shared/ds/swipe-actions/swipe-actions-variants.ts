@@ -104,7 +104,7 @@ export const settleOpen = (
 export const swipeActionVariants = cva(
   [
     "flex shrink-0 cursor-pointer flex-col items-center justify-center gap-x0_5 self-stretch border-0 bg-transparent font-sans",
-    "min-h-14 text-t2 font-bold leading-[1.3]",
+    "min-h-[56px] text-t2 font-bold leading-[1.3]",
     "[transition:filter_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
     "hover:brightness-[0.88] active:brightness-[0.88]",
     "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -127,7 +127,7 @@ export const swipeActionVariants = cva(
 // neutral 은 옅은 바탕 + 안쪽 1px 테두리, 막힌 칸(disabled)은 전용 색 — 흐리게 하지 않는다. 아이콘 18(size-4.5).
 // kind × disabled — 막히면 바탕 · 아이콘만 전용 색으로 바뀌고 neutral 의 안쪽 1px stroke-neutral-weak 은 남는다(v106, Q-012-4)
 export const swipeBadgeVariants = cva(
-  "flex shrink-0 items-center justify-center rounded-full [&>svg]:size-4.5",
+  "flex shrink-0 items-center justify-center rounded-full [&>svg]:size-[18px]",
   {
     variants: {
       kind: {

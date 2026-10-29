@@ -375,8 +375,8 @@ describe("본문 · 바닥 · 손잡이", () => {
     render(<Sheet />);
     open();
     await tick();
-    expect(byText("적용").className).toContain("h-12");
-    expect(byText("초기화").className).toContain("h-12");
+    expect(byText("적용").className).toContain("h-[48px]");
+    expect(byText("초기화").className).toContain("h-[48px]");
     expect(
       document.querySelector("[data-slot=bottom-sheet-footer]")!.className,
     ).toMatch(/flex-wrap-reverse.*\[&>\*\]:grow/);

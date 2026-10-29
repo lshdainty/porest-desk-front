@@ -453,7 +453,7 @@ const ChartLegendTiles = React.forwardRef<
                     aria-hidden
                     data-slot="chart-legend-dot"
                     className={cn(
-                      "size-2 shrink-0 rounded-full",
+                      "size-[8px] shrink-0 rounded-full",
                       DOT_BG[item.color],
                     )}
                   />
@@ -502,7 +502,7 @@ function DonutLegendBody({ item }: { item: ChartDonutLegendItem }) {
         aria-hidden
         data-slot="chart-donut-swatch"
         className={cn(
-          "size-2.5 shrink-0 rounded-[2px]",
+          "size-[10px] shrink-0 rounded-[2px]",
           DONUT_NARROW.swatch,
           DOT_BG[item.color],
         )}

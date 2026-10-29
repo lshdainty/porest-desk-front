@@ -205,7 +205,7 @@ describe("구조 · 접근성", () => {
     // 평소에는 잘라 숨기고, 키보드 초점에서 폭 전체 버튼으로 — 클래스로 맞춘다
     expect(close.className).toContain("[clip-path:inset(50%)]");
     expect(close.className).toContain("focus-visible:[clip-path:none]");
-    expect(close.className).toContain("focus-visible:min-h-13");
+    expect(close.className).toContain("focus-visible:min-h-[52px]");
     expect(close.className).toContain("focus-visible:outline-offset-2");
   });
 

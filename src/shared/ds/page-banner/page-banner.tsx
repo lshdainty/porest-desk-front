@@ -128,7 +128,7 @@ const SCALE =
   "relative flex min-w-0 flex-1 items-start gap-x2 [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]";
 const SCALE_PRESS =
   "group-active/page-banner:[scale:calc(1-2/var(--press-basis))] motion-reduce:group-active/page-banner:[scale:1]";
-const ICON = "mt-x0_5 flex shrink-0 [&>svg]:size-4";
+const ICON = "mt-x0_5 flex shrink-0 [&>svg]:size-[16px]";
 // 글과 버튼 — 한 줄에 양 끝, 안 들어가면 버튼이 다음 줄 시작선으로(줄 사이 6)
 const CONTENT =
   "flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x1_5";
@@ -142,10 +142,10 @@ const BUTTON = [
   "[--press-basis:40] [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:-outline-offset-2",
 ].join(" ");
-const CHEVRON = "size-4 shrink-0 self-center";
+const CHEVRON = "size-[16px] shrink-0 self-center";
 // 닫기 — 투명 상자 40 · 모서리 8 · 바깥 −12, 바탕 없이 2px 거리 축소(기준 40). 링 색은 RING
 const CLOSE = [
-  "relative -m-x3 flex size-10 shrink-0 cursor-pointer items-center justify-center self-center rounded-r2 [&>svg]:size-4",
+  "relative -m-x3 flex size-[40px] shrink-0 cursor-pointer items-center justify-center self-center rounded-r2 [&>svg]:size-[16px]",
   "[--press-basis:40] [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:-outline-offset-2",
 ].join(" ");

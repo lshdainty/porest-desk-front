@@ -101,12 +101,12 @@ describe("Textarea", () => {
       <Textarea
         ref={ref}
         aria-label="메모"
-        className="max-h-60"
+        className="max-h-[240px]"
         rootClassName="mt-x1"
       />,
     );
     expect(ref.current).toBe(area());
-    expect(classes(area())).toContain("max-h-60");
+    expect(classes(area())).toContain("max-h-[240px]");
     expect(classes(box())).toContain("mt-x1");
   });
 
@@ -153,7 +153,11 @@ describe("Textarea", () => {
   it("고정 높이(autoSize false)는 맞추지 않는다 — 높이는 자리마다, 넘치면 칸 안에서 스크롤", () => {
     contentHeight = 400;
     render(
-      <Textarea aria-label="공지 본문" autoSize={false} className="h-60" />,
+      <Textarea
+        aria-label="공지 본문"
+        autoSize={false}
+        className="h-[240px]"
+      />,
     );
     act(() => setNativeValue(area(), "긴 글"));
     expect(area().style.height).toBe("");

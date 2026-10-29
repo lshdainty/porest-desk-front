@@ -48,11 +48,11 @@ export const TABLE_ROW_HEADER_ACTION = [
 
 // 체크 · ⋮ 의 누르는 영역 44 — 보이는 상자 둘레로(Checkmark 는 relative)
 export const TABLE_HIT_44 =
-  "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']";
+  "before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']";
 
 // 일괄 작업 바 — bg-brand-weak 한 값 · 48 · 모서리 12 · 왼쪽 16 · 오른쪽 8 · 표 위 8
 export const TABLE_BULK_BAR =
-  "mb-x2 flex min-h-12 items-center gap-x2 rounded-r3 bg-bg-brand-weak pl-x4 pr-x2 font-sans";
+  "mb-x2 flex min-h-[48px] items-center gap-x2 rounded-r3 bg-bg-brand-weak pl-x4 pr-x2 font-sans";
 
 // 줄 한 칸 상태 — 칸은 좌우 24 만(위아래는 Result Section 의 16 — 사이트 그림처럼 제 여백만)
 export const TABLE_STATUS_CELL =

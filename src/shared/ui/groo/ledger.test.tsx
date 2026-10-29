@@ -73,13 +73,15 @@ describe("원장 머리 — Scroll Auto Hide (할 일 원장도 같은 부품)",
       </>,
     );
     const nav = container.querySelector<HTMLElement>('[aria-label="이전 달"]')!;
-    expect(nav.className).toContain("h-10");
-    expect(nav.className).toContain("w-10");
+    expect(nav.className).toContain("min-h-[40px]");
+    expect(nav.className).toContain("w-[40px]");
     const sum = Array.from(container.querySelectorAll("button")).find(
       (b) => b.textContent === "소비 요약",
     )!;
-    expect(sum.className).toContain("h-9");
-    expect(sum.className).toContain("border");
+    expect(sum.className).toContain("min-h-[36px]");
+    expect(sum.className).toContain(
+      "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
+    );
     expect(
       container
         .querySelector('[aria-label="월 달력"]')

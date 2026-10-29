@@ -33,8 +33,8 @@ export const checkmarkVariants = cva(
   {
     variants: {
       size: {
-        medium: "size-5 [--press-basis:24]",
-        large: "size-6 [--press-basis:24]",
+        medium: "size-[20px] [--press-basis:24]",
+        large: "size-[24px] [--press-basis:24]",
       },
       shape: {
         // 선택 안 됨: 테두리 칸. 선택 · 일부 선택: 테두리 없이 채움(톤 조합에서)
@@ -51,9 +51,9 @@ export const checkmarkVariants = cva(
     },
     compoundVariants: [
       // 크기 × 모양 — 아이콘(Ghost 는 칸이 없어 크다)
-      { size: "medium", shape: "square", className: "[&_svg]:size-3" },
-      { size: "large", shape: "square", className: "[&_svg]:size-3.5" },
-      { size: "medium", shape: "ghost", className: "[&_svg]:size-3.5" },
+      { size: "medium", shape: "square", className: "[&_svg]:size-[12px]" },
+      { size: "large", shape: "square", className: "[&_svg]:size-[14px]" },
+      { size: "medium", shape: "ghost", className: "[&_svg]:size-[14px]" },
       { size: "large", shape: "ghost", className: "[&_svg]:size-[18px]" },
       // Square × 톤 — 선택 · 일부 선택의 채움, 누름 · 호버는 -pressed
       {
@@ -94,14 +94,14 @@ export const checkmarkVariants = cva(
 export const checkboxVariants = cva(
   [
     "group/checkbox relative inline-flex cursor-pointer select-none items-center gap-x2 self-start",
-    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     "has-[:disabled]:cursor-not-allowed",
   ].join(" "),
   {
     variants: {
       size: {
-        medium: "min-h-8",
-        large: "min-h-9",
+        medium: "min-h-[32px]",
+        large: "min-h-[36px]",
       },
     },
     defaultVariants: { size: "medium" },

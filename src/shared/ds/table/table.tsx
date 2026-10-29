@@ -250,7 +250,7 @@ function SortIcon({ sort }: { sort: TableSort }) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-4 shrink-0"
+      className="size-[16px] shrink-0"
     >
       <g
         data-arrow="up"
@@ -524,7 +524,7 @@ const TableSelectHead = React.forwardRef<
       className={cn(
         TABLE_CELL,
         TABLE_HEAD_CELL,
-        "w-16 py-x2",
+        "w-[64px] py-x2",
         ctx.stickyHeader && TABLE_HEAD_STICKY,
         className,
       )}
@@ -570,7 +570,7 @@ const TableSelectCell = React.forwardRef<
       className={cn(
         TABLE_CELL,
         TABLE_BODY_CELL,
-        "w-16 py-x2_5",
+        "w-[64px] py-x2_5",
         ctx.rowHeight === "rich" && TABLE_BODY_RICH,
         className,
       )}
@@ -607,7 +607,7 @@ const TableMoreHead = React.forwardRef<
       className={cn(
         TABLE_CELL,
         TABLE_HEAD_CELL,
-        "w-20",
+        "w-[80px]",
         ctx.stickyHeader && TABLE_HEAD_STICKY,
         className,
       )}
@@ -643,7 +643,7 @@ const TableMoreCell = React.forwardRef<
       className={cn(
         TABLE_CELL,
         TABLE_BODY_CELL,
-        "w-20 py-x0_5",
+        "w-[80px] py-x0_5",
         ctx.rowHeight === "rich" && TABLE_BODY_RICH,
         className,
       )}

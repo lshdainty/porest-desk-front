@@ -310,8 +310,8 @@ describe("AvatarPhotoEdit — 사진 바꾸기 자리", () => {
     const [change, remove] = buttons();
     expect(change!.textContent).toBe("사진 바꾸기");
     expect(remove!.textContent).toBe("사진 지우기");
-    expect(change!.className).toContain("h-9");
-    expect(remove!.className).toContain("h-9");
+    expect(change!.className).toContain("h-[36px]");
+    expect(remove!.className).toContain("h-[36px]");
     expect(change!.className).not.toBe(remove!.className);
     act(() => change!.click());
     expect(onChange).toHaveBeenCalledTimes(1);

@@ -243,9 +243,9 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
       };
       const content = isArrow ? (
         item.type === "previous" ? (
-          <ChevronLeft aria-hidden className="size-4" />
+          <ChevronLeft aria-hidden className="size-[16px]" />
         ) : (
-          <ChevronRight aria-hidden className="size-4" />
+          <ChevronRight aria-hidden className="size-[16px]" />
         )
       ) : (
         <span data-slot="pagination-label" className={PAGINATION_LABEL}>

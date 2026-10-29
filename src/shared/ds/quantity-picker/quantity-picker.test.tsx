@@ -421,21 +421,28 @@ describe("로딩", () => {
 describe("모양 — 검사기가 못 재는 값", () => {
   it("크기마다 상자 높이 · 모서리, 버튼 정사각 · 누르는 자리 44(36 · 40)", () => {
     render(<QuantityPicker size="small" aria-label="a" />);
-    expect(group().className).toContain("h-9");
-    expect(dec().className).toContain("size-9");
-    expect(dec().className).toContain("before:min-h-11");
+    expect(group().className).toContain("min-h-[36px]");
+    expect(dec().className).toContain("size-[36px]");
+    expect(dec().className).toContain("before:min-h-[44px]");
     render(<QuantityPicker size="large" aria-label="a" />);
-    expect(group().className).toContain("h-13");
+    expect(group().className).toContain("min-h-[52px]");
     expect(group().className).toContain("rounded-r3");
-    expect(dec().className).toContain("size-13");
+    expect(dec().className).toContain("size-[52px]");
+  });
+
+  it("상자 높이는 최소 높이다 — 글자 200% 에서 숫자를 자르지 않고 상자가 자란다(옆 Input · Select large 와 같은 규칙)", () => {
+    for (const size of ["small", "medium", "large", "responsive"] as const) {
+      render(<QuantityPicker size={size} aria-label="a" />);
+      expect(group().className).not.toMatch(/(^|\s)(lg:)?h-\[/);
+    }
   });
 
   it("responsive(기본)는 1280 미만 large · 이상 medium", () => {
     render(<QuantityPicker aria-label="a" />);
     expect(group().dataset.size).toBe("responsive");
-    expect(group().className).toContain("h-13");
-    expect(group().className).toContain("lg:h-10");
-    expect(dec().className).toContain("lg:size-10");
+    expect(group().className).toContain("min-h-[52px]");
+    expect(group().className).toContain("lg:min-h-[40px]");
+    expect(dec().className).toContain("lg:size-[40px]");
     expect(valueCell().className).toContain("text-t6");
     expect(valueCell().className).toContain("lg:text-t5");
   });

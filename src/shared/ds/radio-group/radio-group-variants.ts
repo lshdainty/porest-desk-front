@@ -39,8 +39,8 @@ export const radiomarkVariants = cva(
   {
     variants: {
       size: {
-        medium: "size-5 [--press-basis:24]",
-        large: "size-6 [--press-basis:24]",
+        medium: "size-[20px] [--press-basis:24]",
+        large: "size-[24px] [--press-basis:24]",
       },
       tone: {
         neutral:
@@ -62,8 +62,8 @@ export const radiomarkDotVariants = cva(
   {
     variants: {
       size: {
-        medium: "size-2",
-        large: "size-2.5",
+        medium: "size-[8px]",
+        large: "size-[10px]",
       },
       tone: {
         neutral: "data-[state=checked]:bg-fg-neutral-inverted",
@@ -81,14 +81,14 @@ export const radiomarkDotVariants = cva(
 export const radioVariants = cva(
   [
     "group/radio relative inline-flex cursor-pointer select-none items-center gap-x2 self-start",
-    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     "has-[:disabled]:cursor-not-allowed",
   ].join(" "),
   {
     variants: {
       size: {
-        medium: "min-h-8",
-        large: "min-h-9",
+        medium: "min-h-[32px]",
+        large: "min-h-[36px]",
       },
     },
     defaultVariants: { size: "medium" },

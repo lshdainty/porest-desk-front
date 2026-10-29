@@ -107,7 +107,7 @@ describe("DevicesSection", () => {
     const all = [...container.querySelectorAll("button")].find((b) =>
       b.textContent?.includes("devices.logoutAll"),
     )!;
-    expect(all.className).toContain("h-12");
+    expect(all.className).toContain("min-h-[48px]");
     expect(all.className).toContain("text-fg-critical");
     expect(all.className).toContain("w-full");
   });
@@ -121,7 +121,7 @@ describe("DevicesSection", () => {
     const all = [...card.querySelectorAll("button")].find((b) =>
       b.textContent?.includes("devices.logoutAll"),
     )!;
-    expect(all.className).toContain("h-9");
+    expect(all.className).toContain("min-h-[36px]");
   });
 
   it("실패 = Result Section failure + 다시 시도, 원문 없음 / 빈 = empty / 기기 0 이면 모두 로그아웃 없음", () => {

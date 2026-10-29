@@ -204,7 +204,7 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
                 >
                   <CircleAlert
                     aria-hidden
-                    className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] size-4 shrink-0"
+                    className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] size-[16px] shrink-0"
                   />
                   <span className="min-w-0">{errorMessage}</span>
                 </p>
@@ -217,7 +217,7 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
                   {descriptionIcon != null && (
                     <span
                       aria-hidden
-                      className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] flex shrink-0 [&>svg]:size-4"
+                      className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] flex shrink-0 [&>svg]:size-[16px]"
                     >
                       {descriptionIcon}
                     </span>

@@ -18,7 +18,7 @@ export function ChartTooltipRow({
       <span
         aria-hidden
         data-slot="chart-tooltip-swatch"
-        className="size-2 shrink-0 rounded-[2px]"
+        className="size-[8px] shrink-0 rounded-[2px]"
         style={{ background: swatch }}
       />
       <span data-slot="chart-tooltip-label" className="text-fg-neutral-subtle">

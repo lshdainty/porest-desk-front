@@ -91,7 +91,7 @@ export const PAGINATION_ROW = "flex items-center gap-0";
 
 // 칸 — 40 × 40 · 모서리 8, 누르는 영역은 위아래만 44(::before 2 씩). 키보드 포커스에만 바깥 2px 링 — 이웃 칸 위로 올린다
 export const PAGINATION_CELL = [
-  "relative flex size-10 shrink-0 items-center justify-center rounded-r2 border-0 bg-transparent p-0 font-sans no-underline",
+  "relative flex size-[40px] shrink-0 items-center justify-center rounded-r2 border-0 bg-transparent p-0 font-sans no-underline",
   "before:absolute before:inset-x-0 before:inset-y-[-2px] before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "focus-visible:z-[1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -114,5 +114,5 @@ export const PAGINATION_LABEL =
 
 // 생략 · 빈 칸 — 40 상자(생략은 점 셋 16, 누르지 않는다)
 export const PAGINATION_ELLIPSIS =
-  "flex size-10 shrink-0 items-center justify-center text-fg-neutral [&>svg]:size-4";
-export const PAGINATION_EMPTY = "size-10 shrink-0";
+  "flex size-[40px] shrink-0 items-center justify-center text-fg-neutral [&>svg]:size-[16px]";
+export const PAGINATION_EMPTY = "size-[40px] shrink-0";

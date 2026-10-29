@@ -460,13 +460,13 @@ describe("필터 바 (I-07 28 · 29 · 30)", () => {
       "계좌·카드",
       "금액",
     ]);
-    for (const c of chips) expect(c.className).toContain("h-8");
+    for (const c of chips) expect(c.className).toContain("min-h-[32px]");
     expect(byName("필터 지우기")).toBeUndefined();
 
     st.wide = false;
     render();
     for (const c of bar().querySelectorAll("button"))
-      expect(c.className).toContain("h-9");
+      expect(c.className).toContain("min-h-[36px]");
   });
 
   it("조건 칩을 누르면 1280 이상은 Popover — 그 조건 하나만 · 머리는 조건 이름", () => {

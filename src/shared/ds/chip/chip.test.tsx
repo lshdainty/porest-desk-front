@@ -163,8 +163,8 @@ describe("Chip (버튼)", () => {
       </Chip>,
     );
     const cls = q("[data-slot=chip]").className;
-    expect(cls).toContain("before:min-h-11");
-    expect(cls).toContain("before:min-w-11");
+    expect(cls).toContain("before:min-h-[44px]");
+    expect(cls).toContain("before:min-w-[44px]");
     expect(cls).toContain("active:[scale:calc(1-2/var(--press-basis))]");
     expect(cls).toContain("motion-reduce:active:[scale:1]");
     expect(cls).toContain("focus-visible:outline-2");
@@ -261,17 +261,17 @@ describe("Chip (버튼)", () => {
       </>,
     );
     const [s, m, l, icon] = all("[data-slot=chip]");
-    expect(s!.className).toContain("h-8");
-    expect(s!.className).toContain("min-w-11");
+    expect(s!.className).toContain("min-h-[32px]");
+    expect(s!.className).toContain("min-w-[44px]");
     expect(s!.className).toMatch(/ px-x3(?: |$)/);
-    expect(m!.className).toContain("h-9");
-    expect(m!.className).toContain("min-w-12");
+    expect(m!.className).toContain("min-h-[36px]");
+    expect(m!.className).toContain("min-w-[48px]");
     expect(m!.className).toContain("px-x3_5");
-    expect(l!.className).toContain("h-10");
-    expect(l!.className).toContain("min-w-13");
+    expect(l!.className).toContain("min-h-[40px]");
+    expect(l!.className).toContain("min-w-[52px]");
     expect(l!.className).toContain("px-x4");
     // 아이콘만 있는 칩은 원 — 폭 = 높이, 좌우 여백 없음
-    expect(icon!.className).toContain("w-9");
+    expect(icon!.className).toContain("w-[36px]");
     expect(icon!.className).toContain("px-0");
   });
 
@@ -555,7 +555,7 @@ describe("InputChip (입력값)", () => {
       "has-[[data-slot=input-chip-remove]:focus-visible]:outline-2",
     );
     const cls = removes()[0]!.className;
-    expect(cls).toContain("before:size-6");
+    expect(cls).toContain("before:size-[24px]");
     expect(cls).toContain("[--press-basis:24]");
     expect(cls).toContain("active:[scale:calc(1-2/var(--press-basis))]");
   });
@@ -579,7 +579,7 @@ describe("ChipGroup (묶음)", () => {
 
   it("비어 있을 때만 칩 한 줄(36) 높이를 남긴다", () => {
     const group = render(<ChipGroup aria-label="참여자" />);
-    expect(group.className).toContain("empty:min-h-9");
+    expect(group.className).toContain("empty:min-h-[36px]");
     expect(group.matches(":empty")).toBe(true);
   });
 
@@ -612,7 +612,7 @@ describe("ChipGroup (묶음)", () => {
   it("scroll 의 빈 칸도 칩 한 줄 높이를 남긴다", () => {
     const group = render(<ChipGroup layout="scroll" aria-label="입력값" />);
     expect(group.className).toContain(
-      "has-[>[data-slot=chip-scroll-row]:empty]:min-h-9",
+      "has-[>[data-slot=chip-scroll-row]:empty]:min-h-[36px]",
     );
   });
 

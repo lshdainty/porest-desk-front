@@ -13,10 +13,10 @@ import type {
 export const QUANTITY_ROOT =
   "relative inline-flex shrink-0 items-center bg-bg-layer-default font-sans shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)] data-[invalid]:shadow-[inset_0_0_0_2px_var(--color-stroke-critical-solid)]";
 export const QUANTITY_ROOT_SIZE: Record<QuantityPickerSize, string> = {
-  small: "h-9 rounded-r2",
-  medium: "h-10 rounded-r2",
-  large: "h-13 rounded-r3",
-  responsive: "h-13 rounded-r3 lg:h-10 lg:rounded-r2",
+  small: "min-h-[36px] rounded-r2",
+  medium: "min-h-[40px] rounded-r2",
+  large: "min-h-[52px] rounded-r3",
+  responsive: "min-h-[52px] rounded-r3 lg:min-h-[40px] lg:rounded-r2",
 };
 // hug — 내용 폭(Field 같은 세로 Flex 안에서도 늘어나지 않는다) · fill — 부모 Flex 의 남은 폭
 export const QUANTITY_ROOT_LAYOUT: Record<QuantityPickerLayout, string> = {
@@ -28,7 +28,7 @@ export const QUANTITY_ROOT_LAYOUT: Record<QuantityPickerLayout, string> = {
 // 끝 · 읽기 전용(aria-disabled) · 막힘(disabled)은 바탕 · 축소 없이 아이콘만 fg-disabled. 로딩(aria-busy)은 누름 바탕 + 원
 export const QUANTITY_BUTTON = [
   "relative inline-flex shrink-0 cursor-pointer items-center justify-center bg-transparent text-fg-neutral",
-  "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -41,13 +41,13 @@ export const QUANTITY_BUTTON = [
 // 아이콘 16 · 18 · 22(임의 값 — 스펙 JSON icon.size 와 같다, 토큰에 없다)
 export const QUANTITY_BUTTON_SIZE: Record<QuantityPickerSize, string> = {
   small:
-    "size-9 rounded-r2 [--press-basis:36] [--progress-size:16px] [&>svg]:size-4",
+    "size-[36px] rounded-r2 [--press-basis:36] [--progress-size:16px] [&>svg]:size-[16px]",
   medium:
-    "size-10 rounded-r2 [--press-basis:40] [--progress-size:18px] [&>svg]:size-[18px]",
+    "size-[40px] rounded-r2 [--press-basis:40] [--progress-size:18px] [&>svg]:size-[18px]",
   large:
-    "size-13 rounded-r3 [--press-basis:52] [--progress-size:22px] [&>svg]:size-[22px]",
+    "size-[52px] rounded-r3 [--press-basis:52] [--progress-size:22px] [&>svg]:size-[22px]",
   responsive:
-    "size-13 rounded-r3 [--press-basis:52] [--progress-size:22px] [&>svg]:size-[22px] lg:size-10 lg:rounded-r2 lg:[--press-basis:40] lg:[--progress-size:18px] lg:[&>svg]:size-[18px]",
+    "size-[52px] rounded-r3 [--press-basis:52] [--progress-size:22px] [&>svg]:size-[22px] lg:size-[40px] lg:rounded-r2 lg:[--press-basis:40] lg:[--progress-size:18px] lg:[&>svg]:size-[18px]",
 };
 
 // 선 — 1px × 16, 장식

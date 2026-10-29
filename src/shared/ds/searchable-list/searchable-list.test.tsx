@@ -748,8 +748,8 @@ describe("0건 · 실패 · 불러오는 줄", () => {
     // 앞 자리 없음 — 줄마다 제목 + 설명 두 막대
     expect(sk.querySelectorAll("[data-slot=skeleton]").length).toBe(10);
     for (const [prefix, cls] of [
-      ["logo", "size-10"],
-      ["cardArt", "w-14"],
+      ["logo", "size-[40px]"],
+      ["cardArt", "w-[56px]"],
       ["avatar", "size-[42px]"],
     ] as const) {
       render(

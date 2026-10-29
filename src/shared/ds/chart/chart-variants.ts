@@ -273,7 +273,7 @@ export const LEGEND_TILE_HIDDEN =
 // 도넛 범례 줄 — 최소 44 · 이름 14(t4) · 사이 8. 줄 안 폭이 16em(= 16rem) 보다 좁으면(큰 글자) List 와 같게 % · 금액을 이름 아래 왼쪽으로
 // 내린다(list.md:142-148 "큰 글자에서 값을 본문 아래로"). 줄(li)이 컨테이너다
 export const DONUT_ROW = [
-  "relative isolate flex min-h-11 w-full items-center gap-x2 text-start font-sans text-t4",
+  "relative isolate flex min-h-[44px] w-full items-center gap-x2 text-start font-sans text-t4",
   "@max-[16rem]/donut:grid @max-[16rem]/donut:grid-cols-[auto_auto_minmax(0,1fr)] @max-[16rem]/donut:items-start @max-[16rem]/donut:gap-y-x0_5 @max-[16rem]/donut:py-x2",
 ].join(" ");
 export const DONUT_NARROW = {
