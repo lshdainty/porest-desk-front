@@ -63,6 +63,7 @@ export function KindStep({
                         key={k}
                         value={k}
                         layout="vertical"
+                        density="compact"
                         control="none"
                         prefix={<Icon aria-hidden />}
                         label={t(KIND_LABEL_KEY[k])}

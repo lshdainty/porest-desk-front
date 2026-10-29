@@ -51,11 +51,17 @@ export const selectBoxTriggerVariants = cva(
     variants: {
       layout: {
         horizontal: "items-center py-x4 pl-x5 pr-x4",
-        vertical: "items-start px-x4 py-x5",
+        vertical: "items-start px-x4",
       },
       mark: { radio: "group/radio", check: "", none: "" },
+      // compact(세로형만) — 위아래 20 → 12 (17-1 Q5 = B). 가로형은 그대로
+      density: { default: "", compact: "" },
     },
-    defaultVariants: { layout: "horizontal", mark: "none" },
+    compoundVariants: [
+      { layout: "vertical", density: "default", className: "py-x5" },
+      { layout: "vertical", density: "compact", className: "py-x3" },
+    ],
+    defaultVariants: { layout: "horizontal", mark: "none", density: "default" },
   },
 );
 
@@ -64,10 +70,15 @@ export const selectBoxContentVariants = cva("flex min-w-0 flex-1", {
   variants: {
     layout: {
       horizontal: "flex-row items-center gap-x3",
-      vertical: "flex-col gap-x2_5",
+      vertical: "flex-col",
     },
+    density: { default: "", compact: "" },
   },
-  defaultVariants: { layout: "horizontal" },
+  compoundVariants: [
+    { layout: "vertical", density: "default", className: "gap-x2_5" },
+    { layout: "vertical", density: "compact", className: "gap-x1" },
+  ],
+  defaultVariants: { layout: "horizontal", density: "default" },
 });
 
 export const selectBoxPrefixVariants = cva(

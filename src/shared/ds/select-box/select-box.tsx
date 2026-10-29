@@ -96,6 +96,8 @@ type BoxBase = {
   footerVisibility?: "when-selected" | "when-not-selected" | "always";
   /** 묶음의 열 수에서 온다(1열 가로형 · 2 ~ 3열 세로형) — 상자마다 바꿀 때만 */
   layout?: Layout;
+  /** "compact" — 세로형 상자의 위아래 20 → 12 · 앞 ↔ 글 10 → 4 (한 화면에 여럿을 둘 때, 예: 종류 고르기). 가로형은 그대로 */
+  density?: "default" | "compact";
   rootProps?: React.HTMLAttributes<HTMLDivElement>;
 };
 
@@ -107,6 +109,7 @@ function Box({
   footer,
   footerVisibility = "when-selected",
   layout: layoutProp,
+  density,
   rootProps: { className: rootClassName, ...rootRest } = {},
   disabled,
   htmlFor,
@@ -130,12 +133,12 @@ function Box({
         data-slot="select-box-trigger"
         data-select-box-action=""
         data-disabled={disabled ? "" : undefined}
-        className={selectBoxTriggerVariants({ layout, mark })}
+        className={selectBoxTriggerVariants({ layout, mark, density })}
         {...pressHandlers}
       >
         <span
           data-slot="select-box-content"
-          className={selectBoxContentVariants({ layout })}
+          className={selectBoxContentVariants({ layout, density })}
         >
           {prefix && (
             <span
@@ -257,6 +260,7 @@ const RadioSelectBox = React.forwardRef<
       footer,
       footerVisibility,
       layout,
+      density,
       rootProps,
       control = "radio",
       id,
@@ -306,6 +310,7 @@ const RadioSelectBox = React.forwardRef<
           footer,
           footerVisibility,
           layout,
+          density,
           rootProps,
           disabled,
         }}
@@ -385,6 +390,7 @@ const CheckSelectBox = React.forwardRef<
       footer,
       footerVisibility,
       layout,
+      density,
       rootProps,
       control = "check",
       id,
@@ -449,6 +455,7 @@ const CheckSelectBox = React.forwardRef<
           footer,
           footerVisibility,
           layout,
+          density,
           rootProps,
           disabled: disabled ?? group?.disabled,
         }}
