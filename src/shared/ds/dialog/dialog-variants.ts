@@ -36,9 +36,9 @@ export const DIALOG_HEADER = [
 export const DIALOG_HEADER_WITH_CLOSE = "pr-x13";
 // 머리 오른쪽 동작(headerAction) — 닫기 단추가 있으면 그 왼쪽 사이 4, 없으면(입력 폼) 오른쪽 끝. 제목이 남은 폭에서 줄을 바꾼다
 export const DIALOG_HEADER_WITH_ACTION_CLOSE =
-  "pr-[calc(var(--spacing-x13)+var(--spacing-x1)+2.25rem+var(--spacing-x2))]";
+  "pr-[calc(var(--spacing-x13)+var(--spacing-x1)+36px+var(--spacing-x2))]";
 export const DIALOG_HEADER_WITH_ACTION =
-  "pr-[calc(var(--spacing-x4)+2.25rem+var(--spacing-x2))]";
+  "pr-[calc(var(--spacing-x4)+36px+var(--spacing-x2))]";
 export const DIALOG_HEADER_ACTION_CLOSE =
   "absolute right-[calc(var(--spacing-x6)+22px+var(--spacing-x1))] top-[39px] z-1 flex -translate-y-1/2 items-center";
 export const DIALOG_HEADER_ACTION =

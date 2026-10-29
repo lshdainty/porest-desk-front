@@ -41,7 +41,7 @@ describe("Switch", () => {
     expect(control().labels?.[0]).toBe(row);
     expect(control().getAttribute("aria-checked")).toBe("false");
     expect(control().className).toContain("h-[24px]");
-    expect(control().className).toContain("w-[2.375rem]");
+    expect(control().className).toContain("w-[38px]");
     expect(thumb().className).toContain("bg-fg-neutral-inverted");
   });
 
@@ -125,7 +125,7 @@ describe("Switch", () => {
       <Switch size="32" tone="brand" defaultChecked label="큰 줄" />,
     );
     expect(row.className).toContain("min-h-[32px]");
-    expect(control().className).toContain("w-[3.25rem]");
+    expect(control().className).toContain("w-[52px]");
     expect(control().className).toContain(
       "data-[state=checked]:bg-bg-brand-solid",
     );

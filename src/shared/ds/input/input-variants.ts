@@ -64,14 +64,14 @@ export const textInputVariants = cva(
         variant: "underline",
         size: "medium",
         className:
-          "min-h-[2.125rem] gap-x2 py-x1_5 text-t5 [--text-input-px:0px] [--text-input-icon:20px] [--text-input-clear:18px]",
+          "min-h-[34px] gap-x2 py-x1_5 text-t5 [--text-input-px:0px] [--text-input-icon:20px] [--text-input-clear:18px]",
       },
       {
         variant: "underline",
         size: "responsive",
         className: [
           "min-h-[40px] gap-x2_5 py-x2 text-t6 [--text-input-px:0px] [--text-input-icon:24px] [--text-input-clear:22px]",
-          "lg:min-h-[2.125rem] lg:gap-x2 lg:py-x1_5 lg:text-t5 lg:[--text-input-icon:20px] lg:[--text-input-clear:18px]",
+          "lg:min-h-[34px] lg:gap-x2 lg:py-x1_5 lg:text-t5 lg:[--text-input-icon:20px] lg:[--text-input-clear:18px]",
         ].join(" "),
       },
     ],

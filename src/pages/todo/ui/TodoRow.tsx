@@ -70,7 +70,7 @@ export function TodoRow({
           })}
           className={cn(
             // 누르는 영역 44 — 칸 24 둘레로 넓힌다. 줄의 누름 층(::after) 위(z 1)에 놓여 따로 눌린다
-            "z-1 before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+            "z-1 before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
             overdue && "data-[state=unchecked]:border-stroke-critical-solid",
           )}
         />

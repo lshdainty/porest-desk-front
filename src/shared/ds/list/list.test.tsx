@@ -783,7 +783,7 @@ describe("ListSwitchItem", () => {
     );
     const toggle = container.querySelector<HTMLElement>("[role=switch]")!;
     expect(classes(toggle)).toEqual(
-      expect.arrayContaining(["h-[32px]", "w-[3.25rem]", "active:[scale:1]"]),
+      expect.arrayContaining(["h-[32px]", "w-[52px]", "active:[scale:1]"]),
     );
     expect(toggle.getAttribute("aria-checked")).toBe("true");
     expect(toggle.getAttribute("data-list-action")).toBe("");

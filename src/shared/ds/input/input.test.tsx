@@ -217,7 +217,7 @@ describe("Input", () => {
       expect.arrayContaining([
         "min-h-[40px]",
         "text-t6",
-        "lg:min-h-[2.125rem]",
+        "lg:min-h-[34px]",
         "lg:text-t5",
         "lg:py-x1_5",
       ]),

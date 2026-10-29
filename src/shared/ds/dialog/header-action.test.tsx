@@ -73,10 +73,10 @@ describe("시트 머리 동작", () => {
     wide = false;
     mount(true);
     const box = q("[data-slot=bottom-sheet-header-action]");
-    expect(box.className).toContain("1.75rem"); // 닫기 28(rem) 왼쪽 사이 4
+    expect(box.className).toContain("28px"); // 닫기 28(rem) 왼쪽 사이 4
     expect(box.className).toContain("-translate-y-1/2");
     expect(q("[data-slot=bottom-sheet-title]").className).toContain(
-      "pr-[calc(var(--spacing-x10)+var(--spacing-x1)+2.25rem)]",
+      "pr-[calc(var(--spacing-x10)+var(--spacing-x1)+36px)]",
     );
   });
 
@@ -102,7 +102,7 @@ describe("대화상자 머리 동작", () => {
       "right-x4",
     );
     expect(q("[data-slot=dialog-header]").className).toContain(
-      "pr-[calc(var(--spacing-x4)+2.25rem+var(--spacing-x2))]",
+      "pr-[calc(var(--spacing-x4)+36px+var(--spacing-x2))]",
     );
   });
 

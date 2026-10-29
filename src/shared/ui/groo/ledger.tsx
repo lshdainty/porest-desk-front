@@ -96,7 +96,16 @@ export function LedgerMonthNav({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  return <div className={cn("flex items-center", className)} {...props} />;
+  // 줄 끝 아이콘 단추는 상자를 오른쪽으로 번지게 해 아이콘(18)이 화면 여백 24 선에 닿는다 — (40 − 18) ÷ 2 = 11(앱 ledger_header.dart _bleedEnd 와 같은 원칙, I-29)
+  return (
+    <div
+      className={cn(
+        "flex items-center [&>button:last-child]:-mr-[11px]",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 /** 월 이동 · 필터 · 추가 아이콘 단추 — Button ghost medium iconOnly(보이는 40 · 아이콘 18 · 누르는 44). 이름은 aria-label. 걸림은 부르는 쪽이 알림 점으로 알린다. */

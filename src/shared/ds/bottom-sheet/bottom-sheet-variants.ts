@@ -42,10 +42,10 @@ export const SHEET_TITLE = "m-0 text-t8 font-bold text-fg-neutral";
 export const SHEET_TITLE_WITH_CLOSE = "pr-x10";
 // 머리 오른쪽 동작(headerAction) — 닫기 단추 왼쪽 사이 4, 36 ghost iconOnly 단추 하나. 제목은 남은 폭(닫기 40 + 사이 4 + 동작 36)을 비운다
 export const SHEET_TITLE_WITH_ACTION =
-  "pr-[calc(var(--spacing-x10)+var(--spacing-x1)+2.25rem)]";
-// 닫기(28 = 1.75rem — 글자 배율을 따른다) 왼쪽 사이 4 · 세로는 닫기 가운데에 맞춘다(동작 단추는 36 = 2.25rem, 배율을 따라 커진다)
+  "pr-[calc(var(--spacing-x10)+var(--spacing-x1)+36px)]";
+// 닫기(28 px) 왼쪽 사이 4 · 세로는 닫기 가운데에 맞춘다(동작 단추는 36 px)
 export const SHEET_HEADER_ACTION =
-  "absolute right-[calc(var(--spacing-global-gutter)+1.75rem+var(--spacing-x1))] top-[calc(var(--spacing-x6)+0.875rem)] z-1 flex -translate-y-1/2 items-center";
+  "absolute right-[calc(var(--spacing-global-gutter)+28px+var(--spacing-x1))] top-[calc(var(--spacing-x6)+14px)] z-1 flex -translate-y-1/2 items-center";
 // 설명 t5 16 / 22 · fg-neutral-muted
 export const SHEET_DESCRIPTION =
   "m-0 text-t5 font-normal text-fg-neutral-muted";

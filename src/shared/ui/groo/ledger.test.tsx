@@ -12,6 +12,7 @@ import {
   LedgerDaySum,
   LedgerExpand,
   LedgerHead,
+  LedgerMonthNav,
   LedgerNavBtn,
   LedgerPin,
   LedgerSumBtn,
@@ -151,6 +152,20 @@ describe("머리 단추 내림", () => {
     expect(head.className).toContain("flex-wrap");
     expect(head.className).toContain(
       "[&>:first-child]:basis-[calc(50%-var(--spacing-x3))]",
+    );
+  });
+});
+
+describe("월 줄 끝 아이콘 단추", () => {
+  it("마지막 단추는 오른쪽으로 11 번져 아이콘(18)이 화면 여백 24 선에 닿는다(앱 _bleedEnd)", () => {
+    render(
+      <LedgerMonthNav>
+        <LedgerNavBtn aria-label="필터">f</LedgerNavBtn>
+        <LedgerNavBtn aria-label="추가">+</LedgerNavBtn>
+      </LedgerMonthNav>,
+    );
+    expect(container.firstElementChild!.className).toContain(
+      "[&>button:last-child]:-mr-[11px]",
     );
   });
 });

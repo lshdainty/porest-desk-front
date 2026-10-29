@@ -78,15 +78,15 @@ describe("Textarea", () => {
     expect(box().dataset.size).toBe("responsive");
     expect(area().rows).toBe(3);
     expect(classes(area())).toEqual(
-      expect.arrayContaining(["min-h-[5.875rem]", "lg:min-h-[5.125rem]"]),
+      expect.arrayContaining(["min-h-[94px]", "lg:min-h-[82px]"]),
     );
 
     render(<Textarea aria-label="메모" autoSize={false} />);
     expect(area().rows).toBe(2);
     expect(classes(area())).toEqual(
       expect.arrayContaining([
-        "min-h-[4.5rem]",
-        "lg:min-h-[3.875rem]",
+        "min-h-[72px]",
+        "lg:min-h-[62px]",
         "overflow-y-auto",
       ]),
     );
