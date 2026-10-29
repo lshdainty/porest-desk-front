@@ -151,14 +151,11 @@ function NightSkyDesktop() {
         />
       </Card>,
     );
-  const hero = (
-    <Card className="border-0 p-0">
-      {today ? (
-        <NightSkyHero today={today} doneToday={m.doneToday} wide />
-      ) : (
-        <Skeleton radius="16" className="h-[220px] w-full" />
-      )}
-    </Card>
+  // 하늘 카드는 제 면(그라디언트)을 그리고 누르면 2px 축소만 한다(card.yaml hero 규칙) — Card 로 감싸 테두리 · 여백을 덮지 않는다
+  const hero = today ? (
+    <NightSkyHero today={today} doneToday={m.doneToday} wide />
+  ) : (
+    <Skeleton radius="16" className="h-[220px] w-full" />
   );
   const report = (
     <Card body="list">
