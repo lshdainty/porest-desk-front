@@ -92,23 +92,35 @@ describe("원장 머리 — Scroll Auto Hide (할 일 원장도 같은 부품)",
 });
 
 describe("날 숫자 · 날짜 머리", () => {
-  it("오는 날은 fg-neutral-subtle(불투명도 0), 일 · 토는 critical · brand, 고른 날은 브랜드 알약", () => {
+  it("오는 날은 fg-neutral-subtle(불투명도 0), 일 · 토는 critical · brand, 고른 날은 짙은 원(브랜드 채움 아님), 오늘은 옅은 원 + 700", () => {
     render(
       <>
         <LedgerCellNum future>1</LedgerCellNum>
         <LedgerCellNum dow={0}>2</LedgerCellNum>
         <LedgerCellNum dow={6}>3</LedgerCellNum>
         <LedgerCellNum selected>4</LedgerCellNum>
+        <LedgerCellNum today>5</LedgerCellNum>
+        <LedgerCellNum today selected>
+          6
+        </LedgerCellNum>
       </>,
     );
-    const [future, sun, sat, sel] = Array.from(
+    const [future, sun, sat, sel, today, todaySel] = Array.from(
       container.querySelectorAll("span"),
     );
     expect(future!.className).toContain("text-fg-neutral-subtle");
     expect(future!.className).not.toContain("opacity");
     expect(sun!.className).toContain("text-fg-critical");
     expect(sat!.className).toContain("text-fg-brand");
-    expect(sel!.className).toContain("bg-bg-brand-solid");
+    expect(sel!.className).toContain("bg-bg-neutral-inverted");
+    expect(sel!.className).toContain("text-fg-neutral-inverted");
+    expect(sel!.className).not.toContain("bg-bg-brand-solid");
+    expect(today!.className).toContain("bg-bg-neutral-weak");
+    expect(today!.className).toContain("font-bold");
+    // 고름이 이긴다 — 오늘을 고르면 짙은 원, 굵기(700)는 남는다
+    expect(todaySel!.className).toContain("bg-bg-neutral-inverted");
+    expect(todaySel!.className).not.toContain("bg-bg-neutral-weak");
+    expect(todaySel!.className).toContain("font-bold");
   });
 
   it("날짜 머리는 List Header(t4 · 500) 안 h2 — 합계는 h2 밖, 오늘 · 어제는 h2 안에 붙는다", () => {
