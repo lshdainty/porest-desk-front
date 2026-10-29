@@ -12,6 +12,7 @@ import {
   type ConstellationToday,
 } from "@/features/constellation";
 import { ProgressBar } from "@/shared/ds/progress";
+import { useDsText } from "@/shared/ds/i18n";
 import { SKY_BG } from "../lib/sky";
 import { ConstellationSVG } from "./ConstellationSVG";
 import { cn } from "@/shared/lib/cn";
@@ -49,16 +50,24 @@ export function ConstellationDetailDialog({
   onClose: () => void;
 }) {
   const { t, i18n } = useTranslation("constellation");
+  const dsT = useDsText();
   const isToday =
     !!today &&
     today.constellation.constellationKey ===
       entry.constellation.constellationKey;
-  // 오늘의 목표면 켠 별 + 남은 별 고리, 아니면 모은 별자리는 전부 · 못 모은 별자리는 빈 고리
-  const collected = entry.collectCount > 0 || isToday;
+  // 그림 켜기 — 오늘의 목표면 켠 별 + 남은 별 고리, 아니면 모은 별자리는 전부 · 못 모은 별자리는 빈 고리
+  const lightsUp = entry.collectCount > 0 || isToday;
+  // 수집 줄 값은 따로 — 오늘의 목표여도 한 번도 못 모았으면 "미수집"(그림 mock.html:132 · 지시서 23)
+  const collected = entry.collectCount > 0;
   const litNow = isToday ? Math.min(today.points, today.goal) : undefined;
   const pct = isToday
     ? Math.min(100, Math.round((litNow! / Math.max(1, today.goal)) * 100))
     : 0;
+  // 목표에 닿으면 오른쪽 글은 "달성"(progress.yaml:74-80 · progress.md:56) — fg-neutral · 700
+  const reached = isToday && litNow! >= today.goal;
+  const pctText = reached
+    ? dsT("progress.reached")
+    : t("detail.todayPct", { pct });
   const name = constellationName(entry.constellation, i18n.language);
   const description = constellationDesc(entry.constellation, i18n.language);
 
@@ -106,22 +115,22 @@ export function ConstellationDetailDialog({
               <div
                 aria-hidden
                 style={{
-                  color: collected
+                  color: lightsUp
                     ? "var(--color-fg-neutral-inverted)"
                     : "color-mix(in srgb, var(--color-fg-neutral-inverted) 40%, transparent)",
-                  filter: collected
+                  filter: lightsUp
                     ? "drop-shadow(0 0 10px color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent))"
                     : "none",
                 }}
               >
                 <ConstellationSVG
                   starMap={entry.constellation.starMap}
-                  lit={isToday ? litNow : collected ? undefined : 0}
+                  lit={isToday ? litNow : lightsUp ? undefined : 0}
                   size={180}
                 />
               </div>
             </div>
-            {!collected && (
+            {!lightsUp && (
               <p className="absolute inset-x-0 bottom-x3_5 m-0 text-center text-t3 text-fg-neutral-inverted">
                 {t("detail.notMet")}
               </p>
@@ -129,12 +138,22 @@ export function ConstellationDetailDialog({
           </div>
           {isToday && (
             <div className="pt-x4">
-              <div className="flex items-baseline justify-between gap-x2">
+              <div
+                aria-hidden
+                className="flex items-baseline justify-between gap-x2"
+              >
                 <span className="min-w-0 text-t4 font-medium text-fg-neutral">
                   {t("detail.todayProgress")}
                 </span>
-                <span className="shrink-0 text-t3 tabular-nums text-fg-neutral-subtle">
-                  {t("detail.todayPct", { pct })}
+                <span
+                  className={cn(
+                    "shrink-0 text-t3 tabular-nums",
+                    reached
+                      ? "font-bold text-fg-neutral"
+                      : "text-fg-neutral-subtle",
+                  )}
+                >
+                  {pctText}
                 </span>
               </div>
               <ProgressBar
@@ -142,10 +161,17 @@ export function ConstellationDetailDialog({
                 value={litNow!}
                 max={today.goal}
                 meaning="goal"
-                aria-label={t("detail.todayProgress")}
-                aria-valuetext={t("detail.todayPct", { pct })}
+                aria-label={dsT("progress.label", {
+                  label: t("detail.todayProgress"),
+                  max: today.goal,
+                  current: litNow!,
+                })}
+                aria-valuetext={pctText}
               />
-              <p className="m-0 mt-x1_5 text-t2 tabular-nums text-fg-neutral-subtle">
+              <p
+                aria-hidden
+                className="m-0 mt-x1_5 text-t2 tabular-nums text-fg-neutral-subtle"
+              >
                 {today.goal - litNow! > 0
                   ? t("detail.todayCount", {
                       lit: litNow,
@@ -162,31 +188,17 @@ export function ConstellationDetailDialog({
           {/* 줄이 제 좌우 24 를 갖는다 — 본문 여백 24 를 풀어 화면 끝까지 */}
           <List className="-mx-x6 w-[calc(100%+var(--spacing-x12))]">
             <ListItem
-              title={
-                <span className="text-fg-neutral-muted">
-                  {t("detail.starCountLabel")}
-                </span>
-              }
-              suffix={
-                <span className="whitespace-nowrap font-bold tabular-nums text-fg-neutral">
-                  {t("detail.starCountValue", {
-                    count: entry.constellation.starCount,
-                  })}
-                </span>
-              }
+              title={t("detail.starCountLabel")}
+              suffix={t("detail.starCountValue", {
+                count: entry.constellation.starCount,
+              })}
             />
             <ListItem
-              title={
-                <span className="text-fg-neutral-muted">
-                  {t("detail.collectLabel")}
-                </span>
-              }
+              title={t("detail.collectLabel")}
               suffix={
-                <span className="whitespace-nowrap font-bold tabular-nums text-fg-neutral">
-                  {collected
-                    ? t("detail.collectValue", { count: entry.collectCount })
-                    : t("collection.notCollected")}
-                </span>
+                collected
+                  ? t("detail.collectValue", { count: entry.collectCount })
+                  : t("collection.notCollected")
               }
             />
           </List>

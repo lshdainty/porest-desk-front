@@ -144,4 +144,54 @@ describe("ConstellationDetailDialog", () => {
     const bar = document.querySelector("[role=meter]");
     expect(bar?.getAttribute("aria-valuenow")).toBe("12");
   });
+  const todayOf = (entry: CollectionEntry, points: number) => ({
+    constellation: entry.constellation,
+    points,
+    goal: 15,
+    collected: points >= 15,
+    todoPoints: 0,
+    memoPoints: 0,
+    streak: 1,
+    guardCount: 0,
+    totalCollected: 0,
+  });
+
+  it('한 번도 못 모은 오늘의 목표도 수집 줄은 "미수집"이다(그림은 켜진다)', () => {
+    const entry = make(0);
+    act(() =>
+      root.render(
+        <ConstellationDetailDialog
+          entry={entry}
+          today={todayOf(entry, 12)}
+          onClose={() => {}}
+        />,
+      ),
+    );
+    expect(text()).toContain("미수집");
+    expect(text()).not.toContain("0번");
+  });
+
+  it('목표를 다 채우면 막대 오른쪽 글이 "달성" · 700 · fg-neutral 이다', () => {
+    const entry = make(3);
+    act(() =>
+      root.render(
+        <ConstellationDetailDialog
+          entry={entry}
+          today={todayOf(entry, 15)}
+          onClose={() => {}}
+        />,
+      ),
+    );
+    // ds 글(`progress.reached` — 앱 안에서는 "달성")이 100% 대신 온다
+    expect(text()).not.toContain("100%");
+    const word = [...document.querySelectorAll("span")].find((e) =>
+      e.className.includes("shrink-0 text-t3"),
+    );
+    expect(word?.className).toContain("font-bold");
+    expect(word?.className).toContain("text-fg-neutral");
+    expect(word?.className).not.toContain("subtle");
+    expect(
+      document.querySelector("[role=meter]")?.getAttribute("aria-valuetext"),
+    ).toBe(word?.textContent);
+  });
 });
