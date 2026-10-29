@@ -35,7 +35,6 @@ export function HideAmountsUnlockFields({
           type="password"
           autoComplete="current-password"
           value={unlock.password}
-          placeholder={t("hideAmounts.passwordPlaceholder")}
           onChange={(e) => {
             unlock.setPassword(e.target.value);
             if (unlock.error) unlock.clearError();

@@ -48,7 +48,6 @@ export function UnlockStep({
             size={wide ? "small" : "large"}
             className={wide ? undefined : "flex-1"}
             loading={unlock.pending}
-            disabled={!unlock.canSubmit}
             onClick={unlock.submit}
           >
             {t("hideAmounts.viewAmounts")}

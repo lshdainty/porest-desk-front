@@ -566,11 +566,16 @@ asset,editDialog.annualFeeFree,연회비 무료,No annual fee
 asset,editDialog.creditLimit,신용한도,Credit limit
 asset,editDialog.nameTooLong,별칭은 30자 이내로 입력해주세요.,Keep the alias to 30 characters or fewer.
 asset,editDialog.nameDuplicate,같은 이름의 계좌·카드가 이미 있어요.,An account or card with that name already exists.
+asset,editDialog.errName,별칭을 입력해주세요.,Enter an alias.
+asset,editDialog.errCard,카드 상품을 골라주세요.,Choose a card.
+asset,editDialog.errPaymentDay,결제일을 골라주세요.,Choose a payment day.
 asset,editDialog.paymentDay,결제일,Payment Day
 asset,editDialog.paymentDayPlaceholder,결제일 선택,Select payment day
 asset,editDialog.dayUnit,{{day}}일,{{day}}
 asset,editDialog.paymentAccount,결제 출금계좌,Payment account
 asset,editDialog.paymentAccountHelp,결제일에 이 계좌에서 청구액이 빠져요.,The bill is withdrawn from this account on the payment day.
+asset,editDialog.noPaymentAccount,결제 출금계좌 없음,No payment account
+asset,editDialog.noLinkedAccount,연결 계좌 없음,No linked account
 asset,editDialog.noCheckingAccount,입출금 계좌가 없어요,No checking account
 asset,editDialog.selectPaymentAccount,결제 출금계좌 선택,Select payment account
 asset,editDialog.linkedAccount,연결 계좌,Linked Account
@@ -602,15 +607,15 @@ asset,accountSub.loan,대출,Loan
 asset,editDialog.overLimitHelp,한도보다 {{amount}} 많아요. 저장은 되지만 한도나 사용액을 다시 확인해주세요.,{{amount}} over the limit. It still saves — check the limit or the amount.
 asset,editDialog.cardBalanceHelp,아직 결제되지 않은 사용액을 적어주세요.,Enter the amount not yet paid.
 asset,editDialog.currentUnpaid,지금 미결제 잔액 {{balance}},Unpaid now: {{balance}}
-asset,editDialog.carryoverLocked,결제가 끝나 고칠 수 없어요,"Already paid, so it can't be changed"
+asset,editDialog.carryoverLocked,결제가 끝나 고칠 수 없어요.,"Already paid, so it can't be changed."
 asset,editDialog.dueCarryoverLabel,{{date}}에 결제될 금액,Due on {{date}}
 asset,editDialog.dueCarryoverHelp,카드사 앱에 '결제 예정 금액'으로 보이는 금액이에요. 그날 결제계좌에서 빠져요.,The amount your card app shows as due. It leaves your payment account that day.
 asset,editDialog.carryoverAfterLabel,그 뒤 쓴 금액,Spent since then
 asset,editDialog.carryoverAfterHelp,지난 청구 뒤로 쓴 금액이에요. {{date}}에 결제돼요.,Spent after the last statement. Paid on {{date}}.
 asset,editDialog.carryoverAfterHelpNoDate,지난 청구 뒤로 쓴 금액이에요.,Spent after the last statement.
-asset,editDialog.paymentDayChangeTitle,결제일 변경,Change payment day
+asset,editDialog.paymentDayChangeAsk,결제일을 바꿀까요?,Change the payment day?
 asset,editDialog.paymentDayChangeConfirm,바꾼 결제일은 다음 회차부터 적용돼요. {{month}}월분은 {{oldDate}}에 결제돼요.,The new payment day applies from the next cycle. {{monthName}} charges are still paid on {{oldDate}}
-asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등 메모하세요","Note the last digits of account number, payment day, limit, etc."
+asset,editDialog.memoPlaceholder,"계좌번호 뒷자리, 결제일, 한도 등을 적어 둘 수 있어요.","Note the last digits of the account number, payment day, limit, etc."
 asset,editDialog.includeInTotal,전체 자산 합계에 포함,Include in total assets
 asset,editDialog.includeInTotalDesc,순자산 · 총자산 계산에 반영돼요.,Counts toward net worth and total assets.
 asset,editDialog.memo,메모,Memo
@@ -1790,6 +1795,7 @@ settings,hideAmounts.password,비밀번호,Password
 settings,hideAmounts.passwordPlaceholder,비밀번호 입력,Enter password
 settings,hideAmounts.passwordError,비밀번호가 일치하지 않아요.,The password does not match.
 settings,hideAmounts.verifyFailed,확인하지 못했어요. 잠시 뒤 다시 시도해주세요.,Could not verify. Please try again in a moment.
+settings,hideAmounts.passwordRequired,비밀번호를 입력해주세요.,Enter your password.
 settings,hideAmounts.cancel,취소,Cancel
 settings,hideAmounts.viewAmounts,금액 보기,View amounts
 settings,hideAmounts.sectionDesc,가릴 카드를 골라 두세요. 저장할 때 한 번만 본인 확인을 해요.,Pick the cards to hide. You'll verify once when you save.
@@ -2751,8 +2757,8 @@ asset,holdings.searchPlaceholder,종목 이름 검색,Search stock name
 asset,holdings.addStock,종목 추가,Add stock
 asset,holdings.addStockTitle,종목 추가,Add stock
 asset,holdings.addManual,"""{{name}}"" 직접 추가 — 평가액 입력","Add ""{{name}}"" manually — enter value"
-asset,holdings.editEmptyHelp,검색으로 보유 종목을 추가하세요. 연동 종목은 현재가 × 수량으로 평가액이 자동 계산돼요.,Add holdings via search. Linked items are valued automatically at live price × quantity.
-asset,holdings.editEmptyHelpManual,위 버튼으로 보유분을 추가하세요. 시세 연동이 없어 평가액은 직접 입력해요.,Add your holdings with the button above. No live price — enter the value yourself.
+asset,holdings.editEmptyHelp,검색으로 보유 종목을 더할 수 있어요. 연동 종목은 현재가 × 수량으로 평가액이 자동 계산돼요.,Add holdings via search. Linked items are valued automatically at live price × quantity.
+asset,holdings.editEmptyHelpManual,위 버튼으로 보유분을 더할 수 있어요. 시세 연동이 없어 평가액은 직접 입력해요.,Add your holdings with the button above. No live price — enter the value yourself.
 asset,holdings.linkedBadge,연동,Linked
 asset,holdings.editLinkedSub,현재가 × 수량 연동,Live price × quantity
 asset,holdings.sharesUnitShort,주,sh

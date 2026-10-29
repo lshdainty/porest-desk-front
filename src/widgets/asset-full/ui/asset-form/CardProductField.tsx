@@ -22,13 +22,15 @@ import type { AssetForm } from "./use-asset-form";
  * (발급사 · 종류 · 연회비) + 단종이면 배지(흐리게 두지 않는다).
  */
 export function CardProductField({ f }: { f: AssetForm }) {
-  const { t, cardType, selectedCard, setSelectedCard } = f;
+  const { t, cardType, selectedCard, setSelectedCard, issues, showErrors } = f;
   return (
     <PickerField
       label={t("editDialog.cardProduct")}
       value={selectedCard?.cardName}
       placeholder={t("editDialog.cardPlaceholder")}
       surfaceTitle={t("editDialog.pickCardTitle")}
+      invalid={showErrors && issues.card}
+      errorMessage={t("editDialog.errCard")}
     >
       {({ close }) => (
         <CardProductList

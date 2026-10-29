@@ -164,11 +164,14 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
   // 공통
   // 처음 값은 이 자산의 기관, 없으면 묶음의 첫 기관이다(지금 그대로). 묶음은 1단계가 정하므로 고른 값만 들고 나머지는 읽을 때 정한다.
   const [brandPick, setBrand] = useState<string | null>(init.brandPick);
+  // 기관이 없는 자산(현금 등)을 고칠 때는 빈 칸 그대로 둔다 — 예전엔 첫 은행("신한")이 채워져 그대로 저장됐다.
   const brand =
     brandPick ??
-    (editingGroup === "invest"
-      ? (INVEST_BRANDS[0]?.name ?? "삼성증권")
-      : (BANK_ENTRIES[0]?.name ?? "신한"));
+    (!isNew
+      ? ""
+      : editingGroup === "invest"
+        ? (INVEST_BRANDS[0]?.name ?? "삼성증권")
+        : (BANK_ENTRIES[0]?.name ?? "신한"));
   const [name, setName] = useState(init.name);
   const [memo, setMemo] = useState(init.memo);
   const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
@@ -349,18 +352,22 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
         : null;
 
   // 유효성
-  const canSubmit = (() => {
-    if (nameErr) return false;
-    if (editingGroup === "card") {
-      // 신용카드는 결제일 필수 — 없으면 청구 사이클(이용기간·예정액·할부 회차)을
-      // 세울 수 없다. asset-full 추가 폼(#323)과 같은 규칙인데 이 다이얼로그만
-      // 빠져 있었다. 체크카드는 즉시 출금이라 결제일이 없다.
-      if (cardType === "CREDIT" && !paymentDay.trim()) return false;
-      // 편집 모드: 카드 카탈로그 재선택 없이 별칭/금액만 바꿀 수 있어야 함
-      return isNew ? !!selectedCard : true;
-    }
-    return (nameTrim.length > 0 || !isNew) && brand.trim().length > 0;
-  })();
+  //
+  // 필수가 빈 칸(issues)은 [추가] · [저장] 을 막지 않는다 — 누르면 칸마다 오류가 서고 첫 칸에 초점이 간다(field.md "저장 버튼은 켜 둔다").
+  // 신용카드는 결제일 필수 — 없으면 청구 사이클(이용기간·예정액·할부 회차)을 세울 수 없다(체크카드는 즉시 출금이라 결제일이 없다).
+  // 편집 모드: 카드 카탈로그 재선택 없이 별칭/금액만 바꿀 수 있어야 한다. 새 계좌 · 투자는 별칭이 필수다.
+  const issues = {
+    name: editingGroup !== "card" && isNew && nameTrim.length === 0,
+    card: editingGroup === "card" && isNew && !selectedCard,
+    paymentDay:
+      cardType === "CREDIT" && editingGroup === "card" && !paymentDay.trim(),
+  };
+  const canSubmit =
+    !nameErr && !issues.name && !issues.card && !issues.paymentDay;
+  // 누르고도 못 보낸 적이 있으면 오류 글을 세운다 — 고치면 저절로 걷힌다
+  const [showErrors, setShowErrors] = useState(false);
+  // 못 보낸 횟수 — 첫 오류 칸에 초점을 옮기는 신호
+  const [submitTick, setSubmitTick] = useState(0);
 
   const isOverdraft =
     editingGroup === "account" && accountSub === "마이너스통장";
@@ -467,6 +474,7 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     setMemo(init.memo);
     setIsIncludedInTotal(init.isIncludedInTotal);
     setIsAmountHidden(init.isAmountHidden);
+    setShowErrors(false);
     setBalanceStr(init.balanceStr);
     setDueStr(init.dueStr);
     setCurrency(null);
@@ -550,6 +558,11 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     nameIssueKind,
     nameErr,
     canSubmit,
+    issues,
+    showErrors,
+    setShowErrors,
+    submitTick,
+    setSubmitTick,
     isOverdraft,
     unit,
     isCreditCardEdit,

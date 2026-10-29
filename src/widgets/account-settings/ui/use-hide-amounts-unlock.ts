@@ -18,7 +18,12 @@ export function useHideAmountsUnlock({
   const { t } = useTranslation("settings");
 
   const submit = () => {
-    if (!password.trim() || verifyMut.isPending) return;
+    if (verifyMut.isPending) return;
+    // 비어 있어도 단추는 켜 둔다 — 누르면 칸 아래에 알린다(field.md)
+    if (!password.trim()) {
+      setError(t("hideAmounts.passwordRequired"));
+      return;
+    }
     setError(null);
     verifyMut.mutate(password, {
       onSuccess: () => onVerified(),
@@ -40,7 +45,6 @@ export function useHideAmountsUnlock({
     error,
     clearError: () => setError(null),
     pending: verifyMut.isPending,
-    canSubmit: password.trim().length > 0,
     submit,
   };
 }

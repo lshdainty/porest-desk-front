@@ -207,7 +207,7 @@ describe("결제일 변경은 다음 회차부터(D5)", () => {
 
     // 8월분까지 결제가 끝났다 → 9월분은 옛 결제일(14일)인 10/14 에 결제된다.
     expect(update).toBeNull();
-    expect(bodyText()).toContain("editDialog.paymentDayChangeTitle");
+    expect(bodyText()).toContain("editDialog.paymentDayChangeAsk");
     expect(bodyText()).toContain("editDialog.paymentDayChangeConfirm|month=9,");
     expect(bodyText()).toContain(`oldDate=${formatDay("2026-10-14").md}`);
 

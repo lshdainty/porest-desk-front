@@ -95,9 +95,10 @@ describe("금액 보기 인증 본문", () => {
     expect(verified).toBe(1);
   });
 
-  it("비어 있으면 보내지 않는다", () => {
+  it("비어 있어도 단추는 눌린다 — 보내지 않고 칸 아래에 알린다", () => {
     submit();
     expect(server.calls).toEqual([]);
+    expect(document.body.textContent).toContain("hideAmounts.passwordRequired");
   });
 
   it("USER_004 는 '일치하지 않아요', 서버 글은 내지 않고 칸을 비운다", () => {

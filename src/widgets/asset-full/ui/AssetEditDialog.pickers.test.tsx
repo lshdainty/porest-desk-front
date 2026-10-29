@@ -77,9 +77,10 @@ vi.mock("@/features/stock/model/useStockMaster", () => ({
   useStockSearch: (q: string) => {
     state.stockCalls.push(q);
     return {
-      data: q
-        ? [{ symbol: "A005930", marketCode: "KRX", nameKr: "가나다 전자" }]
-        : [],
+      data:
+        q && q !== "없는종목"
+          ? [{ symbol: "A005930", marketCode: "KRX", nameKr: "가나다 전자" }]
+          : [],
       isFetching: false,
     };
   },
@@ -267,7 +268,7 @@ describe("카드 상품 고르기", () => {
 });
 
 describe("종목 추가", () => {
-  it("버튼 → 검색 시트 → 줄을 누르면 보유 줄이 하나 늘고 시트가 닫힌다", () => {
+  it("버튼 → 검색 시트 → 줄을 누르면 보유 줄이 하나 늘고 시트가 닫힌다", async () => {
     open(invest);
     const addBtn = [...document.body.querySelectorAll("button")].find(
       (b) => b.textContent?.trim() === "holdings.addStock",
@@ -276,25 +277,83 @@ describe("종목 추가", () => {
     expect(topTitle()).toBe("holdings.addStockTitle");
     // 검색어가 없으면 줄이 없다 — 치면 서버 검색(300ms 뒤) 결과가 뜬다
     expect(options().length).toBe(0);
-    return act(async () => {
-      const search = document.querySelector<HTMLInputElement>(
-        "[role=combobox][aria-autocomplete]",
-      )!;
-      setInput(search, "가나");
+    const search = document.querySelector<HTMLInputElement>(
+      "[role=combobox][aria-autocomplete]",
+    )!;
+    setInput(search, "가나");
+    await act(async () => {
       await new Promise((r) => setTimeout(r, 400));
-    }).then(() => {
-      const found = option("가나다 전자")!;
-      expect(found).toBeDefined();
-      click(found);
-      expect(document.querySelectorAll("[data-slot=holding-row]").length).toBe(
-        1,
-      );
-      click(
-        [...document.body.querySelectorAll("button")].find(
-          (b) => b.textContent?.trim() === "save",
-        ),
-      );
-      expect(updated).not.toBeNull();
     });
+    const found = option("가나다 전자")!;
+    expect(found).toBeDefined();
+    click(found);
+    expect(document.querySelectorAll("[data-slot=holding-row]").length).toBe(1);
+    click(
+      [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "save",
+      ),
+    );
+    expect(updated).not.toBeNull();
+  });
+});
+
+describe("고르기 시트의 찾기 · 스위치 · 0건", () => {
+  const searchInput = () =>
+    document.querySelector<HTMLInputElement>(
+      "[role=combobox][aria-autocomplete]",
+    )!;
+  const tick = (ms: number) =>
+    act(async () => {
+      await new Promise((r) => setTimeout(r, ms));
+    });
+
+  it("카드 상품 서버 요청은 마지막 입력 뒤 300ms 에 한 번 — 글자마다 안 나간다", async () => {
+    open(null, "신용카드");
+    click(fieldControl("editDialog.cardProduct"));
+    const keywords = () =>
+      new Set(state.catalogCalls.map((c) => c.keyword ?? ""));
+    setInput(searchInput(), "숲");
+    setInput(searchInput(), "숲길");
+    await tick(100);
+    expect(keywords().has("숲길")).toBe(false);
+    await tick(350);
+    expect(keywords().has("숲길")).toBe(true);
+    // 중간 글자("숲")로는 요청이 안 나갔다
+    expect(keywords().has("숲")).toBe(false);
+  });
+
+  it("단종 스위치를 켜면 목록 요청이 바로 바뀐다", () => {
+    open(null, "신용카드");
+    click(fieldControl("editDialog.cardProduct"));
+    expect(
+      state.catalogCalls[state.catalogCalls.length - 1]?.includeDiscontinued,
+    ).toBeUndefined();
+    click(document.querySelector("[role=switch]") as HTMLElement | null);
+    expect(
+      state.catalogCalls[state.catalogCalls.length - 1]?.includeDiscontinued,
+    ).toBe(true);
+  });
+
+  it("종목 0건이면 결과 없음 안내가 먼저, 직접 추가 줄은 그 아래 맨 끝이다", async () => {
+    open(invest);
+    click(
+      [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "holdings.addStock",
+      ),
+    );
+    setInput(searchInput(), "없는종목");
+    await tick(400);
+    const empty = document.querySelector("[data-slot=searchable-list-empty]");
+    const manual = option("holdings.addManual");
+    expect(empty).not.toBeNull();
+    expect(manual).toBeDefined();
+    expect(
+      empty!.compareDocumentPosition(manual!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // 결과 줄은 늘 라디오가 있다 — 숨기지 않는다
+    expect(
+      manual!.querySelector("[data-slot=searchable-list-item-radio]"),
+    ).not.toBeNull();
   });
 });

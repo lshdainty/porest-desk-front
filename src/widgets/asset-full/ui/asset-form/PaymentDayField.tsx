@@ -10,10 +10,16 @@ export function PaymentDayField({ f }: { f: AssetForm }) {
     paymentDay,
     setPaymentDay,
     paymentDayConfirmedRef,
+    issues,
+    showErrors,
   } = f;
   if (!isCreditCardEdit) return null;
   return (
-    <Field label={t("editDialog.paymentDay")}>
+    <Field
+      label={t("editDialog.paymentDay")}
+      invalid={showErrors && issues.paymentDay}
+      errorMessage={t("editDialog.errPaymentDay")}
+    >
       <Select
         value={paymentDay}
         placeholder={t("editDialog.paymentDayPlaceholder")}

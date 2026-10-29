@@ -32,8 +32,9 @@ vi.mock("react-i18next", () => ({
   }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
+const mocked = vi.hoisted(() => ({ assets: [] as unknown[] }));
 vi.mock("@/features/asset", () => ({
-  useAssets: () => ({ data: { assets: [] }, isLoading: false }),
+  useAssets: () => ({ data: { assets: mocked.assets }, isLoading: false }),
 }));
 vi.mock("@/features/card-catalog", () => ({
   useCardCatalogs: () => ({ data: undefined, isFetching: false }),
@@ -158,7 +159,7 @@ describe("1단계 — 무엇을 추가할까요?", () => {
 
   it("1280 미만 2열 · 이상 3열(상자 줄 칸 수 클래스)", () => {
     open(null);
-    const grid = document.querySelector("[role=group] > div")!;
+    const grid = document.querySelector("[role=group] > .grid")!;
     expect(grid.className).toContain("grid-cols-2");
     expect(grid.className).toContain("lg:grid-cols-3");
   });
@@ -290,5 +291,88 @@ describe("저장 본문은 종류가 정한다 — 1단계에서 고른 종류�
       assetType: "BANK_ACCOUNT",
       balance: -300_000,
     });
+  });
+});
+
+describe("[추가] · [저장] 은 늘 켜 둔다 — 누르면 칸마다 오류 (field.md)", () => {
+  it("새 계좌: 별칭이 비면 눌러도 안 나가고 칸 아래 오류 + 그 칸에 초점", () => {
+    open(null);
+    pick("accountSub.checking");
+    click(nextBtn());
+    const add = buttons("addAction")[0]!;
+    expect(add.hasAttribute("disabled")).toBe(false);
+    click(add);
+    expect(created).toBeNull();
+    expect(bodyText()).toContain("editDialog.errName");
+    expect(document.activeElement).toBe(fieldControl("editDialog.nameLabel"));
+    // 쓰면 오류가 걷히고 나간다
+    setInput(fieldControl("editDialog.nameLabel")!, "생활비");
+    expect(bodyText()).not.toContain("editDialog.errName");
+    click(buttons("addAction")[0]);
+    expect(created).not.toBeNull();
+  });
+
+  it("새 신용카드: 카드 상품 · 결제일 오류가 함께 선다", () => {
+    open(null);
+    pick("assetType.creditcard");
+    click(nextBtn());
+    click(buttons("addAction")[0]);
+    expect(created).toBeNull();
+    expect(bodyText()).toContain("editDialog.errCard");
+    expect(bodyText()).toContain("editDialog.errPaymentDay");
+  });
+});
+
+describe("기관이 없는 자산을 고친다 — 빈 칸 그대로", () => {
+  it("기관 칸이 비어 있고 저장해도 institution 키를 안 싣는다", () => {
+    let update: Record<string, unknown> | null = null;
+    installDomStubs();
+    act(() =>
+      root.render(
+        <AssetEditDialog
+          item={asset("CASH", { institution: null })}
+          onClose={() => {}}
+          onCreate={() => {}}
+          onUpdate={(v) => {
+            update = v as unknown as Record<string, unknown>;
+          }}
+        />,
+      ),
+    );
+    const inst = fieldControl("editDialog.institutionBrand")!;
+    expect(inst.parentElement?.textContent).toContain(
+      "editDialog.institutionPlaceholder",
+    );
+    click(buttons("save")[0]);
+    expect(update).not.toBeNull();
+    expect(update!.institution).toBeUndefined();
+  });
+});
+
+describe("결제 출금계좌 없음", () => {
+  it("'없음' 을 고르면 paymentAssetRowId 가 null 로 나간다(서버는 명시적 null 을 지움으로 받는다)", () => {
+    let update: Record<string, unknown> | null = null;
+    mocked.assets = [asset("BANK_ACCOUNT", { rowId: 7, assetName: "주거래" })];
+    installDomStubs();
+    act(() =>
+      root.render(
+        <AssetEditDialog
+          item={asset("CREDIT_CARD", { paymentDay: 14, paymentAssetRowId: 7 })}
+          onClose={() => {}}
+          onCreate={() => {}}
+          onUpdate={(v) => {
+            update = v as unknown as Record<string, unknown>;
+          }}
+        />,
+      ),
+    );
+    click(fieldControl("editDialog.paymentAccount"));
+    const none = [
+      ...document.querySelectorAll<HTMLElement>("[data-slot=select-item]"),
+    ].find((o) => o.textContent?.includes("editDialog.noPaymentAccount"));
+    expect(none).toBeDefined();
+    click(none);
+    click(buttons("save")[0]);
+    expect(update).toHaveProperty("paymentAssetRowId", null);
   });
 });

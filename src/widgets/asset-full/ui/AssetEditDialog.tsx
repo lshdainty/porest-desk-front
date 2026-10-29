@@ -91,6 +91,8 @@ export function AssetEditDialog({
     cardBrandColor,
     brandColor,
     canSubmit,
+    setShowErrors,
+    setSubmitTick,
     isOverdraft,
     isExistingCreditCard,
     carryoverLocked,
@@ -112,6 +114,17 @@ export function AssetEditDialog({
       setStep("kind");
     },
   });
+
+  // [추가] · [저장] 은 늘 켜 둔다 — 필수가 비었으면 칸마다 오류를 세우고 첫 오류 칸에 초점을 보낸다
+  const attemptSubmit = () => {
+    if (isSubmitting) return;
+    if (!canSubmit) {
+      setShowErrors(true);
+      setSubmitTick((n) => n + 1);
+      return;
+    }
+    handleSubmit();
+  };
 
   const goNext = () => {
     if (kind == null) {
@@ -321,7 +334,8 @@ export function AssetEditDialog({
         assetName: resolvedName,
         assetType: "INVESTMENT" as AssetType,
         balance: investBalance,
-        institution: brand,
+        // 기관이 없는 자산을 고칠 땐 키를 안 싣는다(그대로 유지) — 빈 글을 실으면 서버에 빈 기관이 남는다
+        institution: brand.trim() ? brand : undefined,
         color: brandColor?.bg,
         ...currencyFields,
         memo: memo.trim() || null,
@@ -348,7 +362,8 @@ export function AssetEditDialog({
       assetName: resolvedName,
       assetType,
       balance: accountBalance,
-      institution: brand,
+      // 기관이 없는 자산을 고칠 땐 키를 안 싣는다(그대로 유지) — 빈 글을 실으면 서버에 빈 기관이 남는다
+      institution: brand.trim() ? brand : undefined,
       color: brandColor?.bg,
       ...currencyFields,
       memo: memo.trim() || null,
@@ -412,7 +427,7 @@ export function AssetEditDialog({
           ) : (
             <FormStep
               f={f}
-              onSubmit={handleSubmit}
+              onSubmit={attemptSubmit}
               isSubmitting={isSubmitting}
             />
           )}
@@ -428,7 +443,7 @@ export function AssetEditDialog({
       >
         <AlertDialogContent>
           <AlertDialogTitle>
-            {t("editDialog.paymentDayChangeTitle")}
+            {t("editDialog.paymentDayChangeAsk")}
           </AlertDialogTitle>
           <AlertDialogDescription>{paymentDayConfirm}</AlertDialogDescription>
           <AlertDialogFooter>

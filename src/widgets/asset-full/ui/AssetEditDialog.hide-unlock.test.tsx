@@ -90,8 +90,9 @@ let root: Root;
 type Payload = Record<string, unknown>;
 let update: Payload | null;
 
-function open(item: Asset) {
+function open(item: Asset, wide = false) {
   update = null;
+  installDomStubs({ wide });
   __resetPointerBlockForTest();
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -204,5 +205,26 @@ describe("금액 숨김 해제 — 폼 저장의 본인 확인", () => {
     click(saveButton());
     expect(unlockOpen()).toBe(true);
     expect(update).toBeNull();
+  });
+});
+
+describe("1280 이상 — 인증 단계도 같은 대화상자", () => {
+  it("[취소] 가 있고 누르면 저장하지 않고 2단계로 돌아간다(머리 ← 와 같다)", () => {
+    open(account, true);
+    click(hideSwitch());
+    click(saveButton());
+    expect(unlockOpen()).toBe(true);
+    expect(document.querySelectorAll("[data-slot=dialog-content]").length).toBe(
+      1,
+    );
+    const cancel = [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === "hideAmounts.cancel",
+    );
+    expect(cancel).toBeDefined();
+    expect(document.querySelector("[data-slot=dialog-back]")).not.toBeNull();
+    click(cancel);
+    expect(unlockOpen()).toBe(false);
+    expect(update).toBeNull();
+    expect(saveButton()).toBeDefined();
   });
 });
