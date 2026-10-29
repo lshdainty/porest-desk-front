@@ -114,8 +114,9 @@ export function CollectionSection({
                     {owned ? (
                       <ConstellationSVG
                         starMap={entry.constellation.starMap}
-                        size={36}
+                        size={30}
                         lit={entry.constellation.starCount}
+                        glow
                       />
                     ) : (
                       <Lock />

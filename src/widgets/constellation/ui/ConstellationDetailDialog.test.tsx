@@ -119,7 +119,7 @@ describe("ConstellationDetailDialog", () => {
     const today = {
       constellation: entry.constellation,
       points: 12,
-      goal: 15,
+      goal: 16,
       collected: false,
       todoPoints: 10,
       memoPoints: 2,
@@ -138,8 +138,8 @@ describe("ConstellationDetailDialog", () => {
     );
     expect(text()).toContain("오늘의 목표 별자리");
     expect(text()).toContain("오늘 모은 별빛");
-    expect(text()).toContain("80%");
-    expect(text()).toContain("12/15 별빛 · 3별 남음");
+    expect(text()).toContain("75%");
+    expect(text()).toContain("12/16 별빛 · 4별 남음");
     expect(text()).not.toContain("아직 만나지 못한");
     const bar = document.querySelector("[role=meter]");
     expect(bar?.getAttribute("aria-valuenow")).toBe("12");
@@ -147,8 +147,8 @@ describe("ConstellationDetailDialog", () => {
   const todayOf = (entry: CollectionEntry, points: number) => ({
     constellation: entry.constellation,
     points,
-    goal: 15,
-    collected: points >= 15,
+    goal: 16,
+    collected: points >= 16,
     todoPoints: 0,
     memoPoints: 0,
     streak: 1,
@@ -177,7 +177,7 @@ describe("ConstellationDetailDialog", () => {
       root.render(
         <ConstellationDetailDialog
           entry={entry}
-          today={todayOf(entry, 15)}
+          today={todayOf(entry, 16)}
           onClose={() => {}}
         />,
       ),

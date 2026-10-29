@@ -139,7 +139,11 @@ export function ResultSection({ m, place }: { m: ReportModel; place: Place }) {
           className="mt-x0_5 shrink-0"
           style={{ color: constellationColorVar(grown.constellation.colorKey) }}
         >
-          <ConstellationSVG starMap={grown.constellation.starMap} size={20} />
+          <ConstellationSVG
+            starMap={grown.constellation.starMap}
+            size={20}
+            linesOnly
+          />
         </span>
         <span className="min-w-0">
           {t("report.resultCollected", {

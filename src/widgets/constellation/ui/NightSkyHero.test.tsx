@@ -36,7 +36,7 @@ const CON = {
   description: "반은 사람이고 반은 말인 별자리",
   descriptionEn: null,
   colorKey: "blue",
-  starCount: 15,
+  starCount: 16,
   starMap: JSON.stringify({
     pts: [
       [10, 10],
@@ -58,7 +58,7 @@ const { CollectionSection } = await import("./CollectionSection");
 const TODAY: ConstellationToday = {
   constellation: CON,
   points: 12,
-  goal: 15,
+  goal: 16,
   collected: false,
   todoPoints: 10,
   memoPoints: 2,
@@ -106,7 +106,7 @@ describe("NightSkyHero", () => {
       "[data-slot=night-sky-hero]",
     )!;
     expect(card.getAttribute("aria-label")).toBe(
-      "오늘의 목표 별자리 켄타우루스자리 12/15 별빛",
+      "오늘의 목표 별자리 켄타우루스자리 12/16 별빛",
     );
     expect(document.querySelector("[role=dialog]")).toBeNull();
     act(() => card.click());

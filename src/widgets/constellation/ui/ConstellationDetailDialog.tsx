@@ -121,14 +121,12 @@ export function ConstellationDetailDialog({
                   color: lightsUp
                     ? "var(--color-fg-neutral-inverted)"
                     : "color-mix(in srgb, var(--color-fg-neutral-inverted) 40%, transparent)",
-                  filter: lightsUp
-                    ? "drop-shadow(0 0 10px color-mix(in srgb, var(--color-fg-neutral-inverted) 55%, transparent))"
-                    : "none",
                 }}
               >
                 <ConstellationSVG
                   starMap={entry.constellation.starMap}
                   lit={isToday ? litNow : lightsUp ? undefined : 0}
+                  glow={isToday ? litNow! > 0 : lightsUp}
                   size={180}
                 />
               </div>

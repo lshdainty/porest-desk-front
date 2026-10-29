@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { parseStarMap } from "@/features/constellation";
 
 /**
@@ -15,12 +15,15 @@ export function ConstellationSVG({
   size = 24,
   dim = false,
   linesOnly = false,
+  glow = false,
 }: {
   starMap: string;
   lit?: number;
   size?: number;
   dim?: boolean;
   linesOnly?: boolean;
+  /** 켠 별에 은은한 발광 — 앱 `ConstellationPainter glow`(켠 별 r × 2 · 블러 6px · 0.45)와 같다. 감상(상세 패널)용 */
+  glow?: boolean;
 }) {
   const map = useMemo(() => parseStarMap(starMap), [starMap]);
   const n = lit == null ? map.pts.length : lit;
@@ -29,6 +32,9 @@ export function ConstellationSVG({
   const rLit = count <= 8 ? 3.4 : count <= 15 ? 2.4 : 1.8;
   const rUnlit = count <= 8 ? 2.6 : count <= 15 ? 1.9 : 1.5;
   const strokeW = count <= 8 ? 2.2 : count <= 15 ? 1.6 : 1.2;
+  // 앱 페이너와 같은 식 — 블러 6px 를 viewBox 단위로(size 가 달라도 같은 px), 고리 굵기는 size 의 1.4%
+  const blur = (6 * 100) / size;
+  const filterId = useId();
 
   return (
     <svg
@@ -58,6 +64,34 @@ export function ConstellationSVG({
           />
         );
       })}
+      {!linesOnly && glow && (
+        <>
+          <defs>
+            <filter
+              id={filterId}
+              x="-100%"
+              y="-100%"
+              width="300%"
+              height="300%"
+            >
+              <feGaussianBlur stdDeviation={blur} />
+            </filter>
+          </defs>
+          {map.pts.map(([x, y], i) =>
+            i < n ? (
+              <circle
+                key={`g${i}`}
+                cx={x}
+                cy={y}
+                r={rLit * 2}
+                fill="currentColor"
+                opacity={0.45}
+                filter={`url(#${filterId})`}
+              />
+            ) : null,
+          )}
+        </>
+      )}
       {!linesOnly &&
         map.pts.map(([x, y], i) =>
           i < n ? (
@@ -77,7 +111,7 @@ export function ConstellationSVG({
               r={rUnlit}
               fill="none"
               stroke="currentColor"
-              strokeWidth={1.2}
+              strokeWidth={1.4}
               opacity={0.4}
             />
           ),
