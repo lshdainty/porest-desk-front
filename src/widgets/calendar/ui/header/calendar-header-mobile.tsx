@@ -48,7 +48,7 @@ const CalendarHeaderMobile = () => {
           trigger={
             <button
               type="button"
-              className="flex min-h-11 items-center gap-x1 whitespace-nowrap rounded-r2 text-t6 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
+              className="flex min-h-[44px] items-center gap-x1 whitespace-nowrap rounded-r2 text-t6 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
             >
               {formattedDate}
               <ChevronDown

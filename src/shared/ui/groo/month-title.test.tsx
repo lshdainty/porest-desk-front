@@ -99,6 +99,13 @@ describe("달 글", () => {
     act(() => root.render(<MonthTitle month="2026-10" onChange={() => {}} />));
     expect(container.querySelectorAll("button")).toHaveLength(1);
     expect(container.textContent).toContain("2026");
+    // 누르는 높이는 px 44 — rem 이면 글자 200% 에서 88 이 된다(DESIGN.md:2442)
+    expect(container.querySelector("button")!.className).toContain(
+      "min-h-[44px]",
+    );
+    expect(container.querySelector("button")!.className).not.toContain(
+      "min-h-11",
+    );
   });
 
   it("휠로 고른 달을 완료로 넣는다", () => {
