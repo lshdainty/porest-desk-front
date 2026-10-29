@@ -72,10 +72,10 @@ function CompareBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-x2_5 gap-y-x1">
-      <span className="min-w-[44px] shrink-0 text-t2 font-bold text-fg-neutral-subtle">
+      <span className="min-w-[44px] max-w-full text-t2 font-bold text-fg-neutral-subtle">
         {label}
       </span>
-      {/* 막대가 양보한다 — 금액은 한 줄 · 고정폭 · 오른쪽 끝(고정 폭을 두지 않는다) */}
+      {/* 막대가 양보한다 — 금액은 한 줄 · 제 폭을 다 쓴다(자르지 않는다) · 오른쪽 끝. 이름은 줄에 안 들어갈 만큼 길면 줄을 바꾼다(progress.md:33 — 이름이 길면 줄을 바꿔 오른쪽 글에 붙지 않는다) */}
       <div
         aria-hidden
         className="h-2 min-w-[4rem] flex-1 overflow-hidden rounded-full"
