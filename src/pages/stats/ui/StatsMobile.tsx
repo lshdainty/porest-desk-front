@@ -26,7 +26,6 @@ import {
   SavingsRateSection,
   TrendSection,
 } from "./stats-trend-parts";
-import { RangePickerSheet } from "./RangePickerSheet";
 import { useStatsModel } from "./stats-model";
 import type { TabKey } from "./stats-range";
 
@@ -107,17 +106,6 @@ export function StatsMobile() {
           )}
         </ScreenBands>
       </div>
-      {m.pickerOpen && (
-        <RangePickerSheet
-          mobile
-          initial={m.period}
-          onCancel={() => m.setPickerOpen(false)}
-          onConfirm={(r) => {
-            m.setPeriod(r);
-            m.setPickerOpen(false);
-          }}
-        />
-      )}
       {m.manageOpen && (
         <HideCard card="stats.fixed">
           <FixedBulkDialog

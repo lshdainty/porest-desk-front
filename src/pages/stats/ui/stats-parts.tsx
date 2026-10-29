@@ -27,6 +27,7 @@ import { withCommaBreaks } from "@/shared/ds/i18n";
 import { cn } from "@/shared/lib/cn";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { formatChangeRate } from "@/shared/lib/groo/format";
+import { RangePickerSheet } from "./RangePickerSheet";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon } from "@/shared/ui/groo/primitives";
 import {
@@ -105,7 +106,8 @@ function useFitLimit(limit: number) {
   return [ref, fits] as const;
 }
 
-/** 기간 버튼(31) — ds Button neutralOutline small 36 · 뒤 꺾쇠 16 하나(앞 · 뒤 아이콘을 함께 쓰지 않는다 — button.md:67) · t4 · 700. 다른 해 직접 기간의 두 줄 글은 "~" 뒤에서만 줄을 바꾼다 */
+/** 기간 버튼(31) — ds Button neutralOutline small 36 · 뒤 꺾쇠 16 하나(앞 · 뒤 아이콘을 함께 쓰지 않는다 — button.md:67) · t4 · 700. 다른 해 직접 기간의 두 줄 글은 "~" 뒤에서만 줄을 바꾼다.
+ * 누르면 ds Date Picker 기간 고르기가 열린다 — 1280 미만 시트, 이상 이 버튼 아래 팝오버(date-picker.md 어디에 놓나 :112) */
 export function PeriodButton({ m }: { m: StatsModel }) {
   const { t } = useTranslation("stats");
   const { period } = m;
@@ -116,18 +118,29 @@ export function PeriodButton({ m }: { m: StatsModel }) {
     ? `${fmt(period.from)} ~\n${fmt(period.to)}`
     : m.periodLbl;
   return (
-    <Button
-      type="button"
-      variant="neutralOutline"
-      size="small"
-      aria-label={t("period.buttonAria", { period: text.replace("\n", " ") })}
-      aria-haspopup="dialog"
-      className="h-auto min-h-9 shrink-0 whitespace-pre-line py-x1_5 text-center [&_svg]:size-4"
-      onClick={() => m.setPickerOpen(true)}
-    >
-      <span>{text}</span>
-      <ChevronDown aria-hidden />
-    </Button>
+    <RangePickerSheet
+      open={m.pickerOpen}
+      onOpenChange={m.setPickerOpen}
+      initial={period}
+      onConfirm={m.setPeriod}
+      trigger={({ onClick }) => (
+        <Button
+          type="button"
+          variant="neutralOutline"
+          size="small"
+          aria-label={t("period.buttonAria", {
+            period: text.replace("\n", " "),
+          })}
+          aria-haspopup="dialog"
+          aria-expanded={m.pickerOpen}
+          className="h-auto min-h-9 shrink-0 whitespace-pre-line py-x1_5 text-center [&_svg]:size-4"
+          onClick={onClick}
+        >
+          <span>{text}</span>
+          <ChevronDown aria-hidden />
+        </Button>
+      )}
+    />
   );
 }
 

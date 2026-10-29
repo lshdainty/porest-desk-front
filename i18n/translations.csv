@@ -2189,16 +2189,8 @@ stats,compare.categoryTitle,카테고리별 {{mom}},By category · {{mom}}
 stats,compare.categoryDeltaTitle,카테고리별 증감,Category changes
 stats,compare.categoryDeltaSort,변화 큰 순,Largest change
 stats,picker.title,기간 선택,Select period
-stats,picker.apply,적용,Apply
-stats,picker.segMonth,월,Month
-stats,picker.segQuarter,분기,Quarter
-stats,picker.segYear,년,Year
-stats,picker.segCustom,직접,Custom
-stats,picker.last7d,최근 7일,Last 7 days
-stats,picker.last30d,최근 30일,Last 30 days
-stats,picker.last3m,최근 3개월,Last 3 months
-stats,picker.last6m,최근 6개월,Last 6 months
-stats,picker.last1y,최근 1년,Last 1 year
+stats,picker.reset,초기화,Reset
+stats,picker.done,완료,Done
 dashboard,chart.savings,저축,Savings
 dashboard,all,전체,All
 dashboard,manage,관리,Manage

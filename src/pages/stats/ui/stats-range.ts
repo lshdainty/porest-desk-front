@@ -32,6 +32,31 @@ export const yearRangeOf = (now: Date): RangeState => ({
   segMode: "y",
 });
 
+const sameDayAs = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+/**
+ * 달력에서 고른 기간이 어떤 보기인가 — 지금 기간 그대로면 보기를 지키고, 바뀌었으면 한 달 · 한 분기 · 한 해를
+ * 정확히 채운 기간은 그 보기(월 · 분기 · 년)로, 나머지는 직접(custom)으로 센다.
+ * (옛 시트의 월 · 분기 · 년 탭이 하던 일 — 전월 비교 · 일 평균 · 기간 이름이 이 값을 따른다)
+ */
+export const rangeSegModeOf = (
+  from: Date,
+  to: Date,
+  current: RangeState,
+): SegMode => {
+  if (sameDayAs(from, current.from) && sameDayAs(to, current.to))
+    return current.segMode;
+  const spans = (r: RangeState) =>
+    sameDayAs(from, r.from) && sameDayAs(to, r.to);
+  if (spans(monthRangeOf(from))) return "m";
+  if (spans(quarterRangeOf(from))) return "q";
+  if (spans(yearRangeOf(from))) return "y";
+  return "custom";
+};
+
 export const previousRange = ({
   from,
   to,
