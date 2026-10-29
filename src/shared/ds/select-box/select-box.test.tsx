@@ -381,6 +381,34 @@ describe("RadioSelectBox — 하나 고르기", () => {
     expect(radios()[1]!.getAttribute("aria-checked")).toBe("true");
   });
 
+  it("density compact — 세로형 위아래 12 · 앞 ↔ 글 4, 기본은 20 · 10, 가로형은 그대로", () => {
+    render(
+      <RadioSelectBoxGroup aria-label="종류" columns={2}>
+        <RadioSelectBox value="a" control="none" label="가" density="compact" />
+        <RadioSelectBox value="b" control="none" label="나" />
+        <RadioSelectBox
+          value="c"
+          control="none"
+          label="다"
+          layout="horizontal"
+          density="compact"
+        />
+      </RadioSelectBoxGroup>,
+    );
+    const trig = (i: number) =>
+      container.querySelectorAll<HTMLElement>("[data-slot=select-box-trigger]")[
+        i
+      ]!;
+    const content = (i: number) => trig(i).firstElementChild!;
+    expect(classes(trig(0))).toContain("py-x3");
+    expect(classes(trig(0))).not.toContain("py-x5");
+    expect(classes(content(0))).toContain("gap-x1");
+    expect(classes(trig(1))).toContain("py-x5");
+    expect(classes(content(1))).toContain("gap-x2_5");
+    expect(classes(trig(2))).toContain("py-x4");
+    expect(classes(trig(2))).not.toContain("py-x3");
+  });
+
   it("컨트롤이 있으면 라디오(Radiomark 20)는 자기 링을 끄고 상자의 호버 · 누름을 받는다(group/radio) — 자기 축소는 끈다", () => {
     render(
       <RadioSelectBoxGroup aria-label="종료">

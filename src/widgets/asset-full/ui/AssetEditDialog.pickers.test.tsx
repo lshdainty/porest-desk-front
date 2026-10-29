@@ -369,10 +369,10 @@ describe("고르기 시트의 찾기 · 스위치 · 0건", () => {
       empty!.compareDocumentPosition(manual!) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    // 결과 줄은 늘 라디오가 있다 — 숨기지 않는다
+    // 누르면 바로 더하는 목록 — 줄에 라디오가 없다(selectionMark off, 17-1b Q4 = B)
     expect(
       manual!.querySelector("[data-slot=searchable-list-item-radio]"),
-    ).not.toBeNull();
+    ).toBeNull();
   });
 
   it("종목 검색이 실패하면 0건 안내가 아니라 실패 안내 + 다시 시도, 직접 추가 줄은 맨 아래", async () => {

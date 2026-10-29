@@ -7,6 +7,8 @@ import * as React from "react";
 
 export type SearchableListPlacement = "sheet" | "inline";
 export type SearchableListSize = "large" | "medium" | "responsive";
+/** "on"(기본 — 오른쪽 라디오) · "off"(누르면 바로 더하는 목록 — 라디오 없음, 줄 최소 48) */
+export type SearchableListSelectionMark = "on" | "off";
 export type HighlightSource = "keyboard" | "pointer";
 
 export type SearchableListContextValue = {
@@ -16,6 +18,7 @@ export type SearchableListContextValue = {
   changeQuery: (query: string) => void;
   placement: SearchableListPlacement;
   size: SearchableListSize;
+  selectionMark: SearchableListSelectionMark;
   listboxId: string;
   inputRef: React.RefObject<HTMLInputElement | null>;
   listboxRef: React.RefObject<HTMLElement | null>;

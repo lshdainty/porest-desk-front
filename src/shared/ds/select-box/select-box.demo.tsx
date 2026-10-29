@@ -37,7 +37,9 @@ function Sample({
   selected,
   state,
   kind,
+  density = "default",
 }: {
+  density?: "default" | "compact";
   layout: Layout;
   selected: Selected;
   state: State;
@@ -47,6 +49,7 @@ function Sample({
   const checked = selected === "selected";
   const props = {
     layout,
+    density,
     label: "횟수 지정",
     description: "정한 횟수만큼 반복",
     prefix: <Palette />,
@@ -54,7 +57,11 @@ function Sample({
     footer: <Input aria-label="반복 횟수" defaultValue={12} />,
   };
   return (
-    <Specimen spec="select-box" combo={{ layout, selected }} state={state}>
+    <Specimen
+      spec="select-box"
+      combo={{ layout, selected, density }}
+      state={state}
+    >
       <div
         className="w-[360px]"
         tabIndex={state === "focused" ? -1 : undefined}
@@ -372,6 +379,18 @@ export const SelectBoxDemo = () => (
             ))}
           </Fragment>
         ))}
+        <DemoRow label="vertical · compact (위아래 12 · 앞 ↔ 글 4)">
+          {STATES.map((state) => (
+            <Sample
+              key={state}
+              layout="vertical"
+              density="compact"
+              selected="unselected"
+              state={state}
+              kind={kind}
+            />
+          ))}
+        </DemoRow>
       </DemoBlock>
     ))}
     <DemoBlock title="직접 눌러 보기 — 하나 고르기: ← ↑ ↓ → · Tab 은 고른 상자로 · Space · Enter 는 폼 제출. 여럿: 상자마다 Tab · Space">

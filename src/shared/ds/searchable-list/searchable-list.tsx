@@ -17,6 +17,7 @@ import {
   useSearchableList,
   type HighlightSource,
   type SearchableListPlacement,
+  type SearchableListSelectionMark,
   type SearchableListSize,
 } from "./searchable-list-context";
 import { optionsOf, revealOption } from "./searchable-list-dom";
@@ -104,6 +105,11 @@ export interface SearchableListProps extends Omit<
   placement?: SearchableListPlacement;
   /** "responsive"(기본 — 1280 미만 large 40 · 이상 medium 34) · "large"(앱) · "medium" */
   size?: SearchableListSize;
+  /**
+   * 줄 오른쪽 라디오 — "on"(기본, 칸에 넣는 목록) · "off"(누르면 바로 더하고 닫는 "종목 추가" 같은 목록. 라디오 없음,
+   * 줄 최소 높이 48, value 를 주지 않는다)
+   */
+  selectionMark?: SearchableListSelectionMark;
 }
 
 const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
@@ -119,6 +125,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
       searchDelay = 300,
       placement = "sheet",
       size = "responsive",
+      selectionMark = "on",
       className,
       ...props
     },
@@ -152,7 +159,8 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
     }, [highlighted, children]);
 
     const select = (next: string) => {
-      if (valueProp === undefined) setInnerValue(next);
+      if (valueProp === undefined && selectionMark === "on")
+        setInnerValue(next);
       onValueChange?.(next);
     };
 
@@ -184,6 +192,7 @@ const SearchableList = React.forwardRef<HTMLDivElement, SearchableListProps>(
           changeQuery,
           placement,
           size,
+          selectionMark,
           listboxId,
           inputRef,
           listboxRef,
@@ -488,21 +497,23 @@ const SearchableListItem = React.forwardRef<
               </span>
             )}
           </span>
-          {/* 지금 값 — 라디오 모양(보는 표시). 고름은 줄의 aria-selected 가 알린다 */}
-          <span
-            aria-hidden
-            data-slot="searchable-list-item-radio"
-            data-state={state}
-            className={cn(
-              radiomarkVariants({ size: "large" }),
-              "pointer-events-none",
-            )}
-          >
+          {/* 지금 값 — 라디오 모양(보는 표시). 고름은 줄의 aria-selected 가 알린다. selectionMark off 는 두지 않는다 */}
+          {ctx.selectionMark === "on" && (
             <span
+              aria-hidden
+              data-slot="searchable-list-item-radio"
               data-state={state}
-              className={radiomarkDotVariants({ size: "large" })}
-            />
-          </span>
+              className={cn(
+                radiomarkVariants({ size: "large" }),
+                "pointer-events-none",
+              )}
+            >
+              <span
+                data-state={state}
+                className={radiomarkDotVariants({ size: "large" })}
+              />
+            </span>
+          )}
         </div>
       </div>
     );

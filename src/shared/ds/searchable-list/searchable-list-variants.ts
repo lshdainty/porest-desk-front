@@ -16,7 +16,7 @@ export const OPTION = [
 ].join(" ");
 
 export const OPTION_CONTENT = [
-  "relative flex w-full items-center px-global-gutter py-x3",
+  "relative flex min-h-x12 w-full items-center px-global-gutter py-x3",
   "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "group-active/sl-option:[scale:calc(1-2/var(--press-basis))] motion-reduce:group-active/sl-option:[scale:1]",
 ].join(" ");

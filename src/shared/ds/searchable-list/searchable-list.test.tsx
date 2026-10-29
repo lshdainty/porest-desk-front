@@ -1038,3 +1038,42 @@ describe("팝오버 안 — 열면 초점이 검색칸, Esc 는 검색어 → �
     expect(panel()).toBeNull();
   });
 });
+
+describe("selectionMark", () => {
+  const radios = () =>
+    container.querySelectorAll("[data-slot=searchable-list-item-radio]");
+  const list = (mark?: "on" | "off") => (
+    <SearchableList selectionMark={mark}>
+      <SearchableListInput placeholder="검색" />
+      <SearchableListResults aria-label="결과">
+        <SearchableListItem value="a" title="가" />
+        <SearchableListItem value="b" title="나" />
+      </SearchableListResults>
+    </SearchableList>
+  );
+
+  it("기본(on)은 줄마다 오른쪽 라디오가 있다", () => {
+    render(list());
+    expect(radios()).toHaveLength(2);
+  });
+
+  it("off 는 라디오가 없고 줄 최소 높이 48 을 지키며, 눌러도 값을 들지 않는다", () => {
+    const onValueChange = vi.fn();
+    render(
+      <SearchableList selectionMark="off" onValueChange={onValueChange}>
+        <SearchableListInput placeholder="검색" />
+        <SearchableListResults aria-label="결과">
+          <SearchableListItem value="a" title="가" />
+        </SearchableListResults>
+      </SearchableList>,
+    );
+    expect(radios()).toHaveLength(0);
+    const content = container.querySelector<HTMLElement>(
+      "[data-slot=searchable-list-item-content]",
+    )!;
+    expect(classes(content)).toContain("min-h-x12");
+    act(() => options()[0]!.click());
+    expect(onValueChange).toHaveBeenCalledWith("a");
+    expect(options()[0]!.getAttribute("aria-selected")).toBe("false");
+  });
+});
