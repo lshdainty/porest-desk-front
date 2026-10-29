@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/shared/ds/card";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { withCommaBreaks } from "@/shared/ds/i18n";
-import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
+import { AlertConfirm } from "@/shared/ui/groo/alert-confirm";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import {
   BandEmpty,
@@ -104,10 +104,10 @@ function GoalRow({
               label: tc("delete"),
               icon: <Trash2 />,
               kind: "destructive",
-              // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
+              // 아래 AlertConfirm 과 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
               confirm: {
-                title: t("savingGoal.deleteTitle"),
-                message: t("savingGoal.deleteConfirm", { title: goal.title }),
+                title: t("savingGoal.deleteTitle", { title: goal.title }),
+                message: t("savingGoal.deleteConfirm"),
               },
               onSelect: () => onDeleteConfirmed(goal),
             },
@@ -367,20 +367,12 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
         />
       )}
       {confirmDelete && (
-        <ConfirmDialog
-          title={t("savingGoal.deleteTitle")}
-          message={t("savingGoal.deleteConfirm", {
-            title: confirmDelete.title,
-          })}
+        <AlertConfirm
+          title={t("savingGoal.deleteTitle", { title: confirmDelete.title })}
+          message={t("savingGoal.deleteConfirm")}
           confirmLabel={tCommon("delete")}
-          danger
-          loading={deleteMut.isPending}
-          onCancel={() => setConfirmDelete(null)}
-          onConfirm={() =>
-            deleteMut.mutate(confirmDelete.rowId, {
-              onSuccess: () => setConfirmDelete(null),
-            })
-          }
+          onConfirm={() => deleteMut.mutateAsync(confirmDelete.rowId)}
+          onClose={() => setConfirmDelete(null)}
         />
       )}
     </>

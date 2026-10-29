@@ -13,7 +13,7 @@ import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
 import { MINUS } from "@/shared/lib/groo/format";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon } from "@/shared/ui/groo/primitives";
-import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
+import { AlertConfirm } from "@/shared/ui/groo/alert-confirm";
 import { Button } from "@/shared/ds/button";
 import { Callout } from "@/shared/ds/callout";
 import { Card, CardContent } from "@/shared/ds/card";
@@ -87,7 +87,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   );
   const [editMonthly, setEditMonthly] = useState(false);
   const [confirmCopy, setConfirmCopy] = useState(false);
-  const [copyingPrev, setCopyingPrev] = useState(false);
 
   const budgetList = budgets ?? EMPTY_BUDGETS;
   const categoryList: ExpenseCategory[] = categories ?? EMPTY_CATEGORIES;
@@ -210,10 +209,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     }
   };
 
-  const onDelete = (b: ExpenseBudget) => {
-    deleteMut.mutate(b.rowId, { onSuccess: () => setConfirmDelete(null) });
-  };
-
   const copyFromLastMonth = async () => {
     const prevList = prevBudgetsQ.data ?? [];
     if (prevList.length === 0) {
@@ -223,31 +218,33 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     const existingByKey = new Map<string, ExpenseBudget>();
     for (const b of budgetList)
       existingByKey.set(`${b.categoryRowId ?? "overall"}`, b);
-    // 다이얼로그를 연 채 '복사' 버튼 스피너 — 모든 mutation 완료까지 대기 후 닫기 (앱 정합).
-    setCopyingPrev(true);
-    try {
-      await Promise.all(
-        prevList.map((p) => {
-          const key = `${p.categoryRowId ?? "overall"}`;
-          const exists = existingByKey.get(key);
-          return exists
-            ? updateMut.mutateAsync({
-                id: exists.rowId,
-                budgetAmount: p.budgetAmount,
-              })
-            : createMut.mutateAsync({
-                categoryRowId: p.categoryRowId ?? null,
-                budgetAmount: p.budgetAmount,
-                budgetYear: year,
-                budgetMonth: month,
-              });
-        }),
-      );
-      setConfirmCopy(false);
-    } finally {
-      setCopyingPrev(false);
-    }
+    // 확인창을 연 채 '복사' 버튼 로딩 — 모든 mutation 이 끝날 때까지 기다린다(AlertConfirm 이 닫고, 실패하면 열린 채 둔다).
+    await Promise.all(
+      prevList.map((p) => {
+        const key = `${p.categoryRowId ?? "overall"}`;
+        const exists = existingByKey.get(key);
+        return exists
+          ? updateMut.mutateAsync({
+              id: exists.rowId,
+              budgetAmount: p.budgetAmount,
+            })
+          : createMut.mutateAsync({
+              categoryRowId: p.categoryRowId ?? null,
+              budgetAmount: p.budgetAmount,
+              budgetYear: year,
+              budgetMonth: month,
+            });
+      }),
+    );
   };
+
+  // 확인창이 대상을 이름으로 짚는다 — 줄 이름과 같은 값(spec alert-dialog.md "대상은 이름으로")
+  const deleteName = (b: ExpenseBudget) =>
+    (b.categoryRowId != null
+      ? categoryMap.get(b.categoryRowId)?.categoryName
+      : null) ??
+    b.categoryName ??
+    t("manager.categoryFallback", { id: b.categoryRowId });
 
   const submitting =
     createMut.isPending || updateMut.isPending || deleteMut.isPending;
@@ -367,25 +364,16 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
         />
       )}
       {confirmDelete && (
-        <ConfirmDialog
-          title={t("deleteTitle")}
-          message={t("deleteMessage", {
-            name:
-              (confirmDelete.categoryRowId != null
-                ? categoryMap.get(confirmDelete.categoryRowId)?.categoryName
-                : null) ??
-              confirmDelete.categoryName ??
-              t("thisFallback"),
-          })}
+        <AlertConfirm
+          title={t("deleteTitle", { name: deleteName(confirmDelete) })}
+          message={t("deleteMessage")}
           confirmLabel={tCommon("delete")}
-          danger
-          loading={deleteMut.isPending}
-          onCancel={() => setConfirmDelete(null)}
-          onConfirm={() => onDelete(confirmDelete)}
+          onConfirm={() => deleteMut.mutateAsync(confirmDelete.rowId)}
+          onClose={() => setConfirmDelete(null)}
         />
       )}
       {confirmCopy && (
-        <ConfirmDialog
+        <AlertConfirm
           title={t("copyTitle")}
           message={t("copyMessage", {
             prevYear: prevY,
@@ -395,9 +383,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             month,
           })}
           confirmLabel={t("copy")}
-          loading={copyingPrev}
-          onCancel={() => setConfirmCopy(false)}
+          tone="neutralSolid"
           onConfirm={copyFromLastMonth}
+          onClose={() => setConfirmCopy(false)}
         />
       )}
     </>
@@ -584,10 +572,10 @@ function CategoryArea({
               label: tCommon("delete"),
               icon: <Trash2 />,
               kind: "destructive",
-              // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 문구가 갈리면 경로에 따라 다른 말이 나온다
+              // 아래 AlertConfirm 과 같은 키 — 같은 삭제인데 문구가 갈리면 경로에 따라 다른 말이 나온다
               confirm: {
-                title: t("deleteTitle"),
-                message: t("deleteMessage", { name: `"${label}"` }),
+                title: t("deleteTitle", { name: label }),
+                message: t("deleteMessage"),
                 loading: deleting,
               },
               onSelect: () => onDeleteConfirmed(b),

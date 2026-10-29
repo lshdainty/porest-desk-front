@@ -42,13 +42,19 @@ const mut = () => ({
   mutateAsync: vi.fn(),
   isPending: false,
 });
+const deleteAsync = vi.fn(() => Promise.resolve());
+const createAsync = vi.fn(() => Promise.resolve());
+const updateAsync = vi.fn(() => Promise.resolve());
+const prev = { data: [] as unknown[], isLoading: false };
+
 vi.mock("@/features/expense", () => ({
-  useExpenseBudgets: () => state.budgets,
+  useExpenseBudgets: (a: { month: number }) =>
+    a.month === new Date().getMonth() + 1 ? state.budgets : prev,
   useRangeSummary: () => state.summary,
   useExpenseCategories: () => state.cats,
-  useCreateExpenseBudget: mut,
-  useUpdateExpenseBudget: mut,
-  useDeleteExpenseBudget: mut,
+  useCreateExpenseBudget: () => ({ ...mut(), mutateAsync: createAsync }),
+  useUpdateExpenseBudget: () => ({ ...mut(), mutateAsync: updateAsync }),
+  useDeleteExpenseBudget: () => ({ ...mut(), mutateAsync: deleteAsync }),
 }));
 
 const { BudgetManager } = await import("./BudgetManager");
@@ -194,5 +200,68 @@ describe("예산 설정 데스크톱 — 카드 그대로, 줄 끝 수정 · 삭
     );
     expect(names.some((n) => n?.startsWith("manager.editNamed"))).toBe(true);
     expect(names.some((n) => n?.startsWith("manager.deleteNamed"))).toBe(true);
+  });
+});
+
+describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
+  const press = async (el: Element | null | undefined) => {
+    await act(async () => {
+      (el as HTMLElement).click();
+    });
+  };
+  const dialog = () => document.querySelector("[role=alertdialog]");
+  const action = () =>
+    document.querySelector("[data-slot=alert-dialog-action]");
+  const label = (name: string) =>
+    Array.from(document.querySelectorAll("button")).find((x) =>
+      x.textContent?.includes(name),
+    );
+
+  it("삭제 — 제목이 이름을 짚고, 확정은 criticalSolid · 취소는 neutralWeak, 바깥은 닫지 않는다", async () => {
+    deleteAsync.mockClear();
+    render(false);
+    await press(container.querySelector("[aria-label^='manager.deleteNamed']"));
+    const d = dialog();
+    expect(d?.getAttribute("aria-modal")).toBe("true");
+    expect(d?.textContent).toContain("deleteTitle");
+    expect(d?.textContent).toContain("카테고리명 1");
+    expect(action()?.className).toContain("bg-bg-critical-solid");
+    expect(
+      d?.querySelector("[data-slot=alert-dialog-cancel]")?.className,
+    ).toContain("bg-bg-neutral-weak");
+    // 바깥(딤)을 눌러도 닫히지 않는다
+    await act(async () => {
+      document
+        .querySelector("[data-slot=alert-dialog-overlay]")
+        ?.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
+    });
+    expect(dialog()).not.toBeNull();
+    expect(deleteAsync).not.toHaveBeenCalled();
+    await press(action());
+    expect(deleteAsync).toHaveBeenCalledWith(2);
+    expect(dialog()).toBeNull();
+  });
+
+  it("삭제가 실패하면 열린 채 둔다", async () => {
+    deleteAsync.mockRejectedValueOnce(new Error("x"));
+    render(false);
+    await press(container.querySelector("[aria-label^='manager.deleteNamed']"));
+    await press(action());
+    expect(dialog()).not.toBeNull();
+  });
+
+  it("지난달 복사 — 확정은 neutralSolid, 끝나면 닫는다", async () => {
+    createAsync.mockClear();
+    updateAsync.mockClear();
+    prev.data = [b(9, 1, 500_000)];
+    render(false);
+    await press(label("copyLastMonth"));
+    const d = dialog();
+    expect(d?.textContent).toContain("copyTitle");
+    expect(action()?.className).toContain("bg-bg-neutral-inverted");
+    await press(action());
+    expect(updateAsync).toHaveBeenCalledWith({ id: 2, budgetAmount: 500_000 });
+    expect(dialog()).toBeNull();
+    prev.data = [];
   });
 });
