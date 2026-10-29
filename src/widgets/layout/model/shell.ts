@@ -52,8 +52,8 @@ export const isFullscreenPath = (pathname: string) =>
  * 폰 화면 바탕 종류(02-005 C · layout "화면 바탕") — 바닥은 늘 basement 이고 그 위에 놓는 것이 갈린다.
  *  bands = 구역마다 화면 폭 흰 띠, 띠 사이 8 만(시작 · 끝 틈 없음 — I-05 74) — 화면이 ScreenBands 로 직접 그린다(홈 · 자산 · 통계 · 예산,
  *          2026-10-21 I-01 결정 3 — 폰에는 카드 화면이 없다. 데스크톱은 같은 구역을 카드로)
- *  strip = 머리 바로 아래 화면 폭 흰 띠(캘린더 · 검색 …) — 셸이 띠 하나를 깐다
- *  white = 화면 전체가 흰 층(가계부 거래 목록 · 전체)
+ *  strip = 머리 바로 아래 화면 폭 흰 띠(검색 …) — 셸이 띠 하나를 깐다
+ *  white = 화면 전체가 흰 층(가계부 거래 목록 · 캘린더 · 전체)
  */
 export type ScreenFloor = "bands" | "strip" | "white";
 export function screenFloor(pathname: string): ScreenFloor {
@@ -64,8 +64,13 @@ export function screenFloor(pathname: string): ScreenFloor {
     under(pathname, "/desk/budget")
   )
     return "bands";
-  // 가계부 거래 · 전체는 화면 전체가 흰 층(I-12 2-B — 전체는 흰 면 하나)
-  if (under(pathname, "/desk/expense") || pathname === "/desk/more")
+  // 가계부 거래 · 전체는 화면 전체가 흰 층(I-12 2-B — 전체는 흰 면 하나). 캘린더도 같다 — 폰 달력은 "흰 면 하나"(I-09 1-A)라
+  // 격자 아래부터 탭 바 뒤까지 흰 면이 이어진다(앱과 같게, 사용자 10-29 — 예전엔 strip 이라 격자 아래가 회색 바닥으로 끊겼다)
+  if (
+    under(pathname, "/desk/expense") ||
+    under(pathname, "/desk/calendar") ||
+    pathname === "/desk/more"
+  )
     return "white";
   return "strip";
 }
