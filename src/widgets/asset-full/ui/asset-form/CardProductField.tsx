@@ -84,14 +84,15 @@ function CardProductList({
       <SearchableListInput
         placeholder={t("editDialog.cardSearchPlaceholder")}
       />
+      {/* 단종 스위치 줄은 검색칸 바로 아래에 고정 — 흐림 스크롤은 결과만(지시서 19) */}
+      <List className="shrink-0">
+        <ListSwitchItem
+          title={t("editDialog.includeDiscontinued")}
+          checked={includeDiscontinued}
+          onCheckedChange={setIncludeDiscontinued}
+        />
+      </List>
       <PickResults>
-        <List>
-          <ListSwitchItem
-            title={t("editDialog.includeDiscontinued")}
-            checked={includeDiscontinued}
-            onCheckedChange={setIncludeDiscontinued}
-          />
-        </List>
         {q.isError ? (
           <SearchableListError
             retrying={q.isFetching}

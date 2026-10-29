@@ -329,6 +329,17 @@ describe("고르기 시트의 찾기 · 스위치 · 0건", () => {
     expect(keywords().has("숲")).toBe(false);
   });
 
+  it("단종 스위치 줄은 검색칸 바로 아래에 고정 — 흐림 스크롤 밖", () => {
+    open(null, "신용카드");
+    click(fieldControl("editDialog.cardProduct"));
+    const sw = document.querySelector("[role=switch]")!;
+    expect(sw.closest("[data-slot=scroll-fog]")).toBeNull();
+    const search = searchInput().closest("[data-slot=searchable-list-field]")!;
+    expect(
+      search.compareDocumentPosition(sw) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("단종 스위치를 켜면 목록 요청이 바로 바뀐다", () => {
     open(null, "신용카드");
     click(fieldControl("editDialog.cardProduct"));
