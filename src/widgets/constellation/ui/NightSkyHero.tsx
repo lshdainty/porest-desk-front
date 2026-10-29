@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Cloud, Sparkles } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
@@ -114,23 +114,15 @@ function HeroFigure({
   );
 }
 
-export function NightSkyHero({
+/** 상세 시트 — 도감은 시트를 열 때만 받는다(할 일 화면이 도감 86줄을 미리 받지 않게). 도감이 아직 없으면 수집 0 으로 열린다("미수집") */
+function TodaySkyDetail({
   today,
-  doneToday,
-  wide = false,
+  onClose,
 }: {
   today: ConstellationToday;
-  doneToday: number;
-  /** 데스크톱 카드 — 안 여백 24 (폰 20) */
-  wide?: boolean;
+  onClose: () => void;
 }) {
-  const { t, i18n } = useTranslation("constellation");
   const collectionQ = useConstellationCollection();
-  const [open, setOpen] = useState(false);
-  const lit = Math.min(today.points, today.goal);
-  const done = today.collected;
-  const name = constellationName(today.constellation, i18n.language);
-  // 상세 시트가 읽는 도감 줄 — 도감이 아직 없으면 오늘 값으로 만든다
   const entry: CollectionEntry = useMemo(
     () =>
       collectionQ.data?.entries.find(
@@ -144,7 +136,38 @@ export function NightSkyHero({
       },
     [collectionQ.data, today.constellation],
   );
+  return (
+    <ConstellationDetailDialog entry={entry} today={today} onClose={onClose} />
+  );
+}
 
+// 누르는 순간 기준 길이 max(높이, 폭 ÷ 4, 24) — Card 와 같다(그라디언트 면은 2px 축소만, card.yaml:184-186)
+function measurePress(e: PointerEvent<HTMLElement>) {
+  const el = e.currentTarget;
+  el.style.setProperty(
+    "--press-basis",
+    String(Math.max(el.offsetHeight, el.offsetWidth / 4, 24)),
+  );
+}
+
+export function NightSkyHero({
+  today,
+  doneToday,
+  wide = false,
+}: {
+  today: ConstellationToday;
+  doneToday: number;
+  /** 데스크톱 카드 — 안 여백 24 (폰 20) */
+  wide?: boolean;
+}) {
+  const { t, i18n } = useTranslation("constellation");
+  const [open, setOpen] = useState(false);
+  const lit = Math.min(today.points, today.goal);
+  const done = today.collected;
+  const name = constellationName(today.constellation, i18n.language);
+  const ids = { desc: useId(), rows: useId() };
+
+  const label = done ? t("hero.collectedBang", { name }) : name;
   const caption = done
     ? t("hero.captionDone")
     : doneToday > 0 || today.memoPoints > 0
@@ -164,10 +187,14 @@ export function NightSkyHero({
       <button
         type="button"
         aria-haspopup="dialog"
+        aria-label={t("hero.label", { name, lit, goal: today.goal })}
+        aria-describedby={`${ids.desc} ${ids.rows}`}
         onClick={() => setOpen(true)}
+        onPointerDown={measurePress}
         data-slot="night-sky-hero"
         className={cn(
           "relative flex w-full min-h-[168px] cursor-pointer flex-col overflow-hidden rounded-r4 border-0 p-x5 text-left font-sans text-fg-neutral-inverted",
+          "[transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] active:[scale:calc(1-2/var(--press-basis,200))] motion-reduce:active:[scale:1]",
           wide && "p-x6",
           SKY_BG,
         )}
@@ -210,15 +237,20 @@ export function NightSkyHero({
             <span className="block text-t3 text-fg-neutral-inverted">
               {t("hero.todayTarget")}
             </span>
-            <span className="mt-x0_5 block break-keep text-t8 font-bold text-fg-neutral-inverted [overflow-wrap:break-word]">
-              {done ? t("hero.collectedBang", { name }) : name}
-              <ChevronRight
-                aria-hidden
-                className="ml-x0_5 inline size-x5 align-[-3px]"
-              />
-            </span>
-            <span className="mt-x0_5 block whitespace-nowrap text-t4 font-bold tabular-nums text-fg-neutral-inverted">
-              {t("hero.starlightCount", { lit, goal: today.goal })}
+            <span className="mt-x0_5 flex flex-wrap items-baseline gap-x-x2">
+              <span className="min-w-0 break-keep text-t8 font-bold text-fg-neutral-inverted [overflow-wrap:break-word]">
+                {label.slice(0, -1)}
+                <span className="whitespace-nowrap">
+                  {label.slice(-1)}
+                  <ChevronRight
+                    aria-hidden
+                    className="ml-x0_5 inline size-x5 align-[-3px]"
+                  />
+                </span>
+              </span>
+              <span className="whitespace-nowrap text-t4 font-bold tabular-nums text-fg-neutral-inverted">
+                {t("hero.starlightCount", { lit, goal: today.goal })}
+              </span>
             </span>
           </span>
           <span className="-mr-x1 -mt-x1">
@@ -229,10 +261,16 @@ export function NightSkyHero({
             />
           </span>
         </span>
-        <span className="relative mt-auto block break-keep pt-x4 text-t3 text-fg-neutral-inverted [overflow-wrap:break-word]">
+        <span
+          id={ids.desc}
+          className="relative mt-auto block break-keep pt-x4 text-t3 text-fg-neutral-inverted [overflow-wrap:break-word]"
+        >
           {caption}
         </span>
-        <span className="relative mt-x2 flex flex-wrap items-center gap-x-x3 gap-y-x1_5 text-t3 text-fg-neutral-inverted">
+        <span
+          id={ids.rows}
+          className="relative mt-x2 flex flex-wrap items-center gap-x-x3 gap-y-x1_5 text-t3 text-fg-neutral-inverted"
+        >
           <span className="inline-flex items-start gap-x1 font-bold">
             <span aria-hidden className="flex h-[1lh] items-center">
               <Sparkles className="size-x3_5 shrink-0" />
@@ -247,13 +285,7 @@ export function NightSkyHero({
           </span>
         </span>
       </button>
-      {open && (
-        <ConstellationDetailDialog
-          entry={entry}
-          today={today}
-          onClose={() => setOpen(false)}
-        />
-      )}
+      {open && <TodaySkyDetail today={today} onClose={() => setOpen(false)} />}
     </>
   );
 }
