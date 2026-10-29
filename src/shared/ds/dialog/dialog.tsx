@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 import { cn } from "@/shared/lib/cn";
 import { Button, type ButtonProps } from "@/shared/ds/button";
@@ -36,6 +36,8 @@ import {
   DIALOG_HEADER_WITH_ACTION_CLOSE,
   DIALOG_HEADER_ACTION,
   DIALOG_HEADER_ACTION_CLOSE,
+  DIALOG_BACK,
+  DIALOG_TITLE_WITH_BACK,
   DIALOG_OVERLAY,
   DIALOG_SIZE,
   DIALOG_TITLE,
@@ -194,6 +196,8 @@ export interface DialogContentProps extends Omit<
   size?: keyof typeof DIALOG_SIZE;
   /** 머리 오른쪽 동작 하나 — ghost iconOnly 36 단추(⋮ "{항목 이름} 더보기"). 닫기 단추가 있으면 그 왼쪽 사이 4, 없으면(입력 폼) 오른쪽 끝. 제목은 남은 폭에서 줄을 바꾼다 */
   headerAction?: React.ReactNode;
+  /** 머리 왼쪽 뒤로 가기 — 같은 대화상자 안에서 한 단계 되돌아갈 때(← 아이콘 단추 "뒤로", 보이는 40 · 누르는 44). 제목은 그 오른쪽 사이 4 에서 시작한다 */
+  onBack?: () => void;
 }
 
 const DialogContent = React.forwardRef<
@@ -212,6 +216,7 @@ const DialogContent = React.forwardRef<
       onCloseAutoFocus,
       onInteractOutside,
       headerAction,
+      onBack,
       ...props
     },
     ref,
@@ -288,9 +293,20 @@ const DialogContent = React.forwardRef<
                     : DIALOG_HEADER_WITH_ACTION),
               )}
             >
+              {onBack && (
+                <button
+                  type="button"
+                  aria-label={dsT("topNavigation.back")}
+                  data-slot="dialog-back"
+                  className={DIALOG_BACK}
+                  onClick={onBack}
+                >
+                  <ArrowLeft aria-hidden strokeWidth={2} />
+                </button>
+              )}
               <DialogPrimitive.Title
                 data-slot="dialog-title"
-                className={DIALOG_TITLE}
+                className={cn(DIALOG_TITLE, onBack && DIALOG_TITLE_WITH_BACK)}
               >
                 {title}
               </DialogPrimitive.Title>
@@ -476,6 +492,8 @@ export interface ResponsiveDialogContentProps extends Omit<
   size?: keyof typeof DIALOG_SIZE;
   /** 머리 오른쪽 동작 하나(ghost iconOnly 36) — 시트 · 대화상자 모두 */
   headerAction?: React.ReactNode;
+  /** 머리 왼쪽 뒤로 가기(← "뒤로") — 같은 표면 안에서 한 단계 되돌아갈 때, 시트 · 대화상자 모두 */
+  onBack?: () => void;
   /** 열릴 때 초점 — 기본은 표면(컨테이너). 폼이 첫 칸에 초점을 줄 때 e.preventDefault() 하고 직접 옮긴다(두 표면 모두 같다) */
   onOpenAutoFocus?: (event: Event) => void;
 }

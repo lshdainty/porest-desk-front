@@ -11,8 +11,8 @@ describe("assetTypeLabel", () => {
     await i18n.changeLanguage(orig);
   });
 
-  it("잔액이 음수인 입출금은 마이너스통장으로 읽는다 (QA #17)", () => {
-    expect(assetTypeLabel("BANK_ACCOUNT", -1)).toBe("마이너스통장");
+  it("잔액이 음수인 입출금은 마이너스 통장으로 읽는다 (QA #17)", () => {
+    expect(assetTypeLabel("BANK_ACCOUNT", -1)).toBe("마이너스 통장");
   });
 
   it("0·양수는 그대로 입출금", () => {

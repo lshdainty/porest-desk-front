@@ -11,6 +11,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
+import { installDomStubs } from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -43,31 +44,21 @@ vi.mock("@/features/subscription/model/useSubscription", () => ({
 }));
 vi.mock("@/features/user", () => ({ useDefaultCurrency: () => "KRW" }));
 
-// 확인창은 껍데기로 바꾼다 — 비밀번호 입력·검증은 이 테스트의 주장이 아니다.
-vi.mock("@/widgets/account-settings/ui/HideAmountsUnlockDialog", () => ({
-  HideAmountsUnlockDialog: ({
-    open,
-    onOpenChange,
-    onVerified,
-  }: {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onVerified: () => void;
-  }) =>
-    open ? (
-      <div data-unlock="open">
-        <button type="button" data-unlock="verify" onClick={onVerified}>
-          확인됨
-        </button>
-        <button
-          type="button"
-          data-unlock="cancel"
-          onClick={() => onOpenChange(false)}
-        >
-          취소
-        </button>
-      </div>
-    ) : null,
+// 본인 확인 본문은 껍데기로 바꾼다 — 비밀번호 입력·검증은 이 테스트의 주장이 아니다(그 부품의 테스트다).
+// 껍데기의 `submit` 은 확인이 끝난 것으로 친다.
+vi.mock("@/widgets/account-settings/ui/HideAmountsUnlockBody", () => ({
+  HideAmountsUnlockFields: () => <div data-unlock="open" />,
+}));
+vi.mock("@/widgets/account-settings/ui/use-hide-amounts-unlock", () => ({
+  useHideAmountsUnlock: ({ onVerified }: { onVerified: () => void }) => ({
+    password: "x",
+    setPassword: () => {},
+    error: null,
+    clearError: () => {},
+    pending: false,
+    canSubmit: true,
+    submit: onVerified,
+  }),
 }));
 
 const { AssetEditDialog } = await import("./AssetEditDialog");
@@ -99,8 +90,9 @@ let root: Root;
 type Payload = Record<string, unknown>;
 let update: Payload | null;
 
-function open(item: Asset) {
+function open(item: Asset, wide = false) {
   update = null;
+  installDomStubs({ wide });
   __resetPointerBlockForTest();
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -109,8 +101,6 @@ function open(item: Asset) {
     root.render(
       <AssetEditDialog
         item={item}
-        group="account"
-        mobile={false}
         onClose={() => {}}
         onCreate={() => {}}
         onUpdate={(v) => {
@@ -139,11 +129,17 @@ const saveButton = () =>
     (b) => b.textContent?.trim() === "save",
   );
 const unlockOpen = () => !!document.body.querySelector('[data-unlock="open"]');
+// 인증 단계의 바닥 [금액 보기](확인됨) · 머리 ←(뒤로 — 저장하지 않고 2단계로)
 const unlockBtn = (act: "verify" | "cancel") =>
-  document.body.querySelector(`[data-unlock="${act}"]`);
+  act === "verify"
+    ? [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "hideAmounts.viewAmounts",
+      )
+    : document.body.querySelector("[data-slot=bottom-sheet-back]");
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  installDomStubs();
 });
 
 afterEach(() => {
@@ -209,5 +205,26 @@ describe("금액 숨김 해제 — 폼 저장의 본인 확인", () => {
     click(saveButton());
     expect(unlockOpen()).toBe(true);
     expect(update).toBeNull();
+  });
+});
+
+describe("1280 이상 — 인증 단계도 같은 대화상자", () => {
+  it("[취소] 가 있고 누르면 저장하지 않고 2단계로 돌아간다(머리 ← 와 같다)", () => {
+    open(account, true);
+    click(hideSwitch());
+    click(saveButton());
+    expect(unlockOpen()).toBe(true);
+    expect(document.querySelectorAll("[data-slot=dialog-content]").length).toBe(
+      1,
+    );
+    const cancel = [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === "hideAmounts.cancel",
+    );
+    expect(cancel).toBeDefined();
+    expect(document.querySelector("[data-slot=dialog-back]")).not.toBeNull();
+    click(cancel);
+    expect(unlockOpen()).toBe(false);
+    expect(update).toBeNull();
+    expect(saveButton()).toBeDefined();
   });
 });

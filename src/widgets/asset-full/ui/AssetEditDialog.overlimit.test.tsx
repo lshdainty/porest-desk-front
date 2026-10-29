@@ -13,6 +13,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
+import { installDomStubs } from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -125,7 +126,7 @@ function unmountAll() {
   }
 }
 
-function open(item: Asset, group: "account" | "card" | "invest") {
+function open(item: Asset) {
   unmountAll();
   __resetPointerBlockForTest();
   const container = document.createElement("div");
@@ -137,8 +138,6 @@ function open(item: Asset, group: "account" | "card" | "invest") {
     root.render(
       <AssetEditDialog
         item={item}
-        group={group}
-        mobile={false}
         onClose={() => {}}
         onCreate={() => {}}
         onUpdate={(v) => {
@@ -159,33 +158,34 @@ function open(item: Asset, group: "account" | "card" | "invest") {
   };
 }
 
-/** 초과 배지 — Badge 는 div 라 텍스트로 찾는다. */
-const badge = () =>
-  [...document.body.querySelectorAll("div")].find(
-    (d) => d.textContent?.trim() === "editDialog.overLimitBadge",
-  ) ?? null;
-
+/** 초과 안내 — 넘긴 금액 칸의 Field 설명 한 줄이다(경고 아이콘 + 글). */
 const overHelp = () =>
-  [...document.body.querySelectorAll("p")].find((p) =>
-    p.textContent?.startsWith("editDialog.overLimitHelp"),
+  [...document.body.querySelectorAll("span")].find(
+    (sp) =>
+      sp.children.length === 0 &&
+      (sp.textContent ?? "").startsWith("editDialog.overLimitHelp"),
   ) ?? null;
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  installDomStubs();
 });
 
 afterEach(unmountAll);
 
 describe("한도 초과 — 보이되 막지 않는다 (QA #125)", () => {
-  it("신용카드: 사용액이 한도를 넘으면 배지와 초과 금액이 뜬다", () => {
-    open(overCard, "card");
-    expect(badge()).not.toBeNull();
-    // 초과분 200만원을 통화 표기로 알려 준다 — 배지만으로는 얼마인지 모른다.
+  it("신용카드: 사용액이 한도를 넘으면 초과 금액을 설명 한 줄로 알린다 — 칸을 오류로 칠하지 않는다", () => {
+    open(overCard);
+    // 초과분 200만원을 통화 표기로 알려 준다.
     expect(overHelp()?.textContent).toBe("editDialog.overLimitHelp|₩2,000,000");
+    const field = overHelp()!.closest("[data-slot=field]")!;
+    expect(field.hasAttribute("data-invalid")).toBe(false);
+    // 경고 아이콘이 앞에 붙는다(Field 설명 아이콘)
+    expect(field.querySelector("[data-slot=field-footer] svg")).not.toBeNull();
   });
 
   it("신용카드: 넘겨도 저장이 나간다 — 서버 검사도 없다", () => {
-    const { save } = open(overCard, "card");
+    const { save } = open(overCard);
     const { update, btn } = save();
     expect(btn.hasAttribute("disabled")).toBe(false);
     expect(update).not.toBeNull();
@@ -195,9 +195,8 @@ describe("한도 초과 — 보이되 막지 않는다 (QA #125)", () => {
     expect(update!.creditLimit).toBe(3_000_000);
   });
 
-  it("마이너스통장: 쓴 돈이 약정 한도를 넘으면 배지가 뜨고 저장도 된다", () => {
-    const { save } = open(overOverdraft, "account");
-    expect(badge()).not.toBeNull();
+  it("마이너스통장: 쓴 돈이 약정 한도를 넘으면 안내가 뜨고 저장도 된다", () => {
+    const { save } = open(overOverdraft);
     expect(overHelp()?.textContent).toBe("editDialog.overLimitHelp|₩1,500,000");
     const { update } = save();
     expect(update!.balance).toBe(-2_500_000);
@@ -205,14 +204,12 @@ describe("한도 초과 — 보이되 막지 않는다 (QA #125)", () => {
   });
 
   it("한도 안쪽이면 아무 말도 안 한다", () => {
-    open(underCard, "card");
-    expect(badge()).toBeNull();
+    open(underCard);
     expect(overHelp()).toBeNull();
   });
 
   it("한도를 안 적어 뒀으면 견줄 값이 없어 조용하다", () => {
-    open(noLimitCard, "card");
-    expect(badge()).toBeNull();
+    open(noLimitCard);
     expect(overHelp()).toBeNull();
   });
 });

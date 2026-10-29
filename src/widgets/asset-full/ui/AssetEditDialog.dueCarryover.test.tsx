@@ -15,7 +15,15 @@ import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
 import type { Asset } from "@/entities/asset";
 import type { CardCatalogSummary } from "@/entities/card";
 import { formatDay } from "@/shared/lib/groo/format";
-import { currencyUnit } from "@/shared/lib/groo/currency";
+import {
+  bodyText,
+  buttons,
+  chooseSelect,
+  click,
+  fieldControl,
+  installDomStubs,
+  setInput,
+} from "./asset-form/test-helpers";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -78,9 +86,8 @@ vi.mock("@/features/user", () => ({ useDefaultCurrency: () => "KRW" }));
 
 const { AssetEditDialog } = await import("./AssetEditDialog");
 
-/** 화면과 같은 표기 — 테스트 환경의 로케일을 따른다(날짜 `Sep 14` · 단위 `₩` 꼴). */
+/** 화면과 같은 표기 — 테스트 환경의 로케일을 따른다(날짜 `Sep 14` 꼴). */
 const md = (key: string) => formatDay(key).md;
-const unit = currencyUnit("KRW");
 
 /** 결제일 14일 신용카드 — 9/10 에 등록, 8월 회차가 9/14 결제를 기다린다. */
 const card: Asset = {
@@ -124,14 +131,7 @@ beforeEach(() => {
   // 오늘은 2026-09-10 — Date 만 멈춘다(Radix 타이머는 그대로 돈다).
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date(2026, 8, 10, 12, 0));
-  const proto = window.HTMLElement.prototype as unknown as Record<
-    string,
-    unknown
-  >;
-  proto.hasPointerCapture = () => false;
-  proto.setPointerCapture = () => {};
-  proto.releasePointerCapture = () => {};
-  proto.scrollIntoView = () => {};
+  installDomStubs();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -148,8 +148,7 @@ function open(item: Asset | null) {
     root.render(
       <AssetEditDialog
         item={item}
-        group="card"
-        mobile={false}
+        kind={item ? undefined : "신용카드"}
         onClose={() => {}}
         onCreate={(v) => {
           created = v as unknown as Record<string, unknown>;
@@ -162,64 +161,27 @@ function open(item: Asset | null) {
   );
 }
 
-const click = (el: Element) =>
-  act(() => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-const buttons = (text: string) =>
-  [...document.body.querySelectorAll("button")].filter(
-    (b) => b.textContent?.trim() === text,
-  );
 /** 그 이름의 마지막 버튼 — 확인창이 뜨면 저장이 나중에 붙는다. */
 const lastButton = (text: string) => {
   const all = buttons(text);
   return all[all.length - 1]!;
 };
-const bodyText = () => document.body.textContent ?? "";
-const dueInput = () =>
-  document.body.querySelector<HTMLInputElement>("#asset-edit-due");
+const dueInput = () => fieldControl("editDialog.dueCarryoverLabel");
 const afterInput = () =>
-  document.body.querySelector<HTMLInputElement>("#asset-edit-balance")!;
+  (fieldControl("editDialog.carryoverAfterLabel") ??
+    fieldControl("editDialog.balanceLabelCard"))!;
 
-function setInput(el: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value",
-  )?.set;
-  act(() => {
-    setter?.call(el, value);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
-
-function pickPaymentDay(day: number) {
-  const trigger = [
-    ...document.body.querySelectorAll<HTMLButtonElement>("[role='combobox']"),
-  ].find((b) =>
-    /editDialog\.(dayUnit|paymentDayPlaceholder)/.test(b.textContent ?? ""),
-  );
-  if (!trigger) throw new Error("결제일 select 를 찾지 못했다");
-  act(() => {
-    trigger.focus();
-    trigger.dispatchEvent(
-      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
-    );
-  });
-  const option = [...document.body.querySelectorAll("[role='option']")].find(
-    (el) => el.textContent?.trim() === `editDialog.dayUnit|day=${day}`,
-  );
-  if (!option) throw new Error(`결제일 항목을 찾지 못했다: ${day}`);
-  act(() =>
-    option.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-    ),
-  );
-}
+const pickPaymentDay = (day: number) =>
+  chooseSelect("editDialog.paymentDay", `editDialog.dayUnit|day=${day}`);
 
 /** 새 신용카드 — 카탈로그에서 카드를 고르고 결제일을 정한다. */
 function newCard(paymentDay: number) {
   open(null);
-  const pick = [
-    ...document.body.querySelectorAll("button, [role='button'], li"),
-  ].find((el) => el.textContent?.includes("현대 ZERO"));
+  // 카드 상품 칸 → 고르기 시트(검색 줄) → 카드 줄을 누르면 닫히며 값이 들어간다(I-17 19)
+  click(fieldControl("editDialog.cardProduct"));
+  const pick = [...document.body.querySelectorAll("[role='option']")].find(
+    (el) => el.textContent?.includes("현대 ZERO"),
+  );
   if (!pick) throw new Error("카탈로그 카드를 찾지 못했다");
   click(pick);
   pickPaymentDay(paymentDay);
@@ -231,9 +193,9 @@ describe("새 카드 — 결제일 전이면 칸이 둘이다", () => {
 
     expect(dueInput()).not.toBeNull();
     expect(bodyText()).toContain(
-      `editDialog.dueCarryoverLabel|date=${md("2026-09-12")},unit=${unit}`,
+      `editDialog.dueCarryoverLabel|date=${md("2026-09-12")}`,
     );
-    expect(bodyText()).toContain(`editDialog.carryoverAfterLabel|unit=${unit}`);
+    expect(bodyText()).toContain("editDialog.carryoverAfterLabel");
     expect(bodyText()).toContain(
       `editDialog.carryoverAfterHelp|date=${md("2026-10-12")}`,
     );
@@ -244,7 +206,7 @@ describe("새 카드 — 결제일 전이면 칸이 둘이다", () => {
     for (const day of [10, 5]) {
       newCard(day);
       expect(dueInput(), `결제일 ${day}`).toBeNull();
-      expect(bodyText()).toContain(`editDialog.balanceLabelCard|unit=${unit}`);
+      expect(bodyText()).toContain("editDialog.balanceLabelCard");
       act(() => root.unmount());
       root = createRoot(container);
     }
@@ -276,9 +238,9 @@ describe("기존 카드 — 서버가 칸을 줄 때만", () => {
   it("열려 있으면 청구분으로 열리고, 고쳐 저장하면 싣는다(0 이면 지운다)", () => {
     open(card);
     expect(dueInput()!.value).toBe("30,000");
-    expect(dueInput()!.disabled).toBe(false);
+    expect(dueInput()!.readOnly).toBe(false);
     expect(bodyText()).toContain(
-      `editDialog.dueCarryoverLabel|date=${md("2026-09-14")},unit=${unit}`,
+      `editDialog.dueCarryoverLabel|date=${md("2026-09-14")}`,
     );
     expect(bodyText()).toContain("editDialog.carryoverAfterHelpNoDate");
 
@@ -292,7 +254,7 @@ describe("기존 카드 — 서버가 칸을 줄 때만", () => {
       ...card,
       dueCarryover: { amount: 30_000, locked: true, paymentDate: "2026-09-14" },
     });
-    expect(dueInput()!.disabled).toBe(true);
+    expect(dueInput()!.readOnly).toBe(true);
     expect(bodyText()).toContain("editDialog.carryoverLocked");
 
     click(lastButton("save"));
@@ -302,7 +264,7 @@ describe("기존 카드 — 서버가 칸을 줄 때만", () => {
   it("칸이 없으면(null) 종전 그대로 — 칸 하나, 키 없음", () => {
     open({ ...card, dueCarryover: null });
     expect(dueInput()).toBeNull();
-    expect(bodyText()).toContain(`editDialog.balanceLabelCard|unit=${unit}`);
+    expect(bodyText()).toContain("editDialog.balanceLabelCard");
 
     click(lastButton("save"));
     expect("dueCarryoverAmount" in updated!).toBe(false);

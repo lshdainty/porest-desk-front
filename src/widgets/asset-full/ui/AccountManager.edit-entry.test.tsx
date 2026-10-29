@@ -23,7 +23,7 @@ const state = vi.hoisted(() => ({
   assets: [] as unknown[],
   isLoading: false,
   /** 열린 편집 폼이 무엇을 받았는지. */
-  opened: null as { rowId: number | null; group: string } | null,
+  opened: null as { rowId: number | null } | null,
 }));
 
 vi.mock("react-i18next", () => ({
@@ -39,10 +39,10 @@ vi.mock("@/features/asset", () => ({
   useUpdateAsset: () => ({ mutate: () => {}, isPending: false }),
   useDeleteAsset: () => ({ mutate: () => {}, isPending: false }),
 }));
-// 편집 폼 자체는 자기 쿼리를 여럿 건다 — 여기선 "무엇으로 열렸는가" 만 본다.
+// 편집 폼 자체는 자기 쿼리를 여럿 건다 — 여기선 "어느 자산으로 열렸는가" 만 본다(종류는 폼이 자산에서 잰다 — I-17 8).
 vi.mock("./AssetEditDialog", () => ({
-  AssetEditDialog: (p: { item: { rowId: number } | null; group: string }) => {
-    state.opened = { rowId: p.item?.rowId ?? null, group: p.group };
+  AssetEditDialog: (p: { item: { rowId: number } | null }) => {
+    state.opened = { rowId: p.item?.rowId ?? null };
     return null;
   },
 }));
@@ -120,12 +120,12 @@ afterEach(() => {
 describe("자산 수정 폼 바로 가기(D9)", () => {
   it("[잔액 고치기]·자산 상세가 만든 주소로 들어오면 그 자산의 폼이 열린다", () => {
     render(editAssetPath(7));
-    expect(state.opened).toEqual({ rowId: 7, group: "account" });
+    expect(state.opened).toEqual({ rowId: 7 });
   });
 
   it("그 자산이 있는 탭으로 옮긴다 — 폼 뒤로 엉뚱한 목록이 보이면 안 된다", () => {
     render(editAssetPath(9));
-    expect(state.opened).toEqual({ rowId: 9, group: "card" });
+    expect(state.opened).toEqual({ rowId: 9 });
     // 기본 탭은 계좌다 — 안 옮기면 카드 폼 뒤에 계좌 목록이 깔린다.
     const list = document.body.textContent ?? "";
     expect(list).toContain("신용카드");
@@ -147,7 +147,7 @@ describe("자산 수정 폼 바로 가기(D9)", () => {
     // 같은 자리에 다시 그린다 = 언마운트 없이 목록만 도착한 상황.
     state.isLoading = false;
     rerender();
-    expect(state.opened).toEqual({ rowId: 7, group: "account" });
+    expect(state.opened).toEqual({ rowId: 7 });
   });
 
   it("없는 자산(지웠거나 남의 것)이면 목록만 보여 준다 — 빈 폼을 열지 않는다", () => {
@@ -166,6 +166,6 @@ describe("자산 수정 폼 바로 가기(D9)", () => {
     act(() =>
       pencil!.dispatchEvent(new MouseEvent("click", { bubbles: true })),
     );
-    expect(state.opened).toEqual({ rowId: 7, group: "account" });
+    expect(state.opened).toEqual({ rowId: 7 });
   });
 });

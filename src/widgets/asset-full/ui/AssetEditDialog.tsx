@@ -1,692 +1,138 @@
-import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { CreditCard, EyeOff, Plus, Search, Trash2, Wallet } from "lucide-react";
-import { ConfirmDialog, ModalShell } from "@/shared/ui/groo/dialogs";
-import { HideAmountsUnlockDialog } from "@/widgets/account-settings/ui/HideAmountsUnlockDialog";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import { useRef, useState } from "react";
+import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
+import { ResponsiveDialog, ResponsiveDialogContent } from "@/shared/ds/dialog";
 import {
-  SearchableList,
-  SearchableListItem,
-} from "@/shared/ui/searchable-list";
-import { Switch } from "@/shared/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { useAssets } from "@/features/asset";
-import { useDefaultCurrency } from "@/features/user";
-import { KRW, formatDay, money } from "@/shared/lib/groo/format";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/shared/ds/alert-dialog";
+import { formatDay } from "@/shared/lib/groo/format";
 import { formatMonthShort, todayLocalKey } from "@/shared/lib/date";
-import { pendingBillWindow, pendingCycleOnOldDay } from "@/entities/expense";
+import { pendingCycleOnOldDay } from "@/entities/expense";
+import { MAX_BALANCE, sanitizeAmountInput } from "@/shared/lib/groo/amount";
+import { signedBalanceOf, subToAssetType } from "../lib/account-sub";
+import { KIND_LABEL_KEY, type AssetKind } from "../lib/asset-kind";
 import {
-  MAX_BALANCE,
-  blockNonDigitKey,
-  parseAmount,
-  sanitizeAmountInput,
-} from "@/shared/lib/groo/amount";
-import {
-  CURRENCIES,
-  DEFAULT_CURRENCY,
-  currencyUnit,
-  formatOriginalAmount,
-  isForeignCurrency,
-} from "@/shared/lib/groo/currency";
-import { nameIssue } from "@/shared/lib/groo/name-policy";
-import {
-  ACCOUNT_SUBS,
-  ACCOUNT_SUB_KEY,
-  assetTypeToSub,
-  signedBalanceOf,
-  subToAssetType,
-  type AccountSub,
-} from "../lib/account-sub";
-import { NameCounter } from "@/shared/ui/groo/name-counter";
-import {
-  getBrandColor,
-  BANK_ENTRIES,
-  BANK_ENTRIES_BY_CATEGORY,
-  BANK_CATEGORY_ORDER,
-  INVEST_CATEGORIES,
-  CATEGORY_HOLDING_TYPE,
-  type BankCategory,
-  type BankEntry,
-} from "@/shared/lib/groo/bank-colors";
-
-const INVEST_CATEGORY_SET = new Set<BankCategory>(INVEST_CATEGORIES);
-
-/** 기관 분류 라벨 키 — 카테고리 자체는 한국 금융권 분류라 한글이 원문이지만,
- *  화면 라벨은 로케일을 따른다(영어 사용자에게 '시중은행' 이 그대로 나오면 안 된다). */
-const CATEGORY_LABEL_KEY: Record<BankCategory, string> = {
-  시중은행: "editDialog.category.commercialBank",
-  인터넷은행: "editDialog.category.internetBank",
-  지방은행: "editDialog.category.localBank",
-  특수은행: "editDialog.category.specialBank",
-  저축기관: "editDialog.category.savingsInstitution",
-  외국계: "editDialog.category.foreignBank",
-  기타: "editDialog.category.other",
-  증권사: "editDialog.category.brokerage",
-  상품거래소: "editDialog.category.commodityExchange",
-  가상자산: "editDialog.category.cryptoExchange",
-};
-import { useCardCatalogs } from "@/features/card-catalog";
-import { Skeleton as SkeletonBase } from "@/shared/ui/skeleton";
-import type { CardCatalogSummary, CardType } from "@/entities/card";
-import {
-  AssetLogo,
   type Asset,
   type AssetFormValues,
   type AssetHolding,
-  type HoldingType,
-  HOLDING_UNIT_KEY,
-  HOLDING_TYPES,
-  sanitizeQty,
-  qtyNumber,
   normalizeQty,
   type AssetType,
   type AssetUpdateFormValues,
 } from "@/entities/asset";
-import type { YNType } from "@/shared/types";
-import {
-  useStockSearch,
-  useStockSymbolName,
-} from "@/features/stock/model/useStockMaster";
-import { useLivePrices } from "@/features/stock/model/useLivePrices";
-import { useMyFeatures } from "@/features/subscription/model/useSubscription";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { useAssetForm } from "./asset-form/use-asset-form";
+import { KindStep } from "./asset-form/KindStep";
+import { FormStep } from "./asset-form/FormStep";
+import { UnlockStep } from "./asset-form/UnlockStep";
+import { focusFirstField } from "./asset-form/focus";
+import { useTranslation } from "react-i18next";
 
-export type AssetGroup = "account" | "card" | "invest";
-
-// 투자 보유 편집 행 — 로컬 편집용(react key + 검색 시 확보한 표시명 보관).
-type EditHolding = {
-  key: string;
-  rowId?: number;
-  holdingType: HoldingType;
-  linked: boolean;
-  /** 종목 검색이 준 시장코드 — 저장 때 그대로 돌려보낸다(같은 티커가 여러 시장에 걸린다) */
-  marketCode?: string;
-  tossSymbol?: string;
-  /** 소수 허용(코인 0.05·금 3.75g). 입력 중 상태를 보존하려 문자열로 다룬다 */
-  quantity?: string;
-  holdingName?: string;
-  holdingValue?: number;
-  /** 총 매수원가 — 실현손익의 기준. 안 적으면 서버가 기존 값을 잇는다. */
-  totalCost?: number;
-  /** 검색에서 추가한 연동 항목의 종목명(표시용 — payload 미포함) */
-  displayName?: string;
-};
-
-let editHoldingSeq = 0;
-const nextHoldingKey = () => `eh-${++editHoldingSeq}`;
-
-/** 검색 입력 디바운스 — 키 입력마다 서버 검색이 나가지 않게 한다. */
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
-}
-
-/** 연동 항목 이름 — 저장돼 있던 항목은 심볼→마스터 이름 조회(캐시), 검색 추가분은 displayName. */
-function LinkedHoldingName({ holding }: { holding: EditHolding }) {
-  const { data: masterName } = useStockSymbolName(
-    holding.displayName ? "" : (holding.tossSymbol ?? ""),
-  );
-  return <>{holding.displayName ?? masterName ?? holding.tossSymbol ?? ""}</>;
-}
-
-/** 계좌 별칭 상한 — 목록 행·홈 카드 한 줄에 들어가는 길이(QA #16, 서버 컬럼은 100). */
-const ASSET_NAME_MAX = 30;
-
-/**
- * 1400.000000 을 1400 으로 — 서버가 소수 6자리로 주는 환율을 그대로 채워 두면
- * 편집 폼이 지저분하고, 사용자가 고치려고 통째로 지웠다 다시 적게 된다.
- * 앱 `trimExchangeRate` 와 같은 규칙이다(desk-app #330).
- */
-const trimRate = (rate: number): string => {
-  const s = rate.toFixed(6);
-  return s.includes(".") ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
-};
-
-const GROUP_NOUN_KEY: Record<AssetGroup, string> = {
-  account: "group.account",
-  card: "group.card",
-  invest: "group.invest",
-};
-
-const groupOfType = (t: AssetType): AssetGroup => {
-  if (t === "CREDIT_CARD" || t === "CHECK_CARD") return "card";
-  if (t === "INVESTMENT") return "invest";
-  return "account";
-};
-
-const INVEST_BRANDS: BankEntry[] = INVEST_CATEGORIES.flatMap(
-  (cat) => BANK_ENTRIES_BY_CATEGORY[cat] ?? [],
-);
+export type { AssetGroup } from "../lib/asset-kind";
 
 export interface AssetEditDialogProps {
+  /** 수정할 자산 — 없으면 추가 */
   item: Asset | null;
-  group: AssetGroup;
+  /** 추가 때 미리 정한 종류 — 없으면 1단계("무엇을 추가할까요?")부터 연다 */
+  kind?: AssetKind | null;
   onClose: () => void;
   onCreate: (values: AssetFormValues) => void;
   onUpdate: (values: AssetUpdateFormValues) => void;
-  mobile: boolean;
   isSubmitting?: boolean;
 }
 
-/** 자산에 붙어 있는 카드 카탈로그 → 선택 상태로 쓸 요약. 카드 편집이 아니면 없음. */
-function cardSummaryOf(
-  item: Asset | null | undefined,
-  editingGroup: AssetGroup,
-): CardCatalogSummary | null {
-  if (!item || editingGroup !== "card" || !item.cardCatalog) return null;
-  return {
-    rowId: item.cardCatalog.rowId,
-    externalCardId: 0,
-    cardName: item.cardCatalog.cardName,
-    cardType: item.assetType === "CHECK_CARD" ? "CHECK" : "CREDIT",
-    benefitType: "POINT",
-    isDiscontinued: "N",
-    onlyOnline: "N",
-    launchDate: null,
-    imgUrl: item.cardCatalog.imgUrl,
-    detailUrl: null,
-    annualFee: null, // 자산에서 만든 임시 요약 — 연회비를 모르는 상태다
-    performance: { requiredAmount: 0, requiredText: null, isRequired: "N" },
-    company: item.cardCatalog.companyName
-      ? {
-          rowId: 0,
-          name: item.cardCatalog.companyName,
-          nameEng: "",
-          logoUrl: item.cardCatalog.companyLogoUrl,
-        }
-      : null,
-  };
-}
+type Step = "kind" | "form" | "unlock";
 
+/**
+ * 자산 추가 · 수정 폼(I-17 B) — ds 입력 폼(1280 미만 Bottom Sheet · 이상 Dialog 480). 추가는 1단계(종류 고르기) → [다음] → 같은
+ * 표면의 2단계(그 종류의 칸) → [추가], 수정은 2단계로 바로 → [저장]. 단계가 바뀌어도 표면은 하나다(새 시트를 띄우지 않는다).
+ * 바깥 누름 · 끌어내림으로 안 닫히고, 쓴 값이 있는 채 닫거나 1단계로 돌아가면 "작성한 내용이 사라져요" 를 묻는다.
+ * 저장 본문(`handleSubmit`) · 요청 · 무효화는 한 글자도 바꾸지 않는다(I-17 24).
+ */
 export function AssetEditDialog({
   item,
-  group,
+  kind: kindArg = null,
   onClose,
   onCreate,
   onUpdate,
-  mobile,
   isSubmitting,
 }: AssetEditDialogProps) {
-  const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
-  const { t, i18n } = useTranslation("asset");
-  const { t: tCommon } = useTranslation("common");
-  const isNew = !item;
-  const editingGroup: AssetGroup = item ? groupOfType(item.assetType) : group;
-
-  // 설정의 기본 통화 — 새 자산이 먼저 골라 두는 값이다(D7).
-  const defaultCurrency = useDefaultCurrency();
-
-  // 공통
-  const [brand, setBrand] = useState<string>(
-    item?.institution ??
-      (editingGroup === "invest"
-        ? (INVEST_BRANDS[0]?.name ?? "삼성증권")
-        : (BANK_ENTRIES[0]?.name ?? "신한")),
-  );
-  const [query, setQuery] = useState("");
-  const [name, setName] = useState(item?.assetName ?? "");
-  const [memo, setMemo] = useState(item?.memo ?? "");
-  const [isIncludedInTotal, setIsIncludedInTotal] = useState<YNType>(
-    item?.isIncludedInTotal ?? "Y",
-  );
-  // 새 자산은 가리지 않는다 — 만들자마자 금액이 안 보이면 잘못 만든 줄 안다.
-  const [isAmountHidden, setIsAmountHidden] = useState<YNType>(
-    item?.isAmountHidden ?? "N",
-  );
-  // 숨김을 **푸는** 쪽에만 본인 확인을 건다 — 켜는 건 그냥 된다(카드 가리기·상세 토글과
-  // 같은 규칙). 모바일은 상세에 토글이 없어 이 폼이 유일한 해제 경로다. 여기에 확인이
-  // 없으면 "풀 때는 비밀번호" 규칙 자체가 없는 것과 같다(QA 22차 #2).
-  const needsUnlock =
-    !isNew && item?.isAmountHidden === "Y" && isAmountHidden === "N";
-  const [unlockOpen, setUnlockOpen] = useState(false);
-  // state 가 아니라 ref 다 — 확인창의 `onVerified` 에서 곧바로 `handleSubmit()` 을
-  // 다시 부르는데, setState 로 두면 그 호출이 아직 `false` 인 값을 읽는다.
-  const unlockedRef = useRef(false);
-  // 절대값으로 보여 준다 — 부호는 종류가 정하므로 칸에 `-` 가 남아 있을 이유가 없다(QA #19).
-  //
-  // 신용카드는 이 칸이 **이월 금액**(카드를 등록할 때 적은 이전 미결제 사용액)이다(D7).
-  // 지금 잔액(이월 + 그 뒤 사용)으로 채우면 이름만 고쳐 저장해도 서버가 그 값을 이월로
-  // 받아 빚이 두 배가 됐다(QA 23차 1). 이월이 없으면 0 이다.
-  const [balanceStr, setBalanceStr] = useState<string>(
-    item
-      ? KRW(
-          Math.abs(
-            (item.assetType === "CREDIT_CARD"
-              ? item.carryoverAmount
-              : item.balance) ?? 0,
-          ),
-        )
-      : "0",
-  );
-  /**
-   * 신용카드의 결제 대기 청구분 칸(2026-09-22) — 기존 카드는 서버가 준 값으로 연다. 칸이 없으면
-   * 쓰지 않는다(`dueField` 가 정한다).
-   */
-  const [dueStr, setDueStr] = useState<string>(
-    item?.assetType === "CREDIT_CARD" && item.dueCarryover
-      ? KRW(Math.abs(item.dueCarryover.amount))
-      : "0",
-  );
-  /**
-   * 결제일을 바꿀 때 한 번 받는 확인(D5). state 가 아니라 ref 다 — 확인창의
-   * `onConfirm` 에서 곧바로 `handleSubmit()` 을 다시 부르는데, setState 로 두면 그 호출이
-   * 아직 `false` 인 값을 읽는다(금액 숨김 해제 확인과 같은 자리).
-   */
-  const paymentDayConfirmedRef = useRef(false);
-  const [paymentDayConfirm, setPaymentDayConfirm] = useState<string | null>(
-    null,
-  );
-
-  // 통화·환율 — 세 묶음(계좌·카드·투자) 모두에 칸이 있다(D1).
-  //
-  // **읽어 온 값으로 연다.** 이게 이 칸의 안전장치다 — 안 채우고 열면 그대로 저장하는
-  // 것만으로 외화 자산이 원화가 된다. 칸이 생겨서 오히려 위험해지는 자리라, 앱도
-  // 같은 순서로 잠갔다(desk-app #330).
-  //
-  // **새로 만들 때만** 설정의 기본 통화가 들어온다(D7 · QA #124). 기존 자산에까지
-  // 쓰면 기본 통화를 USD 로 바꾼 순간 원화 계좌들이 전부 USD 로 열리고, 그대로 저장만
-  // 해도 통화가 바뀐다 — 고치라고 만든 칸이 고장을 내는 쪽이다.
-  const [currencyPick, setCurrency] = useState<string | null>(null);
-  // 우선순위는 **고른 값 > 이 자산의 값 > 설정의 기본 통화**다.
-  //
-  // 기본 통화를 `useState` 초기값으로 굳히면 안 된다(D7) — `/me/preferences` 는 설정
-  // 화면을 안 들른 세션에서 이 폼보다 늦게 도착해서, 초기값으로 받으면 첫 렌더의
-  // `KRW` 에 잠긴 채 열린다. 매 렌더 읽어야 늦게 온 값이 반영된다.
-  const currency = currencyPick ?? item?.currency ?? defaultCurrency;
-  const [exchangeRate, setExchangeRate] = useState<string>(
-    item?.exchangeRate != null ? trimRate(item.exchangeRate) : "",
-  );
-  // 환율은 통화가 원화가 아닐 때만 의미가 있다 — 서버도 KRW 의 환산율은 1 로
-  // 정규화한다(`Asset.normalizeRate`). 칸을 숨길 뿐 값은 들고 있는다:
-  // 통화를 잘못 눌렀다 되돌렸을 때 적어 둔 환율이 사라지면 곤란하다.
-  const isForeign = isForeignCurrency(currency);
-
-  // 계좌 sub
-  const [accountSub, setAccountSub] = useState<AccountSub>(
-    item && editingGroup === "account"
-      ? assetTypeToSub(item.assetType, item.balance ?? 0)
-      : "입출금",
-  );
-
-  // 투자 — 보유 종목 다건 편집 (design AssetEditDialog invest 분기 미러).
-  // 기존 holdings 우선, 구버전 단일 연동(tossSymbol)은 linked 1건으로 합성(하위호환).
-  const [holdings, setHoldings] = useState<EditHolding[]>(() => {
-    if (item?.holdings && item.holdings.length > 0) {
-      return item.holdings.map((h) => ({
-        key: nextHoldingKey(),
-        rowId: h.rowId,
-        // 구버전 응답(holdingType 없음)은 주식으로 본다.
-        holdingType: h.holdingType ?? "STOCK",
-        linked: h.linked,
-        marketCode: h.marketCode ?? undefined,
-        tossSymbol: h.tossSymbol ?? undefined,
-        quantity: h.quantity ?? undefined,
-        holdingName: h.holdingName ?? undefined,
-        holdingValue: h.holdingValue ?? undefined,
-        totalCost: h.totalCost ?? undefined,
-      }));
-    }
-    if (item?.tossSymbol && item.tossQuantity != null) {
-      return [
-        {
-          key: nextHoldingKey(),
-          holdingType: "STOCK" as HoldingType,
-          linked: true,
-          marketCode: item.marketCode ?? undefined,
-          tossSymbol: item.tossSymbol,
-          quantity: String(item.tossQuantity),
-        },
-      ];
-    }
-    return [];
-  });
-  const [stockQ, setStockQ] = useState("");
-  const debouncedStockQ = useDebounced(stockQ.trim(), 300);
-  const { data: features } = useMyFeatures();
-  const liveEnabled =
-    (features?.features?.includes("SECURITIES") ?? false) &&
-    (features?.connectedBrokers?.length ?? 0) > 0;
-  const { data: stockMatches = [], isFetching: stockSearching } =
-    useStockSearch(editingGroup === "invest" ? debouncedStockQ : "");
-  const stockResults = useMemo(
-    () =>
-      stockMatches
-        .filter(
-          (s) => !holdings.some((h) => h.linked && h.tossSymbol === s.symbol),
-        )
-        .slice(0, 6),
-    [stockMatches, holdings],
-  );
-  // 연동 항목 라이브 평가 — 시세(10초 폴링)×수량, 외화는 환율 환산. 게이트 밖이면 미평가.
-  const holdingSymbols = useMemo(
-    () => [
-      ...new Set(
-        holdings
-          .filter((h) => h.linked && h.tossSymbol)
-          .map((h) => h.tossSymbol as string),
-      ),
-    ],
-    [holdings],
-  );
-  const priceActive =
-    liveEnabled && editingGroup === "invest" && holdingSymbols.length > 0;
-  const activeHoldingSymbols = useMemo(
-    () => (priceActive ? holdingSymbols : []),
-    [priceActive, holdingSymbols],
-  );
-  // 증권사 무관 경로 + 통화별 환율. 목록·상세와 같은 훅을 써야 한 화면에서 금액이 안 어긋난다.
-  const live = useLivePrices(activeHoldingSymbols, priceActive);
-  const holdingValueOf = useMemo(() => {
-    return (h: EditHolding): number | null => {
-      if (!h.linked) return h.holdingValue ?? 0;
-      const krw = h.tossSymbol ? live.unitKrw(h.tossSymbol) : null;
-      return krw != null
-        ? Math.round(krw * (qtyNumber(h.quantity) ?? 0))
-        : null;
-    };
-  }, [live]);
-  // 합계 — 평가 불가 연동 항목은 0 취급하지 않고 '평가 가능분 합'으로 표기.
-  const holdingsTotal = useMemo(
-    () => holdings.reduce((s, h) => s + (holdingValueOf(h) ?? 0), 0),
-    [holdings, holdingValueOf],
-  );
-
-  // 카드
-  const [cardType, setCardType] = useState<CardType>(
-    item?.assetType === "CHECK_CARD" ? "CHECK" : "CREDIT",
-  );
-  const [cardKeyword, setCardKeyword] = useState("");
-  const [includeDiscontinued, setIncludeDiscontinued] = useState(false);
-  // 편집 진입 시 기존 카드 카탈로그를 선택 상태처럼 보이도록 채움.
-  //
-  // 초기값으로 넣는다 — 이 컴포넌트의 `item` 기반 상태는 전부 그렇게 시드된다
-  // (`cardType`·`creditLimit`·…). 이것만 effect 였고, 그래서 의존성을 `item?.rowId`
-  // 하나로 좁히려 규칙을 꺼야 했다. 다이얼로그는 자산 하나마다 새로 열린다.
-  const [selectedCard, setSelectedCard] = useState<CardCatalogSummary | null>(
-    () => cardSummaryOf(item, editingGroup),
-  );
-
-  // 신용카드 청구사이클 (CREDIT_CARD 전용)
-  const [creditLimit, setCreditLimit] = useState<string>(
-    item?.creditLimit != null ? String(item.creditLimit) : "",
-  );
-  const [paymentDay, setPaymentDay] = useState<string>(
-    item?.paymentDay != null ? String(item.paymentDay) : "",
-  );
-  const [paymentAssetRowId, setPaymentAssetRowId] = useState<number | null>(
-    item?.paymentAssetRowId ?? null,
-  );
-
-  const { data: assetsData } = useAssets();
-  const bankAccounts = useMemo(
-    () =>
-      (assetsData?.assets ?? []).filter(
-        (a) => a.assetType === "BANK_ACCOUNT" && a.rowId !== item?.rowId,
-      ),
-    [assetsData, item?.rowId],
-  );
-
-  const catalogQ = useCardCatalogs({
-    keyword: cardKeyword.trim() || undefined,
+  const f = useAssetForm({ item, kind: kindArg });
+  const {
+    t,
+    tCommon,
+    kind,
+    isNew,
+    editingGroup,
+    brand,
+    name,
+    memo,
+    isIncludedInTotal,
+    isAmountHidden,
+    needsUnlock,
+    unlockedRef,
+    balanceStr,
+    paymentDayConfirmedRef,
+    paymentDayConfirm,
+    setPaymentDayConfirm,
+    currency,
+    exchangeRate,
+    isForeign,
+    accountSub,
+    holdings,
     cardType,
-    includeDiscontinued: includeDiscontinued || undefined,
-    page: 0,
-    size: 40,
-  });
-  const catalogItems = catalogQ.data?.content ?? [];
+    selectedCard,
+    creditLimit,
+    paymentDay,
+    paymentAssetRowId,
+    cardBrandColor,
+    brandColor,
+    canSubmit,
+    setShowErrors,
+    setSubmitTick,
+    isOverdraft,
+    isExistingCreditCard,
+    carryoverLocked,
+    dueField,
+    dueAmount,
+  } = f;
 
-  // 은행 검색 (category 묶음 — 투자용 카테고리는 제외)
-  const matchesQuery = (e: BankEntry, q: string) => {
-    if (!q) return true;
-    const needle = q.toLowerCase().replace(/\s+/g, "");
-    if (e.name.toLowerCase().replace(/\s+/g, "").includes(needle)) return true;
-    return (e.aliases ?? []).some((a) =>
-      a.toLowerCase().replace(/\s+/g, "").includes(needle),
-    );
+  const [step, setStep] = useState<Step>(item || kindArg ? "form" : "kind");
+  const [showKindError, setShowKindError] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // 2단계에서 ← 로 1단계에 돌아간다 — 쓴 값이 있으면 먼저 묻고 버린다. 고른 종류는 그대로 골라진 채다(I-17 7).
+  const backToKind = useLeaveConfirm({
+    dirty: f.changed,
+    contentRef,
+    leave: () => {
+      f.reset();
+      setShowKindError(false);
+      setStep("kind");
+    },
+  });
+
+  // [추가] · [저장] 은 늘 켜 둔다 — 필수가 비었으면 칸마다 오류를 세우고 첫 오류 칸에 초점을 보낸다
+  const attemptSubmit = () => {
+    if (isSubmitting) return;
+    if (!canSubmit) {
+      setShowErrors(true);
+      setSubmitTick((n) => n + 1);
+      return;
+    }
+    handleSubmit();
   };
 
-  const bankFilteredByCategory = useMemo(() => {
-    const result: [BankCategory, BankEntry[]][] = [];
-    for (const cat of BANK_CATEGORY_ORDER) {
-      if (INVEST_CATEGORY_SET.has(cat)) continue;
-      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter((e) =>
-        matchesQuery(e, query),
-      );
-      if (list.length > 0) result.push([cat, list]);
+  const goNext = () => {
+    if (kind == null) {
+      setShowKindError(true);
+      return;
     }
-    return result;
-  }, [query]);
-
-  const investFilteredByCategory = useMemo(() => {
-    const result: [BankCategory, BankEntry[]][] = [];
-    for (const cat of INVEST_CATEGORIES) {
-      const list = (BANK_ENTRIES_BY_CATEGORY[cat] ?? []).filter((e) =>
-        matchesQuery(e, query),
-      );
-      if (list.length > 0) result.push([cat, list]);
-    }
-    return result;
-  }, [query]);
-
-  const investFilteredCount = investFilteredByCategory.reduce(
-    (sum, [, list]) => sum + list.length,
-    0,
-  );
-
-  // 색/미리보기
-  const cardCompanyName =
-    selectedCard?.company?.name ?? item?.institution ?? "";
-  const cardBrandColor = useMemo(
-    () => getBrandColor(cardCompanyName),
-    [cardCompanyName],
-  );
-  // 기관이 보유 유형을 정한다 — 증권사에서 코인을, 금거래소에서 주식을 담을 일은 없다.
-  // 모르는 기관(직접 입력·구버전 데이터)이면 셋 다 열어 둔다.
-  const brandHoldingType = useMemo<HoldingType | null>(() => {
-    const cat = BANK_ENTRIES.find((e) => e.name === brand)?.category;
-    return cat ? (CATEGORY_HOLDING_TYPE[cat] ?? null) : null;
-  }, [brand]);
-  const allowStock = brandHoldingType === null || brandHoldingType === "STOCK";
-  /**
-   * 손으로 추가하는 보유의 유형.
-   *
-   * <p>기관이 정해져 있으면 그 카테고리를 따른다(상품거래소=금, 코인거래소=코인).
-   * 기관을 안 골랐으면 <b>이미 들고 있는 보유</b>를 본다 — 금만 있는 자산에서 항목을
-   * 추가했는데 주식으로 저장되면 단위가 "주" 로 나오고 유형 분리가 무의미해진다.
-   * 둘 다 단서가 없을 때만 주식이다.
-   */
-  const manualHoldingType = useMemo<HoldingType>(() => {
-    if (brandHoldingType !== null) return brandHoldingType;
-    const types = new Set(holdings.map((h) => h.holdingType));
-    return types.size === 1 ? ([...types][0] ?? "STOCK") : "STOCK";
-  }, [brandHoldingType, holdings]);
-  const manualAddTypes = useMemo<HoldingType[]>(() => {
-    if (brandHoldingType === null) return ["GOLD", "CRYPTO"];
-    return brandHoldingType === "STOCK" ? [] : [brandHoldingType];
-  }, [brandHoldingType]);
-
-  const brandColor = useMemo(() => {
-    if (editingGroup === "card") return cardBrandColor;
-    return getBrandColor(brand);
-  }, [editingGroup, brand, cardBrandColor]);
-
-  const previewBg = brandColor?.bg ?? item?.color ?? "var(--border-brand)";
-  const previewFg = brandColor?.fg ?? "#fff";
-
-  const previewName = (() => {
-    const trimmed = name.trim();
-    if (trimmed) return trimmed;
-    if (editingGroup === "card")
-      return selectedCard?.cardName || t("editDialog.newCard");
-    if (editingGroup === "invest") return t("editDialog.newInvest");
-    return t("editDialog.newAccount");
-  })();
-
-  const previewSub = (() => {
-    if (editingGroup === "card") {
-      const company = cardCompanyName;
-      const typeLabel =
-        cardType === "CREDIT"
-          ? t("assetType.creditcard")
-          : t("assetType.checkcard");
-      return `${company ? `${company} · ` : ""}${typeLabel}`;
-    }
-    return t("editDialog.previewSub", { brand });
-  })();
-
-  // 별칭 — 길이·중복. 서버에 자산 이름 중복 코드가 없어 여기서 볼 수밖에 없다(QA #16).
-  // 카드는 별칭이 선택 입력이라(비우면 카드명으로 폴백) 빈 이름은 계속 허용한다.
-  const nameTrim = name.trim();
-  const nameIssueKind =
-    nameTrim.length === 0
-      ? null
-      : nameIssue(
-          name,
-          ASSET_NAME_MAX,
-          (assetsData?.assets ?? [])
-            .filter((a) => a.rowId !== item?.rowId)
-            .map((a) => a.assetName),
-        );
-  const nameErr =
-    nameIssueKind === "tooLong"
-      ? t("editDialog.nameTooLong")
-      : nameIssueKind === "duplicate"
-        ? t("editDialog.nameDuplicate")
-        : null;
-
-  // 유효성
-  const canSubmit = (() => {
-    if (nameErr) return false;
-    if (editingGroup === "card") {
-      // 신용카드는 결제일 필수 — 없으면 청구 사이클(이용기간·예정액·할부 회차)을
-      // 세울 수 없다. asset-full 추가 폼(#323)과 같은 규칙인데 이 다이얼로그만
-      // 빠져 있었다. 체크카드는 즉시 출금이라 결제일이 없다.
-      if (cardType === "CREDIT" && !paymentDay.trim()) return false;
-      // 편집 모드: 카드 카탈로그 재선택 없이 별칭/금액만 바꿀 수 있어야 함
-      return isNew ? !!selectedCard : true;
-    }
-    return (nameTrim.length > 0 || !isNew) && brand.trim().length > 0;
-  })();
-
-  const title = (() => {
-    const group = t(GROUP_NOUN_KEY[editingGroup]);
-    return isNew
-      ? t("editDialog.titleAdd", { group })
-      : t("editDialog.titleEdit", { group });
-  })();
-
-  const nameLabel =
-    editingGroup === "invest"
-      ? t("editDialog.nameLabelInvest")
-      : editingGroup === "card"
-        ? t("editDialog.nameLabelCard")
-        : t("editDialog.nameLabelAccount");
-  const namePlaceholder =
-    editingGroup === "invest"
-      ? t("editDialog.namePlaceholderInvest")
-      : editingGroup === "card"
-        ? (selectedCard?.cardName ?? t("editDialog.namePlaceholderCard"))
-        : t("editDialog.namePlaceholderAccount");
-
-  const isOverdraft =
-    editingGroup === "account" && accountSub === "마이너스통장";
-  /**
-   * 금액 칸의 단위는 **고른 통화**를 따른다. 라벨에 `(원)` 이 박혀 있어 USD 를 골라도
-   * 원화처럼 보였다(QA 12차) — 잔액도 한도도 이 폼의 통화로 적는 값이다
-   * (초과 안내가 이미 `formatOriginalAmount(…, currency)` 로 나간다).
-   *
-   * 표기 규칙은 `currencyUnit` 한 곳에 있다 — 앱도 같은 규칙을 쓴다.
-   */
-  const unit = currencyUnit(currency);
-  const balanceLabel =
-    editingGroup === "card"
-      ? t("editDialog.balanceLabelCard", { unit })
-      : editingGroup === "invest"
-        ? t("editDialog.balanceLabelInvest", { unit })
-        : isOverdraft
-          ? // 마이너스통장은 '잔액' 이 아니라 '쓴 돈' 을 묻는다 — 그래야 양수로 받는다.
-            t("editDialog.balanceLabelOverdraft", { unit })
-          : t("editDialog.balanceLabelAccount", { unit });
-
-  /**
-   * 한도 초과 — **저장은 막지 않는다**(사용자 결정, QA #125). 넘겼다는 사실만 보인다.
-   *
-   * 서버 검사도 넣지 않는다. 한도는 카드사·은행이 정하는 값이고 우리가 아는 건
-   * 사용자가 적어 둔 숫자다 — 막아 버리면 실제로 한도를 올린 사람이 사용액을 못 고친다.
-   * 반대로 조용히 넘어가면 한도를 잘못 적어 둔 걸 아무도 모르므로, 화면에만 세운다.
-   *
-   * 신용카드 사용액과 마이너스통장 사용액이 같은 `credit_limit` 을 쓰므로 두 자리가
-   * 같은 문구를 쓴다. 한도를 안 적었으면(0) 견줄 값이 없어 아무 말도 안 한다.
-   */
-  const isCreditCardEdit = editingGroup === "card" && cardType === "CREDIT";
-  /** 신용카드로 저장돼 있던 자산을 고치는 중 — 이월 금액·결제일 규칙이 여기에만 걸린다. */
-  const isExistingCreditCard =
-    !isNew && item?.assetType === "CREDIT_CARD" && isCreditCardEdit;
-  /** 이월 거래가 든 회차의 결제일이 됐다 — 이월 금액 칸은 읽기 전용이다(D15). */
-  const carryoverLocked =
-    isExistingCreditCard && item?.carryoverLocked === true;
-  /** 지금 미결제 잔액 — 이월 칸 옆에 읽기 전용으로 둔다(D7). 선결제로 남은 돈은 0 이다. */
-  const currentUnpaid = isExistingCreditCard
-    ? Math.max(0, -(item?.balance ?? 0))
-    : 0;
-  /**
-   * 결제 대기 청구분 칸(2026-09-22 사용자 결정). 결제일 전에 카드를 등록하면 실제 카드사는
-   * 지난달 청구분을 다가오는 결제일에, 이번 달 쓴 금액을 그다음 결제일에 뺀다 — 한 칸으로
-   * 받으면 전부 다음 달에 빠져 한 달 동안 통장 잔액이 실제보다 많았다. 그래서 두 칸으로 받는다.
-   *  - 새 카드: 오늘이 이번 달 결제일 전이면 연다(결제일을 바꾸면 따라 바뀐다)
-   *  - 기존 카드: 서버가 칸을 줄 때만 — 청구분이 있거나 등록한 달의 그 회차가 아직 열려 있을 때.
-   *    그 회차 결제일이 되면 잠긴다(D15 와 같다)
-   */
-  const newCardBillWindow =
-    isNew && isCreditCardEdit
-      ? pendingBillWindow(
-          todayLocalKey(),
-          paymentDay.trim() ? parseInt(paymentDay, 10) : null,
-        )
-      : null;
-  const dueField: { paymentDate: string; locked: boolean } | null =
-    newCardBillWindow
-      ? { paymentDate: newCardBillWindow.dueDate, locked: false }
-      : isExistingCreditCard && item?.dueCarryover?.paymentDate
-        ? {
-            paymentDate: item.dueCarryover.paymentDate,
-            locked: item.dueCarryover.locked === true,
-          }
-        : null;
-  const dueAmount = dueField ? parseAmount(dueStr) : 0;
-  const limitAmount =
-    isCreditCardEdit || isOverdraft ? parseAmount(creditLimit) : 0;
-  /**
-   * 한도와 견줄 사용액. 기존 신용카드는 칸이 이월 금액이라 칸 값만으로는 사용액이 아니다 —
-   * 지금 미결제 잔액에서 이월을 고친 만큼을 더하고 뺀 값이 저장 뒤 사용액이다.
-   */
-  const usageForLimit = isExistingCreditCard
-    ? Math.max(
-        0,
-        currentUnpaid -
-          Math.abs(item?.carryoverAmount ?? 0) +
-          parseAmount(balanceStr) -
-          Math.abs(item?.dueCarryover?.amount ?? 0) +
-          dueAmount,
-      )
-    : parseAmount(balanceStr) + dueAmount;
-  const overLimitBy =
-    limitAmount > 0 ? Math.max(0, usageForLimit - limitAmount) : 0;
+    setStep("form");
+  };
 
   const handleClose = () => {
     if (isSubmitting) return;
@@ -716,7 +162,7 @@ export function AssetEditDialog({
   const handleSubmit = () => {
     if (!canSubmit) return;
     if (needsUnlock && !unlockedRef.current) {
-      setUnlockOpen(true);
+      setStep("unlock");
       return;
     }
     // 결제일을 바꾸면 바로 적용되지 않는다 — 아직 결제 전인 회차는 옛 결제일에 결제되고
@@ -857,7 +303,7 @@ export function AssetEditDialog({
     }
 
     if (editingGroup === "invest") {
-      const resolvedName = name.trim() || `${brand} 투자`;
+      const resolvedName = name.trim();
       // holdings 페이로드 — 리스트 전체 교체 계약. linked→tossSymbol+quantity / manual→holdingName+holdingValue.
       // 추가만 하고 아무것도 안 채운 행은 버린다 — 이름이 빈 미연동 항목은 서버가 400 으로 막는다.
       const filledHoldings = holdings.filter(
@@ -888,7 +334,8 @@ export function AssetEditDialog({
         assetName: resolvedName,
         assetType: "INVESTMENT" as AssetType,
         balance: investBalance,
-        institution: brand,
+        // 기관이 없는 자산을 고칠 땐 키를 안 싣는다(그대로 유지) — 빈 글을 실으면 서버에 빈 기관이 남는다
+        institution: brand.trim() ? brand : undefined,
         color: brandColor?.bg,
         ...currencyFields,
         memo: memo.trim() || null,
@@ -903,7 +350,7 @@ export function AssetEditDialog({
 
     // account
     const assetType = subToAssetType(accountSub);
-    const resolvedName = name.trim() || `${brand} ${accountSub}`;
+    const resolvedName = name.trim();
     // 부호는 종류가 정한다 — 대출·마이너스통장은 빚이라 음수로 저장한다(QA #19).
     // 사용자가 절대값으로 넣은 값을 여기서 뒤집으므로 서버가 옛 버전이어도 값이 맞는다.
     const accountBalance = signedBalanceOf(accountSub, parsedBalance);
@@ -915,7 +362,8 @@ export function AssetEditDialog({
       assetName: resolvedName,
       assetType,
       balance: accountBalance,
-      institution: brand,
+      // 기관이 없는 자산을 고칠 땐 키를 안 싣는다(그대로 유지) — 빈 글을 실으면 서버에 빈 기관이 남는다
+      institution: brand.trim() ? brand : undefined,
       color: brandColor?.bg,
       ...currencyFields,
       memo: memo.trim() || null,
@@ -927,1174 +375,92 @@ export function AssetEditDialog({
     else onUpdate(common);
   };
 
-  const bodyContent = (
-    <Fragment>
-      {/* Preview */}
-      <div className="flex items-center gap-3">
-        {editingGroup === "card" && selectedCard?.imgUrl ? (
-          <img
-            src={selectedCard.imgUrl}
-            alt=""
-            className="rounded-[var(--radius-md)] object-cover flex-shrink-0"
-            style={{ width: 68, height: 44 }}
-          />
-        ) : editingGroup === "card" ? (
-          <span
-            className="inline-flex items-center justify-center rounded-[var(--radius-md)] flex-shrink-0"
-            style={{
-              width: 68,
-              height: 44,
-              background: previewBg,
-              color: previewFg,
-            }}
-          >
-            <CreditCard size={20} />
-          </span>
-        ) : (
-          <AssetLogo
-            asset={{
-              assetName: previewName,
-              institution: brand,
-              color: brandColor?.bg ?? item?.color ?? null,
-            }}
-            size={52}
-          />
-        )}
-        <div className="min-w-0">
-          <div className="text-[15px] font-semibold text-[var(--fg-primary)] truncate">
-            {previewName}
-          </div>
-          <div className="text-xs text-[var(--fg-tertiary)] mt-0.5">
-            {previewSub}
-          </div>
-        </div>
-      </div>
-
-      {/* Group별 본문 */}
-      {editingGroup === "card" ? (
-        <>
-          <div>
-            <Label className="text-[13px] font-medium mb-2 block">
-              {t("editDialog.cardTypeLabel")}
-            </Label>
-            <Tabs
-              value={cardType}
-              onValueChange={(v) => {
-                if (!v) return;
-                setCardType(v as CardType);
-                if (isNew) setSelectedCard(null);
-              }}
-            >
-              <TabsList variant="pill" size="sm" className="w-full">
-                <TabsTrigger value="CREDIT" className="flex-1">
-                  {t("assetType.creditcard")}
-                </TabsTrigger>
-                <TabsTrigger value="CHECK" className="flex-1">
-                  {t("assetType.checkcard")}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <SearchableList
-            label={t("editDialog.cardProduct")}
-            totalCount={catalogQ.data?.meta?.totalElements}
-            searchValue={cardKeyword}
-            onSearchChange={setCardKeyword}
-            placeholder={t("editDialog.cardSearchPlaceholder")}
-            isLoading={catalogQ.isLoading}
-            loadingSkeleton={
-              <div className="flex flex-col">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 px-3 py-2.5"
-                    style={{
-                      borderBottom:
-                        i < 4 ? "1px solid var(--border-subtle)" : "none",
-                    }}
-                  >
-                    <SkeletonBase className="h-7 w-11 rounded-sm shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <SkeletonBase className="h-3.5 w-2/3 mb-1.5" />
-                      <SkeletonBase className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            }
-            headerExtras={
-              <label
-                className="inline-flex items-center cursor-pointer select-none gap-1.5 text-caption text-text-tertiary"
-                title={t("editDialog.includeDiscontinuedTooltip")}
-              >
-                <Switch
-                  checked={includeDiscontinued}
-                  onCheckedChange={setIncludeDiscontinued}
-                />
-                {t("editDialog.includeDiscontinued")}
-              </label>
-            }
-          >
-            {catalogItems.map((c) => {
-              const active = selectedCard?.rowId === c.rowId;
-              const discontinued = c.isDiscontinued === "Y";
-              const thumbnail = c.imgUrl ? (
-                <img
-                  src={c.imgUrl}
-                  alt=""
-                  className="rounded object-cover"
-                  style={{ width: 44, height: 28 }}
-                />
-              ) : (
-                <span
-                  className="rounded flex items-center justify-center text-static-white text-xs font-bold"
-                  style={{
-                    width: 44,
-                    height: 28,
-                    background:
-                      getBrandColor(c.company?.name)?.bg ??
-                      "var(--color-chart-brown)",
-                  }}
-                >
-                  {(c.company?.name ?? c.cardName).slice(0, 1)}
-                </span>
-              );
-              return (
-                <SearchableListItem
-                  key={c.rowId}
-                  active={active}
-                  dim={discontinued}
-                  onClick={() => setSelectedCard(c)}
-                  thumbnail={thumbnail}
-                  title={
-                    <>
-                      <span className="truncate">{c.cardName}</span>
-                      {discontinued && (
-                        <span
-                          className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-semibold flex-shrink-0"
-                          style={{
-                            background: "var(--bg-disabled)",
-                            color: "var(--fg-tertiary)",
-                            letterSpacing: "0.04em",
-                          }}
-                        >
-                          {t("editDialog.discontinued")}
-                        </span>
-                      )}
-                    </>
-                  }
-                  subtitle={
-                    <>
-                      {c.company?.name ?? "—"} ·{" "}
-                      {c.cardType === "CREDIT"
-                        ? t("cardTypeShort.credit")
-                        : t("cardTypeShort.check")}
-                      {/* 연회비 정보가 없으면(null) 좁은 목록에선 생략. 0원이면 '무료'로 구분해 보인다. */}
-                      {c.annualFee &&
-                        (c.annualFee.amount > 0 ? (
-                          <>
-                            {" "}
-                            ·{" "}
-                            {t("editDialog.annualFeeValue", {
-                              amount:
-                                c.annualFee.amount.toLocaleString("ko-KR"),
-                            })}
-                          </>
-                        ) : (
-                          <> · {t("editDialog.annualFeeFree")}</>
-                        ))}
-                    </>
-                  }
-                />
-              );
-            })}
-          </SearchableList>
-        </>
-      ) : (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label className="text-[13px] font-medium">
-              {editingGroup === "invest"
-                ? t("editDialog.brokerExchange")
-                : t("editDialog.institutionBrand")}
-            </Label>
-            <span className="text-[11px] text-[var(--fg-tertiary)]">
-              {t("editDialog.totalCount", {
-                count:
-                  editingGroup === "invest"
-                    ? INVEST_BRANDS.length
-                    : BANK_ENTRIES.filter(
-                        (e) => !INVEST_CATEGORY_SET.has(e.category),
-                      ).length,
-              })}
-            </span>
-          </div>
-          <div className="relative mb-2">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-            />
-            <Input
-              search
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={
-                editingGroup === "invest"
-                  ? t("editDialog.investSearchPlaceholder")
-                  : t("editDialog.bankSearchPlaceholder")
-              }
-              className="pl-9"
-            />
-          </div>
-          <div
-            className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
-            style={{ maxHeight: 260, overflowY: "auto" }}
-          >
-            {editingGroup === "invest" ? (
-              investFilteredCount === 0 ? (
-                <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                  {t("editDialog.noSearchResults")}
-                </div>
-              ) : (
-                <ToggleGroup
-                  type="single"
-                  value={brand}
-                  onValueChange={(v) => v && setBrand(v)}
-                  className="block w-full"
-                >
-                  {investFilteredByCategory.map(([cat, list]) => (
-                    <div key={cat}>
-                      <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                        {t(CATEGORY_LABEL_KEY[cat])}
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 px-3 pb-2">
-                        {list.map((e) => {
-                          const active = e.name === brand;
-                          return (
-                            <ToggleGroupItem
-                              key={e.name}
-                              value={e.name}
-                              className="rounded-full border text-[12.5px] font-medium h-7 min-w-0 px-3"
-                              style={
-                                active
-                                  ? {
-                                      background: e.color.bg,
-                                      color: e.color.fg ?? "#fff",
-                                      borderColor: "transparent",
-                                    }
-                                  : {
-                                      background: "var(--bg-muted)",
-                                      color: "var(--fg-secondary)",
-                                      borderColor: "transparent",
-                                    }
-                              }
-                            >
-                              {e.name}
-                            </ToggleGroupItem>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </ToggleGroup>
-              )
-            ) : bankFilteredByCategory.length === 0 ? (
-              <div className="py-6 text-center text-[12px] text-[var(--fg-tertiary)]">
-                {t("editDialog.noSearchResults")}
-              </div>
-            ) : (
-              <ToggleGroup
-                type="single"
-                value={brand}
-                onValueChange={(v) => v && setBrand(v)}
-                className="block w-full"
-              >
-                {bankFilteredByCategory.map(([cat, list]) => (
-                  <div key={cat}>
-                    <div className="sticky top-0 z-[1] px-3 pt-2 pb-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--fg-tertiary)] bg-[var(--bg-surface)]">
-                      {cat}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 px-3 pb-2">
-                      {list.map((e) => {
-                        const active = e.name === brand;
-                        return (
-                          <ToggleGroupItem
-                            key={e.name}
-                            value={e.name}
-                            className="rounded-full border text-[12.5px] font-medium h-7 min-w-0 px-3"
-                            style={
-                              active
-                                ? {
-                                    background: e.color.bg,
-                                    color: e.color.fg ?? "#fff",
-                                    borderColor: "transparent",
-                                  }
-                                : {
-                                    background: "var(--bg-muted)",
-                                    color: "var(--fg-secondary)",
-                                    borderColor: "transparent",
-                                  }
-                            }
-                          >
-                            {e.name}
-                          </ToggleGroupItem>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </ToggleGroup>
-            )}
-          </div>
-        </div>
-      )}
-
-      {editingGroup === "account" && (
-        <div>
-          <Label className="text-[13px] font-medium mb-2 block">
-            {t("editDialog.accountTypeLabel")}
-          </Label>
-          {/* 종류가 여섯이 되면서 모바일 폭(390)·영어 라벨에서 한 줄에 안 들어간다.
-              트랙은 그대로 두고 가로 스크롤만 허용한다 — 넘치면 잘리는 대신 밀린다.
-              `w-max min-w-full` 이라 자리가 남으면 예전처럼 꽉 채워 늘어난다. */}
-          <div className="overflow-x-auto">
-            <Tabs
-              value={accountSub}
-              onValueChange={(v) => v && setAccountSub(v as typeof accountSub)}
-            >
-              <TabsList variant="pill" size="sm" className="w-max min-w-full">
-                {ACCOUNT_SUBS.map((s) => (
-                  <TabsTrigger key={s} value={s} className="flex-1">
-                    {t(`accountSub.${ACCOUNT_SUB_KEY[s]}`)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-        </div>
-      )}
-
-      <div>
-        <Label
-          htmlFor="asset-edit-name"
-          className="text-[13px] font-medium mb-2 block"
-        >
-          {nameLabel}
-        </Label>
-        <Input
-          id="asset-edit-name"
-          aria-invalid={!!nameErr}
-          value={name}
-          onChange={(e) => setName(e.target.value.slice(0, ASSET_NAME_MAX))}
-          placeholder={namePlaceholder}
-          maxLength={ASSET_NAME_MAX}
-        />
-        <NameCounter len={nameTrim.length} max={ASSET_NAME_MAX} err={nameErr} />
-      </div>
-
-      {/* 투자 — 보유 종목 편집 (design invest 분기: 검색→연동 추가 / 직접 추가, qty·평가액 인라인 편집) */}
-      {editingGroup === "invest" && (
-        <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <Label className="text-[13px] font-medium">
-              {t("holdings.sectionTitle")}
-            </Label>
-            <span className="num text-[11px] text-[var(--fg-tertiary)]">
-              {t("holdings.editSummary", {
-                n: holdings.length,
-                total: KRW(holdingsTotal),
-              })}
-            </span>
-          </div>
-          {allowStock && (
-            <div className="relative mb-1">
-              <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-tertiary)]"
-              />
-              <Input
-                search
-                value={stockQ}
-                onChange={(e) => setStockQ(e.target.value)}
-                placeholder={t("holdings.searchPlaceholder")}
-                className="pl-9"
-              />
-            </div>
-          )}
-          {allowStock && stockQ.trim().length > 0 && (
-            <div
-              className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] mb-2"
-              style={{ maxHeight: 240, overflowY: "auto" }}
-            >
-              {stockResults.map((s) => (
-                <button
-                  key={`${s.marketCode}:${s.symbol}`}
-                  type="button"
-                  className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--color-bg-layer-default-pressed)] transition-colors"
-                  style={{
-                    background: "transparent",
-                    border: 0,
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    // 시세 게이트 OFF(비구독·토스 미연결)면 연동해도 평가액을 못 구하므로
-                    // 검색 결과도 수동 항목으로 추가 — 사용자가 평가액을 직접 입력해 합계에 반영(사용자 결정).
-                    setHoldings((prev) => [
-                      ...prev,
-                      liveEnabled
-                        ? {
-                            key: nextHoldingKey(),
-                            holdingType: "STOCK" as HoldingType,
-                            linked: true,
-                            // 검색 결과가 시장을 알고 있다 — 여기서 안 담으면 서버는
-                            // 심볼로 되짚어야 하고, 여러 시장에 걸리면 확정하지 못한다.
-                            marketCode: s.marketCode,
-                            tossSymbol: s.symbol,
-                            quantity: "1",
-                            displayName: s.nameKr,
-                          }
-                        : {
-                            key: nextHoldingKey(),
-                            holdingType: manualHoldingType,
-                            linked: false,
-                            holdingName: s.nameKr,
-                            holdingValue: 0,
-                          },
-                    ]);
-                    setStockQ("");
-                  }}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold text-[var(--fg-primary)]">
-                      {s.nameKr}
-                    </div>
-                    <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
-                      {s.symbol} · {s.marketCode}
-                    </div>
-                  </div>
-                </button>
-              ))}
-              {stockSearching && stockResults.length === 0 && (
-                <div className="py-4 text-center text-[12px] text-[var(--fg-tertiary)]">
-                  …
-                </div>
-              )}
-              <button
-                type="button"
-                className="flex w-full items-center gap-1.5 px-3 py-2.5 text-[12.5px] font-bold text-[var(--fg-brand)]"
-                style={{
-                  background: "transparent",
-                  border: 0,
-                  borderTop: stockResults.length
-                    ? "1px solid var(--border-subtle)"
-                    : "none",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  setHoldings((prev) => [
-                    ...prev,
-                    {
-                      key: nextHoldingKey(),
-                      holdingType: manualHoldingType,
-                      linked: false,
-                      holdingName: stockQ.trim(),
-                      holdingValue: 0,
-                    },
-                  ]);
-                  setStockQ("");
-                }}
-              >
-                <Plus size={13} strokeWidth={2.4} />{" "}
-                {t("holdings.addManual", { name: stockQ.trim() })}
-              </button>
-            </div>
-          )}
-          {/* 금·코인은 검색 대상이 아니다(토스·마스터 모두 미제공) — 직접 추가로만 담는다.
-                  기관이 유형을 정하므로 증권사면 아무것도 안 뜬다(주식은 위 검색으로 담는다). */}
-          <div className="flex gap-1.5 mb-1">
-            {manualAddTypes.map((type) => (
-              <Button
-                key={type}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setHoldings((prev) => [
-                    ...prev,
-                    {
-                      key: nextHoldingKey(),
-                      holdingType: type,
-                      linked: false,
-                      holdingName: "",
-                      holdingValue: 0,
-                    },
-                  ])
-                }
-              >
-                <Plus size={13} strokeWidth={2.4} />
-                {type === "GOLD"
-                  ? t("holdings.addGold")
-                  : t("holdings.addCrypto")}
-              </Button>
-            ))}
-          </div>
-          {holdings.length === 0 ? (
-            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5 leading-relaxed">
-              {allowStock
-                ? t("holdings.editEmptyHelp")
-                : t("holdings.editEmptyHelpManual")}
-            </p>
-          ) : (
-            <div>
-              {HOLDING_TYPES.map(({ type, labelKey }) => {
-                const rows = holdings.filter((h) => h.holdingType === type);
-                if (rows.length === 0) return null;
-                return (
-                  <div key={type} className="mt-2 first:mt-0">
-                    {/* 유형 라벨과 목록은 한 묶음 — 유형이 하나뿐이어도 어떤 단위인지 드러난다. */}
-                    <div className="text-[11px] font-bold text-[var(--fg-tertiary)] pt-1.5">
-                      {t(labelKey)}
-                    </div>
-                    {rows.map((h, i) => {
-                      const val = holdingValueOf(h);
-                      return (
-                        <div
-                          key={h.key}
-                          className="flex items-center gap-2"
-                          style={{
-                            padding: "11px 2px",
-                            borderTop:
-                              i === 0
-                                ? "none"
-                                : "1px solid var(--border-subtle)",
-                          }}
-                        >
-                          <div className="min-w-0 flex-1">
-                            {h.linked ? (
-                              <>
-                                <div className="text-[13px] font-semibold text-[var(--fg-primary)] truncate">
-                                  <LinkedHoldingName holding={h} />
-                                  <span
-                                    className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold align-middle"
-                                    style={{
-                                      background: "var(--bg-brand-subtle)",
-                                      color: "var(--fg-brand-strong)",
-                                    }}
-                                  >
-                                    {t("holdings.linkedBadge")}
-                                  </span>
-                                </div>
-                                <div className="num text-[11px] text-[var(--fg-tertiary)] mt-0.5">
-                                  {t("holdings.editLinkedSub")}
-                                </div>
-                              </>
-                            ) : (
-                              // 미연동은 이름도 고칠 수 있어야 한다 — 금·코인은 검색으로 이름을 받지 못한다.
-                              <Input
-                                value={h.holdingName ?? ""}
-                                placeholder={t("holdings.namePlaceholder")}
-                                onChange={(e) =>
-                                  setHoldings((prev) =>
-                                    prev.map((x) =>
-                                      x.key === h.key
-                                        ? { ...x, holdingName: e.target.value }
-                                        : x,
-                                    ),
-                                  )
-                                }
-                                className="h-[34px]"
-                              />
-                            )}
-                            {/* 매수원가 — 실현손익의 기준. 매수·매도로 쌓이지만
-                                    앱을 쓰기 전부터 갖고 있던 보유는 여기서 적어 넣어야 손익이 맞는다. */}
-                            <div className="mt-1.5 flex items-center gap-1.5">
-                              <span className="text-[11px] text-[var(--fg-tertiary)] shrink-0">
-                                {t("holdings.totalCost")}
-                              </span>
-                              <Input
-                                inputMode="numeric"
-                                onKeyDown={blockNonDigitKey}
-                                value={
-                                  h.totalCost != null ? String(h.totalCost) : ""
-                                }
-                                placeholder="0"
-                                onChange={(e) => {
-                                  const v =
-                                    parseInt(
-                                      e.target.value.replace(/[^\d]/g, ""),
-                                      10,
-                                    ) || 0;
-                                  setHoldings((prev) =>
-                                    prev.map((x) =>
-                                      x.key === h.key
-                                        ? { ...x, totalCost: v }
-                                        : x,
-                                    ),
-                                  );
-                                }}
-                                className="num h-[28px] w-[104px] px-2 text-right"
-                              />
-                              {h.totalCost != null &&
-                              h.totalCost > 0 &&
-                              qtyNumber(h.quantity) ? (
-                                <span className="num text-[11px] text-[var(--fg-tertiary)]">
-                                  {t("holdings.avgPriceInline", {
-                                    avg: KRW(
-                                      Math.round(
-                                        h.totalCost /
-                                          (qtyNumber(h.quantity) || 1),
-                                      ),
-                                    ),
-                                  })}
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                          {/* 수량 — 연동은 필수(시세×수량), 미연동은 선택. 소수 허용(0.05 BTC·3.75g) */}
-                          <span className="inline-flex items-center gap-1 shrink-0">
-                            <Input
-                              inputMode="decimal"
-                              value={h.quantity ?? ""}
-                              onChange={(e) => {
-                                const q = sanitizeQty(e.target.value);
-                                setHoldings((prev) =>
-                                  prev.map((x) =>
-                                    x.key === h.key ? { ...x, quantity: q } : x,
-                                  ),
-                                );
-                              }}
-                              className="num h-[34px] w-[62px] px-2 text-right"
-                            />
-                            <span className="text-[12px] text-[var(--fg-tertiary)]">
-                              {t(HOLDING_UNIT_KEY[h.holdingType])}
-                            </span>
-                          </span>
-                          {/* 평가액 — 연동은 시세로 계산(읽기 전용), 미연동은 직접 입력 */}
-                          {h.linked ? (
-                            <span
-                              className="num shrink-0 text-right text-[12.5px] font-bold text-[var(--fg-primary)]"
-                              style={{ minWidth: 84 }}
-                            >
-                              {val != null ? `${KRW(val)}원` : "—"}
-                            </span>
-                          ) : (
-                            <Input
-                              inputMode="numeric"
-                              onKeyDown={blockNonDigitKey}
-                              value={
-                                h.holdingValue != null
-                                  ? String(h.holdingValue)
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const v =
-                                  parseInt(
-                                    e.target.value.replace(/[^\d]/g, ""),
-                                    10,
-                                  ) || 0;
-                                setHoldings((prev) =>
-                                  prev.map((x) =>
-                                    x.key === h.key
-                                      ? { ...x, holdingValue: v }
-                                      : x,
-                                  ),
-                                );
-                              }}
-                              className="num h-[34px] w-[100px] px-2 text-right shrink-0"
-                            />
-                          )}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="shrink-0 h-8 w-8"
-                            aria-label={t("holdings.remove")}
-                            onClick={() =>
-                              setHoldings((prev) =>
-                                prev.filter((x) => x.key !== h.key),
-                              )
-                            }
-                          >
-                            <Trash2 size={13} />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 신용카드 — design 신판 순서: 신용한도 → 결제일 → 현재 사용액 → 결제 계좌(연동 유지) */}
-      {isCreditCardEdit && (
-        <>
-          <div>
-            <Label
-              htmlFor="card-credit-limit"
-              className="text-[13px] font-medium mb-2 block"
-            >
-              {t("editDialog.creditLimit", { unit })}
-            </Label>
-            <Input
-              id="card-credit-limit"
-              inputMode="numeric"
-              value={creditLimit}
-              onChange={(e) =>
-                setCreditLimit(sanitizeAmountInput(e.target.value, MAX_BALANCE))
-              }
-              onKeyDown={blockNonDigitKey}
-              placeholder={t("editDialog.creditLimitPlaceholder")}
-            />
-          </div>
-          <div>
-            <Label
-              id={`${uid}payday-label`}
-              className="text-[13px] font-medium mb-2 block"
-            >
-              {t("editDialog.paymentDay")}
-            </Label>
-            <Select
-              value={paymentDay || undefined}
-              onValueChange={(v) => {
-                // 다시 고르면 앞서 받은 확인은 무른다 — 다른 날을 골랐을 수 있다(D5).
-                paymentDayConfirmedRef.current = false;
-                setPaymentDay(v);
-              }}
-            >
-              <SelectTrigger
-                id={`${uid}payday`}
-                aria-labelledby={`${uid}payday-label ${uid}payday`}
-              >
-                <SelectValue
-                  placeholder={t("editDialog.paymentDayPlaceholder")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                  <SelectItem key={d} value={String(d)}>
-                    {t("editDialog.dayUnit", { day: d })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
-
-      {/* 마이너스통장 약정 한도 — 선택 입력. 신용카드 한도와 같은 credit_limit 컬럼을 쓴다
-          (둘 다 '빌릴 수 있는 최대'). 한도 게이지는 신용카드에서만 그리므로 겸용해도 부딪히지 않는다. */}
-      {isOverdraft && (
-        <div>
-          <Label
-            htmlFor="overdraft-limit"
-            className="text-[13px] font-medium mb-2 block"
-          >
-            {t("editDialog.overdraftLimitLabel", { unit })}
-          </Label>
-          <Input
-            id="overdraft-limit"
-            inputMode="numeric"
-            value={creditLimit}
-            onChange={(e) =>
-              setCreditLimit(sanitizeAmountInput(e.target.value, MAX_BALANCE))
-            }
-            onKeyDown={blockNonDigitKey}
-            placeholder="0"
-          />
-        </div>
-      )}
-
-      {/* 체크카드는 잔액 개념이 없다 — 긁는 즉시 연결 계좌에서 빠지므로 카드가 들고 있을 금액이 없다.
-              신용카드는 결제일까지 사용액을 들고 있으므로 그대로 입력받는다. */}
-      {editingGroup === "card" && cardType === "CHECK" ? null : editingGroup ===
-          "invest" && holdings.length > 0 ? (
-        <div>
-          {/* 연동 합계만은 통화를 안 따른다 — 시세를 원화로 환산해 더한 값이라
-              (`live.unitKrw`) 고른 통화를 붙이면 라벨이 값을 속인다. */}
-          <Label className="text-[13px] font-medium mb-2 block">
-            {t("editDialog.balanceLabelInvest", {
-              unit: currencyUnit(DEFAULT_CURRENCY),
-            })}
-          </Label>
-          <div className="num rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-sunken)] px-3 py-2.5 text-[14px] font-bold text-[var(--fg-primary)]">
-            {KRW(holdingsTotal)}원
-          </div>
-          <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-            {t("holdings.balanceAutoHelp")}
-          </p>
-        </div>
-      ) : (
-        <div>
-          {/* 결제 대기 청구분(2026-09-22) — 결제일 전에 등록하면 지난달 청구분은 다가오는
-              결제일에, 그 뒤 쓴 금액은 그다음 결제일에 빠진다. 칸 이름에 그 날짜를 쓴다. */}
-          {dueField && (
-            <div className="mb-4" data-testid="due-carryover">
-              <Label
-                htmlFor="asset-edit-due"
-                className="text-[13px] font-medium mb-2 block"
-              >
-                {t("editDialog.dueCarryoverLabel", {
-                  date: formatDay(dueField.paymentDate).md,
-                  unit,
-                })}
-              </Label>
-              <Input
-                id="asset-edit-due"
-                inputMode="numeric"
-                disabled={dueField.locked}
-                value={dueStr}
-                onChange={(e) =>
-                  setDueStr(sanitizeAmountInput(e.target.value, MAX_BALANCE))
-                }
-                onKeyDown={blockNonDigitKey}
-                onBlur={() => {
-                  const n = Number(dueStr) || 0;
-                  setDueStr(n ? KRW(n) : "0");
-                }}
-                onFocus={() =>
-                  setDueStr((prev) => {
-                    const bare = prev.replace(/,/g, "");
-                    return bare === "0" ? "" : bare;
-                  })
-                }
-              />
-              <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-                {dueField.locked
-                  ? t("editDialog.carryoverLocked")
-                  : t("editDialog.dueCarryoverHelp")}
-              </p>
-            </div>
-          )}
-          {/* 초과 배지는 **넘긴 값 옆**에 붙인다 — 한도 칸이 아니라 사용액 칸이
-              사용자가 방금 고친 자리다. 저장은 그대로 열려 있다(QA #125). */}
-          <div className="mb-2 flex items-center gap-2">
-            <Label
-              htmlFor="asset-edit-balance"
-              className="text-[13px] font-medium"
-            >
-              {dueField
-                ? t("editDialog.carryoverAfterLabel", { unit })
-                : balanceLabel}
-            </Label>
-            {overLimitBy > 0 && (
-              <Badge variant="error">{t("editDialog.overLimitBadge")}</Badge>
-            )}
-            {/* 이 칸은 이월 금액이라 지금 갚을 돈과 다르다 — 지금 미결제 잔액을 옆에 읽기
-                전용으로 둬서 둘을 헷갈리지 않게 한다(D7). */}
-            {isExistingCreditCard && (
-              <span
-                data-testid="current-unpaid"
-                className="num ml-auto text-[11.5px] text-[var(--fg-tertiary)]"
-              >
-                {t("editDialog.currentUnpaid", {
-                  balance: money(currentUnpaid),
-                })}
-              </span>
-            )}
-          </div>
-          <Input
-            id="asset-edit-balance"
-            inputMode="numeric"
-            disabled={carryoverLocked}
-            value={balanceStr}
-            onChange={(e) =>
-              setBalanceStr(sanitizeAmountInput(e.target.value, MAX_BALANCE))
-            }
-            // `-` 도 여기서 막힌다 — 부호는 종류가 정한다(QA #19).
-            onKeyDown={blockNonDigitKey}
-            onBlur={() => {
-              const n = Number(balanceStr) || 0;
-              setBalanceStr(n ? KRW(n) : "0");
-            }}
-            onFocus={() =>
-              setBalanceStr((prev) => {
-                const bare = prev.replace(/,/g, "");
-                // 기본값 `0` 은 지우고 시작한다 — 안 지우면 500 을 쳐서 0500 이 된다(QA #18).
-                // 아무것도 안 치고 나가면 위 onBlur 가 다시 `0` 으로 되돌린다.
-                return bare === "0" ? "" : bare;
-              })
-            }
-          />
-          {overLimitBy > 0 && (
-            <p className="mt-1.5 text-[11.5px] text-[color:var(--status-danger-fg)]">
-              {t("editDialog.overLimitHelp", {
-                amount: formatOriginalAmount(
-                  overLimitBy,
-                  currency,
-                  i18n.language,
-                ),
-              })}
-            </p>
-          )}
-          {/* 이월 거래가 든 회차가 결제됐으면 그 금액은 이미 청구가 끝났다 — 고치면 끝난
-              회차의 기록이 흔들린다(D15). 서버도 값이 달라지면 400 으로 막는다. */}
-          {carryoverLocked ? (
-            <p
-              data-testid="carryover-locked"
-              className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5"
-            >
-              {t("editDialog.carryoverLocked")}
-            </p>
-          ) : (
-            editingGroup === "card" && (
-              <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-                {dueField
-                  ? newCardBillWindow
-                    ? t("editDialog.carryoverAfterHelp", {
-                        date: formatDay(newCardBillWindow.afterDate).md,
-                      })
-                    : t("editDialog.carryoverAfterHelpNoDate")
-                  : t("editDialog.cardBalanceHelp")}
-              </p>
-            )
-          )}
-          {isOverdraft && (
-            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-              {t("editDialog.overdraftHelp")}
-            </p>
-          )}
-          {/* 잔액 수동 수정 = 새 앵커. 그 시각 이전 내역은 이 잔액에 이미 들어 있는 것으로 보고
-              이후 내역만 더해진다 — 모르고 고치면 방금 한 이체가 잔액에서 사라진 것처럼 보인다. */}
-          {item && editingGroup !== "card" && (
-            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-              {t("editDialog.balanceEditHelp")}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* 통화·환율 — 세 묶음이 같은 칸을 쓴다(D1). 잔액 바로 아래인 이유는 이 칸이
-          잔액의 단위를 정하기 때문이다. 카드·대출도 외화가 있다(해외 카드·외화 대출)
-          — 자산 유형으로 가르지 않는다. 앱도 같은 규칙이다(desk-app #330). */}
-      <div>
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <Label
-              id={`${uid}currency-label`}
-              className="text-[13px] font-medium mb-2 block"
-            >
-              {t("form.currency")}
-            </Label>
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger
-                id="asset-edit-currency"
-                aria-labelledby={`${uid}currency-label asset-edit-currency`}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((c) => (
-                  <SelectItem key={c.code} value={c.code}>
-                    {c.symbol} {c.code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {isForeign && (
-            <div className="flex-1">
-              <Label
-                htmlFor="asset-edit-fx-rate"
-                className="text-[13px] font-medium mb-2 block"
-              >
-                {t("form.exchangeRate")}
-              </Label>
-              {/* 소수를 받는 칸이라 `blockNonDigitKey` 를 붙이지 않는다 —
-                  붙이면 `.` 이 안 찍혀 1380.5 를 못 적는다. */}
-              <Input
-                id="asset-edit-fx-rate"
-                inputMode="decimal"
-                value={exchangeRate}
-                onChange={(e) => setExchangeRate(e.target.value)}
-                placeholder={t("form.exchangeRatePlaceholder", {
-                  code: currency,
-                })}
-              />
-            </div>
-          )}
-        </div>
-        {isForeign && (
-          <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-            {t("form.exchangeRateHint")}
-          </p>
-        )}
-      </div>
-
-      {/* 신용카드는 결제일에 여기서 한 번에 빠지고, 체크카드는 긁는 즉시 빠진다 — 의미가 달라 라벨을 나눈다. */}
-      {editingGroup === "card" && (
-        <div>
-          <Label
-            id={`${uid}payacct-label`}
-            className="text-[13px] font-medium mb-2 block"
-          >
-            {cardType === "CHECK"
-              ? t("editDialog.linkedAccount")
-              : t("editDialog.paymentAccount")}
-          </Label>
-          <Select
-            value={
-              paymentAssetRowId != null ? String(paymentAssetRowId) : undefined
-            }
-            onValueChange={(v) => setPaymentAssetRowId(v ? Number(v) : null)}
-            disabled={bankAccounts.length === 0}
-          >
-            <SelectTrigger
-              id={`${uid}payacct`}
-              aria-labelledby={`${uid}payacct-label ${uid}payacct`}
-            >
-              <SelectValue
-                placeholder={
-                  bankAccounts.length === 0
-                    ? t("editDialog.noCheckingAccount")
-                    : cardType === "CHECK"
-                      ? t("editDialog.selectLinkedAccount")
-                      : t("editDialog.selectPaymentAccount")
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {bankAccounts.map((a) => (
-                <SelectItem key={a.rowId} value={String(a.rowId)}>
-                  {a.institution
-                    ? `${a.institution} · ${a.assetName}`
-                    : a.assetName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {cardType === "CHECK" && (
-            <p className="text-[11.5px] text-[var(--fg-tertiary)] mt-1.5">
-              {t("editDialog.linkedAccountHelp")}
-            </p>
-          )}
-        </div>
-      )}
-
-      {editingGroup !== "card" && (
-        <div>
-          <Label
-            htmlFor="asset-edit-memo"
-            className="text-[13px] font-medium mb-2 block"
-          >
-            {t("editDialog.memoOptional")}
-          </Label>
-          <Input
-            id="asset-edit-memo"
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            placeholder={t("editDialog.memoPlaceholder")}
-            maxLength={120}
-          />
-        </div>
-      )}
-
-      <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3">
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-muted text-[var(--fg-secondary)]">
-          <Wallet size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-semibold text-[var(--fg-primary)]">
-            {t("editDialog.includeInTotal")}
-          </div>
-          <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">
-            {t("editDialog.includeInTotalDesc")}
-          </div>
-        </div>
-        <Switch
-          checked={isIncludedInTotal === "Y"}
-          onCheckedChange={(b) => setIsIncludedInTotal(b ? "Y" : "N")}
-        />
-      </div>
-
-      {/* 총액 제외 바로 아래 — 둘 다 자산 하나에 붙는 표시 규칙이라 나란히 둔다. */}
-      <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3">
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-muted text-[var(--fg-secondary)]">
-          <EyeOff size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-semibold text-[var(--fg-primary)]">
-            {t("editDialog.hideAmount")}
-          </div>
-          <div className="mt-0.5 text-[11.5px] text-[var(--fg-secondary)]">
-            {t("editDialog.hideAmountDesc")}
-          </div>
-        </div>
-        <Switch
-          id="asset-edit-hide-amount"
-          checked={isAmountHidden === "Y"}
-          onCheckedChange={(b) => {
-            // 다시 켜면 앞서 받은 확인은 무른다 — 또 끄면 다시 물어야 한다.
-            if (b) unlockedRef.current = false;
-            setIsAmountHidden(b ? "Y" : "N");
-          }}
-        />
-      </div>
-    </Fragment>
-  );
-
-  // 어느 폭에서든 [취소][저장] — 삭제는 상세로 옮겼다
-  // (spec drawer.md: 상세 = 삭제·편집 / 편집 폼 = 취소·저장).
-  const footerInner = (
-    <ModalFooter
-      onSave={handleSubmit}
-      saveLabel={isNew ? t("addAction") : tCommon("save")}
-      saving={isSubmitting}
-      saveDisabled={!canSubmit}
-      onCancel={handleClose}
-      cancelLabel={tCommon("cancel")}
-    />
-  );
+  const kindName = kind ? t(KIND_LABEL_KEY[kind]) : "";
+  const { t: tSettings } = useTranslation("settings");
+  const title =
+    step === "kind"
+      ? t("editDialog.firstTitle")
+      : step === "unlock"
+        ? tSettings("hideAmounts.unlockTitle")
+        : isNew
+          ? t("editDialog.titleAddKind", { kind: kindName })
+          : t("editDialog.titleEditKind", { kind: kindName });
 
   return (
     <>
-      <ModalShell
-        title={title}
-        onClose={handleClose}
-        mobile={mobile}
-        size="md"
-        // ModalShell 이 footer 컨테이너를 쥔다 — 감싸면 안 된다. 모바일 균등분배가
-        // `[&>button]:flex-1`(직계 자식) 이라 div 를 한 겹 끼우면 버튼이 손자가 돼
-        // 선택자에서 빠지고, 데스크탑도 컨테이너의 justify-end 대신 그 div 의 배치를
-        // 따른다. 다른 다이얼로그처럼 footer 를 그대로 넘긴다.
-        footer={footerInner}
+      <ResponsiveDialog
+        open
+        form
+        dirty={step !== "kind" && (f.changed || (!isNew && f.kindChanged))}
+        onOpenChange={(next) => {
+          if (!next) handleClose();
+        }}
       >
-        <div className="flex flex-col gap-5">{bodyContent}</div>
-      </ModalShell>
-      {/* 확인을 취소하면 저장도 하지 않는다 — 폼 스위치는 끈 채로 남고, 창을 닫으면
-        서버 값(숨김)이 그대로다. */}
-      {/* 열릴 때만 마운트한다 — 이 창은 비밀번호 확인 훅을 물고 있어, 늘 매달아 두면
-        편집 폼을 그리는 모든 자리(테스트 포함)가 그 훅까지 갖춰야 한다. */}
-      {unlockOpen && (
-        <HideAmountsUnlockDialog
-          open
-          onOpenChange={setUnlockOpen}
-          onVerified={() => {
-            unlockedRef.current = true;
-            setUnlockOpen(false);
-            handleSubmit();
+        <ResponsiveDialogContent
+          ref={contentRef}
+          title={title}
+          // 추가 2단계의 ← 는 1단계로 — 수정에는 1단계가 없어 ← 도 없다
+          onBack={
+            step === "unlock"
+              ? () => setStep("form")
+              : step === "form" && isNew
+                ? () => backToKind.request()
+                : undefined
+          }
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            focusFirstField(contentRef.current);
           }}
-        />
-      )}
-      {/* 결제일 변경 — 다음 회차부터다(D5). 취소하면 저장도 안 한다(폼은 그대로 남는다). */}
-      {paymentDayConfirm && (
-        <ConfirmDialog
-          title={t("editDialog.paymentDayChangeTitle")}
-          message={paymentDayConfirm}
-          confirmLabel={tCommon("save")}
-          loading={isSubmitting}
-          onCancel={() => setPaymentDayConfirm(null)}
-          onConfirm={() => {
-            paymentDayConfirmedRef.current = true;
-            setPaymentDayConfirm(null);
-            handleSubmit();
-          }}
-        />
-      )}
+        >
+          {step === "kind" ? (
+            <KindStep f={f} showError={showKindError} onNext={goNext} />
+          ) : step === "unlock" ? (
+            <UnlockStep
+              onBack={() => setStep("form")}
+              onVerified={() => {
+                // 확인되면 2단계로 돌아가 저장을 이어 간다 — 저장이 실패해도 폼에 남는다
+                unlockedRef.current = true;
+                setStep("form");
+                handleSubmit();
+              }}
+            />
+          ) : (
+            <FormStep
+              f={f}
+              onSubmit={attemptSubmit}
+              isSubmitting={isSubmitting}
+            />
+          )}
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+      {backToKind.node}
+      {/* 결제일 변경 — 다음 회차부터다(D5). 취소하면 저장도 안 한다(폼은 그대로 남는다). 확인창은 폼 위에 겹쳐 떠도 된다. */}
+      <AlertDialog
+        open={paymentDayConfirm != null}
+        onOpenChange={(open) => {
+          if (!open) setPaymentDayConfirm(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>
+            {t("editDialog.paymentDayChangeAsk")}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{paymentDayConfirm}</AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              loading={isSubmitting}
+              onClick={() => {
+                paymentDayConfirmedRef.current = true;
+                setPaymentDayConfirm(null);
+                handleSubmit();
+              }}
+            >
+              {tCommon("save")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

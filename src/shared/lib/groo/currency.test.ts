@@ -65,42 +65,44 @@ describe("currencyUnit", () => {
 });
 
 /**
- * 문구 쪽 절반 — 라벨이 단위를 **슬롯으로** 들고 있어야 한다.
+ * 문구 쪽 절반 — 단위는 라벨이 아니라 입력칸 오른쪽 단위 칸이 들고 있다(I-17 1단계).
  *
- * 컴포넌트가 `unit` 을 넘기는지는 `AssetEditDialog.currency-label.test.tsx` 가 본다.
- * 그것만으로는 부족하다: CSV 가 `잔액 (원)` 으로 박힌 채면 넘긴 값이 갈 자리가 없어
- * 화면은 그대로인데 그 테스트는 초록이다. 여기서 CSV → 생성물 → i18n 까지를 한 번에 본다.
+ * 그래서 라벨에 `{{unit}}` 슬롯이 남아 있으면 안 되고, 넘긴 단위가 라벨에 박히지도 않는다.
+ * 컴포넌트가 단위를 칸 쪽에 넘기는지는 `AssetEditDialog.currency-label.test.tsx` 가 본다.
+ * 여기서 CSV → 생성물 → i18n 까지를 한 번에 본다.
  */
-describe("잔액·한도 라벨은 단위를 슬롯으로 받는다", () => {
-  const KEYS = [
-    "editDialog.balanceLabelAccount",
-    "editDialog.balanceLabelCard",
-    "editDialog.balanceLabelInvest",
-    "editDialog.balanceLabelOverdraft",
-    "editDialog.creditLimit",
-    "editDialog.overdraftLimitLabel",
-  ];
+describe("잔액·한도 라벨은 단위 없이 글만 둔다", () => {
+  const LABELS = {
+    ko: {
+      "editDialog.balanceLabelAccount": "잔액",
+      "editDialog.balanceLabelCard": "이전 미결제 사용액",
+      "editDialog.balanceLabelInvest": "평가액",
+      "editDialog.balanceLabelOverdraft": "사용 중인 금액",
+      "editDialog.creditLimit": "신용한도",
+      "editDialog.overdraftLimitLabel": "약정 한도",
+    },
+    en: {
+      "editDialog.balanceLabelAccount": "Balance",
+      "editDialog.balanceLabelCard": "Unpaid balance",
+      "editDialog.balanceLabelInvest": "Valuation",
+      "editDialog.balanceLabelOverdraft": "Amount used",
+      "editDialog.creditLimit": "Credit limit",
+      "editDialog.overdraftLimitLabel": "Credit line",
+    },
+  } as const;
   const orig = i18n.language;
   afterEach(async () => {
     await i18n.changeLanguage(orig);
   });
 
   for (const lang of ["ko", "en"] as const) {
-    it(`${lang}: 넘긴 단위가 라벨에 실제로 박힌다`, async () => {
+    it(`${lang}: 라벨은 단위 슬롯 없이 새 글 그대로다`, async () => {
       await i18n.changeLanguage(lang);
-      for (const key of KEYS) {
-        expect(i18n.t(key, { ns: "asset", unit: "$" })).toContain("$");
+      for (const [key, text] of Object.entries(LABELS[lang])) {
+        expect(i18n.t(key, { ns: "asset", unit: "$" })).toBe(text);
       }
     });
   }
-
-  it("영문 '약정 한도' 는 `, optional)` 까지 살아 있다 — 쉼표에서 잘려 나갔다", async () => {
-    await i18n.changeLanguage("en");
-    // CSV 는 쉼표로 칸을 가른다. 따옴표로 안 감싸면 여기가 `Credit Line ($` 이 된다.
-    expect(
-      i18n.t("editDialog.overdraftLimitLabel", { ns: "asset", unit: "$" }),
-    ).toBe("Credit Line ($, optional)");
-  });
 });
 
 /**
