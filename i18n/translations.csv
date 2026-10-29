@@ -25,6 +25,7 @@ common,searchPlaceholder,검색...,Search...
 common,searchEmpty,검색 결과가 없어요,No results found
 common,totalCount,총 {{count}}건,{{count}} total
 common,selectMonth,월 선택,Select month
+common,done,완료,Done
 common,back,뒤로,Back
 common,themeToggle,테마 전환,Toggle theme
 common,loadingShort,로딩 중,Loading

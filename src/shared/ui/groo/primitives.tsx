@@ -260,8 +260,8 @@ export function MonthPicker({
   value: string;
   onChange: (v: string) => void;
   align?: "right" | "left";
-  /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만(14 · 600 · 홈 데스크톱), bar: 예산 달 줄의 달 글(t5 · 700 · 꺾쇠 16 · 높이 44 — I-08 7). */
-  variant?: "outline" | "borderless" | "bar";
+  /** trigger 시각 — outline(기본): border + radius + calendar icon, borderless: 글자 + chevron 만(14 · 600 · 홈 데스크톱). */
+  variant?: "outline" | "borderless";
   /**
    * 다음 달 이후도 고를 수 있다 — 예산처럼 미리 정해 두는 화면(사용자 결정 2026-09-25).
    * 기본은 이번 달까지다(홈·통계처럼 지나간 달만 뜻이 있는 화면). 종전엔 데스크톱 예산 설정만
@@ -316,56 +316,40 @@ export function MonthPicker({
     setOpen(false);
   };
 
-  const trigger =
-    variant === "bar" ? (
-      // 달 줄의 달 글(I-08 7) — t5 16/22 · 700 · fg-neutral + 아래 꺾쇠 16, 누르는 높이 44. ← 상자 끝에서 10 들인다
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => {
-          if (!open && !isMobile) setComputedAlign(computeAlign());
-          setOpen((v) => !v);
-        }}
-        className="month-picker__trigger ml-x2_5 mr-x2_5 inline-flex min-h-11 cursor-pointer items-center gap-x1 border-0 bg-transparent p-0 font-sans text-t5 font-bold text-fg-neutral"
-      >
-        {label}
-        <ChevronDown aria-hidden size={16} className="text-fg-neutral-muted" />
-      </button>
-    ) : (
-      <button
-        ref={triggerRef}
-        onClick={() => {
-          if (!open && !isMobile) setComputedAlign(computeAlign());
-          setOpen((v) => !v);
-        }}
-        className="month-picker__trigger"
-        style={{
-          background: "transparent",
-          border:
-            variant === "borderless" ? 0 : "1px solid var(--border-subtle)",
-          borderRadius: variant === "borderless" ? 0 : "var(--radius-tile)",
-          padding: variant === "borderless" ? "4px 4px" : "6px 12px",
-          fontSize:
-            variant === "borderless"
-              ? "var(--text-body-sm)"
-              : "var(--text-label-sm)",
-          fontWeight: variant === "borderless" ? "700" : "600",
-          color:
-            variant === "borderless"
-              ? "var(--fg-primary)"
-              : "var(--fg-secondary)",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-          cursor: "pointer",
-          fontFamily: "inherit",
-        }}
-      >
-        {variant !== "borderless" && <Calendar size={13} />}
-        {label}
-        <ChevronDown size={12} style={{ color: "var(--fg-tertiary)" }} />
-      </button>
-    );
+  const trigger = (
+    <button
+      ref={triggerRef}
+      onClick={() => {
+        if (!open && !isMobile) setComputedAlign(computeAlign());
+        setOpen((v) => !v);
+      }}
+      className="month-picker__trigger"
+      style={{
+        background: "transparent",
+        border: variant === "borderless" ? 0 : "1px solid var(--border-subtle)",
+        borderRadius: variant === "borderless" ? 0 : "var(--radius-tile)",
+        padding: variant === "borderless" ? "4px 4px" : "6px 12px",
+        fontSize:
+          variant === "borderless"
+            ? "var(--text-body-sm)"
+            : "var(--text-label-sm)",
+        fontWeight: variant === "borderless" ? "700" : "600",
+        color:
+          variant === "borderless"
+            ? "var(--fg-primary)"
+            : "var(--fg-secondary)",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        cursor: "pointer",
+        fontFamily: "inherit",
+      }}
+    >
+      {variant !== "borderless" && <Calendar size={13} />}
+      {label}
+      <ChevronDown size={12} style={{ color: "var(--fg-tertiary)" }} />
+    </button>
+  );
 
   const yearNav = (
     <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>

@@ -2,16 +2,14 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { enUS, ko } from "date-fns/locale";
-import { useState } from "react";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
 import { navigateDate } from "@/widgets/calendar/lib/helpers";
 import type { TCalendarView } from "@/widgets/calendar/model/types";
 import { Button } from "@/shared/ds/button";
 import { ChipRadio, ChipRadioGroup } from "@/shared/ds/chip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { MonthPicker } from "@/shared/ds/month-picker";
 import { CalendarSourceToggle } from "@/widgets/calendar/ui/header/calendar-source-toggle";
-import { MonthYearPickerContent } from "@/widgets/calendar/ui/header/month-year-picker";
 
 /** 보기 고르기 차례 — 월 · 주 · 일 · 연 · 목록(I-09 15) */
 const VIEWS: { value: TCalendarView; key: string }[] = [
@@ -30,7 +28,6 @@ const VIEWS: { value: TCalendarView; key: string }[] = [
 const CalendarHeaderDesktop = () => {
   const { t, i18n } = useTranslation("calendar");
   const { selectedDate, setSelectedDate, view, setView } = useCalendar();
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   const locale = i18n.language.startsWith("ko") ? ko : enUS;
   const dateFormat = i18n.language.startsWith("ko")
@@ -67,9 +64,18 @@ const CalendarHeaderDesktop = () => {
         >
           <ChevronRight />
         </Button>
-        {/* 날짜 텍스트 → Popover picker 트리거 */}
-        <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-          <PopoverTrigger asChild>
+        {/* 날짜 텍스트 → 연 | 월 휠 팝오버(1280 이상) · 시트(미만) — I-27 */}
+        <MonthPicker
+          value={{
+            year: selectedDate.getFullYear(),
+            month: selectedDate.getMonth() + 1,
+          }}
+          onValueChange={(v) =>
+            setSelectedDate(new Date(v.year, v.month - 1, 1))
+          }
+          title={t("common:selectMonth")}
+          doneLabel={t("common:done")}
+          trigger={
             <button
               type="button"
               className="mx-x2 flex items-center gap-x1 whitespace-nowrap rounded-r2 text-t7 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
@@ -80,16 +86,8 @@ const CalendarHeaderDesktop = () => {
                 className="size-4 text-fg-neutral-muted"
               />
             </button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-auto p-0">
-            <MonthYearPickerContent
-              selectedDate={selectedDate}
-              onSelect={setSelectedDate}
-              onToday={handleTodayClick}
-              onClose={() => setPickerOpen(false)}
-            />
-          </PopoverContent>
-        </Popover>
+          }
+        />
         <Button
           variant="neutralOutline"
           size="small"

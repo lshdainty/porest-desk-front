@@ -1,4 +1,4 @@
-// 월 선택기 트리거 모양 — borderless 는 main 그대로(홈 데스크톱 14 · 700), 예산 달 줄은 전용 bar(t5 · 700 · 꺾쇠 16 · 높이 44) — I-08 7
+// 월 선택기 트리거 모양 — borderless 는 main 그대로(홈 데스크톱 14 · 700)(예산 달 줄은 I-27 로 ds MonthPicker)
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -29,7 +29,7 @@ afterEach(() => {
   act(() => root.unmount());
   container.remove();
 });
-const trigger = (variant: "outline" | "borderless" | "bar") => {
+const trigger = (variant: "outline" | "borderless") => {
   act(() =>
     root.render(
       <MonthPicker value="2026-09" onChange={() => {}} variant={variant} />,
@@ -46,12 +46,5 @@ describe("월 선택기 트리거 변형", () => {
     expect(b.style.padding).toBe("4px");
     expect(b.querySelector("svg")!.getAttribute("width")).toBe("12");
     expect(b.className).toBe("month-picker__trigger");
-  });
-  it("bar — 예산 달 줄 전용(클래스 t5 · 700 · 높이 44 · 꺾쇠 16)", () => {
-    const b = trigger("bar");
-    expect(b.className).toContain("text-t5");
-    expect(b.className).toContain("min-h-11");
-    expect(b.querySelector("svg")!.getAttribute("width")).toBe("16");
-    expect(b.style.fontSize).toBe("");
   });
 });

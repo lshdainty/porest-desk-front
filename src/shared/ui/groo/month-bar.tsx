@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/shared/ds/button";
-import { MonthPicker } from "@/shared/ui/groo/primitives";
+import { MonthPicker } from "@/shared/ds/month-picker";
+import { formatYearMonth } from "@/shared/lib/date";
 
 /**
  * 달 줄(I-08 7 · 19) — 띠 맨 위 4 + 8 = 12, ← 달 → 와 오른쪽 자리 한 줄, 좌우 24.
@@ -25,6 +26,8 @@ export function MonthControls({
   flushLeft = false,
 }: MonthControlsProps) {
   const { t } = useTranslation("budget");
+  const { t: tc } = useTranslation("common");
+  const [y = 1970, m = 1] = monthKey.split("-").map(Number);
   return (
     <>
       <Button
@@ -37,12 +40,27 @@ export function MonthControls({
       >
         <ChevronLeft aria-hidden />
       </Button>
+      {/* 달 글을 누르면 연 | 월 휠(I-27) — 글 t5 16/22 · 700 · fg-neutral + 아래 꺾쇠 16, 누르는 높이 44. ← 상자 끝에서 10 들인다 */}
       <MonthPicker
-        value={monthKey}
-        onChange={onChange}
-        variant="bar"
-        align="left"
-        allowFuture
+        value={{ year: y, month: m }}
+        onValueChange={(v) =>
+          onChange(`${v.year}-${String(v.month).padStart(2, "0")}`)
+        }
+        title={tc("selectMonth")}
+        doneLabel={tc("done")}
+        trigger={
+          <button
+            type="button"
+            className="month-picker__trigger ml-x2_5 mr-x2_5 inline-flex min-h-11 cursor-pointer items-center gap-x1 border-0 bg-transparent p-0 font-sans text-t5 font-bold text-fg-neutral"
+          >
+            {formatYearMonth(new Date(y, m - 1))}
+            <ChevronDown
+              aria-hidden
+              size={16}
+              className="text-fg-neutral-muted"
+            />
+          </button>
+        }
       />
       <Button
         type="button"
