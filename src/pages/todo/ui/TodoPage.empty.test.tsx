@@ -102,11 +102,7 @@ vi.mock("@/features/constellation", () => ({
   useConstellationToday: () => ({ data: undefined }),
   useConstellationSky: () => ({ data: [] }),
 }));
-vi.mock("@/widgets/constellation", () => ({
-  ForestReport: () => null,
-  ForestStrip: () => null,
-  NightSkyPanel: () => null,
-}));
+vi.mock("@/widgets/constellation", () => ({}));
 vi.mock("./TodoMobileLedger", () => ({ TodoMobileLedger: () => null }));
 
 const { TodoPage } = await import("./TodoPage");

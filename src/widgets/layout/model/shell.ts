@@ -95,6 +95,9 @@ const TITLE_KEYS: Record<string, string> = {
   "/desk/search": "search",
   "/desk/settings": "settings",
   "/desk/notifications": "notifications",
+  // 할 일 아래 깊은 화면 — 사이드바 지금 항목은 "할 일" 그대로(under), 문서 제목만 화면 이름이다(I-11 3)
+  "/desk/todo/night-sky": "nightSky",
+  "/desk/todo/night-sky/report": "forestReport",
 };
 
 export function screenTitleKey(pathname: string): string {

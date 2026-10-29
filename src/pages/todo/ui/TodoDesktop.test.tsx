@@ -61,7 +61,10 @@ vi.mock("@/features/constellation", () => ({
   constellationColorVar: () => "var(--color-chart-blue)",
   constellationName: () => "오리온자리",
 }));
-vi.mock("@/widgets/constellation", () => ({ NightSkyHero: () => null }));
+vi.mock("@/widgets/constellation", () => ({
+  NightSkyHero: () => null,
+  ForestStrip: () => <div data-slot="forest-strip" />,
+}));
 
 const { TodoDesktop } = await import("./TodoDesktop");
 const { i18n } = await import("@/shared/i18n/config");
@@ -192,7 +195,6 @@ const render = (p: Props = {}) =>
         onToggle={(t) => calls.toggle.push(t.rowId)}
         onOpen={(t) => calls.open.push(t.rowId)}
         onAdd={() => (calls.add += 1)}
-        strip={<div data-slot="forest-strip" />}
         sky={[]}
         constellationToday={SKY_TODAY}
         doneToday={1}

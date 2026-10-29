@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/shared/ds/button";
 import { useWideSurface } from "@/shared/ds/overlay";
 import { cn } from "@/shared/lib/cn";
+import { ForestStrip } from "@/widgets/constellation";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import {
   constellationColorVar,
@@ -80,7 +81,6 @@ export function TodoDesktop({
   onToggle,
   onOpen,
   onAdd,
-  strip,
   sky,
   constellationToday,
   doneToday,
@@ -103,7 +103,6 @@ export function TodoDesktop({
   onOpen: (todo: Todo) => void;
   onAdd: () => void;
   /** 밤하늘 진입 줄(범위 밖 — 들어가는 길만) */
-  strip: ReactNode;
   sky: SkyDay[];
   constellationToday: ConstellationToday | undefined;
   doneToday: number;
@@ -222,7 +221,9 @@ export function TodoDesktop({
               hasItems={(ds) => calendarByDay.has(ds)}
               onPickDay={scrollToDay}
             />
-            {strip}
+            {constellationToday && (
+              <ForestStrip today={constellationToday} onOpen={openNightSky} />
+            )}
             <TodoRemainCard
               todos={todos}
               tagNames={tagNames}

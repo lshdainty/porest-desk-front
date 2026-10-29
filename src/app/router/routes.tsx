@@ -46,6 +46,16 @@ const DutchPayPage = lazy(() =>
 const StatsPage = lazy(() =>
   import("@/pages/stats/ui/StatsPage").then((m) => ({ default: m.StatsPage })),
 );
+const NightSkyPage = lazy(() =>
+  import("@/pages/night-sky/ui/NightSkyPage").then((m) => ({
+    default: m.NightSkyPage,
+  })),
+);
+const ForestReportPage = lazy(() =>
+  import("@/pages/night-sky/ui/ForestReportPage").then((m) => ({
+    default: m.ForestReportPage,
+  })),
+);
 const BudgetPage = lazy(() =>
   import("@/pages/budget/ui/BudgetPage").then((m) => ({
     default: m.BudgetPage,
@@ -161,6 +171,11 @@ export const AppRouter = () => {
               <Route path="/desk/budget" element={<BudgetPage />} />
               <Route path="/desk/calendar" element={<CalendarPage />} />
               <Route path="/desk/todo" element={<TodoPage />} />
+              <Route path="/desk/todo/night-sky" element={<NightSkyPage />} />
+              <Route
+                path="/desk/todo/night-sky/report"
+                element={<ForestReportPage />}
+              />
               <Route path="/desk/dutch-pay" element={<DutchPayPage />} />
               <Route path="/desk/memo" element={<MemoPage />} />
               <Route path="/desk/card-benefit" element={<CardBenefitPage />} />

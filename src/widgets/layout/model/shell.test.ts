@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { screenFloor, screenTitleKey } from "./shell";
+import { isFullscreenPath, screenFloor, screenTitleKey } from "./shell";
 
 // 폰 화면 바탕(02-005 C) — 카드 화면 · 띠 화면 · 흰 화면
 describe("screenFloor", () => {
@@ -31,5 +31,13 @@ describe("screenFloor", () => {
 describe("screenTitleKey", () => {
   it("가계부 묶음은 모두 가계부다", () => {
     expect(screenTitleKey("/desk/stats")).toBe("expense");
+  });
+  it("밤하늘 · 관측 리포트는 화면 이름이 문서 제목이고 풀스크린이다(I-11 3)", () => {
+    expect(screenTitleKey("/desk/todo/night-sky")).toBe("nightSky");
+    expect(screenTitleKey("/desk/todo/night-sky/report")).toBe("forestReport");
+    expect(isFullscreenPath("/desk/todo/night-sky/report")).toBe(true);
+  });
+  it("그 밖 할 일 하위 주소는 여전히 할 일이다", () => {
+    expect(screenTitleKey("/desk/todo")).toBe("todoNav");
   });
 });

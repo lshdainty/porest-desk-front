@@ -115,11 +115,7 @@ export function TodoLedgerCard({
       </LedgerHead>
       {skyOpen && constellationToday && (
         <LedgerDrop>
-          <NightSkyHero
-            today={constellationToday}
-            doneToday={doneToday}
-            mobile
-          />
+          <NightSkyHero today={constellationToday} doneToday={doneToday} />
           <div className="mt-x2 flex flex-wrap gap-x2">
             <Button
               variant="neutralOutline"
