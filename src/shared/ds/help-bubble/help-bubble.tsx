@@ -273,8 +273,8 @@ const ROOT_RING =
 // 글과 4. 누르는 영역 44(::before). 누르면 2px 거리 축소만(기준 38), 키보드 포커스는 안쪽 2px 링 — 말풍선 글자색
 const CLOSE = [
   "relative -my-x2_5 -mr-x3 ml-x1 flex size-[38px] shrink-0 cursor-pointer items-center justify-center rounded-r3 border-0 bg-transparent p-0 text-fg-neutral-inverted",
-  "[&>svg]:size-3.5 [&>svg]:pointer-events-none",
-  "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "[&>svg]:size-[14px] [&>svg]:pointer-events-none",
+  "before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
   "[--press-basis:38] [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg-neutral-inverted",
 ].join(" ");

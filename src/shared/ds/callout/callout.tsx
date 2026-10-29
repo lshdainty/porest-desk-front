@@ -118,7 +118,7 @@ const TONE_ICON: Record<CalloutTone, typeof Info> = {
   critical: CircleAlert,
 };
 
-const ICON = "flex shrink-0 [&>svg]:size-4";
+const ICON = "flex shrink-0 [&>svg]:size-[16px]";
 // 한 문단 — 제목 · 본문 · 링크가 이어 흐른다(사이는 띄어쓰기 두 칸)
 const CONTENT =
   "min-w-0 flex-1 text-t4 font-normal break-keep [overflow-wrap:break-word]";
@@ -128,11 +128,11 @@ const LINK = [
   "inline-block cursor-pointer rounded-r1 text-t4 font-normal underline underline-offset-2",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
 ].join(" ");
-const CHEVRON = "size-4 shrink-0";
+const CHEVRON = "size-[16px] shrink-0";
 
 // 닫기 — 투명 상자 40 · 모서리 8, 바깥 −12. 호버 · 누름은 톤의 누름 바탕(아래 CLOSE_TONE), 누르면 2px 거리 축소(기준 40)
 const CLOSE = [
-  "relative -m-x3 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-r2 [&>svg]:size-4",
+  "relative -m-x3 flex size-[40px] shrink-0 cursor-pointer items-center justify-center rounded-r2 [&>svg]:size-[16px]",
   "[--press-basis:40] [transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",

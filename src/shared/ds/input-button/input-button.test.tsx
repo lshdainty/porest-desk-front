@@ -76,14 +76,14 @@ describe("구조", () => {
       <InputButton
         ref={ref}
         rootRef={rootRef}
-        rootClassName="w-40"
+        rootClassName="w-[160px]"
         className="extra"
         aria-label="날짜"
       />,
     );
     expect(ref.current).toBe(trigger());
     expect(rootRef.current).toBe(box());
-    expect(classes(box())).toContain("w-40");
+    expect(classes(box())).toContain("w-[160px]");
     expect(classes(trigger())).toContain("extra");
   });
 
@@ -156,16 +156,30 @@ describe("크기", () => {
   it("large 52 · medium 40 · responsive 는 1280 에서 바뀐다", () => {
     render(<InputButton aria-label="a" size="large" />);
     expect(classes(box())).toEqual(
-      expect.arrayContaining(["min-h-13", "rounded-r3", "px-x4", "text-t5"]),
+      expect.arrayContaining([
+        "min-h-[52px]",
+        "rounded-r3",
+        "px-x4",
+        "text-t5",
+      ]),
     );
     render(<InputButton aria-label="a" size="medium" />);
     expect(classes(box())).toEqual(
-      expect.arrayContaining(["min-h-10", "rounded-r2", "px-x3_5", "text-t4"]),
+      expect.arrayContaining([
+        "min-h-[40px]",
+        "rounded-r2",
+        "px-x3_5",
+        "text-t4",
+      ]),
     );
     render(<InputButton aria-label="a" />);
     expect(box().getAttribute("data-size")).toBe("responsive");
     expect(classes(box())).toEqual(
-      expect.arrayContaining(["min-h-13", "lg:min-h-10", "lg:rounded-r2"]),
+      expect.arrayContaining([
+        "min-h-[52px]",
+        "lg:min-h-[40px]",
+        "lg:rounded-r2",
+      ]),
     );
   });
 });
@@ -281,7 +295,7 @@ describe("지우기", () => {
         "[--press-basis:24]",
         "active:[scale:calc(1-2/var(--press-basis))]",
         "motion-reduce:active:[scale:1]",
-        "before:size-6",
+        "before:size-[24px]",
         "pointer-events-auto",
       ]),
     );

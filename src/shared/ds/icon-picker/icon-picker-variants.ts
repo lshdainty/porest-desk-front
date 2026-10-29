@@ -5,8 +5,8 @@
 
 // 칸 — 48 · 모서리 12 · 아이콘 24. 고른 칸은 안쪽 2px(::after) + 선 2.5. 호버 · 누름 바탕 + 2px 거리 축소, 키보드 포커스에만 바깥 링
 export const CELL = [
-  "relative flex size-12 shrink-0 cursor-pointer select-none items-center justify-center rounded-r3 bg-transparent text-fg-neutral scroll-m-1",
-  "[&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0 [&_svg]:[stroke-width:2] aria-selected:[&_svg]:[stroke-width:2.5]",
+  "relative flex size-[48px] shrink-0 cursor-pointer select-none items-center justify-center rounded-r3 bg-transparent text-fg-neutral scroll-m-1",
+  "[&_svg]:pointer-events-none [&_svg]:size-[24px] [&_svg]:shrink-0 [&_svg]:[stroke-width:2] aria-selected:[&_svg]:[stroke-width:2.5]",
   "after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border-2 after:border-solid after:border-transparent after:content-['']",
   "aria-selected:after:border-stroke-neutral-contrast",
   "hover:bg-bg-layer-floating-pressed active:bg-bg-layer-floating-pressed",

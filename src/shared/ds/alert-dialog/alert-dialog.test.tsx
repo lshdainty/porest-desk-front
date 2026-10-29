@@ -310,7 +310,7 @@ describe("바닥", () => {
     render(<Ask />);
     open();
     await tick();
-    expect(byText("삭제").className).toContain("h-10");
+    expect(byText("삭제").className).toContain("h-[40px]");
     act(() => byText("취소").click());
     await tick();
     act(() => root.unmount());
@@ -319,7 +319,7 @@ describe("바닥", () => {
     render(<Ask />);
     open();
     await tick();
-    expect(byText("삭제").className).toContain("h-9");
+    expect(byText("삭제").className).toContain("h-[36px]");
   });
 
   it("취소는 neutralWeak · 확정은 criticalSolid(취소를 Critical 로 칠하지 않는다)", async () => {

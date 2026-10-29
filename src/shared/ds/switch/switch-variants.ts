@@ -38,9 +38,9 @@ export const switchmarkVariants = cva(
   {
     variants: {
       size: {
-        "16": "h-4 w-[1.625rem] p-0.5 [--press-basis:24]",
-        "24": "h-6 w-[2.375rem] p-0.5 [--press-basis:24]",
-        "32": "h-8 w-[3.25rem] p-[0.1875rem] [--press-basis:32]",
+        "16": "h-[16px] w-[26px] p-[2px] [--press-basis:24]",
+        "24": "h-[24px] w-[38px] p-[2px] [--press-basis:24]",
+        "32": "h-[32px] w-[52px] p-[3px] [--press-basis:32]",
       },
       tone: {
         neutral: "data-[state=checked]:bg-bg-neutral-inverted",
@@ -66,9 +66,9 @@ export const switchmarkThumbVariants = cva(
   {
     variants: {
       size: {
-        "16": "size-3 data-[state=checked]:translate-x-[0.625rem]",
-        "24": "size-5 data-[state=checked]:translate-x-[0.875rem]",
-        "32": "size-[1.625rem] data-[state=checked]:translate-x-5",
+        "16": "size-[12px] data-[state=checked]:translate-x-[0.625rem]",
+        "24": "size-[20px] data-[state=checked]:translate-x-[0.875rem]",
+        "32": "size-[26px] data-[state=checked]:translate-x-5",
       },
       tone: {
         neutral: "bg-fg-neutral-inverted",
@@ -86,15 +86,15 @@ export const switchmarkThumbVariants = cva(
 export const switchVariants = cva(
   [
     "group/switch relative inline-flex cursor-pointer select-none items-center self-start",
-    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     "has-[:disabled]:cursor-not-allowed",
   ].join(" "),
   {
     variants: {
       size: {
-        "16": "min-h-6 gap-x1_5",
-        "24": "min-h-6 gap-x2",
-        "32": "min-h-8 gap-x2_5",
+        "16": "min-h-[24px] gap-x1_5",
+        "24": "min-h-[24px] gap-x2",
+        "32": "min-h-[32px] gap-x2_5",
       },
     },
     defaultVariants: { size: "24" },

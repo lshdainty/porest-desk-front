@@ -8,7 +8,7 @@ import { cva } from "class-variance-authority";
 
 // 띠 — 바탕 · 글자는 바탕 × 톤, Actionable 은 그 바탕의 누름 색(호버 · 누름) + 안쪽 링
 export const pageBannerVariants = cva(
-  "group/page-banner relative flex min-h-10 w-full rounded-none px-global-gutter py-x2_5 text-left font-sans",
+  "group/page-banner relative flex min-h-[40px] w-full rounded-none px-global-gutter py-x2_5 text-left font-sans",
   {
     variants: {
       tone: {

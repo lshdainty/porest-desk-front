@@ -1293,7 +1293,7 @@ describe("DatePicker — 이어지는 달(continuous)", () => {
     expect(count).toBeLessThan(12);
     expect(
       container.querySelector("[data-slot=date-picker-fog]")!.className,
-    ).toContain("h-24");
+    ).toContain("h-[96px]");
   });
 
   it("달마다 grid · 숨은 columnheader 줄(읽는 이름)이 있고 보이는 요일 줄은 보조 기술에서 숨긴다", () => {
@@ -1350,12 +1350,12 @@ describe("DatePicker — 큰 글자 · 눌림 색 (I-04 03-C 결정 1B · 2B)", 
     render(<Single today={TODAY} />);
     const header = container.querySelector("[data-slot=date-picker-header]");
     expect(cls(header)).toContain("min-h-[48px]");
-    expect(cls(header)).not.toContain("h-12");
+    expect(cls(header)).not.toMatch(/(^|\s)h-\[48px\]/);
     expect(cls(title())).toContain("min-h-[48px]");
-    expect(cls(title())).not.toContain("h-12");
+    expect(cls(title())).not.toMatch(/(^|\s)h-\[48px\]/);
     const cell = container.querySelector("[data-slot=date-picker-cell]");
     expect(cls(cell)).toContain("min-h-[48px]");
-    expect(cls(cell)).not.toContain("h-12");
+    expect(cls(cell)).not.toMatch(/(^|\s)h-\[48px\]/);
     const weekdayRow = container.querySelector(
       "[data-slot=date-picker-weekday]",
     )!.parentElement;

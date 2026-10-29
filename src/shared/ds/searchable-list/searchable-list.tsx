@@ -615,10 +615,12 @@ const SearchableListSkeleton = React.forwardRef<
       >
         {prefix !== "none" && (
           <span className="flex shrink-0 items-center pr-x3">
-            {prefix === "logo" && <Skeleton radius="12" className="size-10" />}
+            {prefix === "logo" && (
+              <Skeleton radius="12" className="size-[40px]" />
+            )}
             {/* 카드 그림 56 — 카드 비율 1.586, 폭 56 의 Image Frame 모서리 8 */}
             {prefix === "cardArt" && (
-              <Skeleton radius="8" className="aspect-[1.586] w-14" />
+              <Skeleton radius="8" className="aspect-[1.586] w-[56px]" />
             )}
             {prefix === "avatar" && (
               <Skeleton radius="full" className="size-[42px]" />

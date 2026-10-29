@@ -42,18 +42,18 @@ export const SHEET_TITLE = "m-0 text-t8 font-bold text-fg-neutral";
 export const SHEET_TITLE_WITH_CLOSE = "pr-x10";
 // 머리 오른쪽 동작(headerAction) — 닫기 단추 왼쪽 사이 4, 36 ghost iconOnly 단추 하나. 제목은 남은 폭(닫기 40 + 사이 4 + 동작 36)을 비운다
 export const SHEET_TITLE_WITH_ACTION =
-  "pr-[calc(var(--spacing-x10)+var(--spacing-x1)+2.25rem)]";
-// 닫기(28 = 1.75rem — 글자 배율을 따른다) 왼쪽 사이 4 · 세로는 닫기 가운데에 맞춘다(동작 단추는 36 = 2.25rem, 배율을 따라 커진다)
+  "pr-[calc(var(--spacing-x10)+var(--spacing-x1)+36px)]";
+// 닫기(28 px) 왼쪽 사이 4 · 세로는 닫기 가운데에 맞춘다(동작 단추는 36 px)
 export const SHEET_HEADER_ACTION =
-  "absolute right-[calc(var(--spacing-global-gutter)+1.75rem+var(--spacing-x1))] top-[calc(var(--spacing-x6)+0.875rem)] z-1 flex -translate-y-1/2 items-center";
+  "absolute right-[calc(var(--spacing-global-gutter)+28px+var(--spacing-x1))] top-[calc(var(--spacing-x6)+14px)] z-1 flex -translate-y-1/2 items-center";
 // 설명 t5 16 / 22 · fg-neutral-muted
 export const SHEET_DESCRIPTION =
   "m-0 text-t5 font-normal text-fg-neutral-muted";
 
 // 닫기 — 28 원 · 아이콘 14, 누르는 영역 44(::before). 누르면 bg-neutral-weak-pressed + 2px 거리 축소(기준 28 → 0.929), 호버도 누름 색
 export const SHEET_CLOSE = [
-  "absolute right-global-gutter top-x6 flex size-7 cursor-pointer items-center justify-center rounded-full border-0 bg-bg-neutral-weak p-0 text-fg-neutral [&>svg]:size-3.5",
-  "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "absolute right-global-gutter top-x6 flex size-[28px] cursor-pointer items-center justify-center rounded-full border-0 bg-bg-neutral-weak p-0 text-fg-neutral [&>svg]:size-[14px]",
+  "before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "hover:bg-bg-neutral-weak-pressed active:bg-bg-neutral-weak-pressed [--press-basis:28] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -61,8 +61,8 @@ export const SHEET_CLOSE = [
 
 // 손잡이 — 36 × 4 · 위 6 가운데, 누르는 영역 44. 누름 색은 두지 않는다(bottom-sheet.yaml)
 export const SHEET_HANDLE = [
-  "absolute left-1/2 top-x1_5 h-1 w-9 -translate-x-1/2 cursor-pointer rounded-full bg-stroke-neutral-weak",
-  "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "absolute left-1/2 top-x1_5 h-[4px] w-[36px] -translate-x-1/2 cursor-pointer rounded-full bg-stroke-neutral-weak",
+  "before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
 ].join(" ");
 
 // 본문 — 좌우 화면 여백 24, 넘치면 이 안에서 스크롤. 바닥이 없어 맨 끝이면 아래 16(바닥의 아래 여백).

@@ -259,7 +259,7 @@ describe("첨부 타일", () => {
   it("누름 축소 · 안쪽 포커스 링 · 막힌 모습의 클래스", () => {
     setup();
     const c = trigger().className;
-    expect(c).toContain("size-20");
+    expect(c).toContain("size-[80px]");
     expect(c).toContain("rounded-r3");
     expect(c).toContain("active:[scale:calc(1-2/var(--press-basis))]");
     expect(c).toContain("motion-reduce:active:[scale:1]");
@@ -396,9 +396,9 @@ describe("항목", () => {
     });
     const items = slots("item");
     expect(items.map((i) => i.dataset.kind)).toEqual(["image", "file", "file"]);
-    expect(items[0]!.className).toContain("w-20");
-    expect(items[1]!.className).toContain("w-40");
-    expect(items[1]!.className).toContain("h-20");
+    expect(items[0]!.className).toContain("w-[80px]");
+    expect(items[1]!.className).toContain("w-[160px]");
+    expect(items[1]!.className).toContain("h-[80px]");
     expect(slot("image")!.getAttribute("alt")).toBe("");
     // 확장자로 가른 파일 아이콘
     const icons = slots("thumbnail").map((t) =>
@@ -571,7 +571,7 @@ describe("× 지우기", () => {
   it("누르는 자리 44(보이는 20 둘레 12) · 항목 모서리 밖으로 위 4 · 오른쪽 4 · 둘레 구멍 24", () => {
     setup({ entries: [entry()] });
     const c = removes()[0]!.className;
-    expect(c).toContain("size-5");
+    expect(c).toContain("size-[20px]");
     expect(c).toContain("rounded-full");
     expect(c).toContain("-right-x1");
     expect(c).toContain("-top-x1");

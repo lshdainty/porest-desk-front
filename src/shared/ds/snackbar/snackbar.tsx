@@ -148,14 +148,14 @@ const REGION = [
 // 사라지는 동안은 누르지 않고, 끝난 모습(투명)을 지켜 걷기 전에 번쩍이지 않는다. duration-* 은 transition-duration 도
 // 주므로(transition-property 기본값 all) 띠는 transition-none — 포커스 링 · 색이 애니메이션 시간만큼 번지지 않는다
 const ROOT = [
-  "pointer-events-auto relative flex min-h-11 w-full max-w-[464px] items-center rounded-r2 bg-bg-neutral-inverted p-x2_5 font-sans text-fg-neutral-inverted transition-none",
+  "pointer-events-auto relative flex min-h-[44px] w-full max-w-[464px] items-center rounded-r2 bg-bg-neutral-inverted p-x2_5 font-sans text-fg-neutral-inverted transition-none",
   "focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-fg-neutral-inverted",
   "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-[var(--motion-duration-d3)] data-[state=open]:ease-[var(--motion-ease-enter)] motion-safe:data-[state=open]:zoom-in-80",
   "data-[state=closed]:pointer-events-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:fill-mode-forwards data-[state=closed]:duration-[var(--motion-duration-d2)] data-[state=closed]:ease-[var(--motion-ease-exit)] motion-safe:data-[state=closed]:zoom-out-80",
 ].join(" ");
 
 // 아이콘 — 상자 24 안에 오른쪽 2(그림은 22). 장식이다 — 성공 · 실패는 글이 말한다
-const ICON = "size-6 shrink-0 pr-x0_5";
+const ICON = "size-[24px] shrink-0 pr-x0_5";
 const TONE_ICON: Record<
   Exclude<SnackbarTone, "neutral">,
   { Icon: typeof CircleCheck; color: string }
@@ -173,7 +173,7 @@ const MESSAGE =
 // 액션 — 보이는 상자는 글, 누르는 영역은 ::before 로 글 + 좌우 8 × 44. 누르면 글만 2px 거리 축소(기준 max(높이, 폭 ÷ 4, 24))
 const ACTION = [
   "relative shrink-0 cursor-pointer whitespace-nowrap rounded-r1 text-t4 font-bold text-fg-brand-inverted",
-  "before:absolute before:-inset-x-x2 before:top-1/2 before:h-11 before:-translate-y-1/2 before:content-['']",
+  "before:absolute before:-inset-x-x2 before:top-1/2 before:h-[44px] before:-translate-y-1/2 before:content-['']",
   "[--press-basis:24] [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg-neutral-inverted",
 ].join(" ");
@@ -181,8 +181,8 @@ const ACTION = [
 // 닫기 — 평소에는 보이지 않는다(보조 기술용). 키보드 초점이 오면 띠 오른쪽 끝에 상자 44 · X 16 — 위 · 아래 · 오른쪽
 // 바깥 여백 −10 으로 띠 높이를 늘리지 않는다
 const CLOSE = [
-  "absolute -m-px size-px cursor-pointer overflow-hidden [clip-path:inset(50%)] [&>svg]:size-4 [&>svg]:shrink-0",
-  "focus-visible:static focus-visible:-my-x2_5 focus-visible:-mr-x2_5 focus-visible:ml-0 focus-visible:flex focus-visible:size-11 focus-visible:shrink-0 focus-visible:items-center focus-visible:justify-center focus-visible:overflow-visible focus-visible:rounded-r2 focus-visible:[clip-path:none]",
+  "absolute -m-px size-px cursor-pointer overflow-hidden [clip-path:inset(50%)] [&>svg]:size-[16px] [&>svg]:shrink-0",
+  "focus-visible:static focus-visible:-my-x2_5 focus-visible:-mr-x2_5 focus-visible:ml-0 focus-visible:flex focus-visible:size-[44px] focus-visible:shrink-0 focus-visible:items-center focus-visible:justify-center focus-visible:overflow-visible focus-visible:rounded-r2 focus-visible:[clip-path:none]",
   "focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-fg-neutral-inverted",
 ].join(" ");
 

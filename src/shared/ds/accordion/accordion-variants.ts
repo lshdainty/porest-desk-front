@@ -109,7 +109,7 @@ export const accordionDescriptionVariants = (disabled?: boolean) =>
 
 // 꺾쇠 20 — 펼치면 180°(300ms easing, 모션 줄이기면 바로)
 export const accordionChevronVariants = cva(
-  "size-5 shrink-0 [transition:rotate_var(--motion-duration-d6)_var(--motion-ease-easing)] motion-reduce:transition-none",
+  "size-[20px] shrink-0 [transition:rotate_var(--motion-duration-d6)_var(--motion-ease-easing)] motion-reduce:transition-none",
   {
     variants: {
       open: { true: "rotate-180", false: "" },
@@ -157,16 +157,16 @@ export const accordionItemVariants = cva("relative", {
 // 목록 머리 — 시트 · 대화상자에서 아코디언 위 한 줄. 높이 36 · 아래 8 · 제목 t5 · 700(카드 머리와 같은 글) + 오른쪽 모두 펼치기.
 // 동작이 머리 폭의 절반을 넘으면 제목 아래 줄 오른쪽 끝으로 내려간다(제목 최소 50% · 줄바꿈 — 03-G 결정 4A)
 export const ACCORDION_HEADER =
-  "mb-x2 flex min-h-9 items-center justify-between gap-x2 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto";
+  "mb-x2 flex min-h-[36px] items-center justify-between gap-x2 flex-wrap [&>:first-child:not(:last-child)]:min-w-[50%] [&>:first-child:not(:last-child)]:flex-1 [&>:last-child:not(:first-child)]:ml-auto";
 export const ACCORDION_HEADER_TITLE =
   "min-w-0 font-sans text-t5 font-bold text-fg-neutral break-keep [overflow-wrap:break-word]";
 
 // 모두 펼치기 = SEED Text Button(D2) — Card 머리 동작과 같은 모양: 보이는 상자 36 · 좌우 14 · 모서리 8, 글 t4 · 700 · fg-neutral-muted, 아이콘 없음,
 // 누르는 영역 44(::before). 누르면 바탕 + 2px 거리 축소
 export const ACCORDION_EXPAND_ALL = [
-  "relative -mr-x3_5 inline-flex h-9 shrink-0 cursor-pointer items-center rounded-r2 border-0 bg-transparent px-x3_5",
+  "relative -mr-x3_5 inline-flex min-h-[36px] shrink-0 cursor-pointer items-center rounded-r2 border-0 bg-transparent px-x3_5",
   "font-sans text-t4 font-bold text-fg-neutral-muted",
-  "before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "before:absolute before:left-1/2 before:top-1/2 before:h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "[@media(hover:hover)]:hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",

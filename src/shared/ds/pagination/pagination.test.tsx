@@ -165,7 +165,7 @@ describe("Pagination — 구조 · 이름", () => {
     render(<Pagination totalPages={12} defaultPage={5} />);
     const item = one("[data-slot=pagination-item][data-page='4']");
     for (const c of [
-      "size-10",
+      "size-[40px]",
       "rounded-r2",
       "before:inset-y-[-2px]",
       "active:[scale:calc(1-2/40)]",

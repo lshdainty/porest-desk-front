@@ -34,7 +34,8 @@ describe("Button", () => {
     const btn = render(<Button>저장</Button>);
     expect(btn.tagName).toBe("BUTTON");
     expect(btn.className).toContain("bg-bg-neutral-inverted");
-    expect(btn.className).toContain("h-10");
+    expect(btn.className).toContain("min-h-[40px]");
+    expect(btn.className).not.toMatch(/(^|\s)h-\[/);
     expect(btn.className).toContain("px-x4");
   });
 
@@ -182,7 +183,10 @@ describe("Button", () => {
       </Button>,
     );
     expect(el.tagName).toBe("A");
-    expect(el.className).toContain("border-stroke-neutral-weak");
+    expect(el.className).toContain(
+      "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
+    );
+    expect(el.className).not.toMatch(/(^|\s)border(\s|$)/);
     expect(el.className).toContain("text-fg-brand");
   });
 

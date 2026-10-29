@@ -107,7 +107,7 @@ describe("TablePagination — 구조 · 이름", () => {
   it("한 줄 40 · 줄바꿈 없음 · 양 끝 정렬 · 내용 폭보다 줄지 않는다 · 표 아래 12", () => {
     const group = render(<TablePagination totalItems={237} />);
     for (const c of [
-      "h-10",
+      "h-[40px]",
       "flex-nowrap",
       "justify-between",
       "gap-x4",
@@ -280,9 +280,9 @@ describe("TablePagination — 이전 · 다음", () => {
     );
     const next = arrow("next");
     for (const c of [
-      "size-10",
+      "size-[40px]",
       "rounded-r2",
-      "[&>svg]:size-4",
+      "[&>svg]:size-[16px]",
       "before:inset-y-[-2px]",
       "hover:bg-bg-layer-default-pressed",
       "active:bg-bg-layer-default-pressed",

@@ -34,7 +34,7 @@ export const POPOVER_DESCRIPTION =
 // 닫기 — 52 투명 상자 · 아이콘 22. 아이콘이 위 27 · 오른쪽 24 에 오도록 상자를 15 당긴다(top 12 · right 24 − 15).
 // 누르면 bg-layer-floating-pressed + 2px 거리 축소(기준 52). 호버는 누름 색
 export const POPOVER_CLOSE = [
-  "absolute right-[calc(var(--spacing-x6)-15px)] top-[12px] flex size-13 cursor-pointer items-center justify-center",
+  "absolute right-[calc(var(--spacing-x6)-15px)] top-[12px] flex size-[52px] cursor-pointer items-center justify-center",
   "rounded-r3 border-0 bg-transparent p-0 text-fg-neutral-subtle [&>svg]:size-[22px]",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "hover:bg-bg-layer-floating-pressed active:bg-bg-layer-floating-pressed [--press-basis:52] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",

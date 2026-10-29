@@ -74,7 +74,7 @@ function measure(
 
 // 트랙 — 높이 8 · 모서리 full · bg-neutral-weak
 const TRACK =
-  "relative h-2 w-full overflow-hidden rounded-full bg-bg-neutral-weak";
+  "relative h-[8px] w-full overflow-hidden rounded-full bg-bg-neutral-weak";
 // 채움 — 브랜드 글자색, 넘친 한도는 위험 색. 폭이 바뀌면 300ms enter(모션 줄이기면 바로)
 const FILL =
   "h-full rounded-full bg-fg-brand data-[state=over]:bg-fg-critical [transition:width_var(--motion-duration-d6)_var(--motion-ease-enter)] motion-reduce:transition-none";
@@ -146,7 +146,7 @@ const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
           data-slot="progress-fill"
           data-state={state}
           // 값이 0 보다 크면 적어도 높이만큼 — 둥근 끝이 찌그러지지 않게
-          className={cn(FILL, current > 0 && "min-w-2")}
+          className={cn(FILL, current > 0 && "min-w-[8px]")}
           style={{ width: `${fill * 100}%` }}
         />
       </div>

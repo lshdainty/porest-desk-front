@@ -91,10 +91,15 @@ describe("AspectRatio", () => {
   it("div 속성 · className · ref 를 넘긴다", () => {
     const ref = createRef<HTMLDivElement>();
     const box = render(
-      <AspectRatio ref={ref} ratio="16:9" id="guide" className="max-w-120" />,
+      <AspectRatio
+        ref={ref}
+        ratio="16:9"
+        id="guide"
+        className="max-w-[480px]"
+      />,
     );
     expect(ref.current).toBe(box);
     expect(box.id).toBe("guide");
-    expect(box.className).toContain("max-w-120");
+    expect(box.className).toContain("max-w-[480px]");
   });
 });

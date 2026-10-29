@@ -8,7 +8,7 @@ import { dsLocale } from "@/shared/ds/i18n";
 // ── 모양 ─────────────────────────────────────────────────────
 // 화살표 — Pagination 의 칸(40 · 모서리 8 · 누르는 영역은 위아래만 44)
 export const TABLE_PAGINATION_ARROW = [
-  "relative flex size-10 shrink-0 items-center justify-center rounded-r2 border-0 bg-transparent p-0 [&>svg]:size-4",
+  "relative flex size-[40px] shrink-0 items-center justify-center rounded-r2 border-0 bg-transparent p-0 [&>svg]:size-[16px]",
   "before:absolute before:inset-x-0 before:inset-y-[-2px] before:content-['']",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "focus-visible:z-[1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -29,7 +29,7 @@ export const TABLE_PAGINATION_SELECT_BOX = "w-max min-w-[96px] shrink-0";
 // 줄 — 높이 40 · 한 줄 · 양 끝 정렬 · 사이 16, 표 아래 12(spacing-component-default). 좁으면 표와 같은 가로 스크롤 상자 안에서
 // 내용 폭보다 줄지 않는다(min-w-max)
 export const TABLE_PAGINATION_ROOT =
-  "mt-component-default flex h-10 w-full min-w-max flex-nowrap items-center justify-between gap-x4 font-sans";
+  "mt-component-default flex h-[40px] w-full min-w-max flex-nowrap items-center justify-between gap-x4 font-sans";
 
 // ── 쪽 계산(SEED useTablePagination 과 같다) ───────────────────
 export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;

@@ -136,14 +136,14 @@ describe("Table — 구조", () => {
       <Table
         ref={ref}
         caption="x"
-        className="max-h-40"
+        className="max-h-[160px]"
         tableClassName="min-w-[800px]"
       >
         <TableBody />
       </Table>,
     );
     expect(ref.current).toBe(one("[data-slot=table]"));
-    expect(ref.current!.className).toContain("max-h-40");
+    expect(ref.current!.className).toContain("max-h-[160px]");
     expect(one("table").className).toContain("min-w-[800px]");
   });
 
@@ -164,7 +164,7 @@ describe("Table — 구조", () => {
 
   it("stickyHeader 면 상자가 세로로 스크롤하고 머리 칸이 카드 면 색으로 붙는다", () => {
     render(
-      <Table caption="x" stickyHeader className="max-h-40">
+      <Table caption="x" stickyHeader className="max-h-[160px]">
         <TableHeader>
           <TableRow>
             <TableHead>이름</TableHead>
@@ -520,7 +520,7 @@ describe("선택 · 일괄 작업 바", () => {
       </Table>,
     );
     const box = one("[role=checkbox]");
-    expect(box.className).toContain("before:size-11");
+    expect(box.className).toContain("before:size-[44px]");
     expect(one("tbody tr").className).not.toMatch(/bg-/);
     expect(one("[data-slot=table-select-cell]").className).not.toMatch(/bg-/);
   });
@@ -542,7 +542,7 @@ describe("선택 · 일괄 작업 바", () => {
     expect(bar.getAttribute("aria-label")).toBe("선택한 항목");
     expect(one("[data-slot=table-bulk-count]").textContent).toBe("3개 선택됨");
     expect(bar.className).toContain("bg-bg-brand-weak");
-    expect(bar.className).toContain("min-h-12");
+    expect(bar.className).toContain("min-h-[48px]");
     expect(bar.className).toContain("rounded-r3");
   });
 
@@ -606,12 +606,12 @@ describe("줄 끝 ⋮", () => {
     expect(one("[data-slot=table-more-head] .sr-only").textContent).toBe(
       "동작",
     );
-    expect(one("[data-slot=table-more-head]").className).toContain("w-20");
+    expect(one("[data-slot=table-more-head]").className).toContain("w-[80px]");
     const button = one("[data-slot=table-more-button]");
     expect(button.getAttribute("aria-label")).toBe("김하늘 더보기");
     // 1280 미만은 Menu Sheet(대화상자)가 열린다 — Menu(aria-haspopup=menu)는 아래 테스트
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
-    expect(one("[data-slot=table-more-cell]").className).toContain("w-20");
+    expect(one("[data-slot=table-more-cell]").className).toContain("w-[80px]");
   });
 
   it("1280 이상은 Menu 가 열려 aria-haspopup=menu", () => {

@@ -203,10 +203,10 @@ describe("Input", () => {
     render(<Input aria-label="메모" />);
     expect(classes(box())).toEqual(
       expect.arrayContaining([
-        "min-h-13",
+        "min-h-[52px]",
         "rounded-r3",
         "text-t5",
-        "lg:min-h-10",
+        "lg:min-h-[40px]",
         "lg:rounded-r2",
         "lg:text-t4",
         "lg:[--text-input-px:var(--spacing-x3_5)]",
@@ -215,9 +215,9 @@ describe("Input", () => {
     render(<Input aria-label="메모" variant="underline" />);
     expect(classes(box())).toEqual(
       expect.arrayContaining([
-        "min-h-10",
+        "min-h-[40px]",
         "text-t6",
-        "lg:min-h-[2.125rem]",
+        "lg:min-h-[34px]",
         "lg:text-t5",
         "lg:py-x1_5",
       ]),

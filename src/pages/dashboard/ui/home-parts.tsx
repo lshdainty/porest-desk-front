@@ -738,7 +738,7 @@ export function TodayRows({
   onOpen: (e: Expense) => void;
 }) {
   return (
-    <div>
+    <div data-row-list>
       {items.map((e) => (
         <ExpenseRow
           key={e.rowId}

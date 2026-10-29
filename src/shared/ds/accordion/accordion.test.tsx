@@ -636,7 +636,7 @@ describe("AccordionHeader · AccordionExpandAll", () => {
     expect(slot("accordion-header-title").textContent).toBe("혜택 상세 · 4건");
     expect(header.lastElementChild).toBe(expandAll());
     expect(classes(header)).toEqual(
-      expect.arrayContaining(["min-h-9", "mb-x2", "justify-between"]),
+      expect.arrayContaining(["min-h-[36px]", "mb-x2", "justify-between"]),
     );
   });
 
@@ -715,9 +715,9 @@ describe("AccordionHeader · AccordionExpandAll", () => {
     const c = classes(expandAll());
     expect(c).toEqual(
       expect.arrayContaining([
-        "h-9",
-        "before:h-11",
-        "before:min-w-11",
+        "min-h-[36px]",
+        "before:h-[44px]",
+        "before:min-w-[44px]",
         "rounded-r2",
         "px-x3_5",
         "-mr-x3_5",

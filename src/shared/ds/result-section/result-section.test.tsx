@@ -153,9 +153,9 @@ describe("ResultSection", () => {
     expect(primary!.tagName).toBe("BUTTON");
     expect(primary!.getAttribute("type")).toBe("button");
     expect(primary!.className).toContain("bg-bg-neutral-weak");
-    expect(primary!.className).toContain("h-10");
+    expect(primary!.className).toContain("h-[40px]");
     expect(secondary!.className).toContain("bg-transparent");
-    expect(secondary!.className).toContain("h-9");
+    expect(secondary!.className).toContain("h-[36px]");
     expect(secondary!.className).toContain("-my-x2");
     expect(secondary!.className).toContain("text-fg-neutral-muted");
     act(() => primary!.click());

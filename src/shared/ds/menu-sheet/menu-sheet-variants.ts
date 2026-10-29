@@ -28,7 +28,7 @@ export const MENU_SHEET_GROUP =
 export const MENU_SHEET_CLOSE = [
   "absolute -m-px size-px shrink-0 overflow-hidden whitespace-nowrap border-0 p-0 [clip-path:inset(50%)]",
   "cursor-pointer bg-bg-neutral-weak font-sans text-t5 font-medium text-fg-neutral",
-  "focus-visible:relative focus-visible:m-0 focus-visible:mt-x2_5 focus-visible:flex focus-visible:h-auto focus-visible:min-h-13 focus-visible:w-full",
+  "focus-visible:relative focus-visible:m-0 focus-visible:mt-x2_5 focus-visible:flex focus-visible:h-auto focus-visible:min-h-[52px] focus-visible:w-full",
   "focus-visible:items-center focus-visible:justify-center focus-visible:overflow-visible focus-visible:whitespace-normal focus-visible:[clip-path:none]",
   "focus-visible:rounded-r3 focus-visible:px-x5",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -37,7 +37,7 @@ export const MENU_SHEET_CLOSE = [
 
 // 줄 — 최소 52 · 위아래 14 · 좌우 16. 줄 사이 선은 안쪽 아래 1px(묶음의 마지막 줄에는 없다). 호버 · 누름 바탕은 막히지 않은 줄만
 export const MENU_SHEET_ITEM = [
-  "group/menu-sheet-item relative flex min-h-13 w-full shrink-0 cursor-pointer select-none items-center border-0 bg-transparent px-x4 py-x3_5 font-sans",
+  "group/menu-sheet-item relative flex min-h-[52px] w-full shrink-0 cursor-pointer select-none items-center border-0 bg-transparent px-x4 py-x3_5 font-sans",
   "not-last:shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)]",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
   "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",

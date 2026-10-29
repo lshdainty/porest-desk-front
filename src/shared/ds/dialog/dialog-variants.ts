@@ -36,9 +36,9 @@ export const DIALOG_HEADER = [
 export const DIALOG_HEADER_WITH_CLOSE = "pr-x13";
 // 머리 오른쪽 동작(headerAction) — 닫기 단추가 있으면 그 왼쪽 사이 4, 없으면(입력 폼) 오른쪽 끝. 제목이 남은 폭에서 줄을 바꾼다
 export const DIALOG_HEADER_WITH_ACTION_CLOSE =
-  "pr-[calc(var(--spacing-x13)+var(--spacing-x1)+2.25rem+var(--spacing-x2))]";
+  "pr-[calc(var(--spacing-x13)+var(--spacing-x1)+36px+var(--spacing-x2))]";
 export const DIALOG_HEADER_WITH_ACTION =
-  "pr-[calc(var(--spacing-x4)+2.25rem+var(--spacing-x2))]";
+  "pr-[calc(var(--spacing-x4)+36px+var(--spacing-x2))]";
 export const DIALOG_HEADER_ACTION_CLOSE =
   "absolute right-[calc(var(--spacing-x6)+22px+var(--spacing-x1))] top-[39px] z-1 flex -translate-y-1/2 items-center";
 export const DIALOG_HEADER_ACTION =
@@ -50,7 +50,7 @@ export const DIALOG_DESCRIPTION =
 // 닫기 — 52 투명 상자 · 아이콘 22 fg-neutral-subtle. 아이콘이 위 28 · 오른쪽 24 에 오도록 상자를 (52 − 22) ÷ 2 = 15 만큼 당긴다.
 // 누르면 bg-layer-floating-pressed + 2px 거리 축소(기준 52 → 0.962), 호버도 누름 색
 export const DIALOG_CLOSE = [
-  "absolute right-[calc(var(--spacing-x6)-15px)] top-[calc(var(--spacing-x7)-15px)] flex size-13 cursor-pointer items-center justify-center",
+  "absolute right-[calc(var(--spacing-x6)-15px)] top-[calc(var(--spacing-x7)-15px)] flex size-[52px] cursor-pointer items-center justify-center",
   "rounded-r3 border-0 bg-transparent p-0 text-fg-neutral-subtle [&>svg]:size-[22px]",
   "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
   "hover:bg-bg-layer-floating-pressed active:bg-bg-layer-floating-pressed [--press-basis:52] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",

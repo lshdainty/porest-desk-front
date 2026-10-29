@@ -139,11 +139,11 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
         {showRequiredIndicator && (
           <span
             aria-hidden
-            className="ml-[0.125rem] mt-[0.25rem] inline-block size-[0.375rem] rounded-full bg-fg-critical align-top"
+            className="ml-[2px] mt-[4px] inline-block size-[6px] rounded-full bg-fg-critical align-top"
           />
         )}
         {!showRequiredIndicator && indicator != null && (
-          <span className="pl-[0.25rem] align-bottom text-t4 font-normal leading-[var(--text-t5--line-height)] text-fg-neutral-subtle">
+          <span className="pl-[4px] align-bottom text-t4 font-normal leading-[var(--text-t5--line-height)] text-fg-neutral-subtle">
             {indicator}
           </span>
         )}
@@ -204,7 +204,7 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
                 >
                   <CircleAlert
                     aria-hidden
-                    className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] size-4 shrink-0"
+                    className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] size-[16px] shrink-0"
                   />
                   <span className="min-w-0">{errorMessage}</span>
                 </p>
@@ -217,7 +217,7 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
                   {descriptionIcon != null && (
                     <span
                       aria-hidden
-                      className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] flex shrink-0 [&>svg]:size-4"
+                      className="mr-x1_5 mt-[calc((var(--text-t4--line-height)_-_1rem)/2)] flex shrink-0 [&>svg]:size-[16px]"
                     >
                       {descriptionIcon}
                     </span>

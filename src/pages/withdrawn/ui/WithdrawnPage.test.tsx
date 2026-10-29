@@ -71,7 +71,7 @@ describe("해지 완료(26 · 27 · 77)", () => {
     expect(buttons).toHaveLength(1);
     const b = buttons[0]!;
     expect(b.textContent).toBe("withdrawn.toLogin");
-    expect(b.className).toContain("h-12");
+    expect(b.className).toContain("min-h-[48px]");
     expect(b.className).toContain("bg-bg-neutral-inverted");
     expect(b.className).toContain("w-full");
     act(() => {

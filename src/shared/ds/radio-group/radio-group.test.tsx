@@ -78,7 +78,7 @@ describe("RadioGroup · Radio", () => {
     expect(checked()).toEqual(["true", "false", "false"]);
     expect(classes(radio("매월"))).toEqual(
       expect.arrayContaining([
-        "size-5",
+        "size-[20px]",
         "rounded-full",
         "border",
         "border-stroke-neutral-solid",
@@ -88,7 +88,7 @@ describe("RadioGroup · Radio", () => {
       ]),
     );
     expect(classes(row)).toEqual(
-      expect.arrayContaining(["min-h-8", "gap-x2", "self-start"]),
+      expect.arrayContaining(["min-h-[32px]", "gap-x2", "self-start"]),
     );
     expect(classes(text(row))).toEqual(
       expect.arrayContaining([
@@ -123,7 +123,7 @@ describe("RadioGroup · Radio", () => {
         "block",
         "rounded-full",
         "bg-transparent",
-        "size-2",
+        "size-[8px]",
         "data-[state=checked]:bg-fg-neutral-inverted",
         "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing)]",
       ]),
@@ -331,10 +331,10 @@ describe("RadioGroup · Radio", () => {
     );
     const mark = radio("large · bold");
     const row = mark.labels![0]!;
-    expect(classes(row)).toContain("min-h-9");
+    expect(classes(row)).toContain("min-h-[36px]");
     expect(classes(mark)).toEqual(
       expect.arrayContaining([
-        "size-6",
+        "size-[24px]",
         "data-[state=checked]:bg-bg-brand-solid",
         "data-[state=checked]:group-hover/radio:bg-bg-brand-solid-pressed",
       ]),
@@ -344,7 +344,7 @@ describe("RadioGroup · Radio", () => {
     );
     expect(classes(dot(mark))).toEqual(
       expect.arrayContaining([
-        "size-2.5",
+        "size-[10px]",
         "data-[state=checked]:bg-static-white",
       ]),
     );
@@ -365,8 +365,8 @@ describe("RadioGroup · Radio", () => {
         "before:-translate-y-1/2",
         "before:h-full",
         "before:w-full",
-        "before:min-h-11",
-        "before:min-w-11",
+        "before:min-h-[44px]",
+        "before:min-w-[44px]",
         "before:content-['']",
       ]),
     );

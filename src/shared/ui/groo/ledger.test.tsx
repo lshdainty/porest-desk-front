@@ -11,6 +11,8 @@ import {
   LedgerDayHead,
   LedgerDaySum,
   LedgerExpand,
+  LedgerHead,
+  LedgerMonthNav,
   LedgerNavBtn,
   LedgerPin,
   LedgerSumBtn,
@@ -72,13 +74,15 @@ describe("원장 머리 — Scroll Auto Hide (할 일 원장도 같은 부품)",
       </>,
     );
     const nav = container.querySelector<HTMLElement>('[aria-label="이전 달"]')!;
-    expect(nav.className).toContain("h-10");
-    expect(nav.className).toContain("w-10");
+    expect(nav.className).toContain("min-h-[40px]");
+    expect(nav.className).toContain("w-[40px]");
     const sum = Array.from(container.querySelectorAll("button")).find(
       (b) => b.textContent === "소비 요약",
     )!;
-    expect(sum.className).toContain("h-9");
-    expect(sum.className).toContain("border");
+    expect(sum.className).toContain("min-h-[36px]");
+    expect(sum.className).toContain(
+      "shadow-[inset_0_0_0_1px_var(--color-stroke-neutral-weak)]",
+    );
     expect(
       container
         .querySelector('[aria-label="월 달력"]')
@@ -120,6 +124,9 @@ describe("날 숫자 · 날짜 머리", () => {
     expect(head.className).toContain("text-t4");
     expect(head.className).toContain("font-medium");
     expect(head.className).toContain("px-0");
+    expect(head.querySelector("h2")?.className).toContain(
+      "text-[color:inherit]",
+    );
     expect(head.querySelector("h2")?.textContent).toContain("오늘");
     expect(head.querySelector("h2")?.textContent).not.toContain("12,000");
     expect(container.querySelector("[data-ledger-day]")).not.toBeNull();
@@ -130,6 +137,36 @@ describe("날 숫자 · 날짜 머리", () => {
     expect(
       container.querySelector("[data-slot=list-header]")!.className,
     ).not.toContain("px-0");
+  });
+});
+
+describe("머리 단추 내림", () => {
+  it("왼쪽 묶음 기본 폭이 절반 − 간격이라 단추가 절반을 넘을 때만 아래로 내려간다(앱 LedgerTotalRow)", () => {
+    render(
+      <LedgerHead>
+        <div>합계</div>
+        <LedgerSumBtn>소비 요약</LedgerSumBtn>
+      </LedgerHead>,
+    );
+    const head = container.firstElementChild!;
+    expect(head.className).toContain("flex-wrap");
+    expect(head.className).toContain(
+      "[&>:first-child]:basis-[calc(50%-var(--spacing-x3))]",
+    );
+  });
+});
+
+describe("월 줄 끝 아이콘 단추", () => {
+  it("마지막 단추는 오른쪽으로 11 번져 아이콘(18)이 화면 여백 24 선에 닿는다(앱 _bleedEnd)", () => {
+    render(
+      <LedgerMonthNav>
+        <LedgerNavBtn aria-label="필터">f</LedgerNavBtn>
+        <LedgerNavBtn aria-label="추가">+</LedgerNavBtn>
+      </LedgerMonthNav>,
+    );
+    expect(container.firstElementChild!.className).toContain(
+      "[&>button:last-child]:-mr-[11px]",
+    );
   });
 });
 

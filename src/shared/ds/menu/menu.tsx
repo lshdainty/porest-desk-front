@@ -517,7 +517,7 @@ const MenuItem = React.forwardRef<
             <span
               aria-hidden
               data-slot="menu-item-suffix-icon"
-              className={cn("flex shrink-0 [&>svg]:size-4", fg)}
+              className={cn("flex shrink-0 [&>svg]:size-[16px]", fg)}
             >
               {suffixIcon}
             </span>

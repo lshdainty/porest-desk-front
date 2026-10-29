@@ -16,7 +16,7 @@ export const chipVariants = cva(
   [
     "relative inline-flex max-w-full shrink-0 cursor-pointer select-none items-center justify-center gap-x1_5 whitespace-nowrap rounded-full font-sans text-t4 font-medium no-underline",
     // 누르는 영역 44 — 보이는 칩보다 작으면 ::before 가 넓힌다(Button 과 같다)
-    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+    "before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
     // 바탕 · 글자 · 테두리는 color-transition, 축소는 pressed-scale
     "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),color_var(--motion-duration-color-transition)_var(--motion-ease-easing),box-shadow_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
     "active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
@@ -45,9 +45,9 @@ export const chipVariants = cva(
         ].join(" "),
       },
       size: {
-        small: "h-8 [--press-basis:32]",
-        medium: "h-9 [--press-basis:36]",
-        large: "h-10 [--press-basis:40]",
+        small: "min-h-[32px] [--press-basis:32]",
+        medium: "min-h-[36px] [--press-basis:36]",
+        large: "min-h-[40px] [--press-basis:40]",
       },
       layout: {
         withText: "",
@@ -56,23 +56,23 @@ export const chipVariants = cva(
     },
     compoundVariants: [
       // 크기 × 모양 — 최소 폭 · 좌우 여백(SEED 루트 + 글 여백), 아이콘만 있으면 원 + 아이콘 14 · 16 · 16
-      { size: "small", layout: "withText", className: "min-w-11 px-x3" },
-      { size: "medium", layout: "withText", className: "min-w-12 px-x3_5" },
-      { size: "large", layout: "withText", className: "min-w-13 px-x4" },
+      { size: "small", layout: "withText", className: "min-w-[44px] px-x3" },
+      { size: "medium", layout: "withText", className: "min-w-[48px] px-x3_5" },
+      { size: "large", layout: "withText", className: "min-w-[52px] px-x4" },
       {
         size: "small",
         layout: "iconOnly",
-        className: "w-8 px-0 [&>svg]:size-3.5",
+        className: "w-[32px] px-0 [&>svg]:size-[14px]",
       },
       {
         size: "medium",
         layout: "iconOnly",
-        className: "w-9 px-0 [&>svg]:size-4",
+        className: "w-[36px] px-0 [&>svg]:size-[16px]",
       },
       {
         size: "large",
         layout: "iconOnly",
-        className: "w-10 px-0 [&>svg]:size-4",
+        className: "w-[40px] px-0 [&>svg]:size-[16px]",
       },
     ],
     defaultVariants: {
@@ -93,19 +93,19 @@ export const CHIP_ICONS: Record<
   { prefix: string; suffix: string; remove: string }
 > = {
   small: {
-    prefix: "[&>svg]:size-3.5",
-    suffix: "[&>svg]:size-3.5",
-    remove: "size-3.5",
+    prefix: "[&>svg]:size-[14px]",
+    suffix: "[&>svg]:size-[14px]",
+    remove: "size-[14px]",
   },
   medium: {
-    prefix: "[&>svg]:size-4",
-    suffix: "[&>svg]:size-3.5",
-    remove: "size-3.5",
+    prefix: "[&>svg]:size-[16px]",
+    suffix: "[&>svg]:size-[14px]",
+    remove: "size-[14px]",
   },
   large: {
-    prefix: "[&>svg]:size-4",
-    suffix: "[&>svg]:size-4",
-    remove: "size-4",
+    prefix: "[&>svg]:size-[16px]",
+    suffix: "[&>svg]:size-[16px]",
+    remove: "size-[16px]",
   },
 };
 export const CHIP_ICON_SLOT = "flex shrink-0 items-center justify-center";
@@ -128,8 +128,8 @@ export const isPressKey = (e: React.KeyboardEvent) =>
 export const chipGroupVariants = cva("relative", {
   variants: {
     layout: {
-      wrap: "flex flex-wrap gap-between-chips empty:min-h-9",
-      scroll: "has-[>[data-slot=chip-scroll-row]:empty]:min-h-9",
+      wrap: "flex flex-wrap gap-between-chips empty:min-h-[36px]",
+      scroll: "has-[>[data-slot=chip-scroll-row]:empty]:min-h-[36px]",
     },
     bleed: {
       true: "",
@@ -165,9 +165,9 @@ export const inputChipVariants = cva(
   {
     variants: {
       size: {
-        small: "h-8 min-w-11 px-x3",
-        medium: "h-9 min-w-12 px-x3_5",
-        large: "h-10 min-w-13 px-x4",
+        small: "min-h-[32px] min-w-[44px] px-x3",
+        medium: "min-h-[36px] min-w-[48px] px-x3_5",
+        large: "min-h-[40px] min-w-[52px] px-x4",
       },
     },
     defaultVariants: { size: "medium" },
@@ -179,7 +179,7 @@ export const inputChipVariants = cva(
 export const CHIP_REMOVE = [
   "relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-current outline-none",
   "[&>svg]:pointer-events-none [&>svg]:size-full",
-  "before:absolute before:left-1/2 before:top-1/2 before:size-6 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+  "before:absolute before:left-1/2 before:top-1/2 before:size-[24px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
   "[--press-basis:24] [transition:scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)] active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
   "disabled:cursor-not-allowed disabled:[scale:1]",
 ].join(" ");

@@ -434,7 +434,7 @@ describe("본문 · 바닥", () => {
     expect(
       document.querySelector("[data-slot=dialog-footer]")!.className,
     ).toContain("justify-end");
-    expect(byText("신청").className).toContain("h-9");
+    expect(byText("신청").className).toContain("h-[36px]");
     expect(byText("취소").className).toContain("bg-bg-neutral-weak");
   });
 });
@@ -483,7 +483,7 @@ describe("Responsive Dialog — 1280 에서 표면이 바뀐다", () => {
       document.querySelector("[data-slot=bottom-sheet-close]"),
     ).not.toBeNull();
     // 바닥 버튼은 시트의 large 48
-    expect(byText("신청").className).toContain("h-12");
+    expect(byText("신청").className).toContain("h-[48px]");
   });
 
   it("조회(form 이 아니면)는 두 표면 모두 머리 닫기 버튼 · 바닥 [취소] 를 두지 않는다", async () => {

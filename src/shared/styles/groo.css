@@ -427,3 +427,11 @@
 .dark {
   --institution-ink: var(--color-fg-neutral-inverted);
 }
+
+/* 거래 줄 맞춤(I-29 P3 · list.md Align) — 기본은 가운데. 제목이 두 줄을 넘는 줄(use-tall-title 이 data-row-tall 을 단다)이
+ * 하나라도 있는 목록([data-row-list])은 그 목록의 줄 모두 위로 맞춘다 — 한 목록 안에서 줄마다 섞지 않는다.
+ * 목록 표식이 없는 곳에서는 두 줄 넘는 줄 자신만 위다. */
+[data-slot="list"][data-row-tall] [data-slot="list-content"],
+[data-row-list]:has([data-row-tall]) [data-slot="list-content"] {
+  align-items: flex-start;
+}

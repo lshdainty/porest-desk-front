@@ -265,7 +265,7 @@ export const listTileVariants = cva(
 // 위아래 2 를 줄의 여백에 겹쳐 타일 40 줄의 높이(64)를 그대로 둔다. 줄의 버튼 ::after 위(z 1)에 놓인다
 export const listExpandButtonVariants = cva(
   [
-    "relative z-1 -my-x0_5 mr-x1 inline-flex size-11 shrink-0 cursor-pointer appearance-none items-center justify-center rounded-r2_5 border-0 bg-transparent p-0 text-fg-neutral-subtle",
+    "relative z-1 -my-x0_5 mr-x1 inline-flex size-[44px] shrink-0 cursor-pointer appearance-none items-center justify-center rounded-r2_5 border-0 bg-transparent p-0 text-fg-neutral-subtle",
     "[transition:background-color_var(--motion-duration-color-transition)_var(--motion-ease-easing),scale_var(--motion-duration-pressed-scale)_var(--motion-ease-pressed-scale)]",
     "[--press-basis:44] [@media(hover:hover)]:hover:bg-bg-layer-default-pressed active:bg-bg-layer-default-pressed active:[scale:calc(1-2/var(--press-basis))] motion-reduce:active:[scale:1]",
     "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stroke-focus-ring",
@@ -282,4 +282,4 @@ export const listExpandIconVariants = cva(
 );
 
 // 하위가 없는 부모 줄 · 늘 펼쳐 두는 화면 — 꺾쇠 단추와 같은 폭의 빈 자리(부모 타일이 모두 52 에 선다)
-export const LIST_EXPAND_SLOT = "-my-x0_5 mr-x1 size-11 shrink-0";
+export const LIST_EXPAND_SLOT = "-my-x0_5 mr-x1 size-[44px] shrink-0";

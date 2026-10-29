@@ -218,14 +218,28 @@ describe("Select — 트리거", () => {
       document.querySelectorAll<HTMLElement>("[data-slot=select-trigger]"),
     );
     expect(classes(large!)).toEqual(
-      expect.arrayContaining(["min-h-13", "rounded-r3", "px-x4", "text-t5"]),
+      expect.arrayContaining([
+        "min-h-[52px]",
+        "rounded-r3",
+        "px-x4",
+        "text-t5",
+      ]),
     );
     expect(classes(medium!)).toEqual(
-      expect.arrayContaining(["min-h-10", "rounded-r2", "px-x3_5", "text-t4"]),
+      expect.arrayContaining([
+        "min-h-[40px]",
+        "rounded-r2",
+        "px-x3_5",
+        "text-t4",
+      ]),
     );
     expect(responsive!.dataset.size).toBe("responsive");
     expect(classes(responsive!)).toEqual(
-      expect.arrayContaining(["min-h-13", "lg:min-h-10", "lg:rounded-r2"]),
+      expect.arrayContaining([
+        "min-h-[52px]",
+        "lg:min-h-[40px]",
+        "lg:rounded-r2",
+      ]),
     );
   });
 

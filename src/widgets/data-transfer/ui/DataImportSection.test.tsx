@@ -510,7 +510,7 @@ describe("검수 반영 — 완료 화면(I-05 50)", () => {
 
   it("[가계부로 가기] 는 모든 폭에서 large 48 이다", async () => {
     await toDone(baseResult);
-    expect(btn("import.toLedger")!.className).toContain("h-12");
+    expect(btn("import.toLedger")!.className).toContain("min-h-[48px]");
   });
 
   it("목록 머리는 R5 mediumWeak 목록 제목이다(boldSolid 아님)", async () => {

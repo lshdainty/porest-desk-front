@@ -68,7 +68,7 @@ export const tabsTriggerVariants = cva(
 // 막대 — 고른 탭 아래 2px, 끝이 각지다. 자리(--tabs-indicator-left · -width)는 고른 탭을 재서 넣고 들임은 목록이 정한다.
 // 목록의 첫 자식이라 탭(relative)이 그 위에 그려진다 — 키보드 포커스 링이 막대에 가리지 않는다. 고른 탭이 막히면 fg-disabled
 export const TABS_INDICATOR = [
-  "pointer-events-none absolute bottom-0 h-0.5 rounded-none bg-fg-neutral",
+  "pointer-events-none absolute bottom-0 h-[2px] rounded-none bg-fg-neutral",
   "[[role=tablist]:has(>[role=tab][data-state=active]:disabled)>&]:bg-fg-disabled",
   "left-[calc(var(--tabs-indicator-left,0px)_+_var(--tabs-indicator-inset))] w-[max(0px,calc(var(--tabs-indicator-width,0px)_-_2_*_var(--tabs-indicator-inset)))]",
   "[transition:left_var(--motion-duration-d4)_var(--motion-ease-easing),width_var(--motion-duration-d4)_var(--motion-ease-easing)]",

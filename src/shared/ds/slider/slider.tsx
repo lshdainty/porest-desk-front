@@ -387,7 +387,7 @@ const SliderCore = React.forwardRef<HTMLDivElement, CoreProps>(
           ref={controlRef}
           data-slot="slider-control"
           className={cn(
-            "relative h-11 w-full touch-none",
+            "relative h-[44px] w-full touch-none",
             disabled
               ? "cursor-not-allowed"
               : dragging != null
@@ -403,7 +403,7 @@ const SliderCore = React.forwardRef<HTMLDivElement, CoreProps>(
           <div
             data-slot="slider-track"
             className={cn(
-              "absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 overflow-hidden rounded-full",
+              "absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 overflow-hidden rounded-full",
               disabled ? "bg-bg-disabled" : "bg-stroke-neutral-weak",
             )}
             style={
@@ -472,7 +472,7 @@ const SliderCore = React.forwardRef<HTMLDivElement, CoreProps>(
                   aria-describedby={labelling["aria-describedby"]}
                   {...nameProps}
                   className={cn(
-                    "absolute left-0 top-1/2 block size-5 -translate-x-1/2 -translate-y-1/2 rounded-full data-[pressed]:size-6",
+                    "absolute left-0 top-1/2 block size-[20px] -translate-x-1/2 -translate-y-1/2 rounded-full data-[pressed]:size-[24px]",
                     disabled
                       ? "cursor-not-allowed bg-fg-disabled"
                       : dragging === i
@@ -518,7 +518,7 @@ const SliderCore = React.forwardRef<HTMLDivElement, CoreProps>(
                       boxRefs.current[i] = node;
                     }}
                     data-slot="slider-value-indicator-box"
-                    className="absolute bottom-0 left-0 block min-w-6 whitespace-nowrap rounded-r1_5 bg-bg-neutral-inverted px-x2 py-x1 text-center text-t3 font-medium tabular-nums text-fg-neutral-inverted"
+                    className="absolute bottom-0 left-0 block min-w-[24px] whitespace-nowrap rounded-r1_5 bg-bg-neutral-inverted px-x2 py-x1 text-center text-t3 font-medium tabular-nums text-fg-neutral-inverted"
                   >
                     {formatValue(v)}
                   </span>

@@ -288,7 +288,7 @@ describe("틀 (I-10 24 ~ 26)", () => {
     expect(container.querySelectorAll("h1")).toHaveLength(1);
     expect(container.querySelector("h1")!.textContent).toBe("할 일");
     const add = byName("할 일 추가")!;
-    expect(add.className).toContain("h-9");
+    expect(add.className).toContain("min-h-[36px]");
     expect(add.closest(".page__head .right")).toBeTruthy();
     click(add);
     expect(calls.add).toBe(1);
@@ -597,12 +597,12 @@ describe("거르기 칩 줄 (I-10 30)", () => {
       "우선순위",
       "완료 숨기기",
     ]);
-    for (const c of chips()) expect(c.className).toContain("h-8");
+    for (const c of chips()) expect(c.className).toContain("min-h-[32px]");
     expect(byName("필터 지우기")).toBeUndefined();
 
     st.wide = false;
     render();
-    for (const c of chips()) expect(c.className).toContain("h-9");
+    for (const c of chips()) expect(c.className).toContain("min-h-[36px]");
   });
 
   it("조건 칩은 1280 이상 Popover(그 조건 하나) · 미만 Bottom Sheet — 완료로만 반영한다", () => {

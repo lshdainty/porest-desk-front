@@ -206,7 +206,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               "relative flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-fg-neutral-subtle",
               // 누르는 영역 44 — 보이는 원 둘레로(상자 밖은 상자가 자른다)
-              "before:absolute before:left-1/2 before:top-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
+              "before:absolute before:left-1/2 before:top-1/2 before:size-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']",
               "[&>svg]:size-[var(--text-input-clear)]",
               AFFIX_EDGE,
             )}

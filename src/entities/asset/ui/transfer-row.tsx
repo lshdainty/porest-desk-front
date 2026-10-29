@@ -3,6 +3,7 @@ import { Badge } from "@/shared/ds/badge";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { TagGroup, TagGroupItem } from "@/shared/ds/tag-group";
 import { cn } from "@/shared/lib/cn";
+import { useTallTitle } from "@/shared/lib/groo/use-tall-title";
 import { KRW, MINUS, isEn } from "@/shared/lib/groo/format";
 import { HideUnit, MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import {
@@ -46,6 +47,7 @@ export function TransferRow({
   /** 고르기 모드 — 이체는 고를 수 없어 체크 자리만 비운다(글자 자리는 거래 줄과 같다, I-07 Q6-A) */
   selectSpace?: boolean;
 }) {
+  const tallRef = useTallTitle();
   const { t } = useTranslation("expense");
   const { t: tc } = useTranslation("common");
   const fee = transfer.fee ?? 0;
@@ -141,6 +143,7 @@ export function TransferRow({
 
   return (
     <List
+      ref={tallRef}
       className={cn(
         // 임시 — 호스트가 바깥 24 를 쥔 동안 줄의 좌우 24 를 걷는다(gutter 인자 주석)
         !gutter && "[&_[data-slot=list-content]]:px-0",
@@ -159,7 +162,6 @@ export function TransferRow({
             </span>
           }
           suffix={suffix}
-          align="top"
         />
       ) : onClick ? (
         <ListButtonItem
@@ -167,7 +169,6 @@ export function TransferRow({
           detail={detail}
           prefix={prefix}
           suffix={suffix}
-          align="top"
           onClick={() => onClick(transfer)}
         />
       ) : (
@@ -176,7 +177,6 @@ export function TransferRow({
           detail={detail}
           prefix={prefix}
           suffix={suffix}
-          align="top"
         />
       )}
     </List>

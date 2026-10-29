@@ -533,7 +533,7 @@ describe("모양 클래스(스펙) — 잴 수 없는 값", () => {
     expect(cls).toContain("text-t2");
     expect(cls).toContain("font-bold");
     expect(cls).toContain("leading-[1.3]");
-    expect(cls).toContain("min-h-14");
+    expect(cls).toContain("min-h-[56px]");
     expect(cls).toContain("hover:brightness-[0.88]");
     expect(cls).toContain("active:brightness-[0.88]");
     expect(cls).not.toMatch(/scale|translate/);

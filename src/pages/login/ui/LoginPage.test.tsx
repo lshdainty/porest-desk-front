@@ -81,7 +81,7 @@ describe("로그인 화면 이름 · 부제 · 버튼(5 · 6 · 7)", () => {
   it("버튼은 ds Button large 48 · neutralSolid · 전체 폭이고 누르기 전엔 로딩이 아니다", () => {
     const button = container.querySelector("button")!;
     expect(button.textContent).toBe("sso.login");
-    expect(button.className).toContain("h-12");
+    expect(button.className).toContain("min-h-[48px]");
     expect(button.className).toContain("bg-bg-neutral-inverted");
     expect(button.className).toContain("w-full");
     expect(button.getAttribute("aria-busy")).not.toBe("true");

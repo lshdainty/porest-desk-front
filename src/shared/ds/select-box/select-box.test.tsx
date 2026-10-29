@@ -390,7 +390,7 @@ describe("RadioSelectBox — 하나 고르기", () => {
     const radio = radios()[0]!;
     expect(classes(radio)).toEqual(
       expect.arrayContaining([
-        "size-5",
+        "size-[20px]",
         "focus-visible:outline-none",
         "active:[scale:1]",
         "group-active/radio:[scale:1]",
@@ -533,7 +533,7 @@ describe("CheckSelectBox — 여럿 고르기", () => {
     expect(mark!.querySelector("svg")).not.toBeNull();
     expect(classes(mark!)).toEqual(
       expect.arrayContaining([
-        "size-5",
+        "size-[20px]",
         "text-fg-placeholder",
         "focus-visible:outline-none",
         "hover:bg-transparent",

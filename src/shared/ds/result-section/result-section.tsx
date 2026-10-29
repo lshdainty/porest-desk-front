@@ -80,7 +80,8 @@ export type ResultSectionProps = ResultSectionCommon &
   );
 
 // 아이콘 — 40 · 굵기 1.5 · 아래 16, 색은 결과마다
-const ASSET = "mb-x4 flex shrink-0 [&>svg]:size-10 [&>svg]:[stroke-width:1.5]";
+const ASSET =
+  "mb-x4 flex shrink-0 [&>svg]:size-[40px] [&>svg]:[stroke-width:1.5]";
 const KIND_COLOR: Record<ResultSectionKind, string> = {
   empty: "text-fg-neutral-subtle",
   failure: "text-fg-critical",
