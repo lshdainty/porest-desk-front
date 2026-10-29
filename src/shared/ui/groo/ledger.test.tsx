@@ -120,6 +120,9 @@ describe("날 숫자 · 날짜 머리", () => {
     expect(head.className).toContain("text-t4");
     expect(head.className).toContain("font-medium");
     expect(head.className).toContain("px-0");
+    expect(head.querySelector("h2")?.className).toContain(
+      "text-[color:inherit]",
+    );
     expect(head.querySelector("h2")?.textContent).toContain("오늘");
     expect(head.querySelector("h2")?.textContent).not.toContain("12,000");
     expect(container.querySelector("[data-ledger-day]")).not.toBeNull();

@@ -429,7 +429,7 @@ export function LedgerDayHead({
   );
 }
 
-/** 날짜 글(h2) — `relative`("오늘" · "어제")은 같은 머리말 안에 · 로 붙는다 */
+/** 날짜 글(h2) — 글색은 머리(List Header, fg-neutral-subtle)를 따른다(전역 h2 색이 덮지 않게, I-29 P1). `relative`("오늘" · "어제")은 같은 머리말 안에 · 로 붙는다 */
 export function LedgerDayDate({
   className,
   relative,
@@ -439,7 +439,7 @@ export function LedgerDayDate({
   return (
     <h2
       className={cn(
-        "m-0 font-[inherit] [font-weight:inherit] text-[length:inherit]",
+        "m-0 font-[inherit] [font-weight:inherit] text-[length:inherit] text-[color:inherit]",
         className,
       )}
       {...props}
