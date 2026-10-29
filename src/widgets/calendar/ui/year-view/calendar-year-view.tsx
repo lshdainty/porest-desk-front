@@ -58,7 +58,7 @@ const YearViewDayCell = ({
       <div
         className={cn(
           "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-          isToday(date) && "bg-bg-brand-solid font-semibold text-static-white",
+          isToday(date) && "bg-bg-neutral-weak font-bold",
         )}
         style={{
           color: isToday(date)

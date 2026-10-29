@@ -205,8 +205,8 @@ function WeekCell({
       className={cn(
         "num flex min-h-x9 min-w-x9 items-center justify-center rounded-full px-x1 text-t5 font-bold",
         (future || !c.inMonth) && "font-medium text-fg-neutral-subtle",
-        c.inMonth && !future && !isToday && "text-fg-neutral",
-        isToday && "bg-bg-brand-solid text-static-white",
+        c.inMonth && !future && "text-fg-neutral",
+        isToday && "bg-bg-neutral-weak",
       )}
     >
       {c.day}
