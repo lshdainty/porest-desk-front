@@ -17,7 +17,7 @@ type Marks = ReturnType<typeof useTodoCellMarks>;
  */
 export function TodoMiniCalendar({
   month,
-  onMove,
+  onPickMonth,
   today,
   marks,
   loading,
@@ -25,7 +25,7 @@ export function TodoMiniCalendar({
   onPickDay,
 }: {
   month: string;
-  onMove: (delta: -1 | 1) => void;
+  onPickMonth: (month: string) => void;
   today: string;
   marks: Marks;
   loading: boolean;
@@ -42,12 +42,7 @@ export function TodoMiniCalendar({
       aria-label={t("tdm.miniCalendar")}
       className="px-x6 pb-x3 pt-x3"
     >
-      <MonthHead
-        month={month}
-        onMove={onMove}
-        prevLabel={t("tdm.prevMonth")}
-        nextLabel={t("tdm.nextMonth")}
-      />
+      <MonthHead month={month} onChange={onPickMonth} />
       <div
         role="group"
         aria-label={t("tdm.miniCalendar")}

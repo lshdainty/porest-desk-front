@@ -1,14 +1,8 @@
+import { MonthTitle, MonthTitleStatic } from "@/shared/ui/groo/month-title";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import {
-  ChevronLeft,
-  ChevronRight,
-  FunnelX,
-  Plus,
-  ReceiptText,
-  SlidersHorizontal,
-} from "lucide-react";
+import { FunnelX, Plus, ReceiptText, SlidersHorizontal } from "lucide-react";
 import { useDsText, withCommaBreaks } from "@/shared/ds/i18n";
 import { ResultSection } from "@/shared/ds/result-section";
 import { SwipeActionsProvider } from "@/shared/ds/swipe-actions";
@@ -84,7 +78,6 @@ import {
   LedgerExpand,
   LedgerHead,
   LedgerList,
-  LedgerMonthLabel,
   LedgerMonthNav,
   LedgerNavBtn,
   LedgerPin,
@@ -153,13 +146,7 @@ export function ExpenseMobileSkeleton({ month }: { month?: string }) {
     <LedgerShell aria-busy="true">
       <div className="pt-x2">
         <LedgerMonthNav>
-          <LedgerNavBtn aria-label={t("prevMonth")}>
-            <ChevronLeft />
-          </LedgerNavBtn>
-          <LedgerMonthLabel>{txmMonthLabel(mk)}</LedgerMonthLabel>
-          <LedgerNavBtn aria-label={t("nextMonth")}>
-            <ChevronRight />
-          </LedgerNavBtn>
+          <MonthTitleStatic month={mk} className="text-t6" />
           <LedgerNavBtn aria-label={t("filter.title")} className="ml-auto">
             <SlidersHorizontal />
           </LedgerNavBtn>
@@ -381,14 +368,14 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
   const weeks = useMemo(() => monthWeeks(month), [month]);
   const selWeek = pickWeek(weeks, selected, todayStr);
 
-  const goMonth = (dir: -1 | 1) => {
-    const next = shiftMonthKey(month, dir);
+  const pickMonth = (next: string) => {
     setMonth(next);
     setSelected(todayStr.startsWith(next) ? todayStr : null);
     setExpanded(false);
     lock(800);
     scrollToTop();
   };
+  const goMonth = (dir: -1 | 1) => pickMonth(shiftMonthKey(month, dir));
 
   const dowLabels = useMemo(() => dowLabelList(), []);
 
@@ -541,19 +528,11 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
           <LedgerMonthNav>
             {!filterActive && (
               <>
-                <LedgerNavBtn
-                  aria-label={t("prevMonth")}
-                  onClick={() => goMonth(-1)}
-                >
-                  <ChevronLeft />
-                </LedgerNavBtn>
-                <LedgerMonthLabel>{txmMonthLabel(month)}</LedgerMonthLabel>
-                <LedgerNavBtn
-                  aria-label={t("nextMonth")}
-                  onClick={() => goMonth(1)}
-                >
-                  <ChevronRight />
-                </LedgerNavBtn>
+                <MonthTitle
+                  month={month}
+                  onChange={pickMonth}
+                  className="text-t6"
+                />
               </>
             )}
             {/* 걸린 조건은 아래 칩 줄이 말한다 — 단추에 개수 배지 · 켜짐 틴트를 두지 않는다 */}

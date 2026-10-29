@@ -19,7 +19,7 @@ import {
 } from "@/pages/expense/model/calendar-model";
 import { IntensityBar } from "./MiniCalendar";
 import { useDayLabel } from "./use-day-label";
-import { MonthHead } from "./MonthHead";
+import { MonthHead } from "@/shared/ui/groo/month-head";
 
 function Metric({
   label,
@@ -61,9 +61,7 @@ function Metric({
  */
 export function SummaryCard({
   month,
-  onMove,
-  canPrev,
-  canNext,
+  onPickMonth,
   today,
   byDay,
   loading,
@@ -73,9 +71,7 @@ export function SummaryCard({
   onPickDay,
 }: {
   month: string;
-  onMove: (delta: -1 | 1) => void;
-  canPrev: boolean;
-  canNext: boolean;
+  onPickMonth: (month: string) => void;
   today: string;
   byDay: Record<string, { out: number; inn: number }>;
   loading: boolean;
@@ -96,12 +92,7 @@ export function SummaryCard({
   const dows = getWeekDays();
   return (
     <Card data-slot="summary-card" className="px-x6 pb-x6 pt-x4">
-      <MonthHead
-        month={month}
-        onMove={onMove}
-        canPrev={canPrev}
-        canNext={canNext}
-      />
+      <MonthHead month={month} onChange={onPickMonth} />
       <div className="mt-x3 grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-x6">
         <Metric label={t("income")} loading={summaryLoading} tone="income">
           <MaskAmount card="ledger.monthSummary" kind="income">

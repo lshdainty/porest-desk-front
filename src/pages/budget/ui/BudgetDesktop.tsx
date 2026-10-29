@@ -34,11 +34,7 @@ export function BudgetDesktop() {
           description={t("subtitle")}
           actions={
             <>
-              <MonthControls
-                monthKey={m.monthKey}
-                onChange={m.setMonthKey}
-                onStep={m.adjustMonth}
-              />
+              <MonthControls monthKey={m.monthKey} onChange={m.setMonthKey} />
               <Button
                 type="button"
                 variant="ghost"

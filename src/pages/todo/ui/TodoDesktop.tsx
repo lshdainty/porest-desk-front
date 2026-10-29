@@ -4,7 +4,6 @@ import { Plus } from "lucide-react";
 import { Button } from "@/shared/ds/button";
 import { useWideSurface } from "@/shared/ds/overlay";
 import { cn } from "@/shared/lib/cn";
-import { shiftMonth } from "@/shared/lib/groo/calendar-grid";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import {
   constellationColorVar,
@@ -160,9 +159,9 @@ export function TodoDesktop({
     return null;
   };
 
-  // 달 이동이 쪽 넘김이다 — 목록 맨 위로 돌아가고 초점은 누른 단추에 남는다
-  const moveMonth = (delta: -1 | 1) => {
-    setYm((m) => shiftMonth(m, delta));
+  // 달을 고르면 쪽 넘김이다 — 목록 맨 위로 돌아간다
+  const pickMonth = (m: string) => {
+    setYm(m);
     document.getElementById("main")?.scrollTo?.({ top: 0 });
   };
   const scrollToDay = (ds: string) => {
@@ -216,7 +215,7 @@ export function TodoDesktop({
           >
             <TodoMiniCalendar
               month={ym}
-              onMove={moveMonth}
+              onPickMonth={pickMonth}
               today={today}
               marks={marks}
               loading={loading}
@@ -240,7 +239,7 @@ export function TodoDesktop({
         <div className="flex flex-col gap-y-x4">
           <TodoLedgerCard
             month={ym}
-            onMove={moveMonth}
+            onPickMonth={pickMonth}
             today={today}
             marks={marks}
             loading={loading}

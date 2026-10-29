@@ -16,9 +16,22 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
-vi.mock("@/shared/ui/groo/primitives", () => ({
-  MonthPicker: ({ onChange }: { onChange: (v: string) => void }) => (
-    <button data-testid="month-picker" onClick={() => onChange("2026-01")} />
+vi.mock("@/shared/ui/groo/month-title", () => ({
+  MonthTitle: ({
+    month,
+    max,
+    onChange,
+  }: {
+    month: string;
+    max?: string;
+    onChange: (v: string) => void;
+  }) => (
+    <button
+      data-testid="month-picker"
+      data-month={month}
+      data-max={max}
+      onClick={() => onChange("2026-01")}
+    />
   ),
 }));
 
@@ -245,25 +258,29 @@ describe("데스크톱 홈", () => {
     expect(total()).toContain("summary.monthExpenseN");
   });
 
-  it("달 고르기는 화면 제목 줄 오른쪽 — 이전 · 달 고르기 · 다음, 카드 머리에는 없다(Q2-B)", () => {
+  it("달 고르기는 화면 제목 줄 오른쪽 — 달 글 하나뿐(‹ › 없음), 카드 머리에는 없다(Q2-B · I-27)", () => {
     render();
     const right = container.querySelector(".page__head .right") as HTMLElement;
     expect(right.querySelector("[data-testid=month-picker]")).not.toBeNull();
-    expect(right.querySelector("[aria-label='prevMonth']")).not.toBeNull();
-    // 다음 달은 이번 달까지만 — 이번 달에서는 막힌다
-    expect(
-      (right.querySelector("[aria-label='nextMonth']") as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+    expect(right.querySelector("[aria-label='prevMonth']")).toBeNull();
+    expect(right.querySelector("[aria-label='nextMonth']")).toBeNull();
     expect(
       container.querySelector(
         "[data-slot=card-header] [data-testid=month-picker]",
       ),
     ).toBeNull();
-    // 이전 달 단추가 같은 달 상태를 바꾼다 — 6개월 범위가 한 달 앞으로 간다
+    // 홈은 미래 달을 이번 달로 되돌린다 — 달 글에 max(이번 달)를 넘긴다(사용자 10-29 (가))
+    const title = right.querySelector("[data-testid=month-picker]")!;
+    expect(title.getAttribute("data-max")).toMatch(/^\d{4}-\d{2}$/);
+    expect(title.getAttribute("data-max")).toBe(
+      title.getAttribute("data-month"),
+    );
+    // 고른 달이 같은 달 상태를 바꾼다 — 6개월 범위가 따라간다
     const before = calls.range.length;
     act(() =>
-      (right.querySelector("[aria-label='prevMonth']") as HTMLElement).click(),
+      (
+        right.querySelector("[data-testid=month-picker]") as HTMLElement
+      ).click(),
     );
     expect(calls.range.length).toBeGreaterThan(before);
   });

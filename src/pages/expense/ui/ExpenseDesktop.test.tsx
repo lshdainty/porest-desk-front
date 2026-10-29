@@ -57,6 +57,10 @@ const st = vi.hoisted(() => ({
   toasts: [] as string[],
 }));
 
+vi.mock(
+  "@/shared/ui/groo/month-title",
+  async () => import("@/shared/ui/groo/month-title.test-double"),
+);
 vi.mock("react-i18next", () => ({
   useTranslation: (ns?: string) => ({
     t: (k: string, opts?: Record<string, unknown>) => {

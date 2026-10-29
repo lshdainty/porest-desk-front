@@ -105,20 +105,6 @@ export function useBudgetModel() {
     return b.budgetAmount > 0 && spent / b.budgetAmount <= warnRatio;
   });
 
-  const adjustMonth = (delta: number) => {
-    let ny = year;
-    let nm = month + delta;
-    if (nm < 1) {
-      ny -= 1;
-      nm = 12;
-    }
-    if (nm > 12) {
-      ny += 1;
-      nm = 1;
-    }
-    setMonthKey(`${ny}-${String(nm).padStart(2, "0")}`);
-  };
-
   // 구역마다 따로 기다리고 따로 실패한다(I-08 17) — 질의 하나가 처음 받는 중이거나 내용 없이 실패한 것만 센다.
   const pending = (q: { data: unknown; isError: boolean }) =>
     q.data === undefined && !q.isError;
@@ -161,7 +147,6 @@ export function useBudgetModel() {
     complianceHasData,
     monthKey,
     setMonthKey,
-    adjustMonth,
     year,
     month,
     budgetsQ,

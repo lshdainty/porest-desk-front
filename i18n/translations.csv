@@ -18,13 +18,12 @@ common,add,추가,Add
 common,newTab,새 탭,new tab
 common,next,다음,Next
 common,prev,이전,Previous
-common,prevYear,이전 해,Previous year
 common,loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
-common,nextYear,다음 해,Next year
 common,searchPlaceholder,검색...,Search...
 common,searchEmpty,검색 결과가 없어요,No results found
 common,totalCount,총 {{count}}건,{{count}} total
 common,selectMonth,월 선택,Select month
+common,done,완료,Done
 common,back,뒤로,Back
 common,themeToggle,테마 전환,Toggle theme
 common,loadingShort,로딩 중,Loading
@@ -44,7 +43,6 @@ common,minuteLabel,분,Minute
 common,themeLight,라이트,Light
 common,themeDark,다크,Dark
 common,themeSystem,시스템,System
-common,goToday,오늘로,Today
 common,none,없음,None
 common,noSearchResults,검색 결과가 없습니다,No results found
 common,amountTooLarge,금액은 100억원까지 입력할 수 있어요.,Amount can be up to 10 billion won.
@@ -220,7 +218,6 @@ calendar,title,캘린더,Calendar
 calendar,addEvent,일정 추가,Add event
 calendar,editEvent,일정 수정,Edit event
 calendar,deleteEvent,일정 삭제,Delete Event
-calendar,today,오늘,Today
 calendar,allDay,종일,All Day
 calendar,noEvents,이 날에 일정이 없어요.,No events on this day.
 calendar,events,일정,Events
@@ -1101,8 +1098,6 @@ calendar,dayView.noAppointments,진행 중인 일정이 없습니다,No appointm
 calendar,agenda.noEvents,일정이 없습니다,No events
 calendar,close,닫기,Close
 calendar,eventDetail,일정 상세,Event details
-calendar,goToToday,오늘로,Today
-calendar,dateNavigation,날짜 이동,Go to date
 calendar,sourceCount,{{count}}개,{{count}}
 calendar,preview,미리보기,Preview
 calendar,newCalendar,캘린더 추가,Add calendar
@@ -1324,8 +1319,6 @@ user,withdrawn.toLogin,로그인 화면으로,Go to sign in
 budget,add,추가,Add
 budget,copy,복사,Copy
 budget,copyLastMonth,지난달 복사,Copy Last Month
-budget,prevMonth,이전 달,Previous month
-budget,nextMonth,다음 달,Next month
 budget,addBudget,예산 추가,Add Budget
 budget,deleteTitle,예산 삭제,Delete budget
 budget,manager.title,예산 설정,Budget settings
@@ -1714,8 +1707,6 @@ expense,filter.chipAssets,계좌·카드 {{count}},{{count}} accounts
 expense,filter.chipExcludeOne,{{name}} 빼고,Excluding {{name}}
 expense,filter.chipAmountRanges,금액 {{count}}구간,{{count}} amount ranges
 expense,assetFilterBadge,{{name}} 필터 중,Filtering by {{name}}
-expense,prevMonth,이전 달,Previous month
-expense,nextMonth,다음 달,Next month
 expense,preset.introTitle,프리셋이란?,What are presets?
 expense,preset.introDesc,"자주 쓰는 내역(점심·커피·교통비 등)을 미리 저장해두면, 내역 추가 화면에서 한 번 탭으로 카테고리·결제수단·내역을 모두 채워넣어요. 금액만 바꿔서 단건으로 저장하기 좋습니다.","Save frequently used entries (lunch, coffee, transit, etc.) in advance to fill in the category, payment method, and details with one tap on the add screen. Great for one-off saves by just changing the amount."
 expense,preset.statSaved,저장된 프리셋,Saved presets
@@ -2574,9 +2565,6 @@ expense,filter.periodPick,기간 선택,Select period
 expense,filter.done,완료,Done
 expense,filter.chipMin,{{amount}} 이상,Min {{amount}}
 expense,filter.chipMax,{{amount}} 이하,Max {{amount}}
-todo,tdm.prevMonth,이전 달,Previous month
-todo,tdm.nextMonth,다음 달,Next month
-todo,tdm.monthLabel,{{month}}월,Month {{month}}
 todo,tdm.filter,필터,Filter
 todo,tdm.todayLeft,오늘 할 일 {{count}}개,{{count}} to do today
 todo,tdm.todayDone,오늘 할 일 끝!,All done today!
@@ -3094,8 +3082,10 @@ expense,filter.chipExcludeMore,{{first}} 외 {{count}}개 빼고,Excluding {{fir
 expense,filter.chipRange,{{min}} ~ {{max}},{{min}} – {{max}}
 expense,list.title,거래,Transactions
 calendar,sourceChipLabel,캘린더 {{count}}개 보는 중,Showing {{count}} calendars
-calendar,header.prevMonth,이전 달,Previous month
-calendar,header.nextMonth,다음 달,Next month
+calendar,header.prevWeek,이전 주,Previous week
+calendar,header.nextWeek,다음 주,Next week
+calendar,header.prevDay,이전 날,Previous day
+calendar,header.nextDay,다음 날,Next day
 calendar,monthView.moreCount,+{{count}}개,+{{count}}
 calendar,monthView.cellLabel,"{{date}}, 일정 {{count}}개","{{date}}, {{count}} events"
 calendar,monthView.cellLabelEmpty,"{{date}}, 일정 없음","{{date}}, no events"

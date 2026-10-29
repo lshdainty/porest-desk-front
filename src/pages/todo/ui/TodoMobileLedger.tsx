@@ -1,8 +1,7 @@
+import { MonthTitle } from "@/shared/ui/groo/month-title";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ChevronLeft,
-  ChevronRight,
   FunnelX,
   ListChecks,
   Pencil,
@@ -40,7 +39,6 @@ import {
   LedgerExpand,
   LedgerHead,
   LedgerList,
-  LedgerMonthLabel,
   LedgerMonthNav,
   LedgerNavBtn,
   LedgerPin,
@@ -66,7 +64,6 @@ import {
   isFilterActive,
   monthTodos as selectMonthTodos,
   relKindOf,
-  shiftYm,
   tagOf,
   todayISO,
   todayLeft as countTodayLeft,
@@ -189,8 +186,7 @@ export function TodoMobileLedger({
     selWeek = weeks.findIndex((w) => w.some((c) => c && c.ds === today));
   if (selWeek < 0) selWeek = 0;
 
-  const goMonth = (dir: -1 | 1) => {
-    const next = shiftYm(ym, dir);
+  const pickMonth = (next: string) => {
     setYm(next);
     setSelected(today.startsWith(next) ? today : null);
     setExpanded(false);
@@ -331,21 +327,7 @@ export function TodoMobileLedger({
       <LedgerPin ref={pinRef} top={pinTop}>
         {/* 월 네비 + 거르기 */}
         <LedgerMonthNav>
-          <LedgerNavBtn
-            onClick={() => goMonth(-1)}
-            aria-label={t("tdm.prevMonth")}
-          >
-            <ChevronLeft />
-          </LedgerNavBtn>
-          <LedgerMonthLabel>
-            {t("tdm.monthLabel", { month: monthNum })}
-          </LedgerMonthLabel>
-          <LedgerNavBtn
-            onClick={() => goMonth(1)}
-            aria-label={t("tdm.nextMonth")}
-          >
-            <ChevronRight />
-          </LedgerNavBtn>
+          <MonthTitle month={ym} onChange={pickMonth} className="text-t6" />
           {/* 조건이 걸렸다는 표시는 알림 점 하나 — 개수 숫자 · 켜짐 틴트를 두지 않는다(사용자 결정 10-23) */}
           <LedgerNavBtn
             className="ml-auto"

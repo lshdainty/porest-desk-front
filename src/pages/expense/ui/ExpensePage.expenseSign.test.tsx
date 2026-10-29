@@ -59,9 +59,7 @@ function amounts(monthIn: number, monthOut: number) {
     root.render(
       <SummaryCard
         month="2026-09"
-        onMove={() => {}}
-        canPrev
-        canNext
+        onPickMonth={() => {}}
         today="2026-09-10"
         byDay={{}}
         loading={false}

@@ -15,7 +15,7 @@ import { cn } from "@/shared/lib/index";
  *
  *   <LedgerShell ref={rootRef}>
  *     <LedgerPin ref={pinRef}>                      ds Scroll Auto Hide — 내리면 숨고 올리면 드러난다
- *       <LedgerMonthNav> <LedgerNavBtn/> <LedgerMonthLabel/> … </LedgerMonthNav>
+ *       <LedgerMonthNav> <MonthTitle/> <LedgerNavBtn/> … </LedgerMonthNav>   달 글은 shared/ui/groo/month-title.tsx
  *       <LedgerHead> <LedgerTotal/> <LedgerSub/> <LedgerSumBtn/> </LedgerHead>
  *       <LedgerCalendar>
  *         <LedgerDow/> <LedgerWeek> <LedgerCell> <LedgerCellNum/> <LedgerCellAmt/> …
@@ -110,22 +110,6 @@ export function LedgerNavBtn({
       variant="ghost"
       size="medium"
       layout="iconOnly"
-      {...props}
-    />
-  );
-}
-
-/** 달 이름 — t6 18 / 24 · 700 · 고정폭 */
-export function LedgerMonthLabel({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
-  return (
-    <span
-      className={cn(
-        "px-x1 text-t6 font-bold tabular-nums text-fg-neutral",
-        className,
-      )}
       {...props}
     />
   );

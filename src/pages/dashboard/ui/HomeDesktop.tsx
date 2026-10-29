@@ -24,9 +24,7 @@ import {
 import { MINUS, toLocalIso } from "@/shared/lib/groo/format";
 import { useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
 import { useOpenHideAmountsSettings } from "@/shared/lib/groo/hide-amounts-nav";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { MonthPicker } from "@/shared/ui/groo/primitives";
+import { MonthTitle } from "@/shared/ui/groo/month-title";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { dsMoney } from "@/shared/ds/i18n";
 import { useDashboardSummary } from "@/features/dashboard";
@@ -73,18 +71,10 @@ import { MASK, useMasked, won, wonIn, wonOut } from "./home-money";
  * 768 ~ 1279 는 한 칸 최대 720 가운데, 1440 이상 본문 최대 1040 가운데(I-06 30 ~ 32).
  * 여백 — 위 20(spacing-nav-to-title) · 좌우 32(layout-margin) · 아래 56(spacing-screen-bottom).
  */
-/** "2026-10" 에서 delta 달 옮긴 키 */
-function shiftMonth(key: string, delta: number) {
-  const [y, m] = key.split("-").map(Number) as [number, number];
-  const d = new Date(y, m - 1 + delta, 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
 export function HomeDesktop() {
   const { t } = useTranslation("dashboard");
   const { t: tLayout } = useTranslation("layout");
   const { t: tc } = useTranslation("common");
-  const { t: tb } = useTranslation("budget");
   const navigate = useNavigate();
   // 여기서 바로 가리지 않는다 — 가릴 카드를 고르는 설정으로 보낸다.
   const handleHideToggle = useOpenHideAmountsSettings("home");
@@ -208,34 +198,15 @@ export function HomeDesktop() {
         <PageHead
           title={tLayout("home")}
           // 달 고르기 = 화면 제목 줄 오른쪽(사용자 10-23 Q2-B) — 순자산 · 수입 · 지출 · 카테고리 · 예산 · 오늘 쓴 돈(고른 달 · 늘 오늘)을
-          // 바꾸는 페이지 조절 줄. 데스크톱 예산 화면 PageControls 와 같은 자리 · 같은 부품(이전 · 다음 · 달 고르기 borderless)
+          // 바꾸는 페이지 조절 줄. 달 글 + 꺾쇠만(‹ › 없음 — 사용자 10-29), 누르면 연 | 월 휠. 휠은 미래 달도 굴러가고,
+          // 미래 달에서 "완료" 하면 이번 달로 되돌린다(사용자 10-29 (가) — max)
           actions={
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                aria-label={tb("prevMonth")}
-                onClick={() => setPeriod(shiftMonth(period, -1))}
-              >
-                <ChevronLeft size={16} />
-              </Button>
-              <MonthPicker
-                value={period}
-                onChange={setPeriod}
-                variant="borderless"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                aria-label={tb("nextMonth")}
-                disabled={period >= initialKey}
-                onClick={() => setPeriod(shiftMonth(period, 1))}
-              >
-                <ChevronRight size={16} />
-              </Button>
-            </>
+            <MonthTitle
+              month={period}
+              onChange={setPeriod}
+              max={initialKey}
+              className="text-t4"
+            />
           }
         />
         <div className="grid grid-cols-1 gap-x2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-[var(--layout-gutter)]">

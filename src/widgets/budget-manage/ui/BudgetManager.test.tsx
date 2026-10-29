@@ -19,7 +19,6 @@ vi.mock("react-router-dom", () => ({
   useLocation: () => ({ pathname: "/", search: "" }),
 }));
 vi.mock("@/shared/ui/groo/primitives", () => ({
-  MonthPicker: () => <button type="button">월</button>,
   Icon: () => <svg />,
 }));
 vi.mock("./BudgetFormDialog", () => ({

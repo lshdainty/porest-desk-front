@@ -17,7 +17,6 @@ vi.mock("react-i18next", () => ({
 }));
 vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
 vi.mock("@/shared/ui/groo/primitives", () => ({
-  MonthPicker: () => <button type="button">월</button>,
   Icon: () => <svg />,
 }));
 

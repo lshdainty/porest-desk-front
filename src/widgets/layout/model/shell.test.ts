@@ -10,11 +10,15 @@ describe("screenFloor", () => {
     ["/desk/stats", "bands"],
     ["/desk/budget", "bands"],
     ["/desk/expense", "white"],
-    ["/desk/calendar", "strip"],
+    ["/desk/calendar", "white"],
     ["/desk/more", "white"],
     ["/desk/search", "strip"],
   ])("%s → %s", (path, floor) => {
     expect(screenFloor(path)).toBe(floor);
+  });
+  it("캘린더는 흰 면 하나 — 하위 길도 같다(I-09 1-A, 앱과 같게)", () => {
+    expect(screenFloor("/desk/calendar")).toBe("white");
+    expect(screenFloor("/desk/calendar/manage")).toBe("white");
   });
   it("card-benefit 는 /desk/card 아래가 아니다", () => {
     expect(screenFloor("/desk/card-benefit")).toBe("strip");

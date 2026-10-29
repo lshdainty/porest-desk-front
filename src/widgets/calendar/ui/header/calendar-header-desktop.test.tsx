@@ -8,6 +8,7 @@ declare global {
 }
 
 const mocks = vi.hoisted(() => ({
+  view: "month",
   setView: vi.fn(),
   setSelectedDate: vi.fn(),
 }));
@@ -23,7 +24,7 @@ vi.mock("@/widgets/calendar/model/calendar-context", () => ({
   useCalendar: () => ({
     selectedDate: new Date(2026, 9, 22),
     setSelectedDate: mocks.setSelectedDate,
-    view: "month",
+    view: mocks.view,
     setView: mocks.setView,
   }),
 }));
@@ -77,22 +78,46 @@ describe("도구 줄", () => {
     expect(container.textContent).not.toContain("header.eventCount");
     expect(container.textContent).not.toMatch(/\d{4}\.\d{2}\.\d{2}/);
     expect(container.innerHTML).not.toContain("w-px");
-    expect(container.textContent).toContain("today");
   });
 
-  it('‹ › 와 "오늘" 이 달을 옮긴다', () => {
+  it('달 보기에는 ‹ › 도 "오늘" 도 없다 — 달 글 하나뿐(I-27, 사용자 10-29)', () => {
     const buttons = [...container.querySelectorAll("button")];
-    const prev = buttons.find(
-      (b) => b.getAttribute("aria-label") === "header.prevMonth",
-    )!;
-    const next = buttons.find(
-      (b) => b.getAttribute("aria-label") === "header.nextMonth",
+    expect(
+      buttons.some((b) => b.getAttribute("aria-label") === "header.prevWeek"),
+    ).toBe(false);
+    expect(
+      buttons.some((b) => b.getAttribute("aria-label") === "header.nextWeek"),
+    ).toBe(false);
+    expect(container.textContent).not.toContain("today");
+    expect(container.textContent).toContain("2026년 10월");
+  });
+
+  it("주 보기에서만 한 주씩 옮기는 ‹ › 가 달 글 뒤에 선다", () => {
+    mocks.view = "week";
+    act(() => root.render(<CalendarHeaderDesktop />));
+    const prev = container.querySelector<HTMLElement>(
+      "[aria-label='header.prevWeek']",
     )!;
     act(() => prev.click());
-    act(() => next.click());
-    expect(mocks.setSelectedDate).toHaveBeenCalledTimes(2);
-    const today = buttons.find((b) => b.textContent === "today")!;
-    act(() => today.click());
-    expect(mocks.setSelectedDate).toHaveBeenCalledTimes(3);
+    expect(mocks.setSelectedDate).toHaveBeenCalledTimes(1);
+    expect(
+      container.querySelector("[aria-label='header.nextWeek']"),
+    ).not.toBeNull();
+    mocks.view = "month";
+  });
+
+  it("일 보기에서는 이름이 이전 날 · 다음 날이다(이전 달 로 읽히지 않는다)", () => {
+    mocks.view = "day";
+    act(() => root.render(<CalendarHeaderDesktop />));
+    expect(
+      container.querySelector("[aria-label='header.prevDay']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[aria-label='header.nextDay']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[aria-label='header.prevMonth']"),
+    ).toBeNull();
+    mocks.view = "month";
   });
 });

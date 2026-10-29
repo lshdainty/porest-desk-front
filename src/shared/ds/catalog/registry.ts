@@ -127,6 +127,7 @@ const FAMILIES: DsFamily[] = [
     title: "10 날짜 · 시각",
     entries: [
       { name: "Wheel Picker", spec: "wheel-picker" },
+      { name: "Month Picker", spec: "month-picker" },
       { name: "Time Picker", spec: "time-picker" },
       { name: "Date Picker", spec: "date-picker" },
     ],
