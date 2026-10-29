@@ -313,3 +313,24 @@ describe("자소 셈", () => {
     expect(sliceGraphemes("가나", 5)).toBe("가나");
   });
 });
+
+describe("Field 머리 — 글자 200% · 좁은 폭", () => {
+  it("머리는 줄바꿈이 되고 라벨은 단어 단위(keep-all), 오른쪽 동작은 자리가 모자라면 다음 줄 오른쪽으로", () => {
+    const el = render(
+      <Field
+        label="보유 종목"
+        headerAction={<span>12종목 · 55,950,000원</span>}
+      >
+        <input />
+      </Field>,
+    );
+    const header = el.querySelector("[data-slot=field-header]")!;
+    expect(header.className).toContain("flex-wrap");
+    const label = header.querySelector("label")!;
+    expect(label.className).toContain("break-keep");
+    expect(label.className).toContain("min-w-0");
+    const action = el.querySelector("[data-slot=field-header-action]")!;
+    expect(action.className).toContain("ml-auto");
+    expect(action.className).toContain("shrink-0");
+  });
+});

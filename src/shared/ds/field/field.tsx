@@ -123,7 +123,7 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
     };
 
     const labelClass = cn(
-      "min-w-0 font-sans text-t5 text-fg-neutral",
+      "min-w-0 break-keep font-sans text-t5 text-fg-neutral",
       labelWeight === "bold" ? "font-bold" : "font-medium",
     );
     // 칸이 버튼이면 라벨의 기본 동작(칸을 누르기)을 막고 포커스만 옮긴다 — 입력칸은 그대로(포커스 · 커서)
@@ -163,7 +163,7 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
           {(label != null || headerAction != null) && (
             <div
               data-slot="field-header"
-              className="flex items-center justify-between gap-x2_5 px-x0_5"
+              className="flex flex-wrap items-center justify-between gap-x2_5 px-x0_5"
             >
               {label != null &&
                 (group ? (
