@@ -20,6 +20,43 @@
 @import "./shared/styles/groo-tokens.css";
 @import "./shared/styles/groo-shadcn-bridge.css";
 
+/* 차트 색 짝(weak · subtle · contrast) — chart-palette.ts getPaletteByColor 가 이름을 템플릿 문자열
+ * (`var(${cssVar}-contrast)`)로 만들어 Tailwind 가 쓰는 곳을 못 찾는다. 기본 @theme 는 안 쓴 변수를
+ * 내보내지 않아 orange · indigo · violet · pink · brown · gray 의 -contrast 가 빠졌었다(I-29 P5).
+ * static 으로 늘 내보낸다. 값은 groo-tokens.css 와 같고, 다크 값은 거기 [data-theme="dark"] 가 덮는다. */
+@theme static {
+  --color-chart-red-weak: var(--color-red-200);
+  --color-chart-red-subtle: var(--color-red-100);
+  --color-chart-red-contrast: var(--color-red-800);
+  --color-chart-orange-weak: var(--color-orange-200);
+  --color-chart-orange-subtle: var(--color-orange-100);
+  --color-chart-orange-contrast: var(--color-orange-800);
+  --color-chart-yellow-weak: var(--color-yellow-200);
+  --color-chart-yellow-subtle: var(--color-yellow-100);
+  --color-chart-yellow-contrast: var(--color-yellow-800);
+  --color-chart-green-weak: var(--color-green-200);
+  --color-chart-green-subtle: var(--color-green-100);
+  --color-chart-green-contrast: var(--color-green-800);
+  --color-chart-blue-weak: var(--color-blue-200);
+  --color-chart-blue-subtle: var(--color-blue-100);
+  --color-chart-blue-contrast: var(--color-blue-800);
+  --color-chart-indigo-weak: var(--color-indigo-200);
+  --color-chart-indigo-subtle: var(--color-indigo-100);
+  --color-chart-indigo-contrast: var(--color-indigo-800);
+  --color-chart-violet-weak: var(--color-violet-200);
+  --color-chart-violet-subtle: var(--color-violet-100);
+  --color-chart-violet-contrast: var(--color-violet-800);
+  --color-chart-pink-weak: var(--color-pink-200);
+  --color-chart-pink-subtle: var(--color-pink-100);
+  --color-chart-pink-contrast: var(--color-pink-800);
+  --color-chart-brown-weak: var(--color-brown-200);
+  --color-chart-brown-subtle: var(--color-brown-100);
+  --color-chart-brown-contrast: var(--color-brown-800);
+  --color-chart-gray-weak: var(--color-gray-400);
+  --color-chart-gray-subtle: var(--color-gray-300);
+  --color-chart-gray-contrast: var(--color-gray-800);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* =============================================================================
