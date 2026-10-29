@@ -1,19 +1,2 @@
-import { useTranslation } from "react-i18next";
-import { MonthHead as SharedMonthHead } from "@/shared/ui/groo/month-head";
-
-/** 가계부 달 이동 머리 — 공용 `MonthHead`(할 일 데스크톱과 같은 부품)에 가계부 단추 이름을 준다 */
-export function MonthHead(props: {
-  month: string;
-  onMove: (delta: -1 | 1) => void;
-  canPrev?: boolean;
-  canNext?: boolean;
-}) {
-  const { t } = useTranslation("expense");
-  return (
-    <SharedMonthHead
-      {...props}
-      prevLabel={t("prevMonth")}
-      nextLabel={t("nextMonth")}
-    />
-  );
-}
+// 가계부 달 머리는 공용 MonthHead 를 그대로 쓴다(I-27 — 단추 이름이 없어져 감싸는 층이 필요 없다). 안 쓰는 파일이라 지워도 된다.
+export { MonthHead } from "@/shared/ui/groo/month-head";

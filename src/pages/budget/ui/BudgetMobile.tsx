@@ -28,7 +28,6 @@ export function BudgetMobile() {
     <MonthBar
       monthKey={m.monthKey}
       onChange={m.setMonthKey}
-      onStep={m.adjustMonth}
       right={
         <Button
           type="button"

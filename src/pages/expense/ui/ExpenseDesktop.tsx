@@ -36,7 +36,6 @@ import { monthFromQuery } from "@/pages/expense/lib/month-query";
 import {
   clampMonth,
   dailyTotals,
-  shiftMonth,
   todayKey,
 } from "@/pages/expense/model/calendar-model";
 import {
@@ -177,10 +176,8 @@ export function ExpenseDesktop() {
     });
     document.getElementById("main")?.scrollTo?.({ top: 0 });
   };
-  const moveMonth = (delta: -1 | 1) =>
-    goMonth(clampMonth(shiftMonth(month, delta), bounds));
-  const canPrev = !bounds || month > bounds.first;
-  const canNext = !bounds || month < bounds.last;
+  // 기간이 걸려 있으면 달 고르기도 그 기간의 달 안으로 모은다(‹ › 가 있을 때 막던 것과 같은 범위)
+  const pickMonth = (m: string) => goMonth(clampMonth(m, bounds));
   const changeFilter = (next: FilterValue | null) => {
     clearPicked();
     setFilterValue(next);
@@ -304,9 +301,7 @@ export function ExpenseDesktop() {
   const monthLabel = formatMonthShort(new Date(y, m - 1, 1));
   const calendarProps = {
     month,
-    onMove: moveMonth,
-    canPrev,
-    canNext,
+    onPickMonth: pickMonth,
     today,
     byDay,
     loading: data.isLoadingMonthExpenses,

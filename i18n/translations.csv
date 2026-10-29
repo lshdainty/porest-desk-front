@@ -221,7 +221,6 @@ calendar,title,캘린더,Calendar
 calendar,addEvent,일정 추가,Add event
 calendar,editEvent,일정 수정,Edit event
 calendar,deleteEvent,일정 삭제,Delete Event
-calendar,today,오늘,Today
 calendar,allDay,종일,All Day
 calendar,noEvents,이 날에 일정이 없어요.,No events on this day.
 calendar,events,일정,Events
@@ -1102,7 +1101,6 @@ calendar,dayView.noAppointments,진행 중인 일정이 없습니다,No appointm
 calendar,agenda.noEvents,일정이 없습니다,No events
 calendar,close,닫기,Close
 calendar,eventDetail,일정 상세,Event details
-calendar,goToToday,오늘로,Today
 calendar,dateNavigation,날짜 이동,Go to date
 calendar,sourceCount,{{count}}개,{{count}}
 calendar,preview,미리보기,Preview
@@ -1325,8 +1323,6 @@ user,withdrawn.toLogin,로그인 화면으로,Go to sign in
 budget,add,추가,Add
 budget,copy,복사,Copy
 budget,copyLastMonth,지난달 복사,Copy Last Month
-budget,prevMonth,이전 달,Previous month
-budget,nextMonth,다음 달,Next month
 budget,addBudget,예산 추가,Add Budget
 budget,deleteTitle,예산 삭제,Delete budget
 budget,manager.title,예산 설정,Budget settings
@@ -1715,8 +1711,6 @@ expense,filter.chipAssets,계좌·카드 {{count}},{{count}} accounts
 expense,filter.chipExcludeOne,{{name}} 빼고,Excluding {{name}}
 expense,filter.chipAmountRanges,금액 {{count}}구간,{{count}} amount ranges
 expense,assetFilterBadge,{{name}} 필터 중,Filtering by {{name}}
-expense,prevMonth,이전 달,Previous month
-expense,nextMonth,다음 달,Next month
 expense,preset.introTitle,프리셋이란?,What are presets?
 expense,preset.introDesc,"자주 쓰는 내역(점심·커피·교통비 등)을 미리 저장해두면, 내역 추가 화면에서 한 번 탭으로 카테고리·결제수단·내역을 모두 채워넣어요. 금액만 바꿔서 단건으로 저장하기 좋습니다.","Save frequently used entries (lunch, coffee, transit, etc.) in advance to fill in the category, payment method, and details with one tap on the add screen. Great for one-off saves by just changing the amount."
 expense,preset.statSaved,저장된 프리셋,Saved presets
@@ -2575,8 +2569,6 @@ expense,filter.periodPick,기간 선택,Select period
 expense,filter.done,완료,Done
 expense,filter.chipMin,{{amount}} 이상,Min {{amount}}
 expense,filter.chipMax,{{amount}} 이하,Max {{amount}}
-todo,tdm.prevMonth,이전 달,Previous month
-todo,tdm.nextMonth,다음 달,Next month
 todo,tdm.monthLabel,{{month}}월,Month {{month}}
 todo,tdm.filter,필터,Filter
 todo,tdm.todayLeft,오늘 할 일 {{count}}개,{{count}} to do today

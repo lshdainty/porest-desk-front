@@ -33,7 +33,7 @@ type Marks = ReturnType<typeof useTodoCellMarks>;
  */
 export function TodoLedgerCard({
   month,
-  onMove,
+  onPickMonth,
   today,
   marks,
   loading,
@@ -49,7 +49,7 @@ export function TodoLedgerCard({
   onPickDay,
 }: {
   month: string;
-  onMove: (delta: -1 | 1) => void;
+  onPickMonth: (month: string) => void;
   today: string;
   marks: Marks;
   loading: boolean;
@@ -74,12 +74,7 @@ export function TodoLedgerCard({
   const dows = getWeekDays();
   return (
     <Card data-slot="todo-ledger-card" className="px-x6 pb-x6 pt-x4">
-      <MonthHead
-        month={month}
-        onMove={onMove}
-        prevLabel={t("tdm.prevMonth")}
-        nextLabel={t("tdm.nextMonth")}
-      />
+      <MonthHead month={month} onChange={onPickMonth} />
       <LedgerHead>
         <div className="min-w-0 flex-auto">
           <LedgerTotal>

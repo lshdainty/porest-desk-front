@@ -22,7 +22,8 @@ const VIEWS: { value: TCalendarView; key: string }[] = [
 
 /**
  * 데스크톱 · 태블릿 도구 줄 (I-09 14 · 15) — 제목 줄 아래 16, 카드 밖 회색 바닥 위 한 줄.
- * 왼쪽: ‹ › (Button small outline 아이콘 36) · 달 글 t7 700 + 꺾쇠(누르면 달 고르기 팝오버) · "오늘".
+ * 왼쪽: 달 글 t7 700 + 꺾쇠(누르면 연 | 월 휠 — 1280 이상 팝오버, 미만 시트). ‹ › · "오늘" 은 두지 않는다(사용자 10-29 — 연 · 월은 휠로만).
+ * 주 · 일 보기만 한 주 · 하루씩 옮기는 ‹ › 를 달 글 뒤에 둔다.
  * 오른쪽: 캘린더 고르기 칩 · 보기 고르기(Chip 하나 고르기 — 이름이 보이는 글). 좁으면 오른쪽 묶음이 다음 줄로.
  */
 const CalendarHeaderDesktop = () => {
@@ -39,31 +40,11 @@ const CalendarHeaderDesktop = () => {
     setSelectedDate(navigateDate(selectedDate, view, "previous"));
   const handleNext = () =>
     setSelectedDate(navigateDate(selectedDate, view, "next"));
-  const handleTodayClick = () => setSelectedDate(new Date());
+  const stepUnit = view === "week" || view === "day";
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-x3">
       <div className="flex items-center gap-x1">
-        <Button
-          aria-label={t("header.prevMonth")}
-          variant="neutralOutline"
-          size="small"
-          layout="iconOnly"
-          className="[&_svg]:size-4"
-          onClick={handlePrevious}
-        >
-          <ChevronLeft />
-        </Button>
-        <Button
-          aria-label={t("header.nextMonth")}
-          variant="neutralOutline"
-          size="small"
-          layout="iconOnly"
-          className="[&_svg]:size-4"
-          onClick={handleNext}
-        >
-          <ChevronRight />
-        </Button>
         {/* 날짜 텍스트 → 연 | 월 휠 팝오버(1280 이상) · 시트(미만) — I-27 */}
         <MonthPicker
           value={{
@@ -78,7 +59,7 @@ const CalendarHeaderDesktop = () => {
           trigger={
             <button
               type="button"
-              className="mx-x2 flex items-center gap-x1 whitespace-nowrap rounded-r2 text-t7 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
+              className="flex items-center gap-x1 whitespace-nowrap rounded-r2 text-t7 font-bold text-fg-neutral focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stroke-focus-ring"
             >
               {formattedDate}
               <ChevronDown
@@ -88,13 +69,31 @@ const CalendarHeaderDesktop = () => {
             </button>
           }
         />
-        <Button
-          variant="neutralOutline"
-          size="small"
-          onClick={handleTodayClick}
-        >
-          {t("today")}
-        </Button>
+        {/* 주 · 일 보기는 단위가 달이 아니라 한 주 · 하루라 ‹ › 를 남긴다 — 연 · 월은 휠로만 옮긴다(I-27) */}
+        {stepUnit && (
+          <>
+            <Button
+              aria-label={t("header.prevMonth")}
+              variant="neutralOutline"
+              size="small"
+              layout="iconOnly"
+              className="[&_svg]:size-4"
+              onClick={handlePrevious}
+            >
+              <ChevronLeft />
+            </Button>
+            <Button
+              aria-label={t("header.nextMonth")}
+              variant="neutralOutline"
+              size="small"
+              layout="iconOnly"
+              className="[&_svg]:size-4"
+              onClick={handleNext}
+            >
+              <ChevronRight />
+            </Button>
+          </>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-x2">

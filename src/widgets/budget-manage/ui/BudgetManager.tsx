@@ -252,21 +252,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const submitting =
     createMut.isPending || updateMut.isPending || deleteMut.isPending;
 
-  // 앱 _MonthBar 정합 — 모바일은 prev/next 화살표로 월 ±1 이동 (BudgetPage 개요와 동일).
-  const adjustMonth = (delta: number) => {
-    let ny = year;
-    let nm = month + delta;
-    if (nm < 1) {
-      ny -= 1;
-      nm = 12;
-    }
-    if (nm > 12) {
-      ny += 1;
-      nm = 1;
-    }
-    setMonthKey(`${ny}-${String(nm).padStart(2, "0")}`);
-  };
-
   const hasMonthly = monthlyBudget != null;
   const overAllocated = hasMonthly && remaining < 0;
 
@@ -337,7 +322,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           <MonthBar
             monthKey={monthKey}
             onChange={setMonthKey}
-            onStep={adjustMonth}
             right={copyButton}
           />
           <div className="pt-x3">{body}</div>
@@ -351,12 +335,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
             description={t("manager.description")}
           />
           <div data-slot="budget-tools" className="flex items-center">
-            <MonthControls
-              flushLeft
-              monthKey={monthKey}
-              onChange={setMonthKey}
-              onStep={adjustMonth}
-            />
+            <MonthControls monthKey={monthKey} onChange={setMonthKey} />
             <div className="ml-auto">{copyButton}</div>
           </div>
           {body}

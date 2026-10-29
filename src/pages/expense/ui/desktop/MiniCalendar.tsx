@@ -14,7 +14,7 @@ import {
   monthGrid,
   type CalendarDay,
 } from "@/pages/expense/model/calendar-model";
-import { MonthHead } from "./MonthHead";
+import { MonthHead } from "@/shared/ui/groo/month-head";
 import { MonthKv } from "./MonthKv";
 import { useDayLabel } from "./use-day-label";
 
@@ -54,9 +54,7 @@ export function IntensityBar({
  */
 export function MiniCalendar({
   month,
-  onMove,
-  canPrev,
-  canNext,
+  onPickMonth,
   today,
   byDay,
   loading,
@@ -66,9 +64,7 @@ export function MiniCalendar({
   onPickDay,
 }: {
   month: string;
-  onMove: (delta: -1 | 1) => void;
-  canPrev: boolean;
-  canNext: boolean;
+  onPickMonth: (month: string) => void;
   today: string;
   byDay: Record<string, { out: number; inn: number }>;
   loading: boolean;
@@ -89,12 +85,7 @@ export function MiniCalendar({
       aria-label={t("calendar.miniLabel")}
       className="px-x6 pb-x3 pt-x3"
     >
-      <MonthHead
-        month={month}
-        onMove={onMove}
-        canPrev={canPrev}
-        canNext={canNext}
-      />
+      <MonthHead month={month} onChange={onPickMonth} />
       <div
         role="group"
         aria-label={t("calendar.miniLabel")}
