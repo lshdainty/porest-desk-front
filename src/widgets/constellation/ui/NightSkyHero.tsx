@@ -114,7 +114,7 @@ function HeroFigure({
   );
 }
 
-/** 상세 시트 — 도감은 시트를 열 때만 받는다(할 일 화면이 도감 86줄을 미리 받지 않게). 도감이 아직 없으면 수집 0 으로 열린다("미수집") */
+/** 상세 시트 — 도감은 시트를 열 때만 받는다(할 일 화면이 도감 86줄을 미리 받지 않게). 도감이 아직 없거나 실패하면 수집 줄을 뺀다 */
 function TodaySkyDetail({
   today,
   onClose,
@@ -137,7 +137,12 @@ function TodaySkyDetail({
     [collectionQ.data, today.constellation],
   );
   return (
-    <ConstellationDetailDialog entry={entry} today={today} onClose={onClose} />
+    <ConstellationDetailDialog
+      entry={entry}
+      today={today}
+      collectKnown={!!collectionQ.data}
+      onClose={onClose}
+    />
   );
 }
 

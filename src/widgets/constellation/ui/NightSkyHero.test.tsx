@@ -100,7 +100,7 @@ afterEach(() => {
 const text = () => document.body.textContent ?? "";
 
 describe("NightSkyHero", () => {
-  it("카드를 누르면 오늘의 목표 상세 시트가 열리고 도감이 없으면 미수집이다", () => {
+  it('카드를 누르면 오늘의 목표 상세 시트가 열리고 도감이 없으면 수집 줄을 뺀다(거짓 "미수집" 방지)', () => {
     act(() => root.render(<NightSkyHero today={TODAY} doneToday={2} />));
     const card = container.querySelector<HTMLButtonElement>(
       "[data-slot=night-sky-hero]",
@@ -112,7 +112,47 @@ describe("NightSkyHero", () => {
     act(() => card.click());
     expect(document.querySelector("[role=dialog]")).not.toBeNull();
     expect(text()).toContain("오늘 모은 별빛");
+    expect(text()).toContain("별 개수");
+    expect(text()).not.toContain("미수집");
+    expect(text()).not.toContain("0번");
+  });
+
+  it('도감이 왔고 한 번도 못 모았으면 "미수집"이다', () => {
+    collection.data = {
+      entries: [
+        { constellation: CON, collectCount: 0, lastCollectedDate: null },
+      ],
+      collectedKinds: 0,
+      totalCollected: 0,
+    };
+    act(() => root.render(<NightSkyHero today={TODAY} doneToday={0} />));
+    act(() =>
+      container
+        .querySelector<HTMLButtonElement>("[data-slot=night-sky-hero]")!
+        .click(),
+    );
     expect(text()).toContain("미수집");
+  });
+
+  it("누름은 2px 축소만(바탕 · 색 변화 없음) · 마지막 글자와 › 는 한 덩어리 · 설명 id 가 실제 글을 가리킨다", () => {
+    act(() => root.render(<NightSkyHero today={TODAY} doneToday={2} />));
+    const card = container.querySelector<HTMLButtonElement>(
+      "[data-slot=night-sky-hero]",
+    )!;
+    expect(card.className).toContain(
+      "active:[scale:calc(1-2/var(--press-basis",
+    );
+    expect(card.className).not.toMatch(/active:bg-/);
+    const nowrap = [...card.querySelectorAll("span")].find(
+      (e) =>
+        e.className.includes("whitespace-nowrap") && e.querySelector("svg"),
+    );
+    expect(nowrap?.textContent).toBe("리");
+    const ids = card.getAttribute("aria-describedby")!.split(" ");
+    expect(ids).toHaveLength(2);
+    const parts = ids.map((id) => document.getElementById(id)?.textContent);
+    expect(parts[0]).toContain("오늘 2건 완료");
+    expect(parts[1]).toContain("연속 관측 128일");
   });
 
   it("도감 줄이 있으면 수집 횟수를 쓴다", () => {

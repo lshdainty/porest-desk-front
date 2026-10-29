@@ -42,9 +42,12 @@ const SKY_DIM_STARS: [number, number][] = [
 export function ConstellationDetailDialog({
   entry,
   today,
+  collectKnown = true,
   onClose,
 }: {
   entry: CollectionEntry;
+  /** 도감을 아직 못 받았거나 실패하면 false — 수집 줄을 뺀다(모은 별자리를 "미수집"으로 거짓 말하지 않는다, 앱 `showCollectRow` 와 같다) */
+  collectKnown?: boolean;
   /** 오늘의 목표 별자리면 하늘 카드 · 도감이 같은 값을 넘긴다 — 켠 별 + 고리 · 진행 막대(10-29 결정 2 · 3) */
   today?: ConstellationToday;
   onClose: () => void;
@@ -193,14 +196,16 @@ export function ConstellationDetailDialog({
                 count: entry.constellation.starCount,
               })}
             />
-            <ListItem
-              title={t("detail.collectLabel")}
-              suffix={
-                collected
-                  ? t("detail.collectValue", { count: entry.collectCount })
-                  : t("collection.notCollected")
-              }
-            />
+            {collectKnown && (
+              <ListItem
+                title={t("detail.collectLabel")}
+                suffix={
+                  collected
+                    ? t("detail.collectValue", { count: entry.collectCount })
+                    : t("collection.notCollected")
+                }
+              />
+            )}
           </List>
         </ResponsiveDialogBody>
       </ResponsiveDialogContent>
