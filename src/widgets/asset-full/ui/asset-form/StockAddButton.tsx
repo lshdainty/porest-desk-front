@@ -120,6 +120,7 @@ function StockSearchList({
   const query = typed.trim();
   return (
     <SearchableList
+      selectionMark="off"
       onValueChange={(v) => {
         if (v === MANUAL) return onAddManual(query);
         const s = results.find((r) => `${r.marketCode}:${r.symbol}` === v);

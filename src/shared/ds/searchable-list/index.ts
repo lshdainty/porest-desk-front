@@ -18,6 +18,7 @@ export {
 } from "./searchable-list";
 export type {
   SearchableListPlacement,
+  SearchableListSelectionMark,
   SearchableListSize,
 } from "./searchable-list-context";
 export { focusSearchableList, matchesSearch } from "./searchable-list-dom";
