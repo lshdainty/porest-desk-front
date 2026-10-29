@@ -112,6 +112,11 @@ describe("ConstellationSVG 기하(웹 ↔ 앱 같은 식)", () => {
       );
       const off = container.querySelector("circle[fill=none]");
       expect(Number(off?.getAttribute("r")) / 100).toBeCloseTo(rUnlit, 4);
+      // 꺼진 별 테두리 = 짧은 변 × 0.014 — viewBox 비례라 size 가 달라도 같은 비(앱 painter 와 같다)
+      expect(Number(off?.getAttribute("stroke-width")) / 100).toBeCloseTo(
+        geometry.sizeRatios.unlitStroke,
+        4,
+      );
     }
   });
 });
