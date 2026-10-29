@@ -20,6 +20,18 @@
 @import "./shared/styles/groo-tokens.css";
 @import "./shared/styles/groo-shadcn-bridge.css";
 
+/* Pretendard 보충 — index.html 의 CDN dynamic-subset(v1.3.9) 이 unicode-range 에 담지 않은 기호(− ✓ ⚠ ∅ ↺ ⌘)를
+ * 같은 family 로 이어 붙인다(font-weight 범위 45 920 은 CDN 규칙과 같아야 한다 — 다르면 다른 묶음이라 글자 단위로 이어지지 않는다). 원본 Pretendard 에서 뽑은 woff2(wght 축 유지), 만드는 법 scripts/build-font-supplement.mjs,
+ * 라이선스 SIL OFL 1.1 전문 public/fonts/Pretendard-OFL.txt. */
+@font-face {
+  font-family: "Pretendard Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 45 920;
+  src: url("/fonts/pretendard-supplement.woff2") format("woff2");
+  unicode-range: U+2212, U+2713, U+26A0, U+2205, U+21BA, U+2318;
+}
+
 /* 차트 색 짝(weak · subtle · contrast) — chart-palette.ts getPaletteByColor 가 이름을 템플릿 문자열
  * (`var(${cssVar}-contrast)`)로 만들어 Tailwind 가 쓰는 곳을 못 찾는다. 기본 @theme 는 안 쓴 변수를
  * 내보내지 않아 orange · indigo · violet · pink · brown · gray 의 -contrast 가 빠졌었다(I-29 P5).
