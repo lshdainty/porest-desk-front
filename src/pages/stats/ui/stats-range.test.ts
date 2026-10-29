@@ -61,8 +61,8 @@ const KO: Record<string, string> = {
   "period.m.prev": "지난 달",
   "period.q.now": "이번 분기",
   "period.q.prev": "지난 분기",
-  "period.y.now": "이번 해",
-  "period.y.prev": "지난 해",
+  "period.y.now": "올해",
+  "period.y.prev": "작년",
   "period.custom.now": "선택 기간",
   "period.custom.prev": "이전 기간",
 };
@@ -72,19 +72,39 @@ beforeAll(async () => {
   await i18n.changeLanguage("ko");
 });
 
+describe("relativeNames — 영문 문장 안 이름", () => {
+  const tEn = (k: string) =>
+    ({
+      "period.m.now": "This month",
+      "period.m.prev": "Last month",
+      "period.y.now": "This year",
+      "period.y.prev": "Last year",
+    })[k] ?? k;
+  it("상대 말은 문장 안에서 소문자, 맨 앞용은 그대로", () => {
+    expect(relativeNames(monthRangeOf(TODAY), TODAY, tEn)).toEqual({
+      now: "This month",
+      prev: "Last month",
+      nowInline: "this month",
+      prevInline: "last month",
+    });
+    const y = relativeNames(yearRangeOf(TODAY), TODAY, tEn);
+    expect([y.prev, y.prevInline]).toEqual(["Last year", "last year"]);
+  });
+});
+
 describe("relativeNames", () => {
   it("오늘을 품은 달 · 분기 · 해는 지금 글 그대로", () => {
-    expect(relativeNames(monthRangeOf(TODAY), TODAY, tKo)).toEqual({
+    expect(relativeNames(monthRangeOf(TODAY), TODAY, tKo)).toMatchObject({
       now: "이번 달",
       prev: "지난 달",
     });
-    expect(relativeNames(quarterRangeOf(TODAY), TODAY, tKo)).toEqual({
+    expect(relativeNames(quarterRangeOf(TODAY), TODAY, tKo)).toMatchObject({
       now: "이번 분기",
       prev: "지난 분기",
     });
-    expect(relativeNames(yearRangeOf(TODAY), TODAY, tKo)).toEqual({
-      now: "이번 해",
-      prev: "지난 해",
+    expect(relativeNames(yearRangeOf(TODAY), TODAY, tKo)).toMatchObject({
+      now: "올해",
+      prev: "작년",
     });
   });
   it("오늘을 품지 않으면 실제 이름 — 지난 달 → 2026년 9월 / 2026년 8월", () => {
@@ -93,25 +113,27 @@ describe("relativeNames", () => {
       to: D(2026, 9, 30),
       segMode: "m" as const,
     };
-    expect(relativeNames(sep, TODAY, tKo)).toEqual({
+    expect(relativeNames(sep, TODAY, tKo)).toMatchObject({
       now: "2026년 9월",
       prev: "2026년 8월",
     });
   });
-  it("7/1 ~ 9/30 → 2026년 3분기 / 2026년 2분기, 지난 해 → 2025년 / 2024년", () => {
+  it("7/1 ~ 9/30 → 2026년 3분기 / 2026년 2분기, 2025년 / 2024년", () => {
     const q3 = {
       from: D(2026, 7, 1),
       to: D(2026, 9, 30),
       segMode: rangeSegModeOf(D(2026, 7, 1), D(2026, 9, 30), oct),
     };
-    expect(relativeNames(q3, TODAY, tKo)).toEqual({
+    expect(relativeNames(q3, TODAY, tKo)).toMatchObject({
       now: "2026년 3분기",
       prev: "2026년 2분기",
     });
-    expect(relativeNames(yearRangeOf(D(2025, 5, 5)), TODAY, tKo)).toEqual({
-      now: "2025년",
-      prev: "2024년",
-    });
+    expect(relativeNames(yearRangeOf(D(2025, 5, 5)), TODAY, tKo)).toMatchObject(
+      {
+        now: "2025년",
+        prev: "2024년",
+      },
+    );
   });
   it("직접은 그대로 — 선택 기간 / 이전 기간", () => {
     const custom = {
@@ -119,7 +141,7 @@ describe("relativeNames", () => {
       to: D(2026, 10, 31),
       segMode: "custom" as const,
     };
-    expect(relativeNames(custom, TODAY, tKo)).toEqual({
+    expect(relativeNames(custom, TODAY, tKo)).toMatchObject({
       now: "선택 기간",
       prev: "이전 기간",
     });

@@ -461,13 +461,14 @@ export function useStatsModel() {
     .slice(0, 10);
   const totalNow = totalExpense;
   const totalPrev = prevTotalExpense;
-  const { now: periodNow, prev: periodPrev } = relativeNames(
-    period,
-    new Date(),
-    (k) => t(k),
-  );
-  const noPrevText = t("period.noPrev", { prev: periodPrev });
-  const momText = t("period.vs", { prev: periodPrev });
+  const {
+    now: periodNow,
+    prev: periodPrev,
+    nowInline: periodNowInline,
+    prevInline: periodPrevInline,
+  } = relativeNames(period, new Date(), (k) => t(k));
+  const noPrevText = t("period.noPrev", { prev: periodPrevInline });
+  const momText = t("period.vs", { prev: periodPrevInline });
   const cmpDiff = totalNow - totalPrev;
   const cmpPct =
     totalPrev > 0
@@ -630,6 +631,8 @@ export function useStatsModel() {
     totalPrev,
     periodNow,
     periodPrev,
+    periodNowInline,
+    periodPrevInline,
     noPrevText,
     momText,
     cmpDiff,

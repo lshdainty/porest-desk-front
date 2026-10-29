@@ -107,22 +107,36 @@ export const periodLabel = ({ from, to, segMode }: RangeState): string => {
  * 오늘을 품지 않은 월 · 분기 · 해면 실제 이름("2026년 9월" · "2026년 8월" — periodLabel 그대로, 새 문구 없음).
  * 직접(custom)은 지금 그대로("선택 기간 / 이전 기간").
  */
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
 export const relativeNames = (
   period: RangeState,
   today: Date,
   t: (key: string) => string,
-): { now: string; prev: string } => {
+): { now: string; prev: string; nowInline: string; prevInline: string } => {
   const labels = labelsOf(period);
   const day = startOfDay(today).getTime();
   const holdsToday =
     startOfDay(period.from).getTime() <= day &&
     day <= startOfDay(period.to).getTime();
-  if (period.segMode === "custom" || holdsToday)
-    return { now: t(labels.now), prev: t(labels.prev) };
-  return {
-    now: periodLabel(period),
-    prev: periodLabel({ ...previousRange(period), segMode: period.segMode }),
-  };
+  if (period.segMode === "custom" || holdsToday) {
+    const now = t(labels.now);
+    const prev = t(labels.prev);
+    // 상대 말은 문장 안에서 소문자("vs. last month") — ko 는 대소문자가 없어 그대로
+    return {
+      now,
+      prev,
+      nowInline: lowerFirst(now),
+      prevInline: lowerFirst(prev),
+    };
+  }
+  const now = periodLabel(period);
+  const prev = periodLabel({
+    ...previousRange(period),
+    segMode: period.segMode,
+  });
+  // 실제 이름("Sep 2026")은 문장 안에서도 그대로
+  return { now, prev, nowInline: now, prevInline: prev };
 };
 
 export const labelsOf = ({ segMode }: RangeState) =>

@@ -163,7 +163,7 @@ export function CompareSummarySection({
             {mask(won(Math.abs(m.cmpDiff)))}{" "}
             {less ? t("compare.dirLess") : t("compare.dirMore")}
           </span>{" "}
-          {t("compare.spentSuffix", { prev: m.periodPrev })}
+          {t("compare.spentSuffix", { prev: m.periodPrevInline })}
         </p>
       ) : (
         <p className="m-0 mt-x3 text-t3 text-fg-neutral-subtle">
@@ -500,11 +500,11 @@ export function CompareWeekdaySection({
         {
           dow: t(dk),
           amt: mask(KRW(Math.abs(m.wkDelta.delta))),
-          prev: m.periodPrev,
+          prev: m.periodPrevInline,
         },
       )
     : t("compare.weekdayInsightSame", {
-        prev: m.periodPrev,
+        prev: m.periodPrevInline,
         josa: withBatchim(m.periodPrev) ? "과" : "와",
       });
   const insight: ReactNode = (

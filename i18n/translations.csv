@@ -2118,8 +2118,8 @@ stats,period.m.avg,하루 평균,Daily average
 stats,period.q.now,이번 분기,This quarter
 stats,period.q.prev,지난 분기,Last quarter
 stats,period.q.avg,월 평균,Monthly average
-stats,period.y.now,이번 해,This year
-stats,period.y.prev,지난 해,Last year
+stats,period.y.now,올해,This year
+stats,period.y.prev,작년,Last year
 stats,period.y.avg,월 평균,Monthly average
 stats,period.custom.now,선택 기간,Selected period
 stats,period.custom.prev,이전 기간,Previous period
@@ -2138,7 +2138,7 @@ stats,merchant.title,많이 쓴 가맹점 TOP 5,Top 5 merchants
 stats,unit.times,{{count}}회,{{count}} times
 stats,heatmap.title,요일·시간대 지출 패턴,Spending by day & time
 stats,heatmap.subtitle,색이 진할수록 지출이 많은 시간대예요 (단위: 원),Darker means more spending (unit: KRW)
-stats,heatmap.empty,{{period}} 거래가 아직 적어요.,Not enough transactions for {{period}}
+stats,heatmap.empty,{{period}} 거래가 아직 적어요.,Too few transactions in {{period}}
 stats,heatmap.less,적음,Less
 stats,heatmap.more,많음,More
 stats,heatmap.total,총,Total

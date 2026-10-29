@@ -568,7 +568,9 @@ export function HeatmapSection({
       <>
         {head}
         <Body place={place}>
-          <BandEmpty>{t("heatmap.empty", { period: m.periodNow })}</BandEmpty>
+          <BandEmpty>
+            {t("heatmap.empty", { period: m.periodNowInline })}
+          </BandEmpty>
         </Body>
       </>
     );
@@ -695,9 +697,9 @@ export function HighlightsSection({
         text={m.momText}
       />
     ) : m.prevRangeQ.isLoading ? (
-      t("avgSub.momCalculating", { prev: m.periodPrev })
+      t("avgSub.momCalculating", { prev: m.periodPrevInline })
     ) : (
-      t("avgSub.momUnavailable", { prev: m.periodPrev })
+      t("avgSub.momUnavailable", { prev: m.periodPrevInline })
     );
   const blocks: {
     key: string;
