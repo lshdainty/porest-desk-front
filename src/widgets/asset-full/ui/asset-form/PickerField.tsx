@@ -1,19 +1,23 @@
 import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
-import {
-  BottomSheet,
-  BottomSheetBody,
-  BottomSheetContent,
-} from "@/shared/ds/bottom-sheet";
+import { BottomSheet, BottomSheetContent } from "@/shared/ds/bottom-sheet";
+import { ScrollFog } from "@/shared/ds/scroll-fog";
 import { Field } from "@/shared/ds/field";
 import { InputButton, useInputButtonSurface } from "@/shared/ds/input-button";
-import {
-  Popover,
-  PopoverBody,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ds/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ds/popover";
 import { focusSearchableList } from "@/shared/ds/searchable-list";
+
+/** Searchable List 에 주는 틀 — 검색칸은 위에 붙고 그 아래 결과 영역(`PickResults`)만 스크롤한다 */
+export const PICK_LIST = "flex min-h-0 flex-1 flex-col";
+
+/** 결과 영역 — 넘치면 이 안에서 스크롤하고 끝을 흐린다(검색칸 위로 줄이 비치지 않게 검색칸은 밖에 둔다) */
+export function PickResults({ children }: { children: ReactNode }) {
+  return (
+    <ScrollFog use="overlayBody" className="min-h-0 flex-1">
+      {children}
+    </ScrollFog>
+  );
+}
 
 /**
  * 고르기 표면(I-17 18 ~ 20) — 누르는 것(trigger)이 1280 미만은 폼 시트 위 고르기 시트(검색칸 초점), 이상은 그 자리 Popover 를 연다
@@ -40,10 +44,8 @@ export function PickerSurface({
         title={surfaceTitle}
         onOpenAutoFocus={focusSearchableList}
       >
-        {/* 본문 좌우 여백을 뺀다(-mx) — 검색칸 · 줄이 제 24 를 가진다. 넘치면 끝 흐림 */}
-        <BottomSheetBody scrollFog>
-          <div className="-mx-x6">{body}</div>
-        </BottomSheetBody>
+        {/* 본문 틀 없이 바로 — 검색칸은 위에 붙고(스크롤 밖), 끝 흐림은 결과 목록만(`PickResults`). 줄 · 검색칸이 제 24 를 가진다 */}
+        <div className="flex min-h-0 flex-1 flex-col">{body}</div>
       </BottomSheetContent>
     </BottomSheet>
   ) : (
@@ -54,9 +56,7 @@ export function PickerSurface({
         align="start"
         onOpenAutoFocus={focusSearchableList}
       >
-        <PopoverBody scrollFog>
-          <div className="-mx-x6">{body}</div>
-        </PopoverBody>
+        <div className="flex min-h-0 flex-1 flex-col">{body}</div>
       </PopoverContent>
     </Popover>
   );

@@ -303,7 +303,7 @@ export function AssetEditDialog({
     }
 
     if (editingGroup === "invest") {
-      const resolvedName = name.trim() || `${brand} 투자`;
+      const resolvedName = name.trim();
       // holdings 페이로드 — 리스트 전체 교체 계약. linked→tossSymbol+quantity / manual→holdingName+holdingValue.
       // 추가만 하고 아무것도 안 채운 행은 버린다 — 이름이 빈 미연동 항목은 서버가 400 으로 막는다.
       const filledHoldings = holdings.filter(
@@ -350,7 +350,7 @@ export function AssetEditDialog({
 
     // account
     const assetType = subToAssetType(accountSub);
-    const resolvedName = name.trim() || `${brand} ${accountSub}`;
+    const resolvedName = name.trim();
     // 부호는 종류가 정한다 — 대출·마이너스통장은 빚이라 음수로 저장한다(QA #19).
     // 사용자가 절대값으로 넣은 값을 여기서 뒤집으므로 서버가 옛 버전이어도 값이 맞는다.
     const accountBalance = signedBalanceOf(accountSub, parsedBalance);

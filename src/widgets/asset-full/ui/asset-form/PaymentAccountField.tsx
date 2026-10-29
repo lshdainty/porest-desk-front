@@ -7,7 +7,15 @@ import type { AssetForm } from "./use-asset-form";
 
 /** 결제 출금계좌(신용카드) · 연결 계좌(체크카드) — 입출금 계좌만 고른다. 신용카드는 결제일에 한 번에, 체크카드는 긁는 즉시 빠져 뜻이 달라 이름을 나눈다 */
 export function PaymentAccountField({ f }: { f: AssetForm }) {
-  const { t, kind, paymentAssetRowId, setPaymentAssetRowId, bankAccounts } = f;
+  const {
+    t,
+    kind,
+    paymentAssetRowId,
+    setPaymentAssetRowId,
+    paymentNone,
+    setPaymentNone,
+    bankAccounts,
+  } = f;
   const check = kind === "체크카드";
   return (
     <Field
@@ -22,10 +30,18 @@ export function PaymentAccountField({ f }: { f: AssetForm }) {
       }
     >
       <Select
-        value={paymentAssetRowId != null ? String(paymentAssetRowId) : ""}
-        onValueChange={(v) =>
-          setPaymentAssetRowId(v && v !== NONE ? Number(v) : null)
+        // 값이 null 이어도 "없음" 을 골랐거나(수정은 처음부터) 하면 칸에 그 글을 보인다 — 자리 글은 새로 추가하면서 아직 안 고른 때만
+        value={
+          paymentAssetRowId != null
+            ? String(paymentAssetRowId)
+            : paymentNone
+              ? NONE
+              : ""
         }
+        onValueChange={(v) => {
+          setPaymentAssetRowId(v && v !== NONE ? Number(v) : null);
+          setPaymentNone(v === NONE);
+        }}
         disabled={bankAccounts.length === 0}
         placeholder={
           bankAccounts.length === 0

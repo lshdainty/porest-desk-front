@@ -16,7 +16,7 @@ import {
   type BankCategory,
 } from "@/shared/lib/groo/bank-colors";
 import { CATEGORY_LABEL_KEY, INVEST_CATEGORY_SET } from "./form-lib";
-import { PickerField } from "./PickerField";
+import { PICK_LIST, PickResults, PickerField } from "./PickerField";
 import type { AssetForm } from "./use-asset-form";
 
 /**
@@ -88,6 +88,7 @@ function InstitutionList({
       onValueChange={onPick}
       query={query}
       onQueryChange={setQuery}
+      className={PICK_LIST}
     >
       <SearchableListInput
         placeholder={
@@ -96,30 +97,32 @@ function InstitutionList({
             : t("editDialog.bankSearchPlaceholder")
         }
       />
-      {groups.length === 0 ? (
-        <SearchableListEmpty />
-      ) : (
-        <SearchableListResults
-          aria-label={
-            invest
-              ? t("editDialog.brokerExchange")
-              : t("editDialog.institutionBrand")
-          }
-        >
-          {groups.map(({ cat, list }) => (
-            <SearchableListGroup key={cat} label={t(CATEGORY_LABEL_KEY[cat])}>
-              {list.map((e) => (
-                <SearchableListItem
-                  key={e.name}
-                  value={e.name}
-                  title={e.name}
-                  prefix={<LogoTile name={e.name} size={40} />}
-                />
-              ))}
-            </SearchableListGroup>
-          ))}
-        </SearchableListResults>
-      )}
+      <PickResults>
+        {groups.length === 0 ? (
+          <SearchableListEmpty />
+        ) : (
+          <SearchableListResults
+            aria-label={
+              invest
+                ? t("editDialog.brokerExchange")
+                : t("editDialog.institutionBrand")
+            }
+          >
+            {groups.map(({ cat, list }) => (
+              <SearchableListGroup key={cat} label={t(CATEGORY_LABEL_KEY[cat])}>
+                {list.map((e) => (
+                  <SearchableListItem
+                    key={e.name}
+                    value={e.name}
+                    title={e.name}
+                    prefix={<LogoTile name={e.name} size={40} />}
+                  />
+                ))}
+              </SearchableListGroup>
+            ))}
+          </SearchableListResults>
+        )}
+      </PickResults>
     </SearchableList>
   );
 }

@@ -13,7 +13,7 @@ import {
 } from "@/shared/ds/searchable-list";
 import { useCardCatalogs } from "@/features/card-catalog";
 import type { CardCatalogSummary, CardType } from "@/entities/card";
-import { PickerField } from "./PickerField";
+import { PICK_LIST, PickResults, PickerField } from "./PickerField";
 import type { AssetForm } from "./use-asset-form";
 
 /**
@@ -79,67 +79,71 @@ function CardProductList({
       query={typed}
       onQueryChange={setTyped}
       onSearch={setKeyword}
+      className={PICK_LIST}
     >
       <SearchableListInput
         placeholder={t("editDialog.cardSearchPlaceholder")}
       />
-      <List>
-        <ListSwitchItem
-          title={t("editDialog.includeDiscontinued")}
-          checked={includeDiscontinued}
-          onCheckedChange={setIncludeDiscontinued}
-        />
-      </List>
-      {q.isError ? (
-        <SearchableListError
-          retrying={q.isFetching}
-          onRetry={() => void q.refetch()}
-        />
-      ) : q.isLoading ? (
-        <SearchableListSkeleton prefix="cardArt" />
-      ) : items.length === 0 ? (
-        <SearchableListEmpty description={t("editDialog.cardEmptyHint")} />
-      ) : (
-        <SearchableListResults aria-label={t("editDialog.cardProduct")}>
-          {items.map((c) => (
-            <SearchableListItem
-              key={c.rowId}
-              value={String(c.rowId)}
-              prefix={
-                <CardArt
-                  width={56}
-                  issuer={c.company?.name ?? ""}
-                  name={c.cardName}
-                  src={c.imgUrl}
-                />
-              }
-              title={c.cardName}
-              detail={
-                <span className="flex flex-wrap items-center gap-x1_5">
-                  <span>
-                    {c.company?.name ?? "—"} ·{" "}
-                    {c.cardType === "CREDIT"
-                      ? t("cardTypeShort.credit")
-                      : t("cardTypeShort.check")}
-                    {/* 연회비 정보가 없으면(null) 생략. 0원이면 '무료'로 구분해 보인다. */}
-                    {c.annualFee &&
-                      (c.annualFee.amount > 0
-                        ? ` · ${t("editDialog.annualFeeValue", {
-                            amount: c.annualFee.amount.toLocaleString("ko-KR"),
-                          })}`
-                        : ` · ${t("editDialog.annualFeeFree")}`)}
+      <PickResults>
+        <List>
+          <ListSwitchItem
+            title={t("editDialog.includeDiscontinued")}
+            checked={includeDiscontinued}
+            onCheckedChange={setIncludeDiscontinued}
+          />
+        </List>
+        {q.isError ? (
+          <SearchableListError
+            retrying={q.isFetching}
+            onRetry={() => void q.refetch()}
+          />
+        ) : q.isLoading ? (
+          <SearchableListSkeleton prefix="cardArt" />
+        ) : items.length === 0 ? (
+          <SearchableListEmpty description={t("editDialog.cardEmptyHint")} />
+        ) : (
+          <SearchableListResults aria-label={t("editDialog.cardProduct")}>
+            {items.map((c) => (
+              <SearchableListItem
+                key={c.rowId}
+                value={String(c.rowId)}
+                prefix={
+                  <CardArt
+                    width={56}
+                    issuer={c.company?.name ?? ""}
+                    name={c.cardName}
+                    src={c.imgUrl}
+                  />
+                }
+                title={c.cardName}
+                detail={
+                  <span className="flex flex-wrap items-center gap-x1_5">
+                    <span>
+                      {c.company?.name ?? "—"} ·{" "}
+                      {c.cardType === "CREDIT"
+                        ? t("cardTypeShort.credit")
+                        : t("cardTypeShort.check")}
+                      {/* 연회비 정보가 없으면(null) 생략. 0원이면 '무료'로 구분해 보인다. */}
+                      {c.annualFee &&
+                        (c.annualFee.amount > 0
+                          ? ` · ${t("editDialog.annualFeeValue", {
+                              amount:
+                                c.annualFee.amount.toLocaleString("ko-KR"),
+                            })}`
+                          : ` · ${t("editDialog.annualFeeFree")}`)}
+                    </span>
+                    {c.isDiscontinued === "Y" && (
+                      <Badge className="shrink-0">
+                        {t("editDialog.discontinued")}
+                      </Badge>
+                    )}
                   </span>
-                  {c.isDiscontinued === "Y" && (
-                    <Badge className="shrink-0">
-                      {t("editDialog.discontinued")}
-                    </Badge>
-                  )}
-                </span>
-              }
-            />
-          ))}
-        </SearchableListResults>
-      )}
+                }
+              />
+            ))}
+          </SearchableListResults>
+        )}
+      </PickResults>
     </SearchableList>
   );
 }

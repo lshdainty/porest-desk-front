@@ -76,6 +76,13 @@ vi.mock("@/features/card-catalog", () => ({
 vi.mock("@/features/stock/model/useStockMaster", () => ({
   useStockSearch: (q: string) => {
     state.stockCalls.push(q);
+    if (q === "실패")
+      return {
+        data: [],
+        isFetching: false,
+        isError: true,
+        refetch: () => Promise.resolve(),
+      };
     return {
       data:
         q && q !== "없는종목"
@@ -355,5 +362,37 @@ describe("고르기 시트의 찾기 · 스위치 · 0건", () => {
     expect(
       manual!.querySelector("[data-slot=searchable-list-item-radio]"),
     ).not.toBeNull();
+  });
+
+  it("종목 검색이 실패하면 0건 안내가 아니라 실패 안내 + 다시 시도, 직접 추가 줄은 맨 아래", async () => {
+    open(invest);
+    click(
+      [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "holdings.addStock",
+      ),
+    );
+    setInput(searchInput(), "실패");
+    await tick(400);
+    expect(
+      document.querySelector("[data-slot=searchable-list-error]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-slot=searchable-list-empty]"),
+    ).toBeNull();
+    expect(option("holdings.addManual")).toBeDefined();
+  });
+
+  it("끝 흐림은 결과 목록에만 — 검색칸은 흐림 밖(위로 줄이 비치지 않는다)", () => {
+    open(null, "입출금");
+    click(fieldControl("editDialog.institutionBrand"));
+    const fog = document.querySelector("[data-slot=scroll-fog]")!;
+    expect(fog).not.toBeNull();
+    expect(fog.querySelector("[data-slot=searchable-list-field]")).toBeNull();
+    expect(fog.querySelector("[role=listbox]")).not.toBeNull();
+    // 고르기 시트에는 본문 틀(스크롤 + 흐림 전체)이 없다
+    const pick = [
+      ...document.querySelectorAll("[data-slot=bottom-sheet-content]"),
+    ].pop()!;
+    expect(pick.querySelector("[data-slot=bottom-sheet-body]")).toBeNull();
   });
 });

@@ -56,6 +56,7 @@ function valuesKey(v: {
   creditLimit: string;
   paymentDay: string;
   paymentAssetRowId: number | null;
+  paymentNone: boolean;
 }): string {
   return JSON.stringify([
     v.name,
@@ -72,6 +73,7 @@ function valuesKey(v: {
     v.creditLimit,
     v.paymentDay,
     v.paymentAssetRowId,
+    v.paymentNone,
   ]);
 }
 
@@ -143,6 +145,8 @@ function initialOf(item: Asset | null, kindArg: AssetKind | null) {
     creditLimit: item?.creditLimit != null ? String(item.creditLimit) : "",
     paymentDay: item?.paymentDay != null ? String(item.paymentDay) : "",
     paymentAssetRowId: item?.paymentAssetRowId ?? null,
+    // 저장된 자산의 결제 출금계좌 · 연결 계좌 null 은 "없다고 답한 것" — 처음부터 "없음". 새로 추가할 때만 자리 글
+    paymentNone: !!item,
   };
 }
 
@@ -284,6 +288,7 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
   const [paymentAssetRowId, setPaymentAssetRowId] = useState<number | null>(
     init.paymentAssetRowId,
   );
+  const [paymentNone, setPaymentNone] = useState(init.paymentNone);
 
   const { data: assetsData } = useAssets();
   const bankAccounts = useMemo(
@@ -357,7 +362,7 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
   // 신용카드는 결제일 필수 — 없으면 청구 사이클(이용기간·예정액·할부 회차)을 세울 수 없다(체크카드는 즉시 출금이라 결제일이 없다).
   // 편집 모드: 카드 카탈로그 재선택 없이 별칭/금액만 바꿀 수 있어야 한다. 새 계좌 · 투자는 별칭이 필수다.
   const issues = {
-    name: editingGroup !== "card" && isNew && nameTrim.length === 0,
+    name: editingGroup !== "card" && nameTrim.length === 0,
     card: editingGroup === "card" && isNew && !selectedCard,
     paymentDay:
       cardType === "CREDIT" && editingGroup === "card" && !paymentDay.trim(),
@@ -462,6 +467,7 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
       creditLimit,
       paymentDay,
       paymentAssetRowId,
+      paymentNone,
     }) !== valuesKey({ ...init, currencyPick: null });
   const kindChanged = kind !== init.kind;
 
@@ -484,6 +490,7 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     setCreditLimit(init.creditLimit);
     setPaymentDay(init.paymentDay);
     setPaymentAssetRowId(init.paymentAssetRowId);
+    setPaymentNone(init.paymentNone);
   };
 
   return {
@@ -545,6 +552,8 @@ export function useAssetForm({ item, kind: kindArg = null }: UseAssetFormArgs) {
     setPaymentDay,
     paymentAssetRowId,
     setPaymentAssetRowId,
+    paymentNone,
+    setPaymentNone,
     assetsData,
     bankAccounts,
     cardCompanyName,

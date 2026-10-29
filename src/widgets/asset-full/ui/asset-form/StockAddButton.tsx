@@ -4,6 +4,7 @@ import { Button } from "@/shared/ds/button";
 import {
   SearchableList,
   SearchableListEmpty,
+  SearchableListError,
   SearchableListInput,
   SearchableListItem,
   SearchableListResults,
@@ -12,7 +13,7 @@ import {
 import { useStockSearch } from "@/features/stock/model/useStockMaster";
 import type { HoldingType } from "@/entities/asset";
 import { nextHoldingKey } from "./form-lib";
-import { PickerSurface } from "./PickerField";
+import { PICK_LIST, PickResults, PickerSurface } from "./PickerField";
 import type { AssetForm } from "./use-asset-form";
 
 const MANUAL = "__manual__";
@@ -107,7 +108,12 @@ function StockSearchList({
 }) {
   const [typed, setTyped] = useState("");
   const [keyword, setKeyword] = useState("");
-  const { data: matches = [], isFetching } = useStockSearch(keyword.trim());
+  const {
+    data: matches = [],
+    isFetching,
+    isError,
+    refetch,
+  } = useStockSearch(keyword.trim());
   const results = matches
     .filter((s) => !linkedSymbols.includes(s.symbol))
     .slice(0, 6);
@@ -122,30 +128,42 @@ function StockSearchList({
       query={typed}
       onQueryChange={setTyped}
       onSearch={setKeyword}
+      className={PICK_LIST}
     >
       <SearchableListInput placeholder={t("holdings.searchPlaceholder")} />
-      {query === "" ? null : isFetching && results.length === 0 ? (
-        <SearchableListSkeleton rows={3} />
-      ) : (
-        <>
-          {/* 0건 안내가 먼저, 직접 추가 줄은 늘 맨 아래(I-17 20) */}
-          {results.length === 0 && <SearchableListEmpty />}
-          <SearchableListResults aria-label={t("holdings.sectionTitle")}>
-            {results.map((s) => (
-              <SearchableListItem
-                key={`${s.marketCode}:${s.symbol}`}
-                value={`${s.marketCode}:${s.symbol}`}
-                title={s.nameKr}
-                detail={`${s.symbol} · ${s.marketCode}`}
-              />
-            ))}
-            <SearchableListItem
-              value={MANUAL}
-              prefix={<Plus className="size-5" />}
-              title={t("holdings.addManual", { name: query })}
+      {query === "" ? null : (
+        <PickResults>
+          {isError ? (
+            // 실패는 0건과 따로 — "결과가 없어요" 로 보이지 않는다(searchable-list.md)
+            <SearchableListError
+              retrying={isFetching}
+              onRetry={() => void refetch()}
             />
-          </SearchableListResults>
-        </>
+          ) : isFetching && results.length === 0 ? (
+            <SearchableListSkeleton />
+          ) : (
+            results.length === 0 && <SearchableListEmpty />
+          )}
+          {/* 직접 추가 줄은 늘 맨 아래(I-17 20) — 불러오는 중에는 아직 그리지 않는다 */}
+          {!(isFetching && results.length === 0 && !isError) && (
+            <SearchableListResults aria-label={t("holdings.sectionTitle")}>
+              {!isError &&
+                results.map((s) => (
+                  <SearchableListItem
+                    key={`${s.marketCode}:${s.symbol}`}
+                    value={`${s.marketCode}:${s.symbol}`}
+                    title={s.nameKr}
+                    detail={`${s.symbol} · ${s.marketCode}`}
+                  />
+                ))}
+              <SearchableListItem
+                value={MANUAL}
+                prefix={<Plus className="size-5" />}
+                title={t("holdings.addManual", { name: query })}
+              />
+            </SearchableListResults>
+          )}
+        </PickResults>
       )}
     </SearchableList>
   );

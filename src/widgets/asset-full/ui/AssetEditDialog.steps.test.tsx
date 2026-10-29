@@ -113,6 +113,7 @@ function open(item: Asset | null, wide = false) {
   );
 }
 
+const shownOf = (labelKey: string) => fieldControl(labelKey)?.textContent ?? "";
 const titleOf = () =>
   document.querySelector(
     "[data-slot=bottom-sheet-title],[data-slot=dialog-title]",
@@ -374,5 +375,68 @@ describe("결제 출금계좌 없음", () => {
     click(none);
     click(buttons("save")[0]);
     expect(update).toHaveProperty("paymentAssetRowId", null);
+    // 고른 뒤 칸에 그 글이 보인다 — 자리 글로 돌아가지 않는다(select.md)
+    expect(shownOf("editDialog.paymentAccount")).toContain(
+      "editDialog.noPaymentAccount",
+    );
+    expect(shownOf("editDialog.paymentAccount")).not.toContain(
+      "editDialog.selectPaymentAccount",
+    );
+  });
+});
+
+describe("저장된 카드의 결제 출금계좌가 null 이면 처음부터 '없음'", () => {
+  it("수정은 '없음', 새로 추가는 자리 글", () => {
+    installDomStubs();
+    mocked.assets = [];
+    act(() =>
+      root.render(
+        <AssetEditDialog
+          item={asset("CHECK_CARD", { paymentAssetRowId: null })}
+          onClose={() => {}}
+          onCreate={() => {}}
+          onUpdate={() => {}}
+        />,
+      ),
+    );
+    expect(shownOf("editDialog.linkedAccount")).toContain(
+      "editDialog.noLinkedAccount",
+    );
+    act(() => root.unmount());
+    root = createRoot(container);
+    open(null);
+    pick("assetType.checkcard");
+    click(nextBtn());
+    expect(shownOf("editDialog.linkedAccount")).not.toContain(
+      "editDialog.noLinkedAccount",
+    );
+  });
+});
+
+describe("별칭은 수정에서도 필수 — 자동 이름 없음", () => {
+  it("비우고 [저장] 하면 안 나가고 오류, 이름을 쓰면 나간다", () => {
+    let update: Record<string, unknown> | null = null;
+    installDomStubs();
+    act(() =>
+      root.render(
+        <AssetEditDialog
+          item={asset("BANK_ACCOUNT")}
+          onClose={() => {}}
+          onCreate={() => {}}
+          onUpdate={(v) => {
+            update = v as unknown as Record<string, unknown>;
+          }}
+        />,
+      ),
+    );
+    setInput(fieldControl("editDialog.nameLabel")!, "");
+    click(buttons("save")[0]);
+    expect(update).toBeNull();
+    expect(bodyText()).toContain("editDialog.errName");
+    setInput(fieldControl("editDialog.nameLabel")!, "바꾼 이름");
+    click(buttons("save")[0]);
+    expect((update as Record<string, unknown> | null)?.assetName).toBe(
+      "바꾼 이름",
+    );
   });
 });

@@ -50,7 +50,7 @@ export function HoldingsEditor({ f }: { f: AssetForm }) {
     <Field
       label={t("holdings.sectionTitle")}
       headerAction={
-        <span className="num">
+        <span className="num font-sans text-t5 font-bold text-fg-neutral">
           {t("holdings.editSummary", {
             n: holdings.length,
             total: KRW(holdingsTotal),
