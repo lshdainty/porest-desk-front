@@ -12,40 +12,32 @@ export function CurrencyFields({ f }: { f: AssetForm }) {
   const { t, currency, setCurrency, isForeign, exchangeRate, setExchangeRate } =
     f;
   return (
-    <div className="flex flex-col gap-x2">
-      <div className="flex items-start gap-x3">
-        <Field label={t("form.currency")} className="w-auto min-w-0 flex-1">
-          <Select value={currency} onValueChange={setCurrency}>
-            {CURRENCIES.map((c) => (
-              <SelectItem
-                key={c.code}
-                value={c.code}
-                label={`${c.symbol} ${c.code}`}
-              />
-            ))}
-          </Select>
-        </Field>
-        {isForeign && (
-          <Field
-            label={t("form.exchangeRate")}
-            className="w-auto min-w-0 flex-1"
-          >
-            {/* 소수를 받는 칸이라 부호 키 막기를 붙이지 않는다 — 붙이면 `.` 이 안 찍혀 1380.5 를 못 적는다. */}
-            <Input
-              inputMode="decimal"
-              value={exchangeRate}
-              onChange={(e) => setExchangeRate(e.target.value)}
-              placeholder={t("form.exchangeRatePlaceholder", {
-                code: currency,
-              })}
+    <div className="flex items-start gap-x4">
+      <Field label={t("form.currency")} className="w-auto min-w-0 flex-1">
+        <Select value={currency} onValueChange={setCurrency}>
+          {CURRENCIES.map((c) => (
+            <SelectItem
+              key={c.code}
+              value={c.code}
+              label={`${c.symbol} ${c.code}`}
             />
-          </Field>
-        )}
-      </div>
+          ))}
+        </Select>
+      </Field>
       {isForeign && (
-        <p className="m-0 px-x0_5 font-sans text-t4 text-fg-neutral-subtle">
-          {t("form.exchangeRateHint")}
-        </p>
+        <Field
+          label={t("form.exchangeRate")}
+          description={t("form.exchangeRateHint")}
+          className="w-auto min-w-0 flex-1"
+        >
+          {/* 소수를 받는 칸이라 부호 키 막기를 붙이지 않는다 — 붙이면 `.` 이 안 찍혀 1380.5 를 못 적는다. */}
+          <Input
+            inputMode="decimal"
+            value={exchangeRate}
+            onChange={(e) => setExchangeRate(e.target.value)}
+            placeholder={t("form.exchangeRatePlaceholder", { code: currency })}
+          />
+        </Field>
       )}
     </div>
   );

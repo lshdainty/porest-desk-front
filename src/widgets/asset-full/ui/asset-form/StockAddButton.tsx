@@ -127,26 +127,25 @@ function StockSearchList({
       {query === "" ? null : isFetching && results.length === 0 ? (
         <SearchableListSkeleton rows={3} />
       ) : (
-        <SearchableListResults aria-label={t("holdings.sectionTitle")}>
-          {results.map((s) => (
+        <>
+          {/* 0건 안내가 먼저, 직접 추가 줄은 늘 맨 아래(I-17 20) */}
+          {results.length === 0 && <SearchableListEmpty />}
+          <SearchableListResults aria-label={t("holdings.sectionTitle")}>
+            {results.map((s) => (
+              <SearchableListItem
+                key={`${s.marketCode}:${s.symbol}`}
+                value={`${s.marketCode}:${s.symbol}`}
+                title={s.nameKr}
+                detail={`${s.symbol} · ${s.marketCode}`}
+              />
+            ))}
             <SearchableListItem
-              key={`${s.marketCode}:${s.symbol}`}
-              value={`${s.marketCode}:${s.symbol}`}
-              title={s.nameKr}
-              detail={`${s.symbol} · ${s.marketCode}`}
-              className="[&_[data-slot=searchable-list-item-radio]]:hidden"
+              value={MANUAL}
+              prefix={<Plus className="size-5" />}
+              title={t("holdings.addManual", { name: query })}
             />
-          ))}
-          <SearchableListItem
-            value={MANUAL}
-            prefix={<Plus className="size-5" />}
-            title={t("holdings.addManual", { name: query })}
-            className="[&_[data-slot=searchable-list-item-radio]]:hidden"
-          />
-        </SearchableListResults>
-      )}
-      {query !== "" && results.length === 0 && !isFetching && (
-        <SearchableListEmpty />
+          </SearchableListResults>
+        </>
       )}
     </SearchableList>
   );

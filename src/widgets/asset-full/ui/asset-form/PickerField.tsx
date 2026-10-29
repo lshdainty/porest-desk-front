@@ -40,8 +40,10 @@ export function PickerSurface({
         title={surfaceTitle}
         onOpenAutoFocus={focusSearchableList}
       >
-        {/* 본문 좌우 여백을 뺀다 — 검색칸 · 줄이 제 24 를 가진다 */}
-        <BottomSheetBody className="px-0">{body}</BottomSheetBody>
+        {/* 본문 좌우 여백을 뺀다(-mx) — 검색칸 · 줄이 제 24 를 가진다. 넘치면 끝 흐림 */}
+        <BottomSheetBody scrollFog>
+          <div className="-mx-x6">{body}</div>
+        </BottomSheetBody>
       </BottomSheetContent>
     </BottomSheet>
   ) : (
@@ -52,7 +54,9 @@ export function PickerSurface({
         align="start"
         onOpenAutoFocus={focusSearchableList}
       >
-        <PopoverBody className="px-0">{body}</PopoverBody>
+        <PopoverBody scrollFog>
+          <div className="-mx-x6">{body}</div>
+        </PopoverBody>
       </PopoverContent>
     </Popover>
   );
@@ -65,17 +69,26 @@ export function PickerField({
   value,
   placeholder,
   surfaceTitle,
+  invalid,
+  errorMessage,
   children,
 }: {
   label: string;
   indicator?: string;
+  invalid?: boolean;
+  errorMessage?: string;
   value?: string | null;
   placeholder: string;
   surfaceTitle: string;
   children: (api: { close: () => void }) => ReactNode;
 }) {
   return (
-    <Field label={label} indicator={indicator}>
+    <Field
+      label={label}
+      indicator={indicator}
+      invalid={invalid}
+      errorMessage={errorMessage}
+    >
       <PickerSurface
         surfaceTitle={surfaceTitle}
         trigger={({ open, show }) => (

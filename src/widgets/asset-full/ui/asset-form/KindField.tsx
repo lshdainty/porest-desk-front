@@ -37,7 +37,7 @@ export function KindField({ f }: { f: AssetForm }) {
         onValueChange={(v) => setKind(v as AssetKind)}
       >
         {kinds.map((k) => (
-          <ChipRadio key={k} value={k} variant="outlineWeak" size="medium">
+          <ChipRadio key={k} value={k} variant="outlineStrong" size="medium">
             {t(KIND_LABEL_KEY[k])}
           </ChipRadio>
         ))}

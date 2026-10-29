@@ -32,7 +32,7 @@ export function KindStep({
   const uid = useId();
   return (
     <>
-      <ResponsiveDialogBody>
+      <ResponsiveDialogBody scrollFog>
         <Field
           invalid={showError && kind == null}
           errorMessage={t("editDialog.pickKindError")}
@@ -49,13 +49,12 @@ export function KindStep({
                 role="group"
                 aria-labelledby={`${uid}${g.group}`}
               >
-                <ListHeader
-                  id={`${uid}${g.group}`}
-                  as="h3"
-                  className={cn("px-0", i === 0 ? "pt-0" : "pt-x4")}
-                >
-                  {t(g.labelKey)}
-                </ListHeader>
+                {/* 목록 제목은 제 좌우 24 를 가진다 → 본문 여백만큼 당긴다. 위 16(첫 묶음 0) · 아래 8 = ds 위아래 8 + 다음 묶음 위 8 */}
+                <div className={cn("-mx-x6", i === 0 ? "-mt-x2" : "pt-x2")}>
+                  <ListHeader id={`${uid}${g.group}`} as="h3">
+                    {t(g.labelKey)}
+                  </ListHeader>
+                </div>
                 <div className="grid auto-rows-fr grid-cols-2 gap-x-x3 gap-y-component-default lg:grid-cols-3">
                   {g.kinds.map((k) => {
                     const Icon = KIND_ICON[k];
