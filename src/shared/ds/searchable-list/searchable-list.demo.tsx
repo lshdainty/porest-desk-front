@@ -109,8 +109,10 @@ function Sample({
   prefix = "none",
   current = true,
   highlighted = false,
+  selectionMark = "on",
   caption,
 }: {
+  selectionMark?: "on" | "off";
   size: "large" | "medium";
   placement: "sheet" | "inline";
   prefix?: Prefix;
@@ -130,6 +132,7 @@ function Sample({
             size,
             placement,
             prefix,
+            selectionMark,
             selected: current ? "current" : "other",
           }}
           state={highlighted ? "highlighted" : "enabled"}
@@ -137,6 +140,7 @@ function Sample({
           <SearchableList
             size={size}
             placement={placement}
+            selectionMark={selectionMark}
             defaultValue={current ? rows[0] : undefined}
           >
             <SearchableListInput
@@ -472,6 +476,13 @@ export const SearchableListDemo = () => (
           placement="sheet"
           highlighted
           caption="강조 — 둘째 줄"
+        />
+        <Sample
+          size="large"
+          placement="sheet"
+          current={false}
+          selectionMark="off"
+          caption="selectionMark off — 라디오 없음(누르면 바로 더함)"
         />
       </DemoRow>
     </DemoBlock>
