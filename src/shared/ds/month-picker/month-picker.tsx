@@ -9,6 +9,10 @@ import {
 } from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
 import { datePickerLabels } from "@/shared/ds/date-picker";
+import {
+  WHEEL_MONTH,
+  WHEEL_YEAR,
+} from "@/shared/ds/date-picker/date-picker-variants";
 import { useWideSurface } from "@/shared/ds/overlay";
 import {
   Popover,
@@ -50,10 +54,6 @@ export interface MonthPickerProps {
   /** 팝오버가 트리거의 어느 쪽 변에 맞는지 — 기본 start */
   align?: "start" | "center" | "end";
 }
-
-// 휠 칼럼 폭 — date-picker-variants 의 WHEEL_YEAR · WHEEL_MONTH 와 같다(연 120 · 월 96)
-const WHEEL_YEAR = "w-[120px]";
-const WHEEL_MONTH = "w-[96px]";
 
 function MonthWheel({
   draft,

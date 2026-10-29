@@ -52,7 +52,7 @@ const CalendarHeaderMobile = () => {
           onValueChange={(v) =>
             setSelectedDate(new Date(v.year, v.month - 1, 1))
           }
-          title={t("dateNavigation")}
+          title={t("common:selectMonth")}
           doneLabel={t("common:done")}
           trigger={
             <button
