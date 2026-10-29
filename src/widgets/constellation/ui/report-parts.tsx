@@ -91,7 +91,7 @@ export function WeekPicker({ m, place }: { m: ReportModel; place: Place }) {
               <span
                 aria-hidden
                 className={cn(
-                  "grid min-h-x9 min-w-x9 place-items-center rounded-full text-t5 tabular-nums",
+                  "grid aspect-square min-h-x9 min-w-x9 place-items-center rounded-full p-[0.125rem] text-t5 tabular-nums",
                   picked
                     ? "bg-bg-brand-solid font-bold text-static-white"
                     : future

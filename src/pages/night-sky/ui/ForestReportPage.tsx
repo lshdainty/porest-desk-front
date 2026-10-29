@@ -77,7 +77,7 @@ function ForestReportDesktop() {
   const { t: tl } = useTranslation("layout");
   const m = useReportModel();
   const head = (
-    <Card className="pt-x4">
+    <Card>
       <WeekPicker m={m} place="card" />
       {m.failed ? (
         <div className="pt-x3">
