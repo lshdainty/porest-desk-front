@@ -210,7 +210,7 @@ describe("저축 목표 삭제 확인창 — ds Alert Dialog (I-28 3-6)", () => 
       ).click();
     });
     expect(document.querySelector("[role=alertdialog]")).toBeNull();
-    const opt = show.mock.calls[0][0];
+    const opt = show.mock.calls[0]![0];
     expect(opt.tone).toBe("critical");
     expect(opt.message).toBe("savingGoal.deleteFailed");
     await act(async () => opt.action.onClick());

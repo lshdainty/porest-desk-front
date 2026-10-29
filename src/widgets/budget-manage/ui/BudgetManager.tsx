@@ -215,29 +215,75 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     const prevList = prevBudgetsQ.data ?? [];
     if (prevList.length === 0) {
       setConfirmCopy(false);
-      return;
+      return [];
     }
     const existingByKey = new Map<string, ExpenseBudget>();
     for (const b of budgetList)
       existingByKey.set(`${b.categoryRowId ?? "overall"}`, b);
-    // 확인창을 연 채 '복사' 버튼 로딩 — 모든 mutation 이 끝날 때까지 기다린다(AlertConfirm 이 닫고, 실패하면 열린 채 둔다).
-    await Promise.all(
+    // 모두 끝날 때까지 기다린다 — 일부가 실패해도 이미 만든 것의 id 를 잃지 않게 allSettled 로 모은다
+    const results = await Promise.allSettled(
       prevList.map((p) => {
         const key = `${p.categoryRowId ?? "overall"}`;
         const exists = existingByKey.get(key);
         return exists
-          ? updateMut.mutateAsync({
-              id: exists.rowId,
-              budgetAmount: p.budgetAmount,
-            })
-          : createMut.mutateAsync({
-              categoryRowId: p.categoryRowId ?? null,
-              budgetAmount: p.budgetAmount,
-              budgetYear: year,
-              budgetMonth: month,
-            });
+          ? updateMut
+              .mutateAsync({ id: exists.rowId, budgetAmount: p.budgetAmount })
+              .then(() => null)
+          : createMut
+              .mutateAsync({
+                categoryRowId: p.categoryRowId ?? null,
+                budgetAmount: p.budgetAmount,
+                budgetYear: year,
+                budgetMonth: month,
+              })
+              .then((created) => created.rowId);
       }),
     );
+    if (results.some((r) => r.status === "rejected")) {
+      throw new Error("budget copy failed");
+    }
+    // 방금 새로 만든 예산의 id — 겹치는 것이 없는 복사의 되돌리기가 이것만 지운다
+    return results.flatMap((r) =>
+      r.status === "fulfilled" && r.value != null ? [r.value] : [],
+    );
+  };
+
+  // 겹치는 것이 없는 복사 — 잃는 것이 없어 묻지 않고 바로 하고, Snackbar 의 "되돌리기" 로 돌린다(alert-dialog.md 되돌릴 수 있는 일)
+  const [copying, setCopying] = useState(false);
+  const undoCopy = async (ids: number[]) => {
+    const results = await Promise.allSettled(
+      ids.map((id) => deleteMut.mutateAsync(id)),
+    );
+    const left = ids.filter((_, i) => results[i]?.status === "rejected");
+    // 조용히 반만 지워지지 않게 — 남은 것만 다시 지운다
+    if (left.length > 0) {
+      snackbar.show({
+        message: t("copyUndoFailed"),
+        tone: "critical",
+        action: { label: tCommon("retry"), onClick: () => void undoCopy(left) },
+      });
+    }
+  };
+  const copyDirect = async () => {
+    setCopying(true);
+    try {
+      const ids = await copyFromLastMonth();
+      snackbar.show({
+        message: t("copiedDone"),
+        action: {
+          label: t("copyUndo"),
+          onClick: () => void undoCopy(ids ?? []),
+        },
+      });
+    } catch {
+      snackbar.show({
+        message: t("copyFailed"),
+        tone: "critical",
+        action: { label: tCommon("retry"), onClick: () => void copyDirect() },
+      });
+    } finally {
+      setCopying(false);
+    }
   };
 
   // 확인창이 대상을 이름으로 짚는다 — 줄 이름과 같은 값(spec alert-dialog.md "대상은 이름으로")
@@ -285,9 +331,13 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       type="button"
       variant={mobile ? "neutralWeak" : "neutralOutline"}
       size="small"
-      onClick={() => setConfirmCopy(true)}
+      onClick={() =>
+        overwriteCount > 0 ? setConfirmCopy(true) : void copyDirect()
+      }
       disabled={
-        prevBudgetsQ.isLoading || (prevBudgetsQ.data?.length ?? 0) === 0
+        copying ||
+        prevBudgetsQ.isLoading ||
+        (prevBudgetsQ.data?.length ?? 0) === 0
       }
       title={
         mobile
@@ -404,19 +454,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       {confirmCopy && (
         <AlertConfirm
           title={t("copyTitle")}
-          message={
-            overwriteCount > 0
-              ? t("copyOverwriteMessage", { count: overwriteCount })
-              : t("copyMessage", {
-                  prevYear: prevY,
-                  prevMonth: prevM,
-                  count: prevBudgetsQ.data?.length ?? 0,
-                  year,
-                  month,
-                })
-          }
+          message={t("copyOverwriteMessage", { count: overwriteCount })}
           confirmLabel={t("copy")}
-          tone={overwriteCount > 0 ? "criticalSolid" : "neutralSolid"}
+          tone="criticalSolid"
           onError={copyFailed}
           onConfirm={copyFromLastMonth}
           onClose={() => setConfirmCopy(false)}

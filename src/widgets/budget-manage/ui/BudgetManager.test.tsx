@@ -46,8 +46,9 @@ const show = vi.hoisted(() => vi.fn());
 vi.mock("@/shared/ds/snackbar", () => ({
   useSnackbar: () => ({ show, dismiss: vi.fn() }),
 }));
-const deleteAsync = vi.fn(() => Promise.resolve());
-const createAsync = vi.fn(() => Promise.resolve());
+const deleteAsync = vi.fn((_id?: number) => Promise.resolve());
+let nextId = 100;
+const createAsync = vi.fn(() => Promise.resolve({ rowId: nextId++ }));
 const updateAsync = vi.fn(() => Promise.resolve());
 const prev = { data: [] as unknown[], isLoading: false };
 
@@ -246,9 +247,11 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     expect(dialog()).toBeNull();
   });
 
-  it("지난달 복사 — 이번 달에 겹치는 예산이 있으면 criticalSolid, 무엇이 바뀌는지 말한다", async () => {
+  it("지난달 복사 — 겹침 일부: 확인창 criticalSolid · N 은 겹친 개수 · 되돌리기 없음", async () => {
     updateAsync.mockClear();
-    prev.data = [b(9, 1, 500_000)];
+    createAsync.mockClear();
+    show.mockClear();
+    prev.data = [b(9, 1, 500_000), b(10, 5, 300_000)];
     render(false);
     await press(label("copyLastMonth"));
     const d = dialog();
@@ -257,19 +260,52 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     expect(action()?.className).toContain("bg-bg-critical-solid");
     await press(action());
     expect(updateAsync).toHaveBeenCalledWith({ id: 2, budgetAmount: 500_000 });
+    expect(createAsync).toHaveBeenCalledTimes(1);
     expect(dialog()).toBeNull();
+    expect(show).not.toHaveBeenCalled();
     prev.data = [];
   });
 
-  it("지난달 복사 — 겹치는 예산이 없으면 잃는 것이 없다: neutralSolid, 옛 안내 글", async () => {
+  it("지난달 복사 — 겹침 없음: 묻지 않고 바로 복사, 되돌리기는 방금 만든 것만 지운다", async () => {
     createAsync.mockClear();
-    prev.data = [b(9, 7, 500_000)];
+    deleteAsync.mockClear();
+    show.mockClear();
+    nextId = 100;
+    prev.data = [b(9, 7, 500_000), b(10, 8, 300_000)];
     render(false);
     await press(label("copyLastMonth"));
-    expect(dialog()?.textContent).toContain("copyMessage");
-    expect(action()?.className).toContain("bg-bg-neutral-inverted");
-    await press(action());
-    expect(createAsync).toHaveBeenCalledTimes(1);
+    expect(dialog()).toBeNull();
+    expect(createAsync).toHaveBeenCalledTimes(2);
+    const opt = show.mock.calls[0]![0];
+    expect(opt.message).toBe("copiedDone");
+    expect(opt.tone).toBeUndefined();
+    expect(opt.action.label).toBe("copyUndo");
+    await act(async () => opt.action.onClick());
+    expect(deleteAsync.mock.calls.map((c) => c[0]).sort()).toEqual(
+      [100, 101].sort(),
+    );
+    expect(show).toHaveBeenCalledTimes(1);
+    prev.data = [];
+  });
+
+  it("되돌리기 일부 실패 — 남은 것을 알리고 다시 시도는 남은 id 만 지운다", async () => {
+    createAsync.mockClear();
+    deleteAsync.mockClear();
+    show.mockClear();
+    nextId = 100;
+    prev.data = [b(9, 7, 500_000), b(10, 8, 300_000)];
+    render(false);
+    await press(label("copyLastMonth"));
+    deleteAsync.mockImplementationOnce(() => Promise.resolve());
+    deleteAsync.mockImplementationOnce(() => Promise.reject(new Error("x")));
+    await act(async () => show.mock.calls[0]![0].action.onClick());
+    const fail = show.mock.calls[1]![0];
+    expect(fail.tone).toBe("critical");
+    expect(fail.message).toBe("copyUndoFailed");
+    deleteAsync.mockClear();
+    await act(async () => fail.action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(1);
+    expect(deleteAsync).toHaveBeenCalledWith(101);
     prev.data = [];
   });
 
@@ -281,7 +317,7 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     await press(label("copyLastMonth"));
     await press(action());
     expect(dialog()).toBeNull();
-    const opt = show.mock.calls[0][0];
+    const opt = show.mock.calls[0]![0];
     expect(opt.tone).toBe("critical");
     expect(opt.message).toBe("copyFailed");
     expect(opt.action.label).toBe("retry");
@@ -298,7 +334,7 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     await press(container.querySelector("[aria-label^='manager.deleteNamed']"));
     await press(action());
     expect(dialog()).toBeNull();
-    const opt = show.mock.calls[0][0];
+    const opt = show.mock.calls[0]![0];
     expect(opt.tone).toBe("critical");
     expect(opt.message).toBe("deleteFailed");
     await act(async () => opt.action.onClick());
