@@ -38,15 +38,12 @@ function GoalRow({
   mobile,
   onEdit,
   onDelete,
-  onDeleteConfirmed,
 }: {
   goal: SavingGoal;
   mobile: boolean;
   onEdit: (g: SavingGoal) => void;
-  /** 확인창을 연다 — 데스크톱 삭제 버튼. */
+  /** 확인창을 연다 — 데스크톱 삭제 버튼 · 스와이프의 삭제 모두(밀기의 옛 확인 메시지는 걷었다) */
   onDelete: (g: SavingGoal) => void;
-  /** 이미 물었다 — 스와이프의 confirm 뒤. 여기서 또 확인창을 열면 두 번 묻는다(QA 30 15). */
-  onDeleteConfirmed: (g: SavingGoal) => Promise<unknown>;
 }) {
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
@@ -105,12 +102,9 @@ function GoalRow({
               label: tc("delete"),
               icon: <Trash2 />,
               kind: "destructive",
-              // 아래 AlertConfirm 과 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
-              confirm: {
-                title: t("savingGoal.deleteTitle", { title: goal.title }),
-                message: t("savingGoal.deleteConfirm"),
-              },
-              onSelect: () => onDeleteConfirmed(goal),
+              confirm: false,
+              // 밀기의 확인 메시지(옛 ConfirmDialog 경로)는 걷었다 — 화면이 ds Alert Dialog 를 띄운다(삭제 버튼과 같은 확인창)
+              onSelect: () => onDelete(goal),
             },
           ]}
         >
@@ -315,7 +309,6 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           mobile={mobile}
           onEdit={setEditing}
           onDelete={setConfirmDelete}
-          onDeleteConfirmed={(goal) => deleteMut.mutateAsync(goal.rowId)}
         />
       ))}
     </List>

@@ -40,13 +40,20 @@ describe("스와이프 삭제 확인은 한 번", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("저축 목표 스와이프는 확인이 끝난 삭제를 부른다", () => {
+  it("저축 목표 · 예산 스와이프는 화면의 ds 확인창을 연다(confirm: false)", () => {
     const src = readFileSync(
       "src/widgets/asset-full/ui/SavingGoalManager.tsx",
       "utf-8",
     );
     expect(destructiveOnSelects(src)).toEqual([
-      "onSelect: () => onDeleteConfirmed(goal),",
+      "onSelect: () => onDelete(goal),",
+    ]);
+    const budget = readFileSync(
+      "src/widgets/budget-manage/ui/BudgetManager.tsx",
+      "utf-8",
+    );
+    expect(destructiveOnSelects(budget)).toEqual([
+      "onSelect: () => onDelete(b),",
     ]);
   });
 });

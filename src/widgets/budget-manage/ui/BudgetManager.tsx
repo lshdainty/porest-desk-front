@@ -211,20 +211,20 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     }
   };
 
-  const copyFromLastMonth = async () => {
-    const prevList = prevBudgetsQ.data ?? [];
-    if (prevList.length === 0) {
-      setConfirmCopy(false);
-      return [];
-    }
-    const existingByKey = new Map<string, ExpenseBudget>();
-    for (const b of budgetList)
-      existingByKey.set(`${b.categoryRowId ?? "overall"}`, b);
-    // 모두 끝날 때까지 기다린다 — 일부가 실패해도 이미 만든 것의 id 를 잃지 않게 allSettled 로 모은다
+  type PrevBudget = ExpenseBudget;
+  // 지난달 항목을 이번 달로 옮긴다 — 겹치면 값을 덮고 아니면 새로 만든다. 일부만 실패하면 실패한 것만 "다시 시도" 로 다시 한다
+  // (이미 만든 것과 겹친다고 확인창을 다시 열지 않는다). created 는 지금까지 새로 만든 예산의 id — 되돌리기가 모두 지운다.
+  // undoable 은 겹침 없이 시작한 복사 — 덮어쓴 복사에는 되돌리기를 두지 않는다. 실패 알림이 먼저, 다 끝난 뒤 "가져왔어요"(한 번에 하나)
+  const runCopy = async (
+    entries: PrevBudget[],
+    created: number[],
+    undoable: boolean,
+    existingByKey: Map<string, ExpenseBudget>,
+    retried: boolean,
+  ) => {
     const results = await Promise.allSettled(
-      prevList.map((p) => {
-        const key = `${p.categoryRowId ?? "overall"}`;
-        const exists = existingByKey.get(key);
+      entries.map((p) => {
+        const exists = existingByKey.get(`${p.categoryRowId ?? "overall"}`);
         return exists
           ? updateMut
               .mutateAsync({ id: exists.rowId, budgetAmount: p.budgetAmount })
@@ -236,16 +236,44 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
                 budgetYear: year,
                 budgetMonth: month,
               })
-              .then((created) => created.rowId);
+              .then((made) => made.rowId);
       }),
     );
-    if (results.some((r) => r.status === "rejected")) {
-      throw new Error("budget copy failed");
+    const failed = entries.filter((_, i) => results[i]?.status === "rejected");
+    const ids = [
+      ...created,
+      ...results.flatMap((r) =>
+        r.status === "fulfilled" && r.value != null ? [r.value] : [],
+      ),
+    ];
+    if (failed.length > 0) {
+      snackbar.show({
+        message: t("copyPartial", { count: failed.length }),
+        tone: "critical",
+        action: {
+          label: tCommon("retry"),
+          onClick: () =>
+            void runCopy(failed, ids, undoable, existingByKey, true),
+        },
+      });
+      return;
     }
-    // 방금 새로 만든 예산의 id — 겹치는 것이 없는 복사의 되돌리기가 이것만 지운다
-    return results.flatMap((r) =>
-      r.status === "fulfilled" && r.value != null ? [r.value] : [],
-    );
+    if (undoable) {
+      snackbar.show({
+        message: t("copiedDone"),
+        action: { label: t("copyUndo"), onClick: () => void undoCopy(ids) },
+      });
+    } else if (retried) {
+      snackbar.show({ message: t("copiedDone") });
+    }
+  };
+  const startCopy = async (undoable: boolean) => {
+    const prevList = prevBudgetsQ.data ?? [];
+    if (prevList.length === 0) return;
+    const existingByKey = new Map<string, ExpenseBudget>();
+    for (const b of budgetList)
+      existingByKey.set(`${b.categoryRowId ?? "overall"}`, b);
+    await runCopy(prevList, [], undoable, existingByKey, false);
   };
 
   // 겹치는 것이 없는 복사 — 잃는 것이 없어 묻지 않고 바로 하고, Snackbar 의 "되돌리기" 로 돌린다(alert-dialog.md 되돌릴 수 있는 일)
@@ -258,7 +286,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     // 조용히 반만 지워지지 않게 — 남은 것만 다시 지운다
     if (left.length > 0) {
       snackbar.show({
-        message: t("copyUndoFailed"),
+        message: t("copyUndoFailed", { count: left.length }),
         tone: "critical",
         action: { label: tCommon("retry"), onClick: () => void undoCopy(left) },
       });
@@ -267,20 +295,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const copyDirect = async () => {
     setCopying(true);
     try {
-      const ids = await copyFromLastMonth();
-      snackbar.show({
-        message: t("copiedDone"),
-        action: {
-          label: t("copyUndo"),
-          onClick: () => void undoCopy(ids ?? []),
-        },
-      });
-    } catch {
-      snackbar.show({
-        message: t("copyFailed"),
-        tone: "critical",
-        action: { label: tCommon("retry"), onClick: () => void copyDirect() },
-      });
+      await startCopy(true);
     } finally {
       setCopying(false);
     }
@@ -312,12 +327,6 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           deleteMut.mutateAsync(b.rowId).catch(() => deleteFailed(b));
         },
       },
-    });
-  const copyFailed = () =>
-    snackbar.show({
-      message: t("copyFailed"),
-      tone: "critical",
-      action: { label: tCommon("retry"), onClick: () => setConfirmCopy(true) },
     });
 
   const submitting =
@@ -380,11 +389,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           spentByCategory={spentByCategory}
           allCategoriesBudgeted={allCategoriesBudgeted}
           loading={loading}
-          deleting={deleteMut.isPending}
           onAdd={() => setEditing("new")}
           onEdit={setEditing}
           onDelete={setConfirmDelete}
-          onDeleteConfirmed={(b) => deleteMut.mutateAsync(b.rowId)}
         />
       </>
     );
@@ -457,8 +464,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           message={t("copyOverwriteMessage", { count: overwriteCount })}
           confirmLabel={t("copy")}
           tone="criticalSolid"
-          onError={copyFailed}
-          onConfirm={copyFromLastMonth}
+          onConfirm={() => startCopy(false)}
           onClose={() => setConfirmCopy(false)}
         />
       )}
@@ -578,11 +584,9 @@ function CategoryArea({
   spentByCategory,
   allCategoriesBudgeted,
   loading,
-  deleting,
   onAdd,
   onEdit,
   onDelete,
-  onDeleteConfirmed,
 }: {
   mobile: boolean;
   categoryBudgets: ExpenseBudget[];
@@ -590,11 +594,9 @@ function CategoryArea({
   spentByCategory: Map<number, number>;
   allCategoriesBudgeted: boolean;
   loading: boolean;
-  deleting: boolean;
   onAdd: () => void;
   onEdit: (b: ExpenseBudget) => void;
   onDelete: (b: ExpenseBudget) => void;
-  onDeleteConfirmed: (b: ExpenseBudget) => Promise<unknown>;
 }) {
   const { t } = useTranslation("budget");
   const { t: tCommon } = useTranslation("common");
@@ -646,13 +648,9 @@ function CategoryArea({
               label: tCommon("delete"),
               icon: <Trash2 />,
               kind: "destructive",
-              // 아래 AlertConfirm 과 같은 키 — 같은 삭제인데 문구가 갈리면 경로에 따라 다른 말이 나온다
-              confirm: {
-                title: t("deleteTitle", { name: label }),
-                message: t("deleteMessage"),
-                loading: deleting,
-              },
-              onSelect: () => onDeleteConfirmed(b),
+              confirm: false,
+              // 밀기의 확인 메시지(옛 ConfirmDialog 경로)는 걷었다 — 화면이 ds Alert Dialog 를 띄운다(삭제 버튼과 같은 확인창)
+              onSelect: () => onDelete(b),
             },
           ];
           const common = {

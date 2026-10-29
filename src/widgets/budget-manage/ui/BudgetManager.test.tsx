@@ -301,7 +301,7 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     await act(async () => show.mock.calls[0]![0].action.onClick());
     const fail = show.mock.calls[1]![0];
     expect(fail.tone).toBe("critical");
-    expect(fail.message).toBe("copyUndoFailed");
+    expect(fail.message).toBe('copyUndoFailed{"count":1}');
     deleteAsync.mockClear();
     await act(async () => fail.action.onClick());
     expect(deleteAsync).toHaveBeenCalledTimes(1);
@@ -309,20 +309,55 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     prev.data = [];
   });
 
-  it("복사가 실패하면 확인창을 닫고 critical 스낵바 + 다시 시도(확인창을 다시 연다)", async () => {
+  it("덮어쓰기 복사의 일부 실패 — 닫고 N 개 알림, 다시 시도는 실패한 것만(확인창을 다시 열지 않는다), 되돌리기 없음", async () => {
     show.mockClear();
+    updateAsync.mockClear();
+    createAsync.mockClear();
     updateAsync.mockRejectedValueOnce(new Error("x"));
-    prev.data = [b(9, 1, 500_000)];
+    prev.data = [b(9, 1, 500_000), b(10, 5, 300_000)];
     render(false);
     await press(label("copyLastMonth"));
     await press(action());
     expect(dialog()).toBeNull();
     const opt = show.mock.calls[0]![0];
     expect(opt.tone).toBe("critical");
-    expect(opt.message).toBe("copyFailed");
-    expect(opt.action.label).toBe("retry");
+    expect(opt.message).toBe('copyPartial{"count":1}');
     await act(async () => opt.action.onClick());
-    expect(dialog()).not.toBeNull();
+    expect(dialog()).toBeNull();
+    expect(updateAsync).toHaveBeenCalledTimes(2);
+    expect(createAsync).toHaveBeenCalledTimes(1);
+    // 끝난 뒤 되돌리기 없는 "가져왔어요"
+    const done = show.mock.calls[1]![0];
+    expect(done.message).toBe("copiedDone");
+    expect(done.action).toBeUndefined();
+    prev.data = [];
+  });
+
+  it("겹침 없는 복사에서 3개 중 둘째가 실패 — N=1 알림, 다시 시도는 1개만, 되돌리기는 셋 모두", async () => {
+    show.mockClear();
+    createAsync.mockClear();
+    deleteAsync.mockClear();
+    nextId = 100;
+    createAsync.mockImplementationOnce(() =>
+      Promise.resolve({ rowId: nextId++ }),
+    );
+    createAsync.mockImplementationOnce(() => Promise.reject(new Error("x")));
+    prev.data = [b(9, 7, 1), b(10, 8, 2), b(11, 9, 3)];
+    render(false);
+    await press(label("copyLastMonth"));
+    expect(dialog()).toBeNull();
+    expect(show).toHaveBeenCalledTimes(1);
+    const fail = show.mock.calls[0]![0];
+    expect(fail.tone).toBe("critical");
+    expect(fail.message).toBe('copyPartial{"count":1}');
+    createAsync.mockClear();
+    await act(async () => fail.action.onClick());
+    expect(createAsync).toHaveBeenCalledTimes(1);
+    expect(dialog()).toBeNull();
+    const done = show.mock.calls[1]![0];
+    expect(done.message).toBe("copiedDone");
+    await act(async () => done.action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(3);
     prev.data = [];
   });
 
