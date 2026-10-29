@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/shared/ds/card";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { withCommaBreaks } from "@/shared/ds/i18n";
+import { useSnackbar } from "@/shared/ds/snackbar";
 import { AlertConfirm } from "@/shared/ui/groo/alert-confirm";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import {
@@ -262,6 +263,19 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
   const { t: tCommon } = useTranslation("common");
   const goalsQ = useSavingGoals();
   const deleteMut = useDeleteSavingGoal();
+  const snackbar = useSnackbar();
+  // 실패는 확인창을 닫고 Snackbar 로 — "다시 시도" 는 같은 삭제를 다시 한다
+  const deleteFailed = (goal: SavingGoal) =>
+    snackbar.show({
+      message: t("savingGoal.deleteFailed"),
+      tone: "critical",
+      action: {
+        label: tCommon("retry"),
+        onClick: () => {
+          deleteMut.mutateAsync(goal.rowId).catch(() => deleteFailed(goal));
+        },
+      },
+    });
 
   const [editing, setEditing] = useState<SavingGoal | "new" | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<SavingGoal | null>(null);
@@ -372,6 +386,7 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           message={t("savingGoal.deleteConfirm")}
           confirmLabel={tCommon("delete")}
           onConfirm={() => deleteMut.mutateAsync(confirmDelete.rowId)}
+          onError={() => deleteFailed(confirmDelete)}
           onClose={() => setConfirmDelete(null)}
         />
       )}

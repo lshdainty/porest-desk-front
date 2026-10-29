@@ -1,5 +1,6 @@
 import { QueryProvider } from "./providers";
 import { AppRouter } from "./router";
+import { SnackbarProvider } from "@/shared/ds/snackbar";
 import { Toaster } from "@/shared/ui/sonner";
 import { ThemeProvider } from "@/shared/ui/theme-provider";
 import { EnvWatermark } from "@/shared/ui/env-watermark";
@@ -11,7 +12,9 @@ export const AppRoot = () => {
       <EnvWatermark />
       <QueryProvider>
         <Toaster position="top-center" />
-        <AppRouter />
+        <SnackbarProvider>
+          <AppRouter />
+        </SnackbarProvider>
       </QueryProvider>
     </ThemeProvider>
   );

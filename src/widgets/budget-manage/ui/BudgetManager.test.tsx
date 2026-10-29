@@ -42,6 +42,10 @@ const mut = () => ({
   mutateAsync: vi.fn(),
   isPending: false,
 });
+const show = vi.hoisted(() => vi.fn());
+vi.mock("@/shared/ds/snackbar", () => ({
+  useSnackbar: () => ({ show, dismiss: vi.fn() }),
+}));
 const deleteAsync = vi.fn(() => Promise.resolve());
 const createAsync = vi.fn(() => Promise.resolve());
 const updateAsync = vi.fn(() => Promise.resolve());
@@ -242,26 +246,63 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     expect(dialog()).toBeNull();
   });
 
-  it("삭제가 실패하면 열린 채 둔다", async () => {
-    deleteAsync.mockRejectedValueOnce(new Error("x"));
-    render(false);
-    await press(container.querySelector("[aria-label^='manager.deleteNamed']"));
-    await press(action());
-    expect(dialog()).not.toBeNull();
-  });
-
-  it("지난달 복사 — 확정은 neutralSolid, 끝나면 닫는다", async () => {
-    createAsync.mockClear();
+  it("지난달 복사 — 이번 달에 겹치는 예산이 있으면 criticalSolid, 무엇이 바뀌는지 말한다", async () => {
     updateAsync.mockClear();
     prev.data = [b(9, 1, 500_000)];
     render(false);
     await press(label("copyLastMonth"));
     const d = dialog();
     expect(d?.textContent).toContain("copyTitle");
-    expect(action()?.className).toContain("bg-bg-neutral-inverted");
+    expect(d?.textContent).toContain('copyOverwriteMessage{"count":1}');
+    expect(action()?.className).toContain("bg-bg-critical-solid");
     await press(action());
     expect(updateAsync).toHaveBeenCalledWith({ id: 2, budgetAmount: 500_000 });
     expect(dialog()).toBeNull();
     prev.data = [];
+  });
+
+  it("지난달 복사 — 겹치는 예산이 없으면 잃는 것이 없다: neutralSolid, 옛 안내 글", async () => {
+    createAsync.mockClear();
+    prev.data = [b(9, 7, 500_000)];
+    render(false);
+    await press(label("copyLastMonth"));
+    expect(dialog()?.textContent).toContain("copyMessage");
+    expect(action()?.className).toContain("bg-bg-neutral-inverted");
+    await press(action());
+    expect(createAsync).toHaveBeenCalledTimes(1);
+    prev.data = [];
+  });
+
+  it("복사가 실패하면 확인창을 닫고 critical 스낵바 + 다시 시도(확인창을 다시 연다)", async () => {
+    show.mockClear();
+    updateAsync.mockRejectedValueOnce(new Error("x"));
+    prev.data = [b(9, 1, 500_000)];
+    render(false);
+    await press(label("copyLastMonth"));
+    await press(action());
+    expect(dialog()).toBeNull();
+    const opt = show.mock.calls[0][0];
+    expect(opt.tone).toBe("critical");
+    expect(opt.message).toBe("copyFailed");
+    expect(opt.action.label).toBe("retry");
+    await act(async () => opt.action.onClick());
+    expect(dialog()).not.toBeNull();
+    prev.data = [];
+  });
+
+  it("삭제가 실패하면 확인창을 닫고 스낵바 — 다시 시도는 같은 삭제를 다시 한다", async () => {
+    show.mockClear();
+    deleteAsync.mockClear();
+    deleteAsync.mockRejectedValueOnce(new Error("x"));
+    render(false);
+    await press(container.querySelector("[aria-label^='manager.deleteNamed']"));
+    await press(action());
+    expect(dialog()).toBeNull();
+    const opt = show.mock.calls[0][0];
+    expect(opt.tone).toBe("critical");
+    expect(opt.message).toBe("deleteFailed");
+    await act(async () => opt.action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(2);
+    expect(deleteAsync).toHaveBeenLastCalledWith(2);
   });
 });

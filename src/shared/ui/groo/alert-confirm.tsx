@@ -21,6 +21,7 @@ export function AlertConfirm({
   confirmLabel,
   tone = "criticalSolid",
   onConfirm,
+  onError,
   onClose,
 }: {
   title: ReactNode;
@@ -30,6 +31,11 @@ export function AlertConfirm({
   tone?: "criticalSolid" | "neutralSolid";
   /** 지운다 — 끝날 때까지 로딩. 실패하면 던진다 */
   onConfirm: () => Promise<unknown> | void;
+  /**
+   * 확정이 실패했을 때 — 주면 확인창을 닫은 뒤 부른다(호출처가 Snackbar critical + "다시 시도" 를 띄운다. 창 위에는 겹치지 않는다 —
+   * snackbar.md 오류 · alert-dialog.md). 안 주면 예전처럼 열린 채 둔다
+   */
+  onError?: () => void;
   onClose: () => void;
 }) {
   const { t: tc } = useTranslation("common");
@@ -56,7 +62,11 @@ export function AlertConfirm({
                 await onConfirm();
                 onClose();
               } catch {
-                // 실패하면 확인창은 열린 채 둔다 — 지워진 것은 없고 오류는 전역 알림이 말한다
+                if (onError) {
+                  onClose();
+                  onError();
+                }
+                // onError 가 없으면 열린 채 둔다 — 지워진 것은 없고 오류는 전역 알림이 말한다
               } finally {
                 setRunning(false);
               }

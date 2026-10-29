@@ -15,6 +15,7 @@ import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon } from "@/shared/ui/groo/primitives";
 import { AlertConfirm } from "@/shared/ui/groo/alert-confirm";
 import { Button } from "@/shared/ds/button";
+import { useSnackbar } from "@/shared/ds/snackbar";
 import { Callout } from "@/shared/ds/callout";
 import { Card, CardContent } from "@/shared/ds/card";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
@@ -80,6 +81,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const createMut = useCreateExpenseBudget();
   const updateMut = useUpdateExpenseBudget();
   const deleteMut = useDeleteExpenseBudget();
+  const snackbar = useSnackbar();
 
   const [editing, setEditing] = useState<ExpenseBudget | "new" | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ExpenseBudget | null>(
@@ -246,6 +248,32 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     b.categoryName ??
     t("manager.categoryFallback", { id: b.categoryRowId });
 
+  // 이번 달에 이미 있어 지난달 값으로 바뀌는 예산 수 — 0 이면 잃는 것이 없다(alert-dialog.md:99 잃는 확정은 criticalSolid)
+  const overwriteCount = (prevBudgetsQ.data ?? []).filter((p) =>
+    budgetList.some(
+      (x) => (x.categoryRowId ?? "overall") === (p.categoryRowId ?? "overall"),
+    ),
+  ).length;
+
+  // 실패는 확인창을 닫고 Snackbar 로 — 창 위에 겹치지 않는다. "다시 시도" 는 같은 확정을 다시 한다
+  const deleteFailed = (b: ExpenseBudget) =>
+    snackbar.show({
+      message: t("deleteFailed"),
+      tone: "critical",
+      action: {
+        label: tCommon("retry"),
+        onClick: () => {
+          deleteMut.mutateAsync(b.rowId).catch(() => deleteFailed(b));
+        },
+      },
+    });
+  const copyFailed = () =>
+    snackbar.show({
+      message: t("copyFailed"),
+      tone: "critical",
+      action: { label: tCommon("retry"), onClick: () => setConfirmCopy(true) },
+    });
+
   const submitting =
     createMut.isPending || updateMut.isPending || deleteMut.isPending;
 
@@ -369,21 +397,27 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
           message={t("deleteMessage")}
           confirmLabel={tCommon("delete")}
           onConfirm={() => deleteMut.mutateAsync(confirmDelete.rowId)}
+          onError={() => deleteFailed(confirmDelete)}
           onClose={() => setConfirmDelete(null)}
         />
       )}
       {confirmCopy && (
         <AlertConfirm
           title={t("copyTitle")}
-          message={t("copyMessage", {
-            prevYear: prevY,
-            prevMonth: prevM,
-            count: prevBudgetsQ.data?.length ?? 0,
-            year,
-            month,
-          })}
+          message={
+            overwriteCount > 0
+              ? t("copyOverwriteMessage", { count: overwriteCount })
+              : t("copyMessage", {
+                  prevYear: prevY,
+                  prevMonth: prevM,
+                  count: prevBudgetsQ.data?.length ?? 0,
+                  year,
+                  month,
+                })
+          }
           confirmLabel={t("copy")}
-          tone="neutralSolid"
+          tone={overwriteCount > 0 ? "criticalSolid" : "neutralSolid"}
+          onError={copyFailed}
           onConfirm={copyFromLastMonth}
           onClose={() => setConfirmCopy(false)}
         />

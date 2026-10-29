@@ -4,6 +4,7 @@ common,save,저장,Save
 common,newTab,새 탭,new tab
 common,cancel,취소,Cancel
 common,delete,삭제,Delete
+common,retry,다시 시도,Try again
 common,edit,수정,Edit
 common,create,생성,Create
 common,search,검색,Search
@@ -647,6 +648,7 @@ asset,savingGoal.titleEdit,저축 목표 수정,Edit saving goal
 asset,savingGoal.titleAdd,저축 목표 추가,Add saving goal
 asset,savingGoal.deleteTitle,"""{{title}}"" 목표를 삭제할까요?","Delete the ""{{title}}"" goal?"
 asset,savingGoal.deleteConfirm,삭제한 저축 목표는 되돌릴 수 없어요.,A deleted saving goal can't be restored.
+asset,savingGoal.deleteFailed,저축 목표를 삭제하지 못했어요.,Couldn't delete the saving goal.
 asset,savingGoal.overallProgress,전체 진행률,Overall progress
 asset,savingGoal.goalCount,목표 목록 · {{n}}개,Goals · {{n}}
 asset,savingGoal.emptyManager,아직 저축 목표가 없어요. ‘목표 추가’로 시작해보세요.,No saving goals yet. Start with ‘Add goal’.
@@ -1349,6 +1351,9 @@ budget,deleteMessage,삭제한 예산은 되돌릴 수 없어요.,A deleted budg
 budget,thisFallback,이,this
 budget,copyTitle,지난달 예산을 복사할까요?,Copy last month's budget?
 budget,copyMessage,{{prevYear}}년 {{prevMonth}}월 예산 한도 {{count}}개를 {{year}}년 {{month}}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써져요.,Copy {{count}} budget limits from {{prevYear}}-{{prevMonth}} to {{year}}-{{month}}. Existing budgets this month will be overwritten.
+budget,copyOverwriteMessage,이번 달 예산 {{count}}개가 지난달 예산으로 바뀌어요. 바꾼 뒤에는 되돌릴 수 없어요.,{{count}} budgets for this month will be replaced with last month's. This can't be undone.
+budget,copyFailed,지난달 예산을 복사하지 못했어요.,Couldn't copy last month's budget.
+budget,deleteFailed,예산을 삭제하지 못했어요.,Couldn't delete the budget.
 budget,edit.addTitle,카테고리 예산 추가,Add category budget
 budget,edit.editTitle,카테고리 예산 수정,Edit category budget
 budget,edit.selectCategory,카테고리 선택,Select Category

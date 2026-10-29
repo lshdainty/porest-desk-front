@@ -7,6 +7,10 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
+const show = vi.hoisted(() => vi.fn());
+vi.mock("@/shared/ds/snackbar", () => ({
+  useSnackbar: () => ({ show, dismiss: vi.fn() }),
+}));
 const deleteAsync = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -186,5 +190,30 @@ describe("저축 목표 삭제 확인창 — ds Alert Dialog (I-28 3-6)", () => 
     });
     expect(deleteAsync).toHaveBeenCalledWith(1);
     expect(document.querySelector("[role=alertdialog]")).toBeNull();
+  });
+
+  it("삭제가 실패하면 확인창을 닫고 critical 스낵바 + 다시 시도", async () => {
+    show.mockClear();
+    deleteAsync.mockClear();
+    deleteAsync.mockRejectedValueOnce(new Error("x"));
+    render(false);
+    await act(async () => {
+      (
+        container.querySelector(
+          "[aria-label^='savingGoal.deleteNamed']",
+        ) as HTMLElement
+      ).click();
+    });
+    await act(async () => {
+      (
+        document.querySelector("[data-slot=alert-dialog-action]") as HTMLElement
+      ).click();
+    });
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+    const opt = show.mock.calls[0][0];
+    expect(opt.tone).toBe("critical");
+    expect(opt.message).toBe("savingGoal.deleteFailed");
+    await act(async () => opt.action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(2);
   });
 });
