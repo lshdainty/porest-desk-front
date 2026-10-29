@@ -396,7 +396,8 @@ export function LedgerList({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  return <div className={className} {...props} />;
+  // data-row-list — 거래 줄 맞춤의 목록 단위(groo.css): 두 줄 넘는 줄이 하나라도 있으면 목록의 줄 모두 위
+  return <div data-row-list className={className} {...props} />;
 }
 
 /** 날짜 그룹 — day 를 주면 스크롤 스파이 · 날 누름 이동 앵커([data-ledger-day]). 머리 위 12 · 첫 묶음 4. */

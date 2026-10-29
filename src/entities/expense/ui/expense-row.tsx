@@ -11,6 +11,7 @@ import {
 } from "@/shared/ds/list";
 import { TagGroup, TagGroupItem } from "@/shared/ds/tag-group";
 import { cn } from "@/shared/lib/cn";
+import { useTallTitle } from "@/shared/lib/groo/use-tall-title";
 import { KRW, MINUS, isEn } from "@/shared/lib/groo/format";
 import { HideUnit, MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import {
@@ -67,6 +68,7 @@ export function ExpenseRow({
   select?: RowSelect;
 }) {
   const { t } = useTranslation("common");
+  const tallRef = useTallTitle();
   const isIncome = expense.expenseType === "INCOME";
   // 환불된 거래 — 합계에서 빠져 있다. 흐리게 두지 않고 배지로 갈라 준다. 금액은 원래 부호 그대로
   // 두고 취소선으로 "없는 것으로 셌다" 를 말한다.
@@ -171,6 +173,7 @@ export function ExpenseRow({
 
   return (
     <List
+      ref={tallRef}
       className={cn(
         // 임시 — 호스트가 바깥 24 를 쥔 동안 줄의 좌우 24 를 걷는다(gutter 인자 주석)
         !gutter && "[&_[data-slot=list-content]]:px-0",
@@ -183,7 +186,6 @@ export function ExpenseRow({
           title={title}
           detail={detail}
           suffix={suffix}
-          align="top"
           checked={select.checked}
           onCheckedChange={(on) => select.onCheckedChange(on === true)}
         />
@@ -193,7 +195,6 @@ export function ExpenseRow({
           detail={detail}
           prefix={<SelectSpace>{prefix}</SelectSpace>}
           suffix={suffix}
-          align="top"
         />
       ) : onClick ? (
         <ListButtonItem
@@ -201,7 +202,6 @@ export function ExpenseRow({
           detail={detail}
           prefix={prefix}
           suffix={suffix}
-          align="top"
           highlighted={highlighted}
           onClick={() => onClick(expense)}
         />
@@ -211,7 +211,6 @@ export function ExpenseRow({
           detail={detail}
           prefix={prefix}
           suffix={suffix}
-          align="top"
           highlighted={highlighted}
         />
       )}

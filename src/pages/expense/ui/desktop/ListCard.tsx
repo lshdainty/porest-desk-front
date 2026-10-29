@@ -231,7 +231,7 @@ export function ListCard({
         )}
       </CardHeader>
       {bulkBar}
-      {body}
+      <div data-row-list>{body}</div>
       {children}
     </Card>
   );
