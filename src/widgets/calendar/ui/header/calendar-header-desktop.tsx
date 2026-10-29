@@ -73,7 +73,9 @@ const CalendarHeaderDesktop = () => {
         {stepUnit && (
           <>
             <Button
-              aria-label={t("header.prevMonth")}
+              aria-label={t(
+                view === "week" ? "header.prevWeek" : "header.prevDay",
+              )}
               variant="neutralOutline"
               size="small"
               layout="iconOnly"
@@ -83,7 +85,9 @@ const CalendarHeaderDesktop = () => {
               <ChevronLeft />
             </Button>
             <Button
-              aria-label={t("header.nextMonth")}
+              aria-label={t(
+                view === "week" ? "header.nextWeek" : "header.nextDay",
+              )}
               variant="neutralOutline"
               size="small"
               layout="iconOnly"

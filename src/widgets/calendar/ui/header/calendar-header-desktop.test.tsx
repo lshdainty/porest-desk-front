@@ -83,10 +83,10 @@ describe("도구 줄", () => {
   it('달 보기에는 ‹ › 도 "오늘" 도 없다 — 달 글 하나뿐(I-27, 사용자 10-29)', () => {
     const buttons = [...container.querySelectorAll("button")];
     expect(
-      buttons.some((b) => b.getAttribute("aria-label") === "header.prevMonth"),
+      buttons.some((b) => b.getAttribute("aria-label") === "header.prevWeek"),
     ).toBe(false);
     expect(
-      buttons.some((b) => b.getAttribute("aria-label") === "header.nextMonth"),
+      buttons.some((b) => b.getAttribute("aria-label") === "header.nextWeek"),
     ).toBe(false);
     expect(container.textContent).not.toContain("today");
     expect(container.textContent).toContain("2026년 10월");
@@ -96,10 +96,28 @@ describe("도구 줄", () => {
     mocks.view = "week";
     act(() => root.render(<CalendarHeaderDesktop />));
     const prev = container.querySelector<HTMLElement>(
-      "[aria-label='header.prevMonth']",
+      "[aria-label='header.prevWeek']",
     )!;
     act(() => prev.click());
     expect(mocks.setSelectedDate).toHaveBeenCalledTimes(1);
+    expect(
+      container.querySelector("[aria-label='header.nextWeek']"),
+    ).not.toBeNull();
+    mocks.view = "month";
+  });
+
+  it("일 보기에서는 이름이 이전 날 · 다음 날이다(이전 달 로 읽히지 않는다)", () => {
+    mocks.view = "day";
+    act(() => root.render(<CalendarHeaderDesktop />));
+    expect(
+      container.querySelector("[aria-label='header.prevDay']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[aria-label='header.nextDay']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[aria-label='header.prevMonth']"),
+    ).toBeNull();
     mocks.view = "month";
   });
 });

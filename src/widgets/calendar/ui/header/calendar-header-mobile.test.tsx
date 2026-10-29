@@ -42,10 +42,10 @@ afterEach(() => {
 describe("폰 달 줄", () => {
   it("달 글 하나 — ‹ › 가 없고 칩은 덩어리 밖이다(I-27)", () => {
     expect(
-      container.querySelector("[aria-label='header.prevMonth']"),
+      container.querySelector("[aria-label='header.prevWeek']"),
     ).toBeNull();
     expect(
-      container.querySelector("[aria-label='header.nextMonth']"),
+      container.querySelector("[aria-label='header.nextWeek']"),
     ).toBeNull();
     const label = [...container.querySelectorAll("button")].find((b) =>
       b.textContent?.includes("2026년 10월"),

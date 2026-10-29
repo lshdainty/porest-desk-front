@@ -17,8 +17,21 @@ vi.mock("react-i18next", () => ({
 }));
 vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
 vi.mock("@/shared/ui/groo/month-title", () => ({
-  MonthTitle: ({ onChange }: { onChange: (v: string) => void }) => (
-    <button data-testid="month-picker" onClick={() => onChange("2026-01")} />
+  MonthTitle: ({
+    month,
+    max,
+    onChange,
+  }: {
+    month: string;
+    max?: string;
+    onChange: (v: string) => void;
+  }) => (
+    <button
+      data-testid="month-picker"
+      data-month={month}
+      data-max={max}
+      onClick={() => onChange("2026-01")}
+    />
   ),
 }));
 
@@ -256,6 +269,12 @@ describe("데스크톱 홈", () => {
         "[data-slot=card-header] [data-testid=month-picker]",
       ),
     ).toBeNull();
+    // 홈은 미래 달을 이번 달로 되돌린다 — 달 글에 max(이번 달)를 넘긴다(사용자 10-29 (가))
+    const title = right.querySelector("[data-testid=month-picker]")!;
+    expect(title.getAttribute("data-max")).toMatch(/^\d{4}-\d{2}$/);
+    expect(title.getAttribute("data-max")).toBe(
+      title.getAttribute("data-month"),
+    );
     // 고른 달이 같은 달 상태를 바꾼다 — 6개월 범위가 따라간다
     const before = calls.range.length;
     act(() =>

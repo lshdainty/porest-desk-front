@@ -10,9 +10,9 @@ import { MonthPicker } from "@/shared/ds/month-picker";
 import { CalendarSourceToggle } from "@/widgets/calendar/ui/header/calendar-source-toggle";
 
 /**
- * 폰 달 줄 (I-09 6) — 흰 면 맨 위, 높이 52 · 왼쪽 6 · 오른쪽 16.
+ * 폰 달 줄 (I-09 6) — 흰 면 맨 위, 높이 52 · 왼쪽 24 · 오른쪽 16.
  * 달 글 t6 700 + 꺾쇠 16(누르면 연 | 월 휠 시트) · 오른쪽 캘린더 고르기 칩. ‹ › 는 두지 않는다(사용자 10-29 — 연 · 월은 휠로만),
- * 주 · 일 보기만 한 주 · 하루씩 옮기는 ‹ › 를 남긴다. 왼쪽은 화면 여백 24 · 오른쪽은 24.
+ * 주 · 일 보기만 한 주 · 하루씩 옮기는 ‹ › 를 남긴다.
  */
 const CalendarHeaderMobile = () => {
   const { t, i18n } = useTranslation("calendar");
@@ -62,21 +62,25 @@ const CalendarHeaderMobile = () => {
         {stepUnit && (
           <>
             <Button
-              aria-label={t("header.prevMonth")}
+              aria-label={t(
+                view === "week" ? "header.prevWeek" : "header.prevDay",
+              )}
               variant="ghost"
               size="medium"
               layout="iconOnly"
-              className="size-[40px] [&_svg]:size-[20px]"
+              className="size-[40px]"
               onClick={handlePrevious}
             >
               <ChevronLeft />
             </Button>
             <Button
-              aria-label={t("header.nextMonth")}
+              aria-label={t(
+                view === "week" ? "header.nextWeek" : "header.nextDay",
+              )}
               variant="ghost"
               size="medium"
               layout="iconOnly"
-              className="size-[40px] [&_svg]:size-[20px]"
+              className="size-[40px]"
               onClick={handleNext}
             >
               <ChevronRight />

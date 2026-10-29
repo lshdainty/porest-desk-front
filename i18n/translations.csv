@@ -1098,7 +1098,6 @@ calendar,dayView.noAppointments,진행 중인 일정이 없습니다,No appointm
 calendar,agenda.noEvents,일정이 없습니다,No events
 calendar,close,닫기,Close
 calendar,eventDetail,일정 상세,Event details
-calendar,dateNavigation,날짜 이동,Go to date
 calendar,sourceCount,{{count}}개,{{count}}
 calendar,preview,미리보기,Preview
 calendar,newCalendar,캘린더 추가,Add calendar
@@ -2566,7 +2565,6 @@ expense,filter.periodPick,기간 선택,Select period
 expense,filter.done,완료,Done
 expense,filter.chipMin,{{amount}} 이상,Min {{amount}}
 expense,filter.chipMax,{{amount}} 이하,Max {{amount}}
-todo,tdm.monthLabel,{{month}}월,Month {{month}}
 todo,tdm.filter,필터,Filter
 todo,tdm.todayLeft,오늘 할 일 {{count}}개,{{count}} to do today
 todo,tdm.todayDone,오늘 할 일 끝!,All done today!
@@ -3084,8 +3082,10 @@ expense,filter.chipExcludeMore,{{first}} 외 {{count}}개 빼고,Excluding {{fir
 expense,filter.chipRange,{{min}} ~ {{max}},{{min}} – {{max}}
 expense,list.title,거래,Transactions
 calendar,sourceChipLabel,캘린더 {{count}}개 보는 중,Showing {{count}} calendars
-calendar,header.prevMonth,이전 달,Previous month
-calendar,header.nextMonth,다음 달,Next month
+calendar,header.prevWeek,이전 주,Previous week
+calendar,header.nextWeek,다음 주,Next week
+calendar,header.prevDay,이전 날,Previous day
+calendar,header.nextDay,다음 날,Next day
 calendar,monthView.moreCount,+{{count}}개,+{{count}}
 calendar,monthView.cellLabel,"{{date}}, 일정 {{count}}개","{{date}}, {{count}} events"
 calendar,monthView.cellLabelEmpty,"{{date}}, 일정 없음","{{date}}, no events"
