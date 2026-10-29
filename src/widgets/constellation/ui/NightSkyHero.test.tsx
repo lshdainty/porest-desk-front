@@ -221,4 +221,33 @@ describe("CollectionSection", () => {
     expect(text()).not.toContain("오늘 모은 별빛");
     expect(text()).toContain("아직 만나지 못한 별자리예요");
   });
+
+  it("도감 줄 타일 그림은 30 이다(ListTile 이 직계 svg 를 20 으로 줄이지 않는다 — 앱 타일 40 · 그림 30)", () => {
+    collection.data = undefined;
+    act(() =>
+      root.render(
+        <CollectionSection
+          place="band"
+          state="ready"
+          onRetry={() => {}}
+          collection={{
+            entries: [
+              {
+                constellation: CON,
+                collectCount: 3,
+                lastCollectedDate: "2026-10-01",
+              },
+            ],
+            collectedKinds: 1,
+            totalCollected: 3,
+          }}
+          todayKey="cen"
+          today={TODAY}
+        />,
+      ),
+    );
+    const svg = container.querySelector("[data-slot=list-tile] svg")!;
+    expect(svg.getAttribute("width")).toBe("30");
+    expect(svg.parentElement?.getAttribute("data-slot")).not.toBe("list-tile");
+  });
 });

@@ -34,11 +34,13 @@ export function ForestStrip({
               aria-hidden
               className={cn("text-fg-neutral-inverted", SKY_BG)}
             >
-              <ConstellationSVG
-                starMap={today.constellation.starMap}
-                size={24}
-                lit={today.collected ? undefined : lit}
-              />
+              <span className="flex">
+                <ConstellationSVG
+                  starMap={today.constellation.starMap}
+                  size={24}
+                  lit={today.collected ? undefined : lit}
+                />
+              </span>
             </ListTile>
           }
           title={

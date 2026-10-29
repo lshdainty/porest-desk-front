@@ -112,12 +112,15 @@ export function CollectionSection({
                     )}
                   >
                     {owned ? (
-                      <ConstellationSVG
-                        starMap={entry.constellation.starMap}
-                        size={30}
-                        lit={entry.constellation.starCount}
-                        glow
-                      />
+                      // svg 를 span 으로 한 번 감싼다 — ListTile 의 [&>svg]:size-x5 가 직계 svg 를 20 으로 줄이던 것(앱은 30)을 막는다
+                      <span className="flex">
+                        <ConstellationSVG
+                          starMap={entry.constellation.starMap}
+                          size={30}
+                          lit={entry.constellation.starCount}
+                          glow
+                        />
+                      </span>
                     ) : (
                       <Lock />
                     )}
