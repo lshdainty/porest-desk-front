@@ -27,15 +27,15 @@ import { rangeSegModeOf, type RangeState } from "./stats-range";
 // RangePickerSheet — 통계 기간 고르기. ds Date Picker 기간(date-picker.md "기간 — 칸 하나, 달력 하나").
 // - 트리거는 기간 버튼(I-08 31) 그대로 — 시작 · 종료 두 칸을 두지 않는다(:138)
 // - 1280 미만 시트(이어지는 달), 이상 팝오버(두 달 나란히) — 어디에 놓나 표 :112
-// - 빠른 기간 칩 한 줄 — 통계가 쓰던 다섯, 이름 · 범위는 스펙 한 벌(:150)
+// - 빠른 기간 칩 한 줄 — 이번 주 · 이번 달 · 지난 달 · 최근 3개월 · 올해 다섯(앱 내보내기 기간과 같은 이름 · 같은 순서), 이름 · 범위는 스펙 한 벌(:150)
 // - 바닥 "초기화" + "완료". 고르는 동안 기간 버튼 값은 그대로, "완료" 에서 넣는다
 // ───────────────────────────────────────────────────────────
 const PRESETS: readonly DatePresetName[] = [
-  "last7Days",
-  "last30Days",
+  "thisWeek",
+  "thisMonth",
+  "lastMonth",
   "last3Months",
-  "last6Months",
-  "last1Year",
+  "thisYear",
 ];
 
 const toRange = (r: RangeState): DateRange => ({ start: r.from, end: r.to });

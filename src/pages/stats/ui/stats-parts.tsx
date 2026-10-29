@@ -568,7 +568,7 @@ export function HeatmapSection({
       <>
         {head}
         <Body place={place}>
-          <BandEmpty>{t("heatmap.empty")}</BandEmpty>
+          <BandEmpty>{t("heatmap.empty", { period: m.periodNow })}</BandEmpty>
         </Body>
       </>
     );
@@ -692,12 +692,12 @@ export function HighlightsSection({
           m.dayRate === ZERO_RATE ? "flat" : m.dayPct > 0 ? "up" : "down"
         }
         value={m.dayRate}
-        text={t(m.labels.mom)}
+        text={m.momText}
       />
     ) : m.prevRangeQ.isLoading ? (
-      t("avgSub.momCalculating")
+      t("avgSub.momCalculating", { prev: m.periodPrev })
     ) : (
-      t("avgSub.momUnavailable")
+      t("avgSub.momUnavailable", { prev: m.periodPrev })
     );
   const blocks: {
     key: string;

@@ -20,6 +20,7 @@ import {
 import {
   fmt,
   labelsOf,
+  relativeNames,
   monthRangeOf,
   periodLabel,
   previousRange,
@@ -460,9 +461,13 @@ export function useStatsModel() {
     .slice(0, 10);
   const totalNow = totalExpense;
   const totalPrev = prevTotalExpense;
-  const periodNow = t(labels.now);
-  const periodPrev = t(labels.prev);
-  const noPrevText = t(labels.noPrev);
+  const { now: periodNow, prev: periodPrev } = relativeNames(
+    period,
+    new Date(),
+    (k) => t(k),
+  );
+  const noPrevText = t("period.noPrev", { prev: periodPrev });
+  const momText = t("period.vs", { prev: periodPrev });
   const cmpDiff = totalNow - totalPrev;
   const cmpPct =
     totalPrev > 0
@@ -626,6 +631,7 @@ export function useStatsModel() {
     periodNow,
     periodPrev,
     noPrevText,
+    momText,
     cmpDiff,
     cmpPct,
     cmpMetrics,

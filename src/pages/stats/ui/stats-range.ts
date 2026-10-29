@@ -102,35 +102,50 @@ export const periodLabel = ({ from, to, segMode }: RangeState): string => {
     : `${fmt(from)} ~ ${fmt(to)}`;
 };
 
+/**
+ * 비교에 쓰는 이름 — 기간이 오늘을 품은 월 · 분기 · 해면 상대 말("이번 달 · 지난 달" 등 지금 글 그대로),
+ * 오늘을 품지 않은 월 · 분기 · 해면 실제 이름("2026년 9월" · "2026년 8월" — periodLabel 그대로, 새 문구 없음).
+ * 직접(custom)은 지금 그대로("선택 기간 / 이전 기간").
+ */
+export const relativeNames = (
+  period: RangeState,
+  today: Date,
+  t: (key: string) => string,
+): { now: string; prev: string } => {
+  const labels = labelsOf(period);
+  const day = startOfDay(today).getTime();
+  const holdsToday =
+    startOfDay(period.from).getTime() <= day &&
+    day <= startOfDay(period.to).getTime();
+  if (period.segMode === "custom" || holdsToday)
+    return { now: t(labels.now), prev: t(labels.prev) };
+  return {
+    now: periodLabel(period),
+    prev: periodLabel({ ...previousRange(period), segMode: period.segMode }),
+  };
+};
+
 export const labelsOf = ({ segMode }: RangeState) =>
   segMode === "m"
     ? {
         now: "period.m.now",
         prev: "period.m.prev",
-        mom: "period.m.mom",
-        noPrev: "period.m.noPrev",
         avg: "period.m.avg",
       }
     : segMode === "q"
       ? {
           now: "period.q.now",
           prev: "period.q.prev",
-          mom: "period.q.mom",
-          noPrev: "period.q.noPrev",
           avg: "period.q.avg",
         }
       : segMode === "y"
         ? {
             now: "period.y.now",
             prev: "period.y.prev",
-            mom: "period.y.mom",
-            noPrev: "period.y.noPrev",
             avg: "period.y.avg",
           }
         : {
             now: "period.custom.now",
             prev: "period.custom.prev",
-            mom: "period.custom.mom",
-            noPrev: "period.custom.noPrev",
             avg: "period.custom.avg",
           };

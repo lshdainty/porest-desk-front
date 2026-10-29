@@ -21,7 +21,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 const { RangePickerSheet } = await import("./RangePickerSheet");
-const { monthRangeOf } = await import("./stats-range");
+const { monthRangeOf, previousRange } = await import("./stats-range");
 
 beforeAll(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -92,10 +92,10 @@ describe("RangePickerSheet", () => {
     expect(byText("picker.done")).toBeTruthy();
   });
 
-  it("빠른 기간은 통계가 쓰던 다섯 — 7일 · 30일 · 3개월 · 6개월 · 1년 순서", () => {
+  it("빠른 기간은 이번 주 · 이번 달 · 지난 달 · 최근 3개월 · 올해 다섯", () => {
     mount();
     expect(chips().map((c) => c.getAttribute("data-value") ?? c.value)).toEqual(
-      ["last7Days", "last30Days", "last3Months", "last6Months", "last1Year"],
+      ["thisWeek", "thisMonth", "lastMonth", "last3Months", "thisYear"],
     );
   });
 
@@ -110,12 +110,32 @@ describe("RangePickerSheet", () => {
 
   it("최근 3개월 칩 → 완료 — 8월 1일 ~ 10월 31일, 직접", () => {
     const onConfirm = mount();
-    act(() => chips()[2]!.click());
+    act(() => chips()[3]!.click());
     act(() => byText("picker.done")!.click());
     const r = onConfirm.mock.calls[0]![0];
     expect(r.segMode).toBe("custom");
     expect([r.from.getMonth(), r.from.getDate()]).toEqual([7, 1]);
     expect([r.to.getMonth(), r.to.getDate()]).toEqual([9, 31]);
+  });
+
+  it("지난 달 칩 → 월 보기 9월, 이전 기간(비교)은 그 전달 8월", () => {
+    const onConfirm = mount();
+    act(() => chips()[2]!.click());
+    act(() => byText("picker.done")!.click());
+    const r = onConfirm.mock.calls[0]![0];
+    expect(r.segMode).toBe("m");
+    expect([r.from.getMonth(), r.from.getDate()]).toEqual([8, 1]);
+    expect([r.to.getMonth(), r.to.getDate()]).toEqual([8, 30]);
+    const prev = previousRange(r);
+    expect([prev.from.getMonth(), prev.from.getDate()]).toEqual([7, 1]);
+    expect([prev.to.getMonth(), prev.to.getDate()]).toEqual([7, 31]);
+  });
+
+  it("올해 칩 → 년 보기", () => {
+    const onConfirm = mount();
+    act(() => chips()[4]!.click());
+    act(() => byText("picker.done")!.click());
+    expect(onConfirm.mock.calls[0]![0].segMode).toBe("y");
   });
 
   it("초기화하면 완료가 막힌다 — 통계 기간은 비울 수 없다", () => {
