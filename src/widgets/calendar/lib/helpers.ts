@@ -7,24 +7,15 @@ import {
   differenceInMinutes,
   eachDayOfInterval,
   endOfMonth,
-  endOfWeek,
-  endOfYear,
-  format,
   isSameDay,
-  isSameMonth,
-  isSameWeek,
-  isSameYear,
   isWithinInterval,
   parseISO,
   startOfDay,
   startOfMonth,
-  startOfWeek,
-  startOfYear,
   subDays,
   subMonths,
   subWeeks,
   subYears,
-  type Locale,
 } from "date-fns";
 
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
@@ -51,37 +42,6 @@ import type {
 
 // ================ Header helper functions ================ //
 
-export function rangeText(view: TCalendarView, date: Date, locale?: Locale) {
-  const formatString = "yyyy.MM.dd";
-  let start: Date;
-  let end: Date;
-
-  switch (view) {
-    case "agenda":
-      start = startOfMonth(date);
-      end = endOfMonth(date);
-      break;
-    case "year":
-      start = startOfYear(date);
-      end = endOfYear(date);
-      break;
-    case "month":
-      start = startOfMonth(date);
-      end = endOfMonth(date);
-      break;
-    case "week":
-      start = startOfWeek(date, { locale });
-      end = endOfWeek(date, { locale });
-      break;
-    case "day":
-      return format(date, formatString, { locale });
-    default:
-      return "";
-  }
-
-  return `${format(start, formatString, { locale })} - ${format(end, formatString, { locale })}`;
-}
-
 export function navigateDate(
   date: Date,
   view: TCalendarView,
@@ -96,24 +56,6 @@ export function navigateDate(
   };
 
   return operations[view](date, 1);
-}
-
-export function getEventsCount(
-  events: IEvent[],
-  date: Date,
-  view: TCalendarView,
-): number {
-  const compareFns = {
-    agenda: isSameMonth,
-    year: isSameYear,
-    day: isSameDay,
-    week: isSameWeek,
-    month: isSameMonth,
-  };
-
-  return events.filter((event) =>
-    compareFns[view](new Date(event.startDate), date),
-  ).length;
 }
 
 // ================ Week and day view helper functions ================ //
@@ -216,6 +158,27 @@ export function getVisibleHours(
   return { hours, earliestEventHour, latestEventHour };
 }
 
+/**
+ * 그 날과 겹치는 일정 + 공휴일(지출/할일 pseudo-event 제외), 시작 시각 차례 — 앱 `_eventsOnDay` 정합.
+ * 폰 일별 시트와 데스크톱 · 태블릿 그날 패널이 같은 목록을 쓴다.
+ */
+export function eventsOnDay(events: IEvent[], date: Date): IEvent[] {
+  const ds = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const de = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+  return events
+    .filter((e) => e.sourceType === "calendar" || e.sourceType === "holiday")
+    .filter((e) => parseISO(e.startDate) <= de && parseISO(e.endDate) >= ds)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate));
+}
+
 // ================ Month view helper functions ================ //
 
 /**
@@ -284,7 +247,7 @@ export function calculateMonthEventPositions(
 
   eachDayOfInterval({ start: monthStart, end: monthEnd }).forEach((day) => {
     const dayKey = startOfDay(day).toISOString();
-    occupiedPositions[dayKey] = [false, false, false];
+    occupiedPositions[dayKey] = [];
   });
 
   const sortedEvents = [
@@ -318,17 +281,17 @@ export function calculateMonthEventPositions(
       end: eventEnd > monthEnd ? monthEnd : startOfDay(eventEnd),
     });
 
-    let position = -1;
-
-    for (let i = 0; i < 3; i++) {
-      if (
-        eventDays.every((day) => {
-          const dayKey = startOfDay(day).toISOString();
-          const dayPositions = occupiedPositions[dayKey];
-          return dayPositions && !dayPositions[i];
-        })
-      ) {
-        position = i;
+    // 칸 수에 위쪽 한도를 두지 않는다 — 몇 줄이 보이는지는 칸 높이가 정하고(칩 + "+N개"), 위치는 모든 일정이 받는다
+    let position = 0;
+    while (
+      !eventDays.every((day) => {
+        const dayPositions = occupiedPositions[startOfDay(day).toISOString()];
+        return dayPositions && !dayPositions[position];
+      })
+    ) {
+      position += 1;
+      if (position > 200) {
+        position = -1;
         break;
       }
     }
@@ -437,32 +400,43 @@ export function convertExpenseToIEvent(expense: Expense): IEvent {
 /**
  * Holiday (공휴일 데이터)를 IEvent 인터페이스로 변환
  */
-/**
- * 이벤트 칩/뱃지/점 색 — 공휴일은 일요일 색과 동일한 error 토큰 고정.
- * (앱 _CellHolidayLabel 의 tokens.statusDanger 정합 — 라이트/다크 동일 base.)
- * 일반 이벤트는 label 색 우선 + chart palette alias(다크 자동 swap).
- */
-export function eventBadgeColor(
-  event?: Pick<IEvent, "sourceType" | "labelColor" | "color"> | null,
+/** 일정 색을 고르는 차례 — 라벨 색 → 캘린더 색 → 일정에 저장된 색(I-09 5). 격자 칩 · 그날 시트 · 상세가 모두 이 식 하나를 쓴다 */
+export function eventColorKey(
+  event: Pick<IEvent, "labelColor" | "calendarColor" | "color">,
 ): string {
-  if (!event) return getPaletteByColor(undefined).color;
-  if (event.sourceType === "holiday") return "var(--color-fg-critical)";
-  return getPaletteByColor(event.labelColor ?? event.color).color;
+  return event.labelColor ?? event.calendarColor ?? event.color;
 }
 
-/** 이벤트 칩 바탕 · 글 — 팔레트 색은 v111 짝(chart-{hue}-weak · -contrast), 공휴일은 critical 짝. */
-export function eventBadgeTone(
-  event?: Pick<IEvent, "sourceType" | "labelColor" | "color"> | null,
-): { color: string; bg: string; fg: string } {
-  if (event?.sourceType === "holiday")
-    return {
-      color: "var(--color-fg-critical)",
-      bg: "var(--color-bg-critical-weak)",
-      fg: "var(--color-fg-critical)",
-    };
-  return getPaletteByColor(
-    event ? (event.labelColor ?? event.color) : undefined,
-  );
+/** 공휴일은 `chart-red` 짝(글 · 옅은 바탕 · 바탕 위 글) — 모든 칩 · 타일 · 점이 같은 빨강이다 */
+const HOLIDAY_TONE = {
+  color: "var(--color-chart-red)",
+  bg: "var(--color-chart-red-weak)",
+  fg: "var(--color-chart-red-contrast)",
+} as const;
+
+type ToneSource = Pick<
+  IEvent,
+  "sourceType" | "labelColor" | "calendarColor" | "color"
+>;
+
+/**
+ * 이벤트 칩/뱃지/점 색 — 공휴일은 `chart-red`. 일반 이벤트는 `eventColorKey` 순서로 고른 색의
+ * chart palette alias(다크 자동 swap).
+ */
+export function eventBadgeColor(event?: ToneSource | null): string {
+  if (!event) return getPaletteByColor(undefined).color;
+  if (event.sourceType === "holiday") return HOLIDAY_TONE.color;
+  return getPaletteByColor(eventColorKey(event)).color;
+}
+
+/** 이벤트 칩 바탕 · 글 — 팔레트 색은 v111 짝(chart-{hue}-weak · -contrast), 공휴일은 chart-red 짝. */
+export function eventBadgeTone(event?: ToneSource | null): {
+  color: string;
+  bg: string;
+  fg: string;
+} {
+  if (event?.sourceType === "holiday") return { ...HOLIDAY_TONE };
+  return getPaletteByColor(event ? eventColorKey(event) : undefined);
 }
 
 export function convertHolidayToIEvent(holiday: Holiday): IEvent {

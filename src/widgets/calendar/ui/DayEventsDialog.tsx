@@ -1,174 +1,65 @@
-import { ChevronRight, Plus } from "lucide-react";
-import { parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "@/shared/ui/button";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
-import { formatMonthDayWeekday } from "@/shared/lib/date";
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetContent,
+  BottomSheetFooter,
+} from "@/shared/ds/bottom-sheet";
+import { Button } from "@/shared/ds/button";
+import { formatMonthDayDow } from "@/shared/lib/date";
+import { DayEventList } from "@/widgets/calendar/ui/day-event-list";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 /**
- * 일별 이벤트 시트 — 앱 `_DayEventsSheetBody` + 가계부 `DayDetailDialog` 패턴 미러.
- *
- * 모바일 월간뷰에서 셀(날짜/칩) 탭 시 표시: 제목 'M월 d일 X요일' /
- * 'N건' + [+] 추가 / 행: [종일|HH:mm][색 바][제목 + 위치·라벨][>].
- * 행 탭 → 이벤트 상세(EventDetailPopover, 앱 정합), [+] → 해당 날짜로 이벤트 추가.
+ * 그날 시트 (I-09 11) — 폰 월 격자에서 칸을 누르면 뜨는 ds Bottom Sheet 조회(바깥 · 끌기로 닫힌다).
+ * 제목 "10월 22일 (목)" · 본문은 일정 줄 목록(공휴일 먼저, 그다음 시작 시각 차례 — 위에서 정렬해 넘긴다) · 바닥 "일정 추가".
+ * 줄 사이 선 · 꺾쇠가 없다. 공휴일 줄은 보기만 하고 일정 줄은 누르면 상세(지금 길 — 시트를 닫고 상세).
+ * 높이는 내용만큼 · 90% 상한 · 끝 흐림.
  */
 export function DayEventsDialog({
   date,
   events,
-  mobile,
   onClose,
   onAdd,
   onTapEvent,
 }: {
   date: Date;
   events: IEvent[];
-  mobile: boolean;
   onClose: () => void;
   onAdd: () => void;
   onTapEvent: (event: IEvent) => void;
 }) {
   const { t } = useTranslation("calendar");
-  const title = formatMonthDayWeekday(date);
-
-  const hhmm = (iso: string) => {
-    const d = parseISO(iso);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  };
-
-  // 앱 색 우선순위 정합: label > calendar > event 색 (공휴일은 일요일색 error 고정)
-  const barColor = (e: IEvent) =>
-    e.sourceType === "holiday"
-      ? "var(--color-bg-critical-solid)"
-      : getPaletteByColor(e.labelColor ?? e.calendarColor ?? e.color).color;
 
   return (
-    <ModalShell
-      title={title}
-      onClose={onClose}
-      mobile={mobile}
-      size="sm"
-      mobileMinHeight="85dvh"
-    >
-      {/* N건 + 이벤트 추가 */}
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <span
-          style={{
-            fontSize: "var(--text-body-sm)",
-            color: "var(--fg-tertiary)",
-          }}
-        >
-          {t("dayEvents.count", { count: events.length })}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          title={t("addEvent")}
-          style={{ marginLeft: "auto" }}
-          onClick={onAdd}
-        >
-          <Plus size={16} />
-        </Button>
-      </div>
-
-      {events.length === 0 ? (
-        <div
-          style={{
-            padding: "32px 0",
-            textAlign: "center",
-            fontSize: "var(--text-body-sm)",
-            color: "var(--fg-tertiary)",
-          }}
-        >
-          {t("noEvents")}
-        </div>
-      ) : (
-        events.map((e, i) => {
-          // 공휴일은 읽기 전용 — 행 표시만 하고 편집 진입 없음 (chevron 숨김)
-          const tappable = e.sourceType !== "holiday";
-          return (
-            <div
-              key={`${e.id}-${e.startDate}`}
-              role={tappable ? "button" : undefined}
-              tabIndex={tappable ? 0 : undefined}
-              onClick={tappable ? () => onTapEvent(e) : undefined}
-              onKeyDown={(ev) => {
-                if (tappable && (ev.key === "Enter" || ev.key === " ")) {
-                  ev.preventDefault();
-                  onTapEvent(e);
-                }
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "12px 0",
-                cursor: tappable ? "pointer" : "default",
-                borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none",
-              }}
+    <BottomSheet open onOpenChange={(open) => !open && onClose()}>
+      <BottomSheetContent
+        title={formatMonthDayDow(date)}
+        aria-describedby={undefined}
+      >
+        <BottomSheetBody scrollFog>
+          {events.length === 0 ? (
+            <p
+              data-slot="day-sheet-empty"
+              className="m-0 py-x8 text-center text-t4 text-fg-neutral-subtle"
             >
-              {/* 시간 (종일 | HH:mm) — 앱 고정폭 40 정합 */}
-              <span
-                style={{
-                  width: 40,
-                  flexShrink: 0,
-                  fontSize: "var(--text-caption)",
-                  color: "var(--fg-secondary)",
-                }}
-              >
-                {e.isAllDay ? t("allDay") : hhmm(e.startDate)}
-              </span>
-              <span style={{ width: 8, flexShrink: 0 }} />
-              {/* 세로 색 바 4×24 */}
-              <span
-                style={{
-                  width: 4,
-                  height: 24,
-                  flexShrink: 0,
-                  borderRadius: "var(--radius-xs)",
-                  background: barColor(e),
-                }}
+              {t("noEvents")}
+            </p>
+          ) : (
+            <div data-slot="day-sheet-list" className="-mx-x6">
+              <DayEventList
+                events={events}
+                label={formatMonthDayDow(date)}
+                onTapEvent={(e) => onTapEvent(e)}
               />
-              <span style={{ width: 12, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: "var(--text-body-sm)",
-                    fontWeight: "600",
-                    color: "var(--fg-primary)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {e.title}
-                </div>
-                {(e.location || e.labelName) && (
-                  <div
-                    style={{
-                      marginTop: 4,
-                      fontSize: "var(--text-caption)",
-                      color: "var(--fg-tertiary)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {[e.location, e.labelName].filter(Boolean).join(" · ")}
-                  </div>
-                )}
-              </div>
-              {tappable && (
-                <ChevronRight
-                  size={16}
-                  style={{ flexShrink: 0, color: "var(--fg-tertiary)" }}
-                />
-              )}
             </div>
-          );
-        })
-      )}
-    </ModalShell>
+          )}
+        </BottomSheetBody>
+        <BottomSheetFooter>
+          <Button onClick={onAdd}>{t("addEvent")}</Button>
+        </BottomSheetFooter>
+      </BottomSheetContent>
+    </BottomSheet>
   );
 }

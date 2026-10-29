@@ -1,4 +1,5 @@
-// 데스크톱 캘린더에서 빈 날짜를 고르면 **선택 단계 없이** 일정 추가 폼이 바로 뜬다.
+// 데스크톱 캘린더에서 한 날을 누르면 그 날을 고른다(폼 없음). 두 날 이상을 끌어 놓으면 **선택 단계 없이**
+// 그 기간으로 일정 추가 폼이 바로 뜬다(I-09 18).
 //
 // 예전엔 "일정 / 거래" 를 고르는 팝업이 한 번 더 있었다. 가계부가 자체 캘린더를 갖기 전에는
 // 거래도 여기서 넣어야 했기 때문인데, 그 이유가 사라졌다. 되살아나면 클릭이 다시 한 번
@@ -42,15 +43,21 @@ let root: Root;
  * 이벤트이고, `endSelection` 은 직전 렌더에 커밋된 `isDragSelecting` 을 본다. 한 핸들러
  * 안에서 둘 다 부르면 아직 false 라 아무 일도 안 일어난다.
  */
-function Probe() {
-  const { startSelection, endSelection } = useDragSelect();
+function Probe({ from = 15, to = 15 }: { from?: number; to?: number }) {
+  const { startSelection, updateSelection, endSelection } = useDragSelect();
   return (
     <>
       <button
         data-testid="down"
-        onClick={() => startSelection(new Date(2026, 8, 15))}
+        onClick={() => startSelection(new Date(2026, 8, from))}
       >
         down
+      </button>
+      <button
+        data-testid="over"
+        onClick={() => updateSelection(new Date(2026, 8, to))}
+      >
+        over
       </button>
       <button data-testid="up" onClick={endSelection}>
         up
@@ -71,7 +78,12 @@ afterEach(() => {
   container.remove();
 });
 
-describe("빈 날짜 선택", () => {
+const click = (id: string) =>
+  act(() => {
+    container.querySelector<HTMLButtonElement>(`[data-testid=${id}]`)!.click();
+  });
+
+describe("날짜 누르기 · 끌기", () => {
   it("고르기 전에는 아무 다이얼로그도 없다", () => {
     act(() => {
       root.render(
@@ -83,24 +95,38 @@ describe("빈 날짜 선택", () => {
     expect(container.querySelector("[data-testid=event-form]")).toBeNull();
   });
 
-  it("고르면 선택 팝업 없이 일정 폼이 바로 뜬다", () => {
+  it("한 날을 누르면 그 날을 고르고 폼은 열리지 않는다", () => {
+    const onSelectDay = vi.fn();
     act(() => {
       root.render(
-        <DragSelectProvider>
+        <DragSelectProvider onSelectDay={onSelectDay}>
           <Probe />
         </DragSelectProvider>,
       );
     });
-    act(() => {
-      container.querySelector<HTMLButtonElement>("[data-testid=down]")!.click();
-    });
-    act(() => {
-      container.querySelector<HTMLButtonElement>("[data-testid=up]")!.click();
-    });
+    click("down");
+    click("up");
+    expect(onSelectDay).toHaveBeenCalledTimes(1);
+    expect((onSelectDay.mock.calls[0]![0] as Date).getDate()).toBe(15);
+    expect(container.querySelector("[data-testid=event-form]")).toBeNull();
+  });
 
+  it("두 날 이상을 끌어 놓으면 선택 팝업 없이 그 기간으로 일정 폼이 바로 뜬다", () => {
+    const onSelectDay = vi.fn();
+    act(() => {
+      root.render(
+        <DragSelectProvider onSelectDay={onSelectDay}>
+          <Probe from={15} to={17} />
+        </DragSelectProvider>,
+      );
+    });
+    click("down");
+    click("over");
+    click("up");
     const form = container.querySelector("[data-testid=event-form]");
     expect(form).not.toBeNull();
     expect(form!.textContent).toBe("2026-09-15");
+    expect(onSelectDay).not.toHaveBeenCalled();
     // "거래 추가" 를 고르는 단계가 남아 있지 않다.
     expect(container.textContent).not.toContain("거래");
   });

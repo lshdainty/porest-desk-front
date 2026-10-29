@@ -9,8 +9,11 @@ import { DragSelectContext } from "./drag-select-context";
 
 export const DragSelectProvider = ({
   children,
+  onSelectDay,
 }: {
   children: React.ReactNode;
+  /** 한 날을 눌렀다 뗐을 때 — 그 날을 고른다(폼은 열지 않는다). 두 날 이상 끌어 놓으면 그 기간으로 일정 폼이 뜬다(I-09 18) */
+  onSelectDay?: (date: Date) => void;
 }) => {
   const [isDragSelecting, setIsDragSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<Date | null>(null);
@@ -57,13 +60,15 @@ export const DragSelectProvider = ({
           ? selectionEnd
           : selectionStart;
 
-      // 빈 날짜를 고르면 곧바로 일정 추가로 간다.
+      // 한 날 누름 = 그 날 고르기(폼 없음). 두 날 이상을 끌어 놓으면 그 기간으로 일정 추가 폼이 곧바로 뜬다.
       //
-      // 예전엔 여기서 "일정 / 거래" 를 고르는 팝업을 한 번 더 띄웠다. 가계부가 자체
-      // 캘린더를 갖기 전에는 거래도 여기서 넣어야 했기 때문이다. 이제 거래는 가계부
-      // 캘린더에서 넣으므로, 이 화면은 캘린더 본연의 일만 한다 — 고르는 단계가 사라져
-      // 클릭 한 번이 줄었다.
-      setDialogDateRange({ start, end });
+      // 예전엔 여기서 "일정 / 거래" 를 고르는 팝업을 한 번 더 띄웠다(거래도 여기서 넣던 때). 이제 거래는 가계부에서
+      // 넣으므로 고르는 단계는 없다 — 그리고 한 날 누름은 폼이 아니라 날 고르기다(I-09 18, 사용자 결정 Q2-A).
+      if (isSameDay(start, end)) {
+        onSelectDay?.(start);
+      } else {
+        setDialogDateRange({ start, end });
+      }
 
       // Reset selection visual state
       setSelectionStart(null);
@@ -73,7 +78,7 @@ export const DragSelectProvider = ({
       setSelectionStart(null);
       setSelectionEnd(null);
     }
-  }, [isDragSelecting, selectionStart, selectionEnd]);
+  }, [isDragSelecting, selectionStart, selectionEnd, onSelectDay]);
 
   const isDateInSelection = useCallback(
     (date: Date) => {

@@ -28,25 +28,22 @@ declare global {
 const mocks = vi.hoisted(() => ({ toggle: vi.fn(), mobile: false }));
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => () => {} }));
-vi.mock("@/shared/hooks", () => ({ useIsMobile: () => mocks.mobile }));
-// Popover·Drawer 는 열기 전엔 내용을 DOM 에 두지 않는다 — 여기서 볼 건 그 안의 행이라
-// 통째로 편다. 껍데기(트리거·헤더)는 그대로 지나가게 둬야 개수 표시도 같이 잡힌다.
+// 1280 이상이면 Popover, 미만이면 Bottom Sheet — 폭 판정만 갈음한다(폰 = 좁은 폭)
+vi.mock("@/shared/ds/overlay", () => ({ useWideSurface: () => !mocks.mobile }));
+// Popover · Bottom Sheet 는 열기 전엔 내용을 DOM 에 두지 않는다 — 여기서 볼 건 그 안의 행이라
+// 통째로 편다. 껍데기(트리거 · 칩)는 그대로 지나가게 둬야 개수 표시도 같이 잡힌다.
 const passthrough = ({ children }: { children?: React.ReactNode }) => (
   <>{children}</>
 );
-vi.mock("@/shared/ui/popover", () => ({
+vi.mock("@/shared/ds/popover", () => ({
   Popover: passthrough,
   PopoverTrigger: passthrough,
   PopoverContent: passthrough,
 }));
-vi.mock("@/shared/ui/drawer", () => ({
-  Drawer: passthrough,
-  DrawerTrigger: passthrough,
-  DrawerContent: passthrough,
-  DrawerHeader: passthrough,
-  DrawerTitle: passthrough,
-  DrawerBody: passthrough,
-  DrawerClose: passthrough,
+vi.mock("@/shared/ds/bottom-sheet", () => ({
+  BottomSheet: passthrough,
+  BottomSheetContent: passthrough,
+  BottomSheetBody: passthrough,
 }));
 
 const { CalendarSourceToggle } = await import("./calendar-source-toggle");
@@ -121,17 +118,15 @@ const render = (calendars: UserCalendar[], { mobile = false } = {}) => {
   );
 };
 
-/** 캘린더 행 — 누를 수 있는 행(button)이든 아니든 같은 자리에 있다. */
+/** 캘린더 행 — 누를 수 있는 행(체크 줄)이든 아니든 같은 자리(ds 목록 줄)에 있다. */
 const rowOf = (name: string) =>
-  Array.from(container.querySelectorAll<HTMLElement>('[class*="py-1.5"]')).find(
-    (el) => (el.textContent ?? "").includes(name),
-  );
+  Array.from(
+    container.querySelectorAll<HTMLElement>("[data-slot=list-item]"),
+  ).find((el) => (el.textContent ?? "").includes(name));
 
-/** 그 캘린더를 누를 수 있는 자리 — 없으면 undefined. */
+/** 그 캘린더를 누를 수 있는 자리(체크) — 없으면 undefined. */
 const rowButton = (name: string) =>
-  Array.from(container.querySelectorAll("button")).find((b) =>
-    (b.textContent ?? "").includes(name),
-  );
+  rowOf(name)?.querySelector<HTMLElement>("[role=checkbox]") ?? undefined;
 
 const click = (el: Element) =>
   act(() => {
@@ -155,22 +150,44 @@ afterEach(() => {
   container.remove();
 });
 
-describe("기본 캘린더 행", () => {
-  it("표시 스위치가 없다 — 누를 수 있는 자리 자체를 두지 않는다", () => {
+describe("기본 캘린더 행 — 끌 수 없는 켬(locked)", () => {
+  it('칸만 막힌 켬이다 — 체크됨 + 막힘이라 포커스에서 빠지고, 낭독은 "업무, 기본, 체크됨, 사용할 수 없음"', () => {
     render([WORK, PRIVATE]);
-    expect(rowOf("업무")).toBeTruthy();
-    expect(rowButton("업무")).toBeUndefined();
+    const row = rowOf("업무")!;
+    const box = row.querySelector<HTMLButtonElement>("[role=checkbox]")!;
+    expect(box.getAttribute("aria-checked")).toBe("true");
+    expect(box.disabled).toBe(true);
+    // 이름은 제목 · `기본` 배지(라벨)이고 상태는 체크됨 · 막힘
+    const name = (box.labels?.[0]?.textContent ?? "").replace(/\s+/g, " ");
+    expect(name).toContain("업무 기본");
+  });
+
+  it("상자 없는 파란 체크 표식을 걷었다 — 칸 하나뿐이다", () => {
+    render([WORK, PRIVATE]);
+    const row = rowOf("업무")!;
+    expect(row.querySelectorAll("[role=checkbox]")).toHaveLength(1);
+    // 체크 글리프는 칸 안에만 있다 — 칸 밖 자유 체크 표식(파란 체크)이 없다
+    for (const g of row.querySelectorAll("svg.lucide-check"))
+      expect(g.closest("[role=checkbox]")).not.toBeNull();
   });
 
   it("행을 눌러도 표시 토글이 나가지 않는다", () => {
     render([WORK, PRIVATE]);
     click(rowOf("업무")!);
+    click(rowOf("업무")!.querySelector("[data-slot=list-content]")!);
     expect(mocks.toggle).not.toHaveBeenCalled();
   });
 
-  it("`기본` 표를 달아 왜 다른 행인지 그 자리에서 읽히게 한다", () => {
+  it("제목 · 색 점 · `기본` 배지는 보통 색이다 — 줄 전체가 회색으로 막히지 않는다", () => {
     render([WORK, PRIVATE]);
-    expect(rowOf("업무")!.textContent).toContain("기본");
+    const row = rowOf("업무")!;
+    expect(row.querySelector("[data-slot=list-title]")!.className).not.toMatch(
+      /disabled/,
+    );
+    expect(row.querySelector("[data-slot=badge]")!.textContent).toBe("기본");
+    expect(row.querySelector("[data-slot=list-prefix]")!.className).not.toMatch(
+      /disabled/,
+    );
   });
 });
 
@@ -196,7 +213,7 @@ describe("기본 캘린더는 늘 보이는 것으로 친다", () => {
 
   it("꺼진 값이 남아 있어도 행이 흐려지지 않는다", () => {
     render([HIDDEN_DEFAULT, PRIVATE]);
-    expect(rowOf("업무")!.className).not.toContain("opacity-50");
+    expect(rowOf("업무")!.outerHTML).not.toContain("opacity-50");
   });
 
   // 보이는 소스 개수는 모바일 트리거에만 나온다(데스크톱 트리거는 이름만 띄운다).
@@ -213,6 +230,6 @@ describe("기본 캘린더는 늘 보이는 것으로 친다", () => {
     // 캘린더 1(기본만) + 공휴일 1.
     expect(container.textContent).toContain("2개");
     // 꺼진 줄은 체크로만 알린다 — 불투명도를 쓰지 않는다(DESIGN State)
-    expect(rowOf("개인")!.className).not.toContain("opacity");
+    expect(rowOf("개인")!.outerHTML).not.toContain("opacity");
   });
 });

@@ -1,16 +1,7 @@
 import * as React from "react";
-import { EllipsisVertical } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/cn";
-import { Button } from "@/shared/ds/button";
-import {
-  ResponsiveMenu,
-  ResponsiveMenuContent,
-  ResponsiveMenuGroup,
-  ResponsiveMenuItem,
-  ResponsiveMenuTrigger,
-} from "@/shared/ds/menu";
 
 import {
   SWIPE_BADGE_SIZE,
@@ -26,7 +17,6 @@ import {
   swipeTrayWidth,
   type SwipeAxis,
 } from "./swipe-actions-variants";
-import { useDsText } from "@/shared/ds/i18n";
 
 /*
  * Groo Swipe Actions — groo 에만 있는 패턴(SEED 에는 줄 밀기가 없다). 수치 원본은 groo-design specs/components/swipe-actions.yaml
@@ -37,9 +27,6 @@ import { useDsText } from "@/shared/ds/i18n";
  *                         줄만 그린다. 데스크톱 통과 전용 — 줄에서 동작이 성립하지 않으면 actions={[]}) · rowLabel("삭제: 스타벅스").
  *                         동작을 누르면 트레이를 닫은 뒤 onSelect. 감싼 줄은 tabIndex -1 로 초점을 받을 수 있고, 열린 트레이를 Esc 로
  *                         닫으면 초점을 줄로 옮긴다
- *   SwipeActionsMenu      줄 끝 ⋮ — 같은 actions · rowLabel 을 ResponsiveMenu 로(이름 "{rowLabel} 더보기" · destructive 는
- *                         tone="critical" · 같은 차례). 트레이와 시트가 한 배열에서 나온다 — 스와이프로만 닿는 동작이 없다.
- *                         지름길이라 키보드 · 스크린리더는 이 ⋮ 가 맡는다
  *   SwipeActionsProvider  목록의 조상 — 한 번에 한 줄만 열리고(다른 줄을 끌면 열린 줄이 닫힌다), 스크롤하면 닫힌다. 줄 하나는
  *                         다른 줄의 상태를 모른다. 폰 셸마다 하나(화면마다 새로 두지 않는다)
  *   SwipeActionCell       동작 한 칸(원형 배지 + 라벨) — 트레이가 쓴다. 카탈로그 견본이 칸 하나를 직접 보일 수 있게 내보낸다
@@ -329,58 +316,4 @@ const SwipeActions = React.forwardRef<HTMLDivElement, SwipeActionsProps>(
 );
 SwipeActions.displayName = "SwipeActions";
 
-// ── ⋮ ────────────────────────────────────────────────────────
-export interface SwipeActionsMenuProps {
-  /** SwipeActions 와 같은 배열 — 같은 이름 · 같은 차례 · 같은 확인 창 */
-  actions: SwipeAction[];
-  /** 줄 제목 — ⋮ 의 이름 "{rowLabel} 더보기" · Menu Sheet 의 제목 */
-  rowLabel: string;
-  className?: string;
-}
-
-/** 줄 끝 ⋮ — Button ghost · iconOnly · medium(보이는 40 · 누르는 44). 1280 이상 Menu · 미만 Menu Sheet */
-function SwipeActionsMenu({
-  actions,
-  rowLabel,
-  className,
-}: SwipeActionsMenuProps) {
-  const dsT = useDsText();
-  return (
-    <ResponsiveMenu>
-      <ResponsiveMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          layout="iconOnly"
-          size="medium"
-          aria-label={dsT("common.moreFor", { label: rowLabel })}
-          data-slot="swipe-actions-more"
-          className={className}
-        >
-          <EllipsisVertical />
-        </Button>
-      </ResponsiveMenuTrigger>
-      <ResponsiveMenuContent title={rowLabel}>
-        <ResponsiveMenuGroup>
-          {actions.map((action) => (
-            <ResponsiveMenuItem
-              key={action.label}
-              label={action.label}
-              icon={action.icon}
-              tone={action.kind === "destructive" ? "critical" : "neutral"}
-              disabled={action.disabled}
-              onSelect={action.onSelect}
-            />
-          ))}
-        </ResponsiveMenuGroup>
-      </ResponsiveMenuContent>
-    </ResponsiveMenu>
-  );
-}
-SwipeActionsMenu.displayName = "SwipeActionsMenu";
-
-export {
-  SwipeActions,
-  SwipeActionCell,
-  SwipeActionsMenu,
-  SwipeActionsProvider,
-};
+export { SwipeActions, SwipeActionCell, SwipeActionsProvider };

@@ -182,6 +182,8 @@ type RowProps = Pick<
   /** 앞 붙이개 앞의 것 — 부모 줄의 꺾쇠 단추 · 빈 자리 */
   leading?: React.ReactNode;
   disabled?: boolean;
+  /** 끌 수 없는 켬 — 줄은 누르지 못하지만(막힌 칸과 같다) 글 · 앞 붙이개 색은 보통 줄 그대로다 */
+  locked?: boolean;
   /** 누르는 줄 — 누르는 순간 축소 기준 길이를 잰다 */
   pressable?: boolean;
   /** 컨트롤 줄 — 콘텐츠 층이 라벨이라 줄 어디를 눌러도 끼운 컨트롤이 바뀐다 */
@@ -203,6 +205,7 @@ function Row({
   nest,
   leading,
   disabled,
+  locked,
   pressable,
   control,
   children,
@@ -258,7 +261,7 @@ function Row({
           htmlFor={control.htmlFor}
           data-slot="list-content"
           data-list-action=""
-          data-disabled={disabled ? "" : undefined}
+          data-disabled={disabled || locked ? "" : undefined}
           className={cn(
             listContentVariants({ align, nest }),
             listControlVariants(),
@@ -635,9 +638,14 @@ function ControlRow({
   align,
   highlighted,
   disabled,
+  locked,
   rootProps,
   htmlFor,
-}: ControlRowProps & { disabled?: boolean; htmlFor: string }) {
+}: ControlRowProps & {
+  disabled?: boolean;
+  locked?: boolean;
+  htmlFor: string;
+}) {
   const as = React.useContext(ListRowTag);
   const nest = React.useContext(ListNestContext);
   return (
@@ -650,6 +658,7 @@ function ControlRow({
       highlighted={highlighted}
       nest={nest}
       disabled={disabled}
+      locked={locked}
       pressable
       control={{ htmlFor }}
     >
@@ -737,8 +746,14 @@ export type ListCheckItemProps = Omit<
   CheckmarkProps,
   "title" | "prefix" | "size" | "shape" | "children"
 > &
-  Omit<ControlRowProps, "suffix" | "prefix"> &
-  (
+  Omit<ControlRowProps, "suffix" | "prefix"> & {
+    /**
+     * 끌 수 없는 켬(숨길 수 없는 기본 캘린더) — 칸만 막힌 켬(`checked` + `disabled`, 포커스에서 빠진다)이고 줄은 누르지 못하지만,
+     * 제목 · 앞 붙이개(색 점 · 타일) · 배지는 보통 줄 색 그대로다. 줄 전체를 막는 `disabled` 를 쓰지 않는다(제목이 회색이면 "꺼진 것" 으로
+     * 읽힌다). 끌 수 없는 까닭은 배지가 말한다(list.md "끌 수 없는 켬 — 칸만 막는다", 2026-10-29 사용자 결정 B)
+     */
+    locked?: boolean;
+  } & (
     | {
         markPosition?: "prefix";
         prefix?: React.ReactNode;
@@ -773,6 +788,7 @@ const ListCheckItem = React.forwardRef<
       className,
       id,
       disabled,
+      locked,
       ...props
     },
     ref,
@@ -784,10 +800,10 @@ const ListCheckItem = React.forwardRef<
         ref={ref}
         id={cid}
         size="large"
-        disabled={disabled}
         className={cn(LIST_MARK_NO_SCALE, className)}
         {...markProps}
         {...props}
+        {...(locked ? { checked: true, disabled: true } : { disabled })}
       />
     );
     return (
@@ -826,6 +842,7 @@ const ListCheckItem = React.forwardRef<
         highlighted={highlighted}
         rootProps={rootProps}
         disabled={disabled}
+        locked={locked}
         htmlFor={cid}
       />
     );

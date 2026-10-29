@@ -1814,3 +1814,82 @@ describe("가장 나쁜 값", () => {
     expect(slots("list-item")).toHaveLength(1);
   });
 });
+
+describe("ListCheckItem · locked (끌 수 없는 켬 — 칸만 막는다, list.md)", () => {
+  const render = (node: ReactNode) => act(() => root.render(node));
+  const lockedRow = (onChange = vi.fn()) => (
+    <ListCheckGroup aria-label="캘린더">
+      <ListCheckItem
+        locked
+        onCheckedChange={onChange}
+        prefix={<span data-testid="dot">●</span>}
+        title={
+          <>
+            개인 <span data-testid="badge">기본</span>
+          </>
+        }
+      />
+      <ListCheckItem checked={false} onCheckedChange={() => {}} title="가족" />
+    </ListCheckGroup>
+  );
+
+  it('칸은 체크 + 막힘이고 포커스에서 빠진다 — 낭독은 "개인 기본, 체크됨, 사용할 수 없음"', () => {
+    render(lockedRow());
+    const box = container.querySelector<HTMLElement>("[role=checkbox]")!;
+    expect(box.getAttribute("aria-checked")).toBe("true");
+    expect((box as HTMLButtonElement).disabled).toBe(true);
+    // 이름은 제목 · 배지 글(라벨), 상태는 체크됨 · 막힘(사용할 수 없음)
+    const name = (box as HTMLButtonElement).labels?.[0]?.textContent ?? "";
+    expect(name.replace(/\s+/g, " ")).toContain("개인 기본");
+    expect(box.getAttribute("data-disabled")).not.toBeNull();
+  });
+
+  it("줄은 누르지 못한다 — 눌러도 바뀌지 않고 호버 · 누름 바탕 표식에서 빠진다", () => {
+    const onChange = vi.fn();
+    render(lockedRow(onChange));
+    const label = container.querySelector<HTMLElement>(
+      "[data-slot=list-content]",
+    )!;
+    expect(label.getAttribute("data-disabled")).not.toBeNull();
+    act(() => label.click());
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("제목 · 앞 붙이개 · 배지는 보통 색이다 — 줄 전체 막힘(disabled)의 회색이 아니다", () => {
+    render(lockedRow());
+    const row = container.querySelector<HTMLElement>("[data-slot=list-item]")!;
+    // 칸(체크)만 회색이다 — 제목 · 앞 붙이개 자리는 보통 색
+    expect(
+      row.querySelector("[data-slot=list-title]")!.className,
+    ).not.toContain("disabled");
+    expect(
+      row.querySelector("[data-slot=list-prefix]")!.className,
+    ).not.toContain("disabled");
+    expect(
+      row.querySelector("[data-testid=dot]")!.closest("span[data-slot]")!
+        .className,
+    ).not.toContain("text-fg-disabled");
+    const other = container.querySelectorAll(
+      "[role=checkbox]",
+    )[1] as HTMLButtonElement;
+    // 보통 줄은 그대로 눌린다
+    expect(other.disabled).toBe(false);
+  });
+
+  it("locked 가 아닌 disabled 는 지금처럼 줄 전체를 막는다", () => {
+    render(
+      <ListCheckGroup aria-label="캘린더">
+        <ListCheckItem
+          disabled
+          checked
+          onCheckedChange={() => {}}
+          title="가족"
+        />
+      </ListCheckGroup>,
+    );
+    const row = container.querySelector<HTMLElement>("[data-slot=list-item]")!;
+    expect(row.querySelector("[data-slot=list-title]")!.className).toMatch(
+      /disabled/,
+    );
+  });
+});
