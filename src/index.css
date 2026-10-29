@@ -20,6 +20,20 @@
 @import "./shared/styles/groo-tokens.css";
 @import "./shared/styles/groo-shadcn-bridge.css";
 
+/* 글리프 보충 — index.html 의 CDN Pretendard dynamic-subset(v1.3.9) 이 unicode-range 에 담지 않은 기호(− ✓ ⚠ ∅ ↺ ⌘).
+ * 원본 Pretendard 에서 뽑은 서브셋 woff2(wght 축 유지)를 별도 family 로 두고, --font-sans 에서 "Pretendard Variable" 바로
+ * 뒤에 넣어 글자 단위로 대체한다. OFL 1.1 조항 3(Reserved Font Name) 때문에 수정본(서브셋)은 "Pretendard" 이름을 쓰지
+ * 못한다 — 이름을 GrooNumSymbols 로 바꿨다(name 테이블도). 만드는 법 scripts/build-font-supplement.mjs, 라이선스 전문
+ * public/fonts/Pretendard-OFL.txt. */
+@font-face {
+  font-family: "GrooNumSymbols";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 45 920;
+  src: url("/fonts/pretendard-supplement.woff2") format("woff2");
+  unicode-range: U+2212, U+2713, U+26A0, U+2205, U+21BA, U+2318;
+}
+
 /* 차트 색 짝(weak · subtle · contrast) — chart-palette.ts getPaletteByColor 가 이름을 템플릿 문자열
  * (`var(${cssVar}-contrast)`)로 만들어 Tailwind 가 쓰는 곳을 못 찾는다. 기본 @theme 는 안 쓴 변수를
  * 내보내지 않아 orange · indigo · violet · pink · brown · gray 의 -contrast 가 빠졌었다(I-29 P5).
@@ -124,8 +138,9 @@
 
   /* Typography */
   --font-sans:
-    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont,
-    "Apple SD Gothic Neo", "Noto Sans KR", "Inter", "Segoe UI", sans-serif;
+    "Pretendard Variable", "GrooNumSymbols", "Pretendard", -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Inter",
+    "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", monospace;
   /* font-size / line-height / font-weight / letter-spacing — groo-tokens.css `--text-*` SoT 사용.
    * 옛 --fs-* / --lh-* / --fw-* / --tracking-* legacy 별명은 마이그됨:
@@ -338,8 +353,9 @@
 
 @theme inline {
   --font-sans:
-    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont,
-    "Apple SD Gothic Neo", "Noto Sans KR", "Inter", "Segoe UI", sans-serif;
+    "Pretendard Variable", "GrooNumSymbols", "Pretendard", -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Inter",
+    "Segoe UI", sans-serif;
   /* Tailwind font-X 클래스 → 우리 --fw-* 토큰 매핑 */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
