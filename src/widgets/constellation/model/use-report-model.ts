@@ -13,6 +13,7 @@ import {
   PRIO_ORDER,
   REPORT_MAX_WEEKS_BACK,
   REPORT_SKY_DAYS,
+  selAfterWeekMove,
   WEIGHT,
   addDays,
   doneKey,
@@ -33,7 +34,6 @@ export function useReportModel() {
   const todosQ = useTodos();
 
   const todayISO = useMemo(() => isoOf(new Date()), []);
-  const [weekOffset, setWeekOffset] = useState(0);
   const [sel, setSel] = useState(todayISO);
 
   const todos = useMemo(() => todosQ.data ?? [], [todosQ.data]);
@@ -47,7 +47,13 @@ export function useReportModel() {
     return map;
   }, [collectionQ.data]);
 
-  const weekStart = addDays(mondayOf(todayISO), -7 * weekOffset);
+  // 보는 주는 고른 날이 정한다 — 주를 넘기면 같은 요일이 고른 날이 된다(미래면 오늘)
+  const weekStart = mondayOf(sel);
+  const weekOffset = Math.round(
+    (new Date(`${mondayOf(todayISO)}T00:00:00`).getTime() -
+      new Date(`${weekStart}T00:00:00`).getTime()) /
+      (7 * 86400000),
+  );
   const days = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart],
@@ -134,9 +140,8 @@ export function useReportModel() {
     weekOffset,
     canPrev: weekOffset < REPORT_MAX_WEEKS_BACK,
     canNext: weekOffset > 0,
-    prevWeek: () =>
-      setWeekOffset((o) => Math.min(REPORT_MAX_WEEKS_BACK, o + 1)),
-    nextWeek: () => setWeekOffset((o) => Math.max(0, o - 1)),
+    prevWeek: () => setSel(selAfterWeekMove(sel, todayISO, "prev")),
+    nextWeek: () => setSel(selAfterWeekMove(sel, todayISO, "next")),
     sel,
     setSel,
     days,

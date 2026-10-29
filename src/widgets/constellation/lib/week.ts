@@ -53,3 +53,24 @@ export function mondayOf(iso: string): string {
 export function doneKey(t: Todo): string | null {
   return t.status === "COMPLETED" ? toLocalDateKey(t.completedAt) : null;
 }
+
+/** 월요일 시작 요일 번호 — 월 0 … 일 6. */
+export function weekdayIndex(iso: string): number {
+  return (new Date(`${iso}T00:00:00`).getDay() + 6) % 7;
+}
+
+/**
+ * 주 넘기기(I-11 10-29 결정 4 · A) — ‹ › 로 주를 넘기면 **보던 요일의 같은 요일**이 고른 날이 된다.
+ * 그 요일이 오는 날(미래)이면 고를 수 있는 마지막 날(오늘). 월요일 시작은 그대로. 앱과 같은 표본(`week-nav.fixture.json`)으로 잠근다.
+ */
+export function selAfterWeekMove(
+  sel: string,
+  todayISO: string,
+  dir: "prev" | "next",
+): string {
+  const target = addDays(
+    mondayOf(sel),
+    (dir === "prev" ? -7 : 7) + weekdayIndex(sel),
+  );
+  return target > todayISO ? todayISO : target;
+}

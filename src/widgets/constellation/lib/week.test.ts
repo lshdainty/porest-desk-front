@@ -36,3 +36,19 @@ describe("도감 NEW 기준(I-11 11)", () => {
     expect(newestKeyOf([entry("a", 0, null)])).toBeNull();
   });
 });
+
+import fixture from "./week-nav.fixture.json";
+import { selAfterWeekMove, weekdayIndex } from "./week";
+
+describe("주 넘기기 = 같은 요일(I-11 10-29 결정 4)", () => {
+  it("월요일 시작 요일 번호", () => {
+    expect(weekdayIndex("2026-10-19")).toBe(0);
+    expect(weekdayIndex("2026-10-25")).toBe(6);
+  });
+  it.each(fixture.rows)(
+    "오늘 $today · 고른 $sel · $dir → $expect",
+    ({ today, sel, dir, expect: want }) => {
+      expect(selAfterWeekMove(sel, today, dir as "prev" | "next")).toBe(want);
+    },
+  );
+});
