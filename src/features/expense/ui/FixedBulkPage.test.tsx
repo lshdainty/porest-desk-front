@@ -28,7 +28,7 @@ vi.mock("@/shared/ds/snackbar", () => ({
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const mutate = vi.fn();
-const mState = { isError: false, submittedAt: 0 };
+const mState = { isError: false, error: null as unknown };
 const refetch = vi.fn();
 const qState = { error: false };
 vi.mock("../model/useExpenses", () => ({
@@ -55,7 +55,7 @@ vi.mock("../model/useExpenses", () => ({
     mutate,
     isPending: false,
     isError: mState.isError,
-    submittedAt: mState.submittedAt,
+    error: mState.error,
   }),
 }));
 
@@ -73,7 +73,7 @@ afterEach(() => {
   qState.error = false;
   snacks.length = 0;
   mState.isError = false;
-  mState.submittedAt = 0;
+  mState.error = null;
   delete (window as { matchMedia?: unknown }).matchMedia;
   mutate.mockReset();
   act(() => root.unmount());
@@ -192,7 +192,7 @@ describe("폰 고정 정리 페이지", () => {
       renderPage();
       expect(scroll).not.toHaveBeenCalled();
       mState.isError = true;
-      mState.submittedAt = 1;
+      mState.error = { n: 1 };
       renderPage();
       expect(scroll).toHaveBeenCalledTimes(1);
       expect(scroll).toHaveBeenCalledWith({
@@ -208,7 +208,7 @@ describe("폰 고정 정리 페이지", () => {
     it("모션 줄이기면 바로(auto) 올린다", () => {
       reduce(true);
       mState.isError = true;
-      mState.submittedAt = 1;
+      mState.error = { n: 1 };
       renderPage();
       expect(scroll).toHaveBeenCalledWith({ block: "start", behavior: "auto" });
     });
@@ -216,11 +216,11 @@ describe("폰 고정 정리 페이지", () => {
     it("재시도 중(실패가 꺼진 동안)에는 움직이지 않는다", () => {
       reduce(false);
       mState.isError = true;
-      mState.submittedAt = 1;
+      mState.error = { n: 1 };
       renderPage();
       expect(scroll).toHaveBeenCalledTimes(1);
       mState.isError = false; // 다시 [적용] — pending
-      mState.submittedAt = 2;
+      mState.error = { n: 2 };
       renderPage();
       expect(scroll).toHaveBeenCalledTimes(1);
       expect(document.querySelector("[role=alert]")).toBeNull();
@@ -229,11 +229,11 @@ describe("폰 고정 정리 페이지", () => {
     it("실패 → 재시도 → 또 실패에도 매번 올린다 (실패가 켜진 채 시도만 바뀌어도)", () => {
       reduce(false);
       mState.isError = true;
-      mState.submittedAt = 1;
+      mState.error = { n: 1 };
       renderPage();
       expect(scroll).toHaveBeenCalledTimes(1);
       // 꺼짐이 안 그려지고 isError 가 true 로 이어진 채 새 시도의 실패
-      mState.submittedAt = 2;
+      mState.error = { n: 2 };
       renderPage();
       expect(scroll).toHaveBeenCalledTimes(2);
       // 같은 시도가 다시 그려지는 것(다른 이유의 리렌더)에는 또 올리지 않는다
@@ -241,7 +241,7 @@ describe("폰 고정 정리 페이지", () => {
       expect(scroll).toHaveBeenCalledTimes(2);
       // 꺼졌다 켜지는 보통의 흐름
       mState.isError = false;
-      mState.submittedAt = 3;
+      mState.error = { n: 3 };
       renderPage();
       mState.isError = true;
       renderPage();

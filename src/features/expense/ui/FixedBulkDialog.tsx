@@ -155,10 +155,7 @@ function FixedBulkModal({
     groups,
     apply,
   } = useFixedBulk({ startDate, endDate, onClose });
-  const errorRef = useScrollToError<HTMLDivElement>(
-    mut.isError,
-    mut.submittedAt,
-  );
+  const errorRef = useScrollToError<HTMLDivElement>(mut.isError, mut.error);
 
   return (
     <ModalShell

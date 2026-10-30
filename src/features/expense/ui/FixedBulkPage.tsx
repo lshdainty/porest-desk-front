@@ -51,10 +51,7 @@ export function FixedBulkPage({
     apply,
   } = useFixedBulk({ startDate, endDate, onClose });
   // 실패하면 Callout 이 보이게 본문을 맨 위로(스크롤 컨테이너는 아래 flex-1 overflow-y-auto)
-  const errorRef = useScrollToError<HTMLDivElement>(
-    mut.isError,
-    mut.submittedAt,
-  );
+  const errorRef = useScrollToError<HTMLDivElement>(mut.isError, mut.error);
   const page = (
     <div
       role="dialog"
