@@ -60,6 +60,8 @@ export const PasswordChangeDialog = ({
   const submit = () => {
     if (!canSubmit || changePasswordMutation.isPending) return;
     setFailed(false);
+    // 다시 제출하면 지난 판정(현재 비밀번호 틀림)은 걷는다 — 서버 장애로 실패하면 현재 칸 오류와 Callout 이 함께 보이지 않게
+    setCurrentWrong(false);
     changePasswordMutation.mutate(
       { currentPassword: current, newPassword: next, confirmPassword: confirm },
       {

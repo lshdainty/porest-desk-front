@@ -226,4 +226,27 @@ describe("비밀번호 변경 실패 문구 (QA #128)", () => {
     expect(toasts.error).toEqual([]);
     expect(closed).toBe(true);
   });
+
+  it("현재 비밀번호가 틀렸다는 판정은 다시 제출하면 걷힌다 — 다른 실패와 함께 보이지 않는다", async () => {
+    next.error = wrongCurrentPassword;
+    act(() =>
+      root.render(<PasswordChangeDialog open onOpenChange={() => {}} />),
+    );
+    await submit();
+    expect(document.body.textContent).toContain("currentPasswordInvalid");
+
+    next.error = {
+      message: "Request failed with status code 503",
+      response: { status: 503, data: { code: "SSO_001", message: "SSO down" } },
+    };
+    const save = [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === "save",
+    )!;
+    await act(async () => {
+      save.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(document.body.textContent).not.toContain("currentPasswordInvalid");
+    expect(document.body.querySelector('[role="alert"]')).not.toBeNull();
+  });
 });

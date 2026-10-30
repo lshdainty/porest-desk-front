@@ -40,7 +40,7 @@ import { SettingsSubpageMobile } from "./SettingsSubpageMobile";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
-// 소셜 연동 provider → 표시 이름. 서버 미지원 provider 는 원문(소문자) 그대로 노출.
+// 소셜 연동 provider → 표시 이름. 표에 없으면 고정 "Google"(연결할 수 있는 소셜이 하나다).
 const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: "Google" };
 
 export const SettingsPage = () => {
@@ -96,7 +96,8 @@ export const SettingsPage = () => {
     oauthReturnHandled.current = true;
 
     if (linked) {
-      const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? linked;
+      // 연결할 수 있는 소셜은 Google 하나다 — 주소에 실린 임의 글을 알림 이름으로 쓰지 않는다
+      const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? "Google";
       toast.success(t("account.toast.linked", { name }));
       queryClient.invalidateQueries({ queryKey: oauthKeys.all });
     } else if (linkError) {
