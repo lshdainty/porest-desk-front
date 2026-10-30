@@ -186,7 +186,7 @@ export function TransferDetailDialog({
 
       {confirmDelete && (
         <ConfirmDialog
-          title={tc("delete")}
+          title={t("transferDeleteTitle")}
           message={t("transferDeleteConfirm")}
           confirmLabel={tc("delete")}
           danger
