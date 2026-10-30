@@ -193,9 +193,12 @@ export const expenseApi = {
     expenseIds: number[],
     isFixed: boolean,
   ): Promise<{ updatedCount: number }> => {
+    // 실패는 화면(스낵바 + 다시 시도)이 직접 알린다 — 전역 토스트와 겹치지 않게
+    const quiet: QuietRequestConfig = { silent: true };
     const resp: ApiResponse<{ updatedCount: number }> = await apiClient.put(
       "/v1/expenses/fixed",
       { expenseIds, isFixed },
+      quiet,
     );
     return resp.data;
   },

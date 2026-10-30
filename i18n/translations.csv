@@ -3101,7 +3101,8 @@ expense,bulk.sum,합계,Total
 expense,bulk.markFixed,고정으로 표시,Mark as fixed
 expense,bulk.delete,삭제,Delete
 expense,bulk.limit,한 번에 500건까지 할 수 있어요,Up to 500 at a time
-expense,bulk.fixedDone,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
+expense,bulk.fixedDone,{{count}}건을 고정으로 바꿨어요.,Marked {{count}} as fixed.
+expense,bulk.fixedFailed,고정으로 표시하지 못했어요.,Couldn't mark them as fixed.
 expense,bulk.deleteTitle,거래 {{count}}건을 삭제할까요?,Delete {{count}} transactions?
 expense,bulk.deleteMessage,지운 거래는 되돌릴 수 없어요. 합계 {{amount}}이 {{month}}에서 빠져요.,Deleted transactions can't be restored. The total {{amount}} will be removed from {{month}}.
 expense,bulk.deleted,{{count}}건을 삭제했어요.,Deleted {{count}} transactions.

@@ -657,7 +657,8 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
     await act(async () => byName("고정으로 표시")!.click());
 
     expect(st.fixedCalls).toEqual([{ ids: [1, 2], isFixed: true }]);
-    expect(st.toasts).toEqual(["2건을 고정으로 바꿨어요"]);
+    expect(st.snacks).toEqual([{ message: "2건을 고정으로 바꿨어요." }]);
+    expect(st.toasts).toEqual([]);
     expect(bulk()).toBeNull();
   });
 
@@ -816,7 +817,7 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
     post.mockRestore();
   });
 
-  it("고정 표시가 실패하면 고른 것을 그대로 두고 처리 안 된 오류를 남기지 않는다", async () => {
+  it("고정 표시가 실패하면 고른 것을 그대로 두고 critical 스낵바 + [다시 시도] — 누르면 같은 요청을 바로 보낸다", async () => {
     st.fixedFails = true;
     render();
     enter();
@@ -825,26 +826,69 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
 
     expect(bulk()).not.toBeNull();
     expect(st.toasts).toEqual([]);
+    expect(st.snacks).toHaveLength(1);
+    expect(st.snacks[0]).toMatchObject({
+      message: "고정으로 표시하지 못했어요.",
+      tone: "critical",
+      action: { label: "다시 시도" },
+    });
+    st.fixedFails = false;
+    await act(async () => st.snacks[0]!.action!.onClick());
+    expect(st.fixedCalls).toEqual([
+      { ids: [1], isFixed: true },
+      { ids: [1], isFixed: true },
+    ]);
+    expect(st.snacks[1]).toEqual({ message: "1건을 고정으로 바꿨어요." });
+    expect(bulk()).toBeNull();
   });
 
-  it("삭제가 실패하면 확인창은 열린 채다", async () => {
+  it("삭제가 실패하면 확인창을 닫고 critical 스낵바 + [다시 시도] — 다시 묻지 않고 같은 삭제를 바로 보낸다", async () => {
     st.deleteFails = true;
-    render();
-    enter();
-    click(checks()[0]!);
-    click(byName("삭제"));
-    const confirm = Array.from(
-      document.querySelectorAll("[role=alertdialog] button"),
-    ).find((b) => b.textContent === "삭제") as HTMLElement;
-    await act(async () => confirm.click());
+    await openDeleteConfirm();
 
     expect(st.deleteCalls).toEqual([[1]]);
-    expect(document.querySelector("[role=alertdialog]")).not.toBeNull();
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
     expect(st.toasts).toEqual([]);
-    // 아무것도 지워지지 않았다 — 서버 글이 아니라 고정 문구의 critical 스낵바
-    expect(st.snacks).toEqual([
-      { message: "거래를 삭제하지 못했어요.", tone: "critical" },
-    ]);
+    // 아무것도 지워지지 않았다 — 고른 것은 그대로, 서버 글이 아니라 고정 문구
+    expect(bulk()).not.toBeNull();
+    expect(st.snacks).toHaveLength(1);
+    expect(st.snacks[0]).toMatchObject({
+      message: "거래를 삭제하지 못했어요.",
+      tone: "critical",
+      action: { label: "다시 시도" },
+    });
+
+    st.deleteFails = false;
+    await act(async () => st.snacks[0]!.action!.onClick());
+    expect(st.deleteCalls).toEqual([[1], [1]]);
+    // 다시 묻지 않는다
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+    expect(st.snacks[1]).toEqual({ message: "1건을 삭제했어요." });
+    expect(bulk()).toBeNull();
+  });
+
+  it("다시 시도가 또 실패하면 같은 critical 스낵바가 다시 뜬다", async () => {
+    st.deleteFails = true;
+    await openDeleteConfirm();
+    await act(async () => st.snacks[0]!.action!.onClick());
+    expect(st.deleteCalls).toEqual([[1], [1]]);
+    expect(st.snacks).toHaveLength(2);
+    expect(st.snacks[1]).toMatchObject({ tone: "critical" });
+  });
+
+  it("고정 표시 요청도 silent — 전역 토스트를 끈다", async () => {
+    const { expenseApi } = await import("@/features/expense/api/expenseApi");
+    const { apiClient } = await import("@/shared/api");
+    const put = vi
+      .spyOn(apiClient, "put")
+      .mockResolvedValue({ data: { updatedCount: 1 } });
+    await expenseApi.bulkMarkFixed([1], true);
+    expect(put).toHaveBeenCalledWith(
+      "/v1/expenses/fixed",
+      { expenseIds: [1], isFixed: true },
+      { silent: true },
+    );
+    put.mockRestore();
   });
 });
 

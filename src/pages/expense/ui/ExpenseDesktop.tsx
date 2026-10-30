@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { Card } from "@/shared/ds/card";
 import { useWideSurface } from "@/shared/ds/overlay";
 import { Skeleton } from "@/shared/ds/skeleton";
@@ -244,16 +243,20 @@ export function ExpenseDesktop() {
     clearPicked();
     focusAction();
   };
-  const markFixed = async () => {
+  const markFixed = async (ids: number[] = chosenIds) => {
     try {
-      const res = await bulkFixed.mutateAsync({
-        ids: chosenIds,
-        isFixed: true,
+      const res = await bulkFixed.mutateAsync({ ids, isFixed: true });
+      snackbar.show({
+        message: t("bulk.fixedDone", { count: res.updatedCount }),
       });
-      toast.success(t("bulk.fixedDone", { count: res.updatedCount }));
       clearPickedAndFocus();
     } catch {
-      // 실패하면 고른 것을 그대로 둔다 — 오류는 전역 알림이 말한다(처리 안 된 오류를 남기지 않는다)
+      // 실패하면 고른 것을 그대로 두고 critical 스낵바 + [다시 시도](같은 요청을 바로)
+      snackbar.show({
+        message: t("bulk.fixedFailed"),
+        tone: "critical",
+        action: { label: tc("retry"), onClick: () => void markFixed(ids) },
+      });
     }
   };
   const assets = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data]);
@@ -288,23 +291,29 @@ export function ExpenseDesktop() {
     amount: number;
     after: () => void;
   } | null>(null);
-  const confirmDelete = async () => {
+  // 확정한 삭제를 실행한다 — 실패하면 확인창을 닫고 critical 스낵바 + [다시 시도](다시 묻지 않고 같은 삭제를 바로)
+  const runDelete = async (ids: number[]) => {
     let res: Awaited<ReturnType<typeof bulkDelete.mutateAsync>>;
     try {
-      res = await bulkDelete.mutateAsync(chosenIds);
-    } catch (e) {
-      // 아무것도 지워지지 않았다 — 확인창은 열린 채 두고(BulkDeleteDialog) 스낵바로 알린다
-      snackbar.show({ message: t("bulk.deleteFailed"), tone: "critical" });
-      throw e;
+      res = await bulkDelete.mutateAsync(ids);
+    } catch {
+      setDeleteOpen(false);
+      snackbar.show({
+        message: t("bulk.deleteFailed"),
+        tone: "critical",
+        action: { label: tc("retry"), onClick: () => void runDelete(ids) },
+      });
+      return;
     }
     setDeleteOpen(false);
     clearPickedAndFocus();
     const refunded = res.refundedAmount ?? 0;
     const fixTarget = closedInfo.fixTarget;
+    const deletedCount = res.deletedCount;
     // 삭제 띠: "N건을 삭제했어요." + (닫힌 회차 카드면) [잔액 고치기] — 액션 조건은 환급과 무관하다
     const showSnack = () =>
       snackbar.show({
-        message: t("bulk.deleted", { count: res.deletedCount }),
+        message: t("bulk.deleted", { count: deletedCount }),
         ...(fixTarget != null
           ? {
               action: {
@@ -316,8 +325,8 @@ export function ExpenseDesktop() {
       });
     if (refunded > 0) setRefundNotice({ amount: refunded, after: showSnack });
     else showSnack();
-    return res;
   };
+  const confirmDelete = () => runDelete(chosenIds);
   const closeRefundNotice = () => {
     const after = refundNotice?.after;
     setRefundNotice(null);
@@ -393,7 +402,7 @@ export function ExpenseDesktop() {
               sum={chosenSum}
               overLimit={overLimit}
               busy={bulkFixed.isPending}
-              onMarkFixed={markFixed}
+              onMarkFixed={() => void markFixed()}
               onDelete={() => setDeleteOpen(true)}
               onClear={clearPickedAndFocus}
             />
