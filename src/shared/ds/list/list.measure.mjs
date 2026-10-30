@@ -64,12 +64,13 @@ export default {
   "tile.color": [TILE, "color", "color"],
   "body.gap": [BODY, "px", "row-gap"],
   "body.paddingRight": [BODY, "px", "padding-right"],
-  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth("1em")는 글자 단위 값이라 재지 않는다 — 계산값이 26px(제목 글자 16 + 뒤 여백 10)로
-  // 풀려 스펙 글과 맞지 않는다. list.test.tsx 가 클래스로, i02-measure 가 크로미움에서 26 을 본다
+  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth 는 재지 않는다 — 2026-10-30 부터 제목의 가장 긴 낱말 폭(min-content)이라 제목 따라 달라지는 값이다
+  // (스펙 문서는 "1em" 그대로 — 디자인 세션이 고친다). list.test.tsx 가 클래스로, 렌더 측정이 크로미움에서 본다
   "body.flexGrow": [BODY, "exact", "flex-grow"],
   "title.typography": ["[data-slot=list-title]", "typography"],
   "title.fontWeight": ["[data-slot=list-title]", "exact", "font-weight"],
-  "title.overflowWrap": ["[data-slot=list-title]", "exact", "overflow-wrap"],
+  // title.overflowWrap 은 재지 않는다(허용 예외) — ::before 자가 min-content 를 정하므로 제목 계산값은 anywhere 이다. 보이는 동작은 스펙(break-word)과 같다.
+  // 스펙 비고 · list.md 구현 줄은 groo-design 정리 PR 에서. list.test.tsx 가 클래스로 잠근다
   "title.foreground": ["[data-slot=list-title]", "color", "color"],
   "detail.typography": ["[data-slot=list-detail]", "typography"],
   "detail.foreground": ["[data-slot=list-detail]", "color", "color"],

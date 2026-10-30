@@ -288,7 +288,7 @@ describe("List · ListItem", () => {
     // 본문은 제목 아래 2 · 뒤 붙이개와 10 — 폭이 내용을 따르는 flex 항목이라 최소 폭 제목 글자 1개(--text-t5) + 뒤 여백 10
     expect(classes(slot("list-body", second))).toEqual(
       expect.arrayContaining([
-        "min-w-[calc(var(--text-t5)+var(--spacing-x2_5))]",
+        "min-w-min",
         "flex-1",
         "flex-col",
         "gap-x0_5",
@@ -462,7 +462,7 @@ describe("ListButtonItem · ListLinkItem", () => {
         "after:absolute",
         "after:inset-0",
         "data-[disabled]:cursor-not-allowed",
-        "min-w-[calc(var(--text-t5)+var(--spacing-x2_5))]",
+        "min-w-min",
       ]),
     );
     click(button);
@@ -1729,18 +1729,153 @@ describe("가장 나쁜 값", () => {
         /(^|\s)(truncate|line-clamp-\d|text-ellipsis|overflow-hidden|whitespace-nowrap)(\s|$)/,
       );
     }
-    // 본문은 한 글자(1em) + 뒤 여백 10 까지만 줄고, 제목 · 글 설명은 칸 끝에서 끊는다(Q-001 A)
+    // 본문은 제목의 가장 긴 낱말 폭(min-content)까지만 줄고, 제목은 break-word(min-content 를 줄이지 않는다) · 글 설명은 칸 끝에서 끊는다(안 B)
     expect(classes(slot("list-body"))).toEqual(
-      expect.arrayContaining([
-        "min-w-[calc(var(--text-t5)+var(--spacing-x2_5))]",
-        "flex-1",
-        "pr-x2_5",
-      ]),
+      expect.arrayContaining(["min-w-min", "flex-1", "pr-x2_5"]),
     );
     expect(classes(slot("list-body"))).not.toContain("min-w-0");
-    expect(classes(slot("list-title"))).toContain("[overflow-wrap:anywhere]");
+    // 글 제목은 anywhere + 높이 0 ::before(data-ruler)가 min-content 만 정한다 — 가장 긴 낱말 폭, 상한은 (줄 안 폭 − 앞 자리) ÷ 2.
+    // 제목 자신에 max-width 를 걸지 않는다(띄어쓰기 있는 제목이 절반에서 줄을 바꾸면 안 된다)
+    const titleClasses = classes(slot("list-title"));
+    expect(titleClasses).toContain("[overflow-wrap:anywhere]");
+    expect(titleClasses).toContain("before:content-[attr(data-ruler)]");
+    expect(titleClasses).toContain(
+      "before:[max-inline-size:calc((100cqw-var(--list-gutters,58px)-var(--list-lead-p,0px)-var(--list-lead-e,0px))/2)]",
+    );
+    expect(titleClasses.some((c) => c.startsWith("max-w-"))).toBe(false);
+    expect(slot("list-title").getAttribute("data-ruler")).toBe(longTitle);
     expect(classes(slot("list-detail"))).toContain("[overflow-wrap:anywhere]");
     expect(classes(slot("list-content"))).toContain("items-start");
+  });
+
+  it("두 글자 제목 + 긴 값 — 본문은 제목 낱말 폭(min-content) 아래로 줄지 않고 값이 남은 폭에서 줄을 바꾼다", () => {
+    render(
+      <List>
+        <ListItem
+          title="장소"
+          suffix="서울특별시 강남구 테헤란로 123 그루빌딩 지하 1층 대회의실 B"
+        />
+        <ListButtonItem
+          title="이메일"
+          suffix="groo.desk.design.system.long.address@example-company-domain.co.kr"
+        />
+      </List>,
+    );
+    for (const body of slots("list-body")) {
+      // 1em(한 글자) 고정이 아니라 min-content — 두 글자 제목이 "장/소" 로 갈라지지 않는다
+      expect(classes(body)).toContain("min-w-min");
+      expect(classes(body).join(" ")).not.toContain("--text-t5");
+      expect(classes(body)).not.toContain("min-w-0");
+    }
+    for (const value of slots("list-suffix")) {
+      expect(value.getAttribute("data-value")).toBe("text");
+      expect(classes(value)).toEqual(
+        expect.arrayContaining([
+          "min-w-0",
+          "shrink",
+          "[overflow-wrap:anywhere]",
+        ]),
+      );
+    }
+  });
+
+  it("제목 상한(절반)의 앞 자리는 상수다 — 앞 붙이개 54 · 꺾쇠 48, 재지 않는다. 좁은 줄에서는 풀린다", () => {
+    render(
+      <List>
+        <ListItem title="없음" suffix="값" />
+        <ListItem prefix={<svg />} title="앞" suffix="값" />
+      </List>,
+    );
+    const [plain, withPrefix] = slots("list-content");
+    const lead = (el: Element) => classes(el).join(" ");
+    // 앞 붙이개 유무는 has() 로 갈리고 값은 상수다
+    expect(lead(plain!)).toContain(
+      "has-[>[data-slot=list-prefix]]:[--list-lead-p:54px]",
+    );
+    expect(lead(plain!)).toContain(
+      "has-[>:is([data-slot=list-expand-button],[data-slot=list-expand-slot])]:[--list-lead-e:48px]",
+    );
+    expect(plain!.querySelector("[data-slot=list-prefix]")).toBeNull();
+    expect(
+      withPrefix!.querySelector(":scope > [data-slot=list-prefix]"),
+    ).not.toBeNull();
+    expect(lead(plain!)).toContain("[&_[data-slot=list-title]]:before:hidden");
+    // 인라인으로 재서 넘기지 않는다
+    expect(plain!.getAttribute("style") ?? "").not.toContain("--list-lead");
+  });
+
+  it("좁은 줄에서 값 안쪽의 오른쪽 맞춤 표식을 왼쪽으로 푼다 — 세 단계 모두, 값 요소와 자손만", () => {
+    render(
+      <List>
+        <ListItem title="줄" suffix={<b>1원</b>} />
+        <ListParentItem title="부모" expandLabel="부모 하위" defaultOpen>
+          <ListItem title="하위" suffix={<b>2원</b>} />
+        </ListParentItem>
+      </List>,
+    );
+    const [plain, parent, child] = slots("list-content");
+    const RIGHT =
+      ":is(.items-end,.justify-end,.text-end,.text-right,.self-end,.ml-auto)";
+    for (const [content, threshold] of [
+      [plain!, "calc(16rem+48px)"],
+      [parent!, "calc(16rem+28px)"],
+      [child!, "calc(16rem+128px)"],
+    ] as const) {
+      const cls = classes(content).join(" ");
+      expect(cls).toContain(`@max-[${threshold}]/list-item:`);
+      expect(cls).toContain(`${RIGHT}]:items-start!`);
+      expect(cls).toContain(`${RIGHT}]:text-start!`);
+      expect(cls).toContain(`${RIGHT}]:justify-start!`);
+      // 화살표 · 컨트롤은 건드리지 않는다 — 값 요소 선택자는 :not(컨트롤) 이다
+      expect(cls).toContain(":not(svg,button,a,input,[data-slot=list-mark])");
+    }
+  });
+
+  it("ResizeObserver 를 쓰지 않는다 — 수백 줄 목록에서 줄마다 관찰자를 달지 않는다", () => {
+    const ro = vi.fn();
+    vi.stubGlobal("ResizeObserver", ro);
+    render(
+      <List>
+        <ListItem prefix={<svg />} title="앞" suffix="값" />
+        <ListParentItem title="부모" expandLabel="부모 하위" defaultOpen>
+          <ListItem title="하위" />
+        </ListParentItem>
+      </List>,
+    );
+    expect(ro).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it("data-ruler 는 제목 글이 바뀔 때만 다시 쓴다 — 같은 글로 다시 그려도 DOM 을 쓰지 않는다", () => {
+    const rerender = render;
+    render(
+      <List>
+        <ListItem title="가나다" />
+      </List>,
+    );
+    const title = slot("list-title");
+    expect(title.getAttribute("data-ruler")).toBe("가나다");
+    const writes: string[] = [];
+    const mo = new MutationObserver((rs) =>
+      rs.forEach((r) => writes.push(r.attributeName ?? "")),
+    );
+    mo.observe(title, { attributes: true });
+    rerender(
+      <List>
+        <ListItem title="가나다" />
+      </List>,
+    );
+    expect(mo.takeRecords()).toHaveLength(0);
+    rerender(
+      <List>
+        <ListItem title="가나다라" />
+      </List>,
+    );
+    expect(mo.takeRecords().map((r) => r.attributeName)).toEqual([
+      "data-ruler",
+    ]);
+    expect(slot("list-title").getAttribute("data-ruler")).toBe("가나다라");
+    mo.disconnect();
   });
 
   it("뒤 붙이개 — 요소(금액 · 화살표 · 컨트롤)는 줄지 않고, 글로 넘긴 값(이메일 · 계좌)은 줄 끝에서 끊어 본문 위로 넘치지 않는다", () => {

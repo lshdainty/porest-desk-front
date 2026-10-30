@@ -147,11 +147,20 @@ type TextsProps = Pick<ItemBase, "title" | "detail"> & {
 
 // 제목 + 설명
 function Texts({ title, detail, disabled, highlighted }: TextsProps) {
+  // 제목의 낱말 폭 잣대 — 제목이 요소(배지 · 강조가 섞인 조각)여도 쓰도록 렌더된 글을 data-ruler 로 옮긴다(list-variants 의 ruler).
+  // 글이 같으면 쓰지 않는다 — 렌더마다 DOM 을 건드리지 않고 글이 바뀔 때만 한 번 쓴다(list.test.tsx 가 MutationObserver 로 잠근다)
+  const titleRef = React.useRef<HTMLSpanElement>(null);
+  React.useLayoutEffect(() => {
+    const el = titleRef.current;
+    const text = el?.textContent ?? "";
+    if (el && el.dataset.ruler !== text) el.dataset.ruler = text;
+  });
   return (
     <>
       <span
         data-slot="list-title"
-        className={listTitleVariants({ disabled: !!disabled })}
+        ref={titleRef}
+        className={listTitleVariants({ disabled: !!disabled, ruler: true })}
       >
         {title}
       </span>
