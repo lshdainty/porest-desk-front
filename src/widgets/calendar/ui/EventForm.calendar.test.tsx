@@ -269,3 +269,19 @@ describe("경계", () => {
     expect(triggerText()).toContain("form.calendarLoadFailed");
   });
 });
+
+// 고르기 시트의 고른 줄 체크 — 스펙(select.md · DESIGN.md "선 굵기와 상태"): fg-neutral + 선 2.5(줄 값 색을 물려받아 옅고 가늘던 것)
+describe("고르기 시트의 체크 표시", () => {
+  it("고른 줄 뒤 체크는 선 2.5 · fg-neutral 이다", () => {
+    mocks.calendars = [WORK, PRIVATE];
+    render(null);
+    click(row("form.calendar"));
+    const checked = document.body.querySelector<HTMLElement>(
+      "[role='radio'][aria-checked='true']",
+    )!;
+    const mark = checked.closest("li")!.querySelector("svg")!;
+    expect(mark.getAttribute("stroke-width")).toBe("2.5");
+    expect(mark.getAttribute("class")).toContain("text-fg-neutral");
+    expect(mark.getAttribute("class")).not.toContain("subtle");
+  });
+});
