@@ -23,6 +23,21 @@ export function clock12(t: string): string {
   return formatTimeValue({ hour: Number(m[1]), minute: Number(m[2]) });
 }
 
+/**
+ * 체결 시각 → "오후 12:59". 오프셋이 붙어 오면(`…+09:00` · `…-04:00` · `Z`) 그 순간을 한국 시각으로 읽는다 — 장 상태와 같은
+ * 기준이라 거래소 현지 시각(나무 미국 `-04:00`)이 "오전 10:30" 으로 보이지 않는다. 오프셋이 없으면 쓰인 벽시계 그대로
+ * (한국 시각이라고 보는 것 — 서버 응답으로 확정 못 한 값은 결과표에 "미확인"). 읽지 못하면 원문.
+ */
+export function tradeClock(ts: string | null | undefined): string {
+  if (!ts) return "";
+  if (/(Z|[+-]\d{2}:?\d{2})$/.test(ts)) {
+    const d = new Date(ts);
+    if (!Number.isNaN(d.getTime())) return clock12(clockAt(d));
+  }
+  const m = /(\d{2}:\d{2})(?::\d{2})?/.exec(ts);
+  return m ? clock12(m[1]!) : ts;
+}
+
 /** 보이는 시각의 기준 — 이 제품의 사용자는 한국에 있고 토스 달력도 한국 시각이다 */
 export const DISPLAY_TZ = "Asia/Seoul";
 

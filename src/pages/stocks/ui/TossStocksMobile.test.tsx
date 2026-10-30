@@ -15,6 +15,8 @@ const st = vi.hoisted(() => ({
   cal: "ok" as "ok" | "error" | "pending" | "holiday",
   idx: "ok" as "ok" | "error",
   fx: "ok" as "ok" | "error",
+  /** 금액 가리기 켬 */
+  hide: false,
 }));
 
 const amt = (n: number) => ({ krw: String(n), usd: null });
@@ -158,6 +160,11 @@ vi.mock("@/features/stock/model/useTossStocks", () => {
     useTossStockInfo: () => q([]),
   };
 });
+vi.mock("@/shared/lib/groo/money-text", async (orig) => ({
+  ...(await orig<typeof import("@/shared/lib/groo/money-text")>()),
+  // 가리기 켬이면 지금 가리는 자리가 전부 "••••" 가 되는지 본다(P 절 7)
+  useMasked: () => (text: string) => (st.hide ? "••••" : text),
+}));
 vi.mock("@/features/stock/api/watchlistApi", () => ({
   useWatchGroups: () => ({
     data: [],
@@ -206,6 +213,7 @@ beforeEach(() => {
   st.cal = "ok";
   st.idx = "ok";
   st.fx = "ok";
+  st.hide = false;
   // 2026-10-29 13:00 한국 — 달력 시각 판정이 벽시계를 타지 않게 고정한다
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-29T04:00:00Z"));
@@ -352,5 +360,16 @@ describe("토스 폰 화면", () => {
     expect(container.textContent).not.toContain("holdings.failTitle");
     expect(container.textContent).toContain("$6,185.55");
     expect(container.textContent).toContain("한국종목");
+  });
+
+  it("금액 가리기를 켜면 내 투자 · 보유 줄의 금액이 모두 가려진다", () => {
+    st.hide = true;
+    render();
+    const t = container.textContent!;
+    expect(t).not.toContain("1,834,567,890");
+    expect(t).not.toContain("3,302,659,766");
+    expect(t).not.toContain("$6,185.55");
+    expect(t).not.toContain("8,760,000");
+    expect(t).toContain("••••");
   });
 });

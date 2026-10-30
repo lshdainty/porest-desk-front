@@ -6,6 +6,7 @@ import {
   marketLookup,
   marketState,
   sessionInstant,
+  tradeClock,
 } from "./market-state";
 
 // 시험 시계는 늘 `now` 를 넘겨 고정한다 — 벽시계를 타지 않는다(pinned-clock).
@@ -166,5 +167,22 @@ describe("marketLookup — 달력을 모르면 상태를 지어내지 않는다(
         pick,
       ),
     ).not.toBeNull();
+  });
+});
+
+describe("tradeClock — 체결 시각은 한국 시각(장 상태와 같은 기준) · 분까지", () => {
+  it("+09:00 은 그대로 → 오후 12:59", () => {
+    expect(tradeClock("2026-10-29T12:59:10+09:00")).toBe("오후 12:59");
+  });
+  it("거래소 현지 오프셋(-04:00)은 한국 시각으로 — 나무 미국 체결이 '오전 10:30' 으로 보이지 않는다", () => {
+    expect(tradeClock("2026-10-29T10:30:05-04:00")).toBe("오후 11:30");
+  });
+  it("Z(UTC)도 한국 시각으로", () => {
+    expect(tradeClock("2026-10-29T03:00:00Z")).toBe("오후 12:00");
+  });
+  it("오프셋이 없으면 쓰인 벽시계 그대로 · 읽지 못하면 원문 · 없으면 빈 글", () => {
+    expect(tradeClock("2026-10-29T13:05:09")).toBe("오후 1:05");
+    expect(tradeClock("장중")).toBe("장중");
+    expect(tradeClock(null)).toBe("");
   });
 });

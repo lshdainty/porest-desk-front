@@ -9,6 +9,8 @@ import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { formatChangeRate, money } from "@/shared/lib/groo/format";
 import { useMasked, won } from "@/shared/lib/groo/money-text";
 import { brokerPath } from "@/features/stock/lib/broker";
+import { marketName } from "@/features/stock/lib/market-name";
+import { formatDateLong } from "@/shared/lib/date";
 import {
   fmtByCurrency,
   fmtCapKRW,
@@ -96,7 +98,13 @@ function TossBody({ symbol }: { symbol: string }) {
   const infoQ = useTossStockInfo([symbol]);
   const info = infoQ.data?.[0];
   const pricesQ = useTossPrices([symbol]);
-  const prevCloseQ = usePrevClose(symbol);
+  // 미국 종목은 전일을 뉴욕 날짜로 가른다 — 시세 · 정보 · 마스터 어디서든 통화를 알면 쓴다(아래 currency 와 같은 근거)
+  const knownCurrency =
+    pricesQ.data?.[0]?.currency ?? info?.currency ?? master?.currency ?? null;
+  const prevCloseQ = usePrevClose(
+    symbol,
+    knownCurrency === "USD" ? "America/New_York" : "Asia/Seoul",
+  );
   const fxQ = useTossExchangeRate();
   const warningsQ = useTossStockWarnings(symbol);
   const accountsQ = useTossAccounts();
@@ -106,8 +114,8 @@ function TossBody({ symbol }: { symbol: string }) {
   const limitsQ = useTossPriceLimits(symbol);
 
   const name = master?.nameKr ?? info?.name ?? holding?.name ?? symbol;
-  const currency =
-    info?.currency ?? master?.currency ?? holding?.currency ?? "KRW";
+  // 통화는 시세 응답의 것을 먼저 쓴다. 어디서도 모르면 빈 값 — 숫자만 보이고 KRW 로 추정하지 않는다(검수 M6)
+  const currency = knownCurrency ?? holding?.currency ?? "";
   const isUs = currency === "USD";
   const isKr = currency === "KRW";
   const lastRaw = pricesQ.data?.[0]?.lastPrice;
@@ -122,9 +130,7 @@ function TossBody({ symbol }: { symbol: string }) {
     last != null && prevCloseQ.data != null && prevCloseQ.data > 0
       ? last - prevCloseQ.data
       : null;
-  const marketName = master
-    ? t(`market.${master.marketCode}`, { defaultValue: master.marketCode })
-    : (info?.market ?? "");
+  const marketLabel = marketName(t, master?.marketCode ?? info?.market);
   const kind =
     info?.securityType === "ETF" || master?.securityType === "ETF"
       ? "ETF"
@@ -227,7 +233,7 @@ function TossBody({ symbol }: { symbol: string }) {
       key: "market",
       name: t("info.market"),
       value: info
-        ? info.market
+        ? marketName(t, info.market)
         : isUs
           ? t("market.usShort")
           : t("market.krShort"),
@@ -262,7 +268,13 @@ function TossBody({ symbol }: { symbol: string }) {
         ]
       : []),
     ...(info?.listDate
-      ? [{ key: "list", name: t("info.listDate"), value: info.listDate }]
+      ? [
+          {
+            key: "list",
+            name: t("info.listDate"),
+            value: formatDateLong(info.listDate),
+          },
+        ]
       : []),
     ...(shares > 0
       ? [
@@ -273,12 +285,17 @@ function TossBody({ symbol }: { symbol: string }) {
           },
         ]
       : []),
-    {
-      key: "status",
-      name: t("info.tradingStatus"),
-      value: suspended ? t("info.suspended") : t("info.normal"),
-      tone: suspended ? ("critical" as const) : ("positive" as const),
-    },
+    // 거래상태는 국내 종목의 정보(koreanMarketDetail)가 있을 때만 — 모르는 값을 "정상" 으로 말하지 않는다(미국 · 빈 응답은 줄 없음, 검수 M5)
+    ...(info?.koreanMarketDetail
+      ? [
+          {
+            key: "status",
+            name: t("info.tradingStatus"),
+            value: suspended ? t("info.suspended") : t("info.normal"),
+            tone: suspended ? ("critical" as const) : ("positive" as const),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -286,7 +303,7 @@ function TossBody({ symbol }: { symbol: string }) {
       <div>
         <HeadBand
           name={name}
-          detail={`${symbol} · ${marketName} · ${kind}`}
+          detail={`${symbol} · ${marketLabel} · ${kind}`}
           priceText={last != null ? fmtByCurrency(last, currency) : "—"}
           pct={changePct}
           changeAmount={changeAmount}
@@ -297,10 +314,12 @@ function TossBody({ symbol }: { symbol: string }) {
               : undefined
           }
           unavailable={
-            last == null && !pricesQ.isLoading
+            last == null && !pricesQ.isLoading && !isHardError(pricesQ)
               ? t("detail.priceUnavailable")
               : undefined
           }
+          failed={isHardError(pricesQ)}
+          onRetry={() => void pricesQ.refetch()}
           loading={pricesQ.isLoading}
           warnings={(warningsQ.data ?? []).map((w) =>
             t(`warning.${w.warningType}`, { defaultValue: w.warningType }),
@@ -450,7 +469,7 @@ function NamuBody({ symbol }: { symbol: string }) {
       key: "market",
       name: t("info.market"),
       value: master
-        ? t(`market.${master.marketCode}`, { defaultValue: master.marketCode })
+        ? marketName(t, master.marketCode)
         : isUs
           ? t("market.usShort")
           : t("market.krShort"),
@@ -468,9 +487,7 @@ function NamuBody({ symbol }: { symbol: string }) {
         <HeadBand
           name={name}
           detail={
-            master
-              ? `${symbol} · ${t(`market.${master.marketCode}`, { defaultValue: master.marketCode })}`
-              : symbol
+            master ? `${symbol} · ${marketName(t, master.marketCode)}` : symbol
           }
           priceText={
             last != null && last > 0 ? fmtByCurrency(last, currency) : "—"

@@ -49,7 +49,8 @@ vi.mock("../../api/watchlistApi", () => ({
 }));
 
 const { StockSearchEntry } = await import("./stock-search");
-const { WatchGroupForm, WatchGroups } = await import("./watch-groups");
+const { WatchGroupDeleteConfirm, WatchGroupForm, WatchGroups } =
+  await import("./watch-groups");
 
 let container: HTMLDivElement;
 let root: Root;
@@ -414,5 +415,74 @@ describe("관심 그룹 목록", () => {
     render(<WatchGroups {...props} groups={[]} />);
     expect(container.textContent).toContain("watch.emptyTitle");
     expect(container.textContent).not.toContain("watch.groupAdd");
+  });
+});
+
+describe("그룹 삭제 확인 · 폼 닫기 · ⋮ 메뉴 (P 절 15 · 16 · 검수 M10)", () => {
+  it("삭제 확인 글은 이름과 함께 지워지는 개수를 말한다 — '{n}개가 함께 지워져요'", async () => {
+    render(
+      <WatchGroupDeleteConfirm
+        group={group(1, "반도체", 2)}
+        onClose={() => {}}
+      />,
+    );
+    await act(async () => {});
+    const d = document.querySelector('[role="alertdialog"]')!;
+    expect(d.textContent).toContain("watch.groupDeleteConfirm|반도체|2");
+    expect(d.textContent).toContain("watch.groupDelete");
+  });
+  it("빈 그룹은 개수 없는 글", async () => {
+    render(
+      <WatchGroupDeleteConfirm
+        group={group(2, "빈 그룹", 0)}
+        onClose={() => {}}
+      />,
+    );
+    await act(async () => {});
+    expect(
+      document.querySelector('[role="alertdialog"]')!.textContent,
+    ).toContain("watch.groupDeleteConfirmEmpty|빈 그룹");
+  });
+  it("폼은 바깥(딤)을 눌러도 닫히지 않는다", async () => {
+    wide = true;
+    const onClose = vi.fn();
+    render(<WatchGroupForm group={null} onClose={onClose} />);
+    await act(async () => {});
+    const overlay = document.querySelector("[data-slot=dialog-overlay]")!;
+    await act(async () => {
+      overlay.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
+      overlay.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      overlay.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(dlg()).not.toBeNull();
+    wide = false;
+  });
+  it("⋮ 메뉴 항목은 [이름 바꾸기, 그룹 삭제] 둘", async () => {
+    render(
+      <WatchGroups
+        onRetry={() => {}}
+        priceOf={() => ({ price: null, changePct: null })}
+        track={() => () => {}}
+        onOpen={() => {}}
+        onAddGroup={() => {}}
+        onRenameGroup={() => {}}
+        onDeleteGroup={() => {}}
+        groups={[group(1, "반도체", 2)]}
+      />,
+    );
+    const more = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="watch.groupMore|반도체|"]',
+    )!;
+    await act(async () => {
+      more.dispatchEvent(
+        new MouseEvent("pointerdown", { bubbles: true, button: 0 }),
+      );
+      more.click();
+    });
+    const items = [
+      ...document.querySelectorAll('[role="menuitem"], [role="menu"] button'),
+    ].map((e) => e.textContent);
+    expect(items).toEqual(["watch.groupRename", "watch.groupDelete"]);
   });
 });

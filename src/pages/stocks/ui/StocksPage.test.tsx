@@ -221,6 +221,11 @@ describe("StocksPage 미연결 사용자", () => {
     expect(rs!.querySelector("button")!.textContent).toBe(
       "connect.firstAction",
     );
+    // 단추(neutralWeak)가 회색 바닥에 묻히지 않게 흰 면 위에 두고, 세로는 본문 영역 가운데(result-section.yaml alignItems)
+    const gate = container.querySelector("[data-slot=connect-gate]")!;
+    expect(gate.className).toContain("bg-bg-layer-default");
+    expect(gate.className).toContain("justify-center");
+    expect(gate.contains(rs)).toBe(true);
   });
 
   it("하위 경로로 직접 들어와도 연결 안내가 먼저다", () => {

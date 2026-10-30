@@ -6,6 +6,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { Plug } from "lucide-react";
+import { cn } from "@/shared/lib/cn";
 import { PageBanner } from "@/shared/ds/page-banner";
 import { ResultSection } from "@/shared/ds/result-section";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ds/tabs";
@@ -158,18 +159,29 @@ function UnsupportedBroker({
 function ConnectGate({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("stocks");
   const navigate = useNavigate();
+  // 흰 면 위에 둔다 — 회색 바닥 위의 neutralWeak 단추는 채움이 사라져 글만 남는다(button.md "놓는 바탕").
+  // 세로는 가운데(result-section.yaml root.alignItems — "놓인 자리의 가로 · 세로 가운데 · 남는 높이를 채운다").
   const gate = (
-    <ResultSection
-      kind="empty"
-      icon={<Plug aria-hidden />}
-      title={t("connect.firstTitle")}
-      description={t("connect.firstDesc")}
-      primaryAction={{
-        label: t("connect.firstAction"),
-        onClick: () => navigate("/desk/settings?section=account"),
-      }}
-      className="px-x6 py-x6"
-    />
+    <div
+      data-slot="connect-gate"
+      className={cn(
+        "flex flex-col justify-center bg-bg-layer-default",
+        // 남는 높이를 채운다 — 폰은 상단 바(56) 아래 화면 끝까지, 넓은 화면은 카드 높이
+        mobile ? "min-h-[calc(100dvh-3.5rem)]" : "min-h-[70dvh] rounded-[16px]",
+      )}
+    >
+      <ResultSection
+        kind="empty"
+        icon={<Plug aria-hidden />}
+        title={t("connect.firstTitle")}
+        description={t("connect.firstDesc")}
+        primaryAction={{
+          label: t("connect.firstAction"),
+          onClick: () => navigate("/desk/settings?section=account"),
+        }}
+        className="px-x6 py-x6"
+      />
+    </div>
   );
   return mobile ? (
     <>

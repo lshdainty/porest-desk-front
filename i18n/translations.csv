@@ -2101,12 +2101,15 @@ stocks,market.TSE,도쿄,Tokyo
 stocks,market.HKS,홍콩,Hong Kong
 stocks,market.HNX,하노이,Hanoi
 stocks,market.HSX,호치민,Ho Chi Minh
+stocks,market.KR_ETC,국내 기타,Other (KR)
+stocks,market.US_ETC,미국 기타,Other (US)
 stocks,securityType.STOCK,주식,Stock
 stocks,securityType.ETF,ETF,ETF
 stocks,securityType.INDEX,지수,Index
 stocks,securityType.WARRANT,워런트,Warrant
 stocks,search.hint,종목명·심볼로 검색하세요 (국내 + 미국·중국·일본·홍콩·베트남),Search by name or symbol (KR + US·CN·JP·HK·VN)
 stocks,detail.priceUnavailable,토스 시세 미지원 종목이에요 (국내·미국만 제공),Price unavailable via Toss (KR·US only)
+stocks,detail.priceFail,시세를 불러오지 못했어요,Couldn't load the price
 stocks,discover.loading,순위를 불러오는 중이에요,Loading rankings
 stocks,discover.empty,집계된 순위가 없어요,No rankings available
 stocks,watch.defaultGroupName,관심,Watchlist

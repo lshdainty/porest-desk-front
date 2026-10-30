@@ -19,7 +19,7 @@ import { formatMonthDay } from "@/shared/lib/date";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { fmtByCurrency } from "@/features/stock/lib/format";
 import { formatChangeRate } from "@/shared/lib/groo/format";
-import { clock12 } from "@/features/stock/lib/market-state";
+import { tradeClock } from "@/features/stock/lib/market-state";
 import { useWatchlist } from "@/features/stock/model/useWatchlist";
 import {
   useTossOrderbook,
@@ -102,6 +102,8 @@ export function HeadBand({
   currency,
   approx,
   unavailable,
+  failed,
+  onRetry,
   warnings,
   loading,
   symbol,
@@ -116,11 +118,15 @@ export function HeadBand({
   currency?: string;
   approx?: string;
   unavailable?: string;
+  /** 시세 조회가 실패했다(받아 둔 값 없음) — "미지원" 이 아니라 실패 한 벌 + 다시 시도(검수 H4) */
+  failed?: boolean;
+  onRetry?: () => void;
   warnings?: string[];
   loading?: boolean;
   symbol: string;
   isUs: boolean;
 }) {
+  const { t } = useTranslation("stocks");
   return (
     <section aria-labelledby="stock-name">
       <h2
@@ -155,10 +161,17 @@ export function HeadBand({
             {approx}
           </p>
         )}
-        {unavailable && (
-          <p className="m-0 mt-x1 text-t3 text-fg-neutral-subtle">
-            {unavailable}
-          </p>
+        {failed ? (
+          <BandFailure
+            title={t("detail.priceFail")}
+            onRetry={onRetry ?? (() => {})}
+          />
+        ) : (
+          unavailable && (
+            <p className="m-0 mt-x1 text-t3 text-fg-neutral-subtle">
+              {unavailable}
+            </p>
+          )
         )}
       </div>
       {warnings && warnings.length > 0 && (
@@ -295,9 +308,7 @@ export function QuotesBand({
     const p = num(x.price);
     const prev = i + 1 < arr.length ? num(arr[i + 1]!.price) : p;
     return {
-      time: ((r) => (r ? clock12(r) : x.timestamp))(
-        /(\d{2}:\d{2}):\d{2}/.exec(x.timestamp)?.[1],
-      ),
+      time: tradeClock(x.timestamp),
       p,
       q: Math.round(num(x.volume)),
       dir: p >= prev ? 1 : -1,
@@ -389,7 +400,7 @@ export function QuotesBand({
                 title={t("quotes.orderbookFail")}
                 onRetry={() => void bookQ.refetch()}
               />
-            ) : asks.length === 0 || bids.length === 0 ? (
+            ) : asks.length === 0 && bids.length === 0 ? (
               <p className="m-0 py-x3 text-center text-t3 text-fg-neutral-subtle">
                 {t("quotes.orderbookEmpty")}
               </p>

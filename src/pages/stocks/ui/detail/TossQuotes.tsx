@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { fmtByCurrency, trendColor } from "@/features/stock/lib/format";
 import { PanelEmpty, PctBadge } from "@/features/stock/ui/stock-row";
 import type { TossOrderbook, TossTrade } from "@/features/stock/api/stockApi";
-import { clock12 } from "@/features/stock/lib/market-state";
+import { tradeClock } from "@/features/stock/lib/market-state";
 import {
   useTossOrderbook,
   useTossTrades,
@@ -20,8 +20,7 @@ function liveTradeFills(
   return trades.slice(0, 12).map((t, i, arr) => {
     const p = Number.parseFloat(t.price);
     const prev = i + 1 < arr.length ? Number.parseFloat(arr[i + 1]!.price) : p;
-    const raw = /(\d{2}:\d{2}):\d{2}/.exec(t.timestamp)?.[1];
-    const time = raw ? clock12(raw) : t.timestamp;
+    const time = tradeClock(t.timestamp);
     return {
       time,
       p,
