@@ -121,7 +121,8 @@ export function PresetEditDialog({
   // (한 번 비우면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다)
   if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    if (isTransfer || !cat || cat.expenseType !== type) setCategoryRowId(null);
+    // 카테고리를 아직 못 받았으면(cat 없음) 읽어 온 값을 지우지 않는다 — 받은 뒤에도 비어 저장하면 카테고리가 사라진다
+    if (isTransfer || (cat && cat.expenseType !== type)) setCategoryRowId(null);
   }
   // 이체가 아니게 되면 남아 있던 이체 칸을 지운다 — 실려 나가면 서버가 거절한다.
   if (!isTransfer && (toAssetRowId != null || fee || interest)) {
@@ -129,7 +130,8 @@ export function PresetEditDialog({
     setFee("");
     setInterest("");
   }
-  if (!showInterest && interest) setInterest("");
+  // 자산을 아직 못 받았으면(대출인지 모른다) 읽어 온 이자를 지우지 않는다 — 먼저 지우면 받은 뒤에도 비어 저장하면 이자가 사라진다
+  if (assetsQ.data !== undefined && !showInterest && interest) setInterest("");
 
   const topCategories = useMemo(
     () =>

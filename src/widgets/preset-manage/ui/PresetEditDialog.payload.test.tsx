@@ -28,6 +28,7 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
+const assetState = vi.hoisted(() => ({ loaded: true }));
 const sent = vi.hoisted(() => ({
   update: null as Record<string, unknown> | null,
   create: null as Record<string, unknown> | null,
@@ -56,8 +57,10 @@ vi.mock("@/features/expense", () => ({
 }));
 vi.mock("@/features/asset", () => ({
   useAssets: () => ({
-    data: { assets: [asset, savings, card, loan] },
-    isLoading: false,
+    data: assetState.loaded
+      ? { assets: [asset, savings, card, loan] }
+      : undefined,
+    isLoading: !assetState.loaded,
   }),
 }));
 
@@ -505,5 +508,30 @@ describe("이자는 금액을 따라간다 (2026-09-15 결정)", () => {
 
     expect(sent.update!.interestAmount).toBe(20000);
     expect(sent.update!.lockAmount).toBe("Y");
+  });
+});
+
+describe("자산을 늦게 받아도 읽어 온 이자가 지워지지 않는다", () => {
+  it("처음엔 자산이 없고 나중에 받는다 → 저장하면 이자가 그대로 나간다", () => {
+    assetState.loaded = false;
+    const loanPreset: ExpenseTemplate = {
+      ...basePreset,
+      expenseType: "TRANSFER",
+      categoryRowId: null,
+      categoryName: null,
+      assetRowId: 3,
+      toAssetRowId: 6,
+      toAssetName: "대출",
+      fee: 500,
+      interestAmount: 20000,
+      amount: 300000,
+      lockAmount: "Y",
+    };
+    render(loanPreset);
+    assetState.loaded = true;
+    render(loanPreset);
+    clickSave();
+
+    expect(sent.update!.interestAmount).toBe(20000);
   });
 });
