@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { todayKeyIn } from "../lib/prev-close";
+import { KR_TZ, US_TZ, todayKeyIn } from "../lib/prev-close";
 
 /**
  * 그 시간대의 오늘('YYYY-MM-DD') — 탭을 띄워 둔 채 날이 바뀌면 값이 바뀐다.
@@ -23,4 +23,14 @@ export function useDayKey(tz: string): string {
   // tick 은 값이 아니라 "다시 읽어라" 신호다
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => todayKeyIn(tz), [tz, tick]);
+}
+
+/**
+ * 시간대마다 그 시장의 오늘을 돌려주는 함수 — 여러 심볼이 시장이 섞여 있을 때 쓴다(훅은 심볼 수만큼 못 부르니 두 시장을 한 번씩).
+ * 국내 · 미국이 아닌 시간대는 렌더마다 읽는다.
+ */
+export function useDayKeyOf(): (tz: string) => string {
+  const kr = useDayKey(KR_TZ);
+  const us = useDayKey(US_TZ);
+  return (tz) => (tz === KR_TZ ? kr : tz === US_TZ ? us : todayKeyIn(tz));
 }

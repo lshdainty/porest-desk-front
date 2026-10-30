@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { stockKeys } from "@/shared/config";
 import { stockApi } from "../api/stockApi";
+import { marketTzOfCurrency } from "../lib/prev-close";
 import { chunkSymbols } from "../lib/watch-prices";
 import { changePctOf, usePrevCloses } from "./useTossStocks";
 import { namuPricesQuery, NAMU_WATCH_POLL_MS } from "./useNamu";
@@ -51,7 +52,15 @@ export function useTossWatchQuotes(symbols: string[]) {
       refetchInterval: 10_000,
     })),
   });
-  const prevCloses = usePrevCloses(symbols);
+  // 전일 종가는 시장 날짜로 가른다 — 시세 응답의 통화로 시장을 정한다(미국은 뉴욕). 통화를 모르는 심볼(시세 전)은 아직 부르지 않아
+  // 한국 날짜로 잘못 집지 않는다(검수 N1)
+  const currencyBySymbol = new Map<string, string>();
+  for (const r of results)
+    for (const p of r.data ?? []) currencyBySymbol.set(p.symbol, p.currency);
+  const prevCloses = usePrevCloses(
+    symbols.filter((s) => currencyBySymbol.has(s)),
+    (s) => marketTzOfCurrency(currencyBySymbol.get(s)),
+  );
   const freshPrices = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of results)

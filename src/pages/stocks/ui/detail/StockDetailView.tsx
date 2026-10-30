@@ -40,7 +40,12 @@ import {
   useTossStockWarnings,
 } from "@/features/stock/model/useTossStocks";
 import { BandTitle, DeltaText } from "@/features/stock/ui/phone/phone-parts";
-import { dateKeyIn } from "@/features/stock/lib/prev-close";
+import {
+  KR_TZ,
+  US_TZ,
+  dateKeyIn,
+  marketTzOfCurrency,
+} from "@/features/stock/lib/prev-close";
 import { isHardError } from "@/features/stock/lib/query-state";
 import { useDayKey } from "@/features/stock/model/useDayKey";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
@@ -115,10 +120,6 @@ export function StockDetailView({
   );
 }
 
-/** 오늘 봉을 가르는 시장 날짜 — 국내는 한국, 미국은 뉴욕(1d 봉은 현지 자정 고정) */
-const KR_TZ = "Asia/Seoul";
-const US_TZ = "America/New_York";
-
 const flush = (name: string, node: React.ReactNode) =>
   node ? (
     <div data-band="flush" data-section={name}>
@@ -136,10 +137,7 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   // 미국 종목은 전일을 뉴욕 날짜로 가른다 — 시세 · 정보 · 마스터 어디서든 통화를 알면 쓴다(아래 currency 와 같은 근거)
   const knownCurrency =
     pricesQ.data?.[0]?.currency ?? info?.currency ?? master?.currency ?? null;
-  const prevCloseQ = usePrevClose(
-    symbol,
-    knownCurrency === "USD" ? "America/New_York" : "Asia/Seoul",
-  );
+  const prevCloseQ = usePrevClose(symbol, marketTzOfCurrency(knownCurrency));
   const fxQ = useTossExchangeRate();
   const warningsQ = useTossStockWarnings(symbol);
   const accountsQ = useTossAccounts();

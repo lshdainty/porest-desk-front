@@ -11,7 +11,7 @@ import {
   type TossRankingType,
 } from "../api/stockApi";
 import { prevCloseOf } from "../lib/prev-close";
-import { useDayKey } from "./useDayKey";
+import { useDayKey, useDayKeyOf } from "./useDayKey";
 
 const COMMON = {
   retry: false,
@@ -266,9 +266,11 @@ const SPARKLINE_POINTS = 60;
 export const usePrevClose = (
   symbol: string | null,
   tz: string = "Asia/Seoul",
-) =>
-  useQuery({
-    queryKey: stockKeys.prevClose(symbol ?? "", tz),
+) => {
+  // 키에 시장의 오늘을 넣는다 — 화면을 띄워 둔 채 날이 바뀌면 새로 받는다(검수 N10)
+  const day = useDayKey(tz);
+  return useQuery({
+    queryKey: stockKeys.prevClose(symbol ?? "", tz, day),
     queryFn: async () => {
       const page = await stockApi.getCandles(symbol!, "1d", { count: 3 });
       return prevCloseOf(page.candles, tz);
@@ -277,6 +279,7 @@ export const usePrevClose = (
     ...COMMON,
     staleTime: 10 * 60_000,
   });
+};
 
 /**
  * 여러 심볼의 전일 종가 배치 조회 — 투자 자산 보유 종목 등락 계산용.
@@ -284,11 +287,13 @@ export const usePrevClose = (
  */
 export const usePrevCloses = (
   symbols: string[],
-  tzOf: (symbol: string) => string = () => "Asia/Seoul",
+  // 필수 — 기본값을 두면 미국 종목이 한국 날짜로 가려져 오늘 봉을 전일로 집는다(검수 N1). `marketTzOfCurrency` 로 정한다
+  tzOf: (symbol: string) => string,
 ): Map<string, number> => {
+  const dayOf = useDayKeyOf();
   const results = useQueries({
     queries: symbols.map((symbol) => ({
-      queryKey: stockKeys.prevClose(symbol, tzOf(symbol)),
+      queryKey: stockKeys.prevClose(symbol, tzOf(symbol), dayOf(tzOf(symbol))),
       queryFn: async () => {
         const page = await stockApi.getCandles(symbol, "1d", { count: 3 });
         return prevCloseOf(page.candles, tzOf(symbol));

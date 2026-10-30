@@ -15,6 +15,7 @@ import {
   securitiesExchangeRateQuery,
   useSecuritiesPrices,
 } from "./useSecuritiesPrices";
+import { marketTzOfCurrency } from "../lib/prev-close";
 import { usePrevCloses } from "./useTossStocks";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 
@@ -80,11 +81,19 @@ export function useLivePrices(symbols: string[], enabled: boolean): LivePrices {
   // 종목마다 따로 받아야 한다 — 그래서 기본 소스가 토스일 때만 캔들을 부른다.
   // 나무 사용자가 부르면 토스 크리덴셜이 없어 종목 수만큼 403 이 나간다.
   const needsCandles = active && features?.primaryBroker === "TOSS";
-  const candleSymbols = useMemo(
-    () => (needsCandles ? activeSymbols : []),
-    [needsCandles, activeSymbols],
+  // 전일은 시장 날짜로 가른다 — 시세 응답의 통화로 시장을 정한다(미국은 뉴욕). 시세가 오기 전 심볼은 아직 부르지 않는다(검수 N1)
+  const currencyBySymbol = useMemo(
+    () => new Map((quotes ?? []).map((q) => [q.symbol, q.currency])),
+    [quotes],
   );
-  const candlePrevCloses = usePrevCloses(candleSymbols);
+  const candleSymbols = useMemo(
+    () =>
+      needsCandles ? activeSymbols.filter((s) => currencyBySymbol.has(s)) : [],
+    [needsCandles, activeSymbols, currencyBySymbol],
+  );
+  const candlePrevCloses = usePrevCloses(candleSymbols, (s) =>
+    marketTzOfCurrency(currencyBySymbol.get(s)),
+  );
 
   return useMemo(() => {
     const bySymbol = new Map(

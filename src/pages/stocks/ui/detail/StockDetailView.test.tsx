@@ -33,6 +33,8 @@ const st = vi.hoisted(() => ({
   }[],
   /** 시세 · 정보 · 마스터가 아직 안 왔다 — 통화를 모르는 첫 렌더(D1) */
   currencyPending: false,
+  /** 종목 마스터가 통화를 모른다 — "어디서도 통화를 모른다" 의 마지막 출처(T1) */
+  masterNoCurrency: false,
   bookPending: false,
   tradesPending: false,
   investors: [] as unknown[],
@@ -70,7 +72,8 @@ vi.mock("@/features/stock/model/useStockMaster", () => ({
           nameKr: "숲길전자",
           marketCode: "KOSPI",
           securityType: "STOCK",
-          currency: "KRW",
+          // 마스터가 늘 KRW 를 돌려주면 "통화를 어디서도 모른다" 를 만들 수 없다 — 코드는 마스터 통화도 쓴다(T1)
+          currency: st.masterNoCurrency ? undefined : "KRW",
         },
   }),
 }));
@@ -231,6 +234,7 @@ beforeEach(() => {
   st.bids = true;
   st.bars = [];
   st.currencyPending = false;
+  st.masterNoCurrency = false;
   st.bookPending = false;
   st.tradesPending = false;
   st.investors = [];
@@ -458,6 +462,7 @@ describe("통화를 모르면 숫자만 — KRW 로 추정하지 않는다(M6)",
     st.last = "185.42";
     st.priceCurrency = null;
     st.infoEmpty = true;
+    st.masterNoCurrency = true;
     render();
     const head = container
       .querySelector("#stock-name")!

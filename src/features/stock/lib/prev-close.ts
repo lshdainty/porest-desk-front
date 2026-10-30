@@ -52,3 +52,13 @@ export function prevCloseOf(
   const v = Number.parseFloat(prev.closePrice);
   return Number.isFinite(v) ? v : null;
 }
+
+export const KR_TZ = "Asia/Seoul";
+export const US_TZ = "America/New_York";
+
+/**
+ * 거래 통화 → 전일을 가르는 시장 시간대. 미국(USD)은 뉴욕, 그 밖(KRW · 모름)은 서울.
+ * 시세 응답의 `currency` 로 정한다 — 심볼 모양으로 짐작하지 않는다(영문으로 시작하는 국내 코드가 있다).
+ */
+export const marketTzOfCurrency = (currency: string | null | undefined) =>
+  currency === "USD" ? US_TZ : KR_TZ;
