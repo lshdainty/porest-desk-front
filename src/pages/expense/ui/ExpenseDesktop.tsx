@@ -5,6 +5,15 @@ import { toast } from "sonner";
 import { Card } from "@/shared/ds/card";
 import { useWideSurface } from "@/shared/ds/overlay";
 import { Skeleton } from "@/shared/ds/skeleton";
+import { useSnackbar } from "@/shared/ds/snackbar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/shared/ds/alert-dialog";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { money } from "@/shared/lib/groo/format";
 import { formatMonthShort } from "@/shared/lib/date";
@@ -112,6 +121,7 @@ export function ExpenseDesktopSkeleton() {
  */
 export function ExpenseDesktop() {
   const { t } = useTranslation("expense");
+  const { t: tc } = useTranslation("common");
   const navigate = useNavigate();
   const wide = useWideSurface();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -164,6 +174,7 @@ export function ExpenseDesktop() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const bulkFixed = useBulkMarkFixed();
   const bulkDelete = useBulkDeleteExpenses();
+  const snackbar = useSnackbar();
 
   // ── 달 · 필터를 바꾸면 고른 것을 모두 푼다(모드는 그대로) ──
   const goMonth = (m: string) => {
@@ -272,29 +283,45 @@ export function ExpenseDesktop() {
       closedCards === 1 && payAccounts.size === 1 ? [...payAccounts][0]! : null;
     return { span, fixTarget };
   }, [chosen, assets]);
+  // 삭제가 끝난 뒤 환급이 있으면 알림 창(Alert Dialog single)을 먼저 띄우고, 닫으면 스낵바를 띄운다(I-28 D4 B).
+  const [refundNotice, setRefundNotice] = useState<{
+    amount: number;
+    after: () => void;
+  } | null>(null);
   const confirmDelete = async () => {
-    const res = await bulkDelete.mutateAsync(chosenIds);
+    let res: Awaited<ReturnType<typeof bulkDelete.mutateAsync>>;
+    try {
+      res = await bulkDelete.mutateAsync(chosenIds);
+    } catch (e) {
+      // 아무것도 지워지지 않았다 — 확인창은 열린 채 두고(BulkDeleteDialog) 스낵바로 알린다
+      snackbar.show({ message: t("bulk.deleteFailed"), tone: "critical" });
+      throw e;
+    }
     setDeleteOpen(false);
     clearPickedAndFocus();
     const refunded = res.refundedAmount ?? 0;
     const fixTarget = closedInfo.fixTarget;
-    // 두 문장을 한 줄에 잇지 않는다 — 제목 "{n}건을 삭제했어요" 아래 설명으로 환급 글을 둔다
-    toast.success(t("bulk.deleted", { count: res.deletedCount }), {
-      description:
-        refunded > 0
-          ? t("closedCycle.prepaidRefunded", { amount: money(refunded) })
-          : undefined,
-      ...(fixTarget != null
-        ? {
-            action: {
-              label: t("closedCycle.fixBalance"),
-              onClick: () => navigate(editAssetPath(fixTarget)),
-            },
-            duration: 6000,
-          }
-        : {}),
-    });
+    // 삭제 띠: "N건을 삭제했어요." + (닫힌 회차 카드면) [잔액 고치기] — 액션 조건은 환급과 무관하다
+    const showSnack = () =>
+      snackbar.show({
+        message: t("bulk.deleted", { count: res.deletedCount }),
+        ...(fixTarget != null
+          ? {
+              action: {
+                label: t("closedCycle.fixBalance"),
+                onClick: () => navigate(editAssetPath(fixTarget)),
+              },
+            }
+          : {}),
+      });
+    if (refunded > 0) setRefundNotice({ amount: refunded, after: showSnack });
+    else showSnack();
     return res;
+  };
+  const closeRefundNotice = () => {
+    const after = refundNotice?.after;
+    setRefundNotice(null);
+    after?.();
   };
 
   const [y = 1970, m = 1] = month.split("-").map(Number);
@@ -407,6 +434,26 @@ export function ExpenseDesktop() {
         onClose={() => setDeleteOpen(false)}
         onConfirm={confirmDelete}
       />
+      <AlertDialog
+        open={refundNotice != null}
+        onOpenChange={(o) => {
+          if (!o) closeRefundNotice();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>{t("bulk.refundTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t("bulk.refundMessage", {
+              amount: money(refundNotice?.amount ?? 0),
+            })}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogAction variant="neutralSolid">
+              {tc("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {transferDetail && !editingTransfer && (
         <TransferDetailDialog
           transfer={transferDetail}

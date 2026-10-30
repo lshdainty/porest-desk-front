@@ -70,7 +70,7 @@ export function BulkDeleteDialog({
               try {
                 await onConfirm();
               } catch {
-                // 실패하면 확인창은 열린 채 둔다 — 아무것도 지워지지 않았고 오류는 전역 알림이 말한다
+                // 실패하면 확인창은 열린 채 둔다 — 아무것도 지워지지 않았고 오류는 화면이 스낵바로 말한다(요청은 silent)
               } finally {
                 setRunning(false);
               }

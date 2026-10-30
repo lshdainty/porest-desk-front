@@ -131,8 +131,14 @@ export const expenseApi = {
   bulkDeleteExpenses: async (
     expenseIds: number[],
   ): Promise<BulkDeleteExpenseResult> => {
+    const quiet: QuietRequestConfig = { silent: true };
     const resp: ApiResponse<BulkDeleteExpenseResult | null> =
-      await apiClient.post("/v1/expenses/delete", { expenseIds });
+      await apiClient.post(
+        "/v1/expenses/delete",
+        { expenseIds },
+        // 실패는 화면(일괄 삭제 확인창 + 스낵바)이 직접 알린다 — 전역 토스트와 겹치지 않게
+        quiet,
+      );
     return resp.data ?? { deletedCount: 0, refundedAmount: null };
   },
 

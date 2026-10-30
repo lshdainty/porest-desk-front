@@ -3104,7 +3104,10 @@ expense,bulk.limit,한 번에 500건까지 할 수 있어요,Up to 500 at a time
 expense,bulk.fixedDone,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
 expense,bulk.deleteTitle,거래 {{count}}건을 삭제할까요?,Delete {{count}} transactions?
 expense,bulk.deleteMessage,지운 거래는 되돌릴 수 없어요. 합계 {{amount}}이 {{month}}에서 빠져요.,Deleted transactions can't be restored. The total {{amount}} will be removed from {{month}}.
-expense,bulk.deleted,{{count}}건을 삭제했어요,Deleted {{count}} transactions
+expense,bulk.deleted,{{count}}건을 삭제했어요.,Deleted {{count}} transactions.
+expense,bulk.deleteFailed,거래를 삭제하지 못했어요.,Couldn't delete the transactions.
+expense,bulk.refundTitle,미리 낸 돈이 돌아왔어요,Your advance payment came back
+expense,bulk.refundMessage,미리 낸 돈 중 {{amount}}이 계좌로 돌아왔어요.,{{amount}} of what you paid early went back to your account.
 expense,filter.barLabel,거래 거르기,Filter transactions
 expense,filter.clearAll,필터 지우기,Clear filters
 expense,filter.assetClear,{{name}} 지우기,Remove {{name}}
