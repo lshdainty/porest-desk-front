@@ -15,29 +15,17 @@ import {
   CONTENT_MAX,
   LOCATION_MAX,
 } from "@/widgets/calendar/model/use-event-form";
+import { formSheetContentProps } from "./sheet-content-props";
 import { EventFormSheetBody } from "./sheet-body";
 import { SheetStepDone } from "./step-header";
 
 import type { ComponentProps } from "react";
 
 /**
- * 일정 폼의 시트 안쪽 (I-09 21 ~ 31) — 머리("일정 추가" · "일정 수정") · 제목 칸 + 줄 칸 아홉 · 바닥 [삭제][저장].
- * 장소 · 설명은 같은 시트 안 한 단계(← 와 "완료"). `BottomSheet` 안에 둔다 — 시트 바탕(root)은 부르는 쪽이 들고
- * (`EventForm` 은 폼만 담은 시트, 일정 상세는 목록 · 상세와 한 시트), 값 · 단계는 `flow`(`useEventFormFlow`)가 든다.
+ * 일정 폼의 시트 안쪽 (I-09 21 ~ 31) — 제목 칸 + 줄 칸 아홉 · 바닥 [삭제][저장]. 장소 · 설명은 같은 시트 안 한 단계("완료").
+ * `BottomSheetContent` 의 자식으로 둔다.
  */
-export function EventFormSheetPanel({
-  flow,
-  onStepBack,
-  ref: externalRef,
-  ...contentProps
-}: {
-  flow: EventFormFlow;
-  /** 폼 단계(줄 칸)의 머리 ← — 일정 상세가 든 시트에서 상세로 돌아간다. 장소 · 설명 안 단계의 ← 는 늘 있다 */
-  onStepBack?: () => void;
-} & Omit<
-  ComponentProps<typeof BottomSheetContent>,
-  "title" | "children" | "showCloseButton" | "onBack"
->) {
+export function EventFormSheetChildren({ flow }: { flow: EventFormFlow }) {
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
   const {
@@ -46,28 +34,17 @@ export function EventFormSheetPanel({
     inStep,
     draft,
     setDraft,
-    heading,
     del,
     isLoading,
     save,
     enterStep,
     confirmStep,
-    requestCancelStep,
     saveError,
-    focusTitleOnOpen,
     setErrorEl,
     leaveNode,
   } = flow;
   return (
-    <BottomSheetContent
-      title={inStep ? t(`form.${step}`) : heading}
-      aria-describedby={undefined}
-      showCloseButton={!inStep}
-      ref={externalRef}
-      onBack={inStep ? () => void requestCancelStep() : onStepBack}
-      onOpenAutoFocus={focusTitleOnOpen}
-      {...contentProps}
-    >
+    <>
       {leaveNode}
       {inStep && <SheetStepDone onClick={confirmStep} />}
       <BottomSheetBody scrollFog>
@@ -143,6 +120,28 @@ export function EventFormSheetPanel({
           </div>
         </BottomSheetFooter>
       )}
+    </>
+  );
+}
+
+/** 폼만 담은 시트 안쪽(`EventForm`) — `BottomSheet` 안에 둔다 */
+export function EventFormSheetPanel({
+  flow,
+  ...contentProps
+}: {
+  flow: EventFormFlow;
+} & Omit<
+  ComponentProps<typeof BottomSheetContent>,
+  "title" | "children" | "showCloseButton" | "onBack"
+>) {
+  const { t } = useTranslation("calendar");
+  return (
+    <BottomSheetContent
+      aria-describedby={undefined}
+      {...formSheetContentProps(flow, t)}
+      {...contentProps}
+    >
+      <EventFormSheetChildren flow={flow} />
     </BottomSheetContent>
   );
 }

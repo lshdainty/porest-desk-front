@@ -450,6 +450,57 @@ describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
   });
 });
 
+// W2 — 상세 ↔ 수정 폼에서 시트(바탕 · 딤)가 다시 붙으면 시트가 바닥에서 다시 올라오고 딤이 0 에서 시작한다. 요소가 같아야 "같은 자리에서" 다.
+describe("단계가 바뀌어도 시트는 같은 요소다 (I-09b 1-A · W2)", () => {
+  const overlay = () =>
+    document.querySelector("[data-slot=bottom-sheet-overlay]");
+  const body = () => sheet().querySelector("[data-slot=bottom-sheet-body]");
+
+  it("목록 → 상세 → 수정 폼 → 상세 → 목록 내내 시트 · 딤 요소가 그대로다", () => {
+    phone([event(1)]);
+    const sheetEl = sheet();
+    const dim = overlay();
+    press(rows()[0]!);
+    expect(sheet()).toBe(sheetEl);
+    expect(overlay()).toBe(dim);
+    press(footerButtons()[1]!);
+    expect(title()).toBe("editEvent");
+    expect(sheet()).toBe(sheetEl);
+    expect(overlay()).toBe(dim);
+    press(sheet().querySelector("[data-slot=bottom-sheet-back]")!);
+    expect(title()).toBe("eventDetail");
+    expect(sheet()).toBe(sheetEl);
+    expect(overlay()).toBe(dim);
+    press(sheet().querySelector("[data-slot=bottom-sheet-back]")!);
+    expect(sheet()).toBe(sheetEl);
+    expect(overlay()).toBe(dim);
+  });
+
+  it("저장하고 상세로 돌아와도 시트는 그대로다", async () => {
+    phone([event(1)]);
+    press(rows()[0]!);
+    const sheetEl = sheet();
+    press(footerButtons()[1]!);
+    setValue(sheet().querySelector<HTMLInputElement>("[name=title]")!, "바꾼");
+    await act(async () => {
+      (footerButtons()[1] as HTMLButtonElement).click();
+    });
+    expect(title()).toBe("eventDetail");
+    expect(sheet()).toBe(sheetEl);
+  });
+
+  // W6 — 같은 본문 DOM 이면 목록에서 내린 scrollTop 이 상세까지 따라온다. 단계마다 본문은 새로 그린다
+  it("단계가 바뀌면 본문(스크롤 상자)은 새 요소다 — 스크롤이 처음부터 시작한다", () => {
+    phone([event(1)]);
+    const listBody = body();
+    press(rows()[0]!);
+    const detailBody = body();
+    expect(detailBody).not.toBe(listBody);
+    press(footerButtons()[1]!);
+    expect(body()).not.toBe(detailBody);
+  });
+});
+
 describe("태블릿 480 시트 (18) — 돌아갈 목록이 없다", () => {
   const tablet = (e: IEvent[]) => {
     const f = fns();

@@ -38,7 +38,8 @@ import { useEventFormFlow } from "@/widgets/calendar/model/use-event-form-flow";
 import { useStepBack } from "@/widgets/calendar/model/use-step-back";
 import { DayEventList } from "@/widgets/calendar/ui/day-event-list";
 import { EventFormDialogPanel } from "@/widgets/calendar/ui/event-form/dialog-panel";
-import { EventFormSheetPanel } from "@/widgets/calendar/ui/event-form/sheet-panel";
+import { formSheetContentProps } from "@/widgets/calendar/ui/event-form/sheet-content-props";
+import { EventFormSheetChildren } from "@/widgets/calendar/ui/event-form/sheet-panel";
 import { EventDetailBody } from "./event-detail-body";
 
 import type { CalendarEvent } from "@/entities/calendar";
@@ -294,18 +295,19 @@ export function EventDetailSurface({
         }}
       >
         {inEdit ? (
-          <EventFormSheetPanel
-            flow={flow}
-            onStepBack={() => void editLeave.request()}
+          <BottomSheetContent
             {...sheetProps}
-          />
+            {...formSheetContentProps(flow, t, () => void editLeave.request())}
+          >
+            <EventFormSheetChildren key="edit" flow={flow} />
+          </BottomSheetContent>
         ) : step.kind === "detail" && current ? (
           <BottomSheetContent
             {...sheetProps}
             title={t("eventDetail")}
             onBack={hasList ? toList : undefined}
           >
-            <BottomSheetBody scrollFog>
+            <BottomSheetBody key="detail" scrollFog>
               <div className="-mx-x6">
                 <EventDetailBody event={current} titleRef={titleRef} />
               </div>
@@ -329,7 +331,7 @@ export function EventDetailSurface({
               {...sheetProps}
               title={formatMonthDayDow(listDate)}
             >
-              <BottomSheetBody scrollFog>
+              <BottomSheetBody key="list" scrollFog>
                 {events.length === 0 ? (
                   <p
                     data-slot="day-sheet-empty"
