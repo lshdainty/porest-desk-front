@@ -213,10 +213,16 @@ export function QuickAddDialog({
           </div>
         </DialogBody>
         <DialogFooter>
-          <DialogCancel>{tc("cancel")}</DialogCancel>
-          <Button variant="neutralWeak" onClick={detail}>
+          {/* [자세히] 는 모달 바닥의 왼쪽 자리(수정 폼의 [삭제] 가 서는 곳)에 ghost — 오른쪽은 입력 폼 바닥 그대로 [취소][저장] */}
+          <Button
+            variant="ghost"
+            ghostColor="neutral"
+            className="mr-auto"
+            onClick={detail}
+          >
             {t("quickAdd.detail")}
           </Button>
+          <DialogCancel>{tc("cancel")}</DialogCancel>
           <Button loading={isLoading} onClick={save}>
             {tc("save")}
           </Button>
