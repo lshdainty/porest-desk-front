@@ -28,7 +28,7 @@ vi.mock("@/shared/ds/snackbar", () => ({
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const mutate = vi.fn();
-const mState = { isError: false };
+const mState = { isError: false, submittedAt: 0 };
 const refetch = vi.fn();
 const qState = { error: false };
 vi.mock("../model/useExpenses", () => ({
@@ -55,6 +55,7 @@ vi.mock("../model/useExpenses", () => ({
     mutate,
     isPending: false,
     isError: mState.isError,
+    submittedAt: mState.submittedAt,
   }),
 }));
 
@@ -72,6 +73,8 @@ afterEach(() => {
   qState.error = false;
   snacks.length = 0;
   mState.isError = false;
+  mState.submittedAt = 0;
+  delete (window as { matchMedia?: unknown }).matchMedia;
   mutate.mockReset();
   act(() => root.unmount());
   container.remove();
@@ -156,6 +159,103 @@ describe("폰 고정 정리 페이지", () => {
       ids: [1],
       isFixed: true,
       silent: true,
+    });
+  });
+
+  describe("실패하면 Callout 이 보이게 본문을 맨 위로 올린다", () => {
+    const scroll = vi.fn();
+    const renderPage = () =>
+      act(() =>
+        root.render(
+          <FixedBulkPage
+            startDate="2026-10-01"
+            endDate="2026-10-31"
+            onClose={() => {}}
+          />,
+        ),
+      );
+    beforeEach(() => {
+      scroll.mockReset();
+      Element.prototype.scrollIntoView = scroll;
+    });
+    const reduce = (on: boolean) => {
+      window.matchMedia = ((q: string) => ({
+        matches: on && q.includes("prefers-reduced-motion"),
+        media: q,
+        addEventListener() {},
+        removeEventListener() {},
+      })) as unknown as typeof window.matchMedia;
+    };
+
+    it("실패가 켜지면 Callout 을 맨 위로(부드럽게) — 실패가 없으면 움직이지 않는다", () => {
+      reduce(false);
+      renderPage();
+      expect(scroll).not.toHaveBeenCalled();
+      mState.isError = true;
+      mState.submittedAt = 1;
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(1);
+      expect(scroll).toHaveBeenCalledWith({
+        block: "start",
+        behavior: "smooth",
+      });
+      // 올리는 대상은 Callout 을 감싼 요소다
+      expect(scroll.mock.contexts[0]).toBe(
+        document.querySelector("[role=alert]")!.parentElement,
+      );
+    });
+
+    it("모션 줄이기면 바로(auto) 올린다", () => {
+      reduce(true);
+      mState.isError = true;
+      mState.submittedAt = 1;
+      renderPage();
+      expect(scroll).toHaveBeenCalledWith({ block: "start", behavior: "auto" });
+    });
+
+    it("재시도 중(실패가 꺼진 동안)에는 움직이지 않는다", () => {
+      reduce(false);
+      mState.isError = true;
+      mState.submittedAt = 1;
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(1);
+      mState.isError = false; // 다시 [적용] — pending
+      mState.submittedAt = 2;
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(1);
+      expect(document.querySelector("[role=alert]")).toBeNull();
+    });
+
+    it("실패 → 재시도 → 또 실패에도 매번 올린다 (실패가 켜진 채 시도만 바뀌어도)", () => {
+      reduce(false);
+      mState.isError = true;
+      mState.submittedAt = 1;
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(1);
+      // 꺼짐이 안 그려지고 isError 가 true 로 이어진 채 새 시도의 실패
+      mState.submittedAt = 2;
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(2);
+      // 같은 시도가 다시 그려지는 것(다른 이유의 리렌더)에는 또 올리지 않는다
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(2);
+      // 꺼졌다 켜지는 보통의 흐름
+      mState.isError = false;
+      mState.submittedAt = 3;
+      renderPage();
+      mState.isError = true;
+      renderPage();
+      expect(scroll).toHaveBeenCalledTimes(3);
+    });
+
+    it("Callout 과 설명 사이는 16 — 감싼 요소 아래 8 + 설명 위 8(대화상자 · 폼과 같다)", () => {
+      mState.isError = true;
+      renderPage();
+      const wrap = document.querySelector("[role=alert]")!.parentElement!;
+      expect(wrap.className).toContain("pb-x2");
+      expect(document.querySelector("[role=alert]")!.className).not.toMatch(
+        /\bmb-/,
+      );
     });
   });
 
