@@ -3,7 +3,6 @@ import {
   type CategoryKey,
   type Account,
 } from "@/shared/lib/groo/data";
-import { money, formatChangeRate } from "@/shared/lib/groo/format";
 import * as LucideIcons from "lucide-react";
 
 type LucideIconName = keyof typeof LucideIcons;
@@ -109,46 +108,6 @@ export function CatIcon({
       }}
     >
       <Icon name={def.icon} size={dim.icon} strokeWidth={1.9} />
-    </span>
-  );
-}
-
-export function Delta({
-  pct,
-  amt,
-  small,
-}: {
-  pct: number;
-  amt?: number;
-  small?: boolean;
-}) {
-  const up = pct > 0;
-  const color = up ? "var(--color-fg-critical)" : "var(--color-fg-informative)";
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 2,
-        color,
-        fontWeight: "600",
-        fontVariantNumeric: "tabular-nums",
-        fontSize: small ? 11.5 : 12.5,
-        letterSpacing: "-0.012em",
-      }}
-    >
-      {up ? "▲" : "▼"} {formatChangeRate(pct, { sign: "none" })}
-      {amt != null && (
-        <span
-          style={{
-            color: "var(--fg-tertiary)",
-            marginLeft: 4,
-            fontWeight: "500",
-          }}
-        >
-          ({money(amt, { abs: true })})
-        </span>
-      )}
     </span>
   );
 }
