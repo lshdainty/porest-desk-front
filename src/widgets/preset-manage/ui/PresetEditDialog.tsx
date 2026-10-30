@@ -121,8 +121,12 @@ export function PresetEditDialog({
   // (한 번 비우면 조건이 닫히므로 렌더 중에 맞춰도 반복되지 않는다)
   if (categoryRowId != null) {
     const cat = categories.find((c) => c.rowId === categoryRowId);
-    // 카테고리를 아직 못 받았으면(cat 없음) 읽어 온 값을 지우지 않는다 — 받은 뒤에도 비어 저장하면 카테고리가 사라진다
-    if (isTransfer || (cat && cat.expenseType !== type)) setCategoryRowId(null);
+    // 받기 전에는 읽어 온 값을 유지하고, 받았는데 목록에 없으면(지운 카테고리) 비운다 — 안 비우면 지운 id 가 저장된다
+    if (
+      isTransfer ||
+      (categoriesQ.data !== undefined && (!cat || cat.expenseType !== type))
+    )
+      setCategoryRowId(null);
   }
   // 이체가 아니게 되면 남아 있던 이체 칸을 지운다 — 실려 나가면 서버가 거절한다.
   if (!isTransfer && (toAssetRowId != null || fee || interest)) {

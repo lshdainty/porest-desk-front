@@ -28,6 +28,7 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
+const catState = vi.hoisted(() => ({ loaded: true }));
 const assetState = vi.hoisted(() => ({ loaded: true }));
 const sent = vi.hoisted(() => ({
   update: null as Record<string, unknown> | null,
@@ -40,7 +41,10 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("@/features/expense", () => ({
-  useExpenseCategories: () => ({ data: [category], isLoading: false }),
+  useExpenseCategories: () => ({
+    data: catState.loaded ? [category] : undefined,
+    isLoading: !catState.loaded,
+  }),
   useExpenseTemplates: () => ({ data: [], isLoading: false }),
   useCreateExpenseTemplate: () => ({
     mutate: (data: Record<string, unknown>) => {
@@ -533,5 +537,26 @@ describe("자산을 늦게 받아도 읽어 온 이자가 지워지지 않는다
     clickSave();
 
     expect(sent.update!.interestAmount).toBe(20000);
+  });
+});
+
+describe("카테고리를 늦게 받을 때 — 받기 전 유지 · 받았는데 없으면 비움", () => {
+  it("받기 전에는 읽어 온 카테고리를 유지한다 → 받은 뒤 저장하면 그대로 나간다", () => {
+    catState.loaded = false;
+    render(basePreset);
+    catState.loaded = true;
+    render(basePreset);
+    clickSave();
+
+    expect(sent.update!.categoryRowId).toBe(11);
+    catState.loaded = true;
+  });
+
+  it("받았는데 목록에 없으면(지운 카테고리) 비운다 → 지운 id 가 저장되지 않는다", () => {
+    catState.loaded = true;
+    render({ ...basePreset, categoryRowId: 99, categoryName: "지운 카테고리" });
+    clickSave();
+
+    expect(sent.update).toBeNull();
   });
 });
