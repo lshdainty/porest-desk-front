@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   blockNonDigitKey,
   parseAmount,
@@ -2274,6 +2274,21 @@ export function AssetDetailDialog({
   const yAxisWidth = useAxisWidth(
     yAxis.ticks.map((v) => (hidden ? "••••" : formatChartAxis(v))),
   );
+  // 툴팁 자리 — recharts 는 눈금 폭을 뺀 그리는 자리 안에만 가두는데, 글자 크기가 커지면 그 자리가
+  // 툴팁보다 좁아져 오른쪽이 잘렸다. 차트 상자 전체 안으로 좌우를 밀어 넣는다(chart.md 툴팁: 화면 끝에서 안으로).
+  const chartBoxRef = useRef<HTMLDivElement>(null);
+  const [tipX, setTipX] = useState<number | undefined>(undefined);
+  const placeTip = (s: { activeCoordinate?: { x: number } }) => {
+    const box = chartBoxRef.current;
+    const cx = s.activeCoordinate?.x;
+    if (!box || cx == null) return;
+    const tip = box.querySelector<HTMLElement>(".recharts-tooltip-wrapper > *");
+    const w = box.clientWidth;
+    const tw = tip?.offsetWidth ?? 0;
+    let x = cx + 12;
+    if (x + tw > w) x = cx - 12 - tw;
+    setTipX(Math.max(0, Math.min(x, w - tw)));
+  };
   const periodLabel =
     period === "3m"
       ? t("assetDetail.weekLabel", { n: 12 })
@@ -2634,96 +2649,104 @@ export function AssetDetailDialog({
                       {t("assetDetail.noData")}
                     </div>
                   ) : (
-                    <ChartContainer
-                      config={chartConfig}
-                      className="aspect-auto w-full"
-                      style={{ height: 160 }}
-                    >
-                      <AreaChart
-                        data={chartData}
-                        margin={{ top: 10, right: 12, left: 0, bottom: 4 }}
+                    <div ref={chartBoxRef}>
+                      <ChartContainer
+                        config={chartConfig}
+                        className="aspect-auto w-full"
+                        style={{ height: 160 }}
                       >
-                        <defs>
-                          <linearGradient
-                            id={`asset-balance-fill-${asset.rowId}`}
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                          >
-                            <stop
-                              offset="0%"
-                              stopColor="var(--color-balance)"
-                              stopOpacity={0.28}
-                            />
-                            <stop
-                              offset="100%"
-                              stopColor="var(--color-balance)"
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid
-                          vertical={false}
-                          stroke="var(--border-subtle)"
-                          strokeDasharray="3 3"
-                        />
-                        <XAxis
-                          dataKey="label"
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{
-                            fontSize: "var(--text-badge)",
-                            fill: "var(--fg-tertiary)",
-                          }}
-                          tickMargin={6}
-                          interval="preserveStartEnd"
-                          minTickGap={18}
-                        />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          domain={[yAxis.min, yAxis.max]}
-                          ticks={yAxis.ticks}
-                          // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
-                          tickFormatter={(v: number) =>
-                            hidden ? "••••" : formatChartAxis(v)
-                          }
-                          tick={{
-                            fontSize: "var(--text-badge)",
-                            fill: "var(--fg-tertiary)",
-                          }}
-                          width={yAxisWidth}
-                        />
-                        <ChartTooltip
-                          cursor={{
-                            stroke: "var(--fg-tertiary)",
-                            strokeWidth: 1,
-                            strokeDasharray: "3 3",
-                          }}
-                          content={<BalanceTooltip seriesLabel={seriesLabel} />}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="balance"
-                          stroke="var(--color-balance)"
-                          strokeWidth={2}
-                          fill={`url(#asset-balance-fill-${asset.rowId})`}
-                          dot={{
-                            r: 4,
-                            fill: "var(--color-balance)",
-                            stroke: "var(--bg-surface)",
-                            strokeWidth: 1.5,
-                          }}
-                          activeDot={{
-                            r: 5.5,
-                            fill: "var(--color-balance)",
-                            stroke: "var(--bg-surface)",
-                            strokeWidth: 2,
-                          }}
-                        />
-                      </AreaChart>
-                    </ChartContainer>
+                        <AreaChart
+                          data={chartData}
+                          onMouseMove={placeTip}
+                          onMouseLeave={() => setTipX(undefined)}
+                          margin={{ top: 10, right: 12, left: 0, bottom: 4 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id={`asset-balance-fill-${asset.rowId}`}
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="0%"
+                                stopColor="var(--color-balance)"
+                                stopOpacity={0.28}
+                              />
+                              <stop
+                                offset="100%"
+                                stopColor="var(--color-balance)"
+                                stopOpacity={0}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            vertical={false}
+                            stroke="var(--border-subtle)"
+                            strokeDasharray="3 3"
+                          />
+                          <XAxis
+                            dataKey="label"
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{
+                              fontSize: "var(--text-badge)",
+                              fill: "var(--fg-tertiary)",
+                            }}
+                            tickMargin={6}
+                            interval="preserveStartEnd"
+                            minTickGap={18}
+                          />
+                          <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            domain={[yAxis.min, yAxis.max]}
+                            ticks={yAxis.ticks}
+                            // 금액 숨기기 시 Y축도 마스킹 (앱 정합 — '••••' 4점)
+                            tickFormatter={(v: number) =>
+                              hidden ? "••••" : formatChartAxis(v)
+                            }
+                            tick={{
+                              fontSize: "var(--text-badge)",
+                              fill: "var(--fg-tertiary)",
+                            }}
+                            width={yAxisWidth}
+                          />
+                          <ChartTooltip
+                            cursor={{
+                              stroke: "var(--fg-tertiary)",
+                              strokeWidth: 1,
+                              strokeDasharray: "3 3",
+                            }}
+                            position={tipX == null ? undefined : { x: tipX }}
+                            allowEscapeViewBox={{ x: true }}
+                            content={
+                              <BalanceTooltip seriesLabel={seriesLabel} />
+                            }
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="balance"
+                            stroke="var(--color-balance)"
+                            strokeWidth={2}
+                            fill={`url(#asset-balance-fill-${asset.rowId})`}
+                            dot={{
+                              r: 4,
+                              fill: "var(--color-balance)",
+                              stroke: "var(--bg-surface)",
+                              strokeWidth: 1.5,
+                            }}
+                            activeDot={{
+                              r: 5.5,
+                              fill: "var(--color-balance)",
+                              stroke: "var(--bg-surface)",
+                              strokeWidth: 2,
+                            }}
+                          />
+                        </AreaChart>
+                      </ChartContainer>
+                    </div>
                   )}
                 </div>
               )}
