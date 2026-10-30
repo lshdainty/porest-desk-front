@@ -209,7 +209,13 @@ export function PresetEditDialog({
       // 이체 칸도 이 화면의 칸이다 — 지출·수입으로 바꿔 저장하면 `null` 로 지워진다.
       toAssetRowId: isTransfer ? toAssetRowId : null,
       fee: isTransfer && fee ? Number(fee) : null,
-      interestAmount: showInterest && interest ? Number(interest) : null,
+      // 자산을 받기 전이면 대출인지 모르니 읽어 온 값을 그대로 보낸다(받은 뒤에는 지금 규칙) — 안 그러면 조용히 null 로 저장된다
+      interestAmount:
+        (assetsQ.data === undefined
+          ? isTransfer && lockAmount
+          : showInterest) && interest
+          ? Number(interest)
+          : null,
       // 아래 넷은 이 다이얼로그가 그리는 칸이다 — 비운 채 저장하면 지워져야 한다.
       // `undefined` 로 키를 빼면 새 서버가 "안 고침" 으로 읽어, 화면만 지워진 척 닫히고
       // 옛 계좌·거래처·메모·결제수단이 서버에 그대로 남았다.
