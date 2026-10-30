@@ -69,7 +69,8 @@ export default {
   "body.flexGrow": [BODY, "exact", "flex-grow"],
   "title.typography": ["[data-slot=list-title]", "typography"],
   "title.fontWeight": ["[data-slot=list-title]", "exact", "font-weight"],
-  "title.overflowWrap": ["[data-slot=list-title]", "exact", "overflow-wrap"],
+  // title.overflowWrap 은 재지 않는다(허용 예외) — ::before 자가 min-content 를 정하므로 제목 계산값은 anywhere 이다. 보이는 동작은 스펙(break-word)과 같다.
+  // 스펙 비고 · list.md 구현 줄은 groo-design 정리 PR 에서. list.test.tsx 가 클래스로 잠근다
   "title.foreground": ["[data-slot=list-title]", "color", "color"],
   "detail.typography": ["[data-slot=list-detail]", "typography"],
   "detail.foreground": ["[data-slot=list-detail]", "color", "color"],
