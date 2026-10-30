@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { format } from "date-fns";
 
@@ -212,7 +212,9 @@ export function useEventForm({
     }
   }, [defaultCalendar, selectedCalendarRowId, setValue, event]);
 
-  useEffect(() => {
+  // 그리기 전에(layout) 맞춘다 — 폼 칸이 이미 붙은 뒤 reset 이 오면 RHF 가 등록(`_fields`)을 비워 칸이 다시 등록되지 않고 값이 사라진다(상세 → 수정 때 제목이 빈 칸으로 열림).
+  // 일정 상세가 든 시트는 칸을 그린 뒤가 아니라 이 맞춤이 끝난 뒤에 그린다(`EventDetailSurface` 의 formReady).
+  useLayoutEffect(() => {
     if (event) {
       const reminderMins = event.reminders?.map((r) => r.minutesBefore) ?? [];
       reset({

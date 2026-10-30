@@ -276,6 +276,8 @@ export function EventDetailSurface({
 
   // ── 1280 미만: 한 시트 안에서 단계가 바뀐다
   const inEdit = step.kind === "edit" && !!current;
+  // 폼 값이 수정할 일정으로 맞춰진 뒤에 칸을 그린다 — 맞춤(reset)보다 칸이 먼저 붙으면 RHF 가 등록을 비워 칸이 빈 채 값이 안 먹는다
+  const formReady = !!snapshot && flow.ctrl.title === snapshot.title;
   const sheetProps = {
     ref: contentRef as RefObject<HTMLDivElement>,
     "aria-describedby": undefined,
@@ -301,7 +303,7 @@ export function EventDetailSurface({
             {...sheetProps}
             {...formSheetContentProps(flow, t, () => void editLeave.request())}
           >
-            <EventFormSheetChildren key="edit" flow={flow} />
+            {formReady && <EventFormSheetChildren key="edit" flow={flow} />}
           </BottomSheetContent>
         ) : step.kind === "detail" && current ? (
           <BottomSheetContent
