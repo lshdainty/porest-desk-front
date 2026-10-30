@@ -18,6 +18,7 @@ const state = vi.hoisted(() => ({
   refetched: 0,
   opened: null as string | null,
   live: new Map<number, { value: number }>(),
+  useAssetsOpts: undefined as { silent?: boolean } | undefined,
 }));
 
 vi.mock("react-i18next", () => ({
@@ -28,14 +29,17 @@ vi.mock("@/features/asset", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/asset")>()),
   // 라이브 평가는 이 시험 밖 — 빈 맵(연결 없음)
   useInvestValuation: () => state.live,
-  useAssets: () => ({
-    data: state.data ? { assets: state.assets } : undefined,
-    isLoading: state.isLoading,
-    isError: state.isError,
-    refetch: () => {
-      state.refetched += 1;
-    },
-  }),
+  useAssets: (opts?: { silent?: boolean }) => {
+    state.useAssetsOpts = opts;
+    return {
+      data: state.data ? { assets: state.assets } : undefined,
+      isLoading: state.isLoading,
+      isError: state.isError,
+      refetch: () => {
+        state.refetched += 1;
+      },
+    };
+  },
   useCreateAsset: () => ({ mutate: () => {}, isPending: false }),
   useUpdateAsset: () => ({ mutate: () => {}, isPending: false }),
   useDeleteAsset: () => ({ mutateAsync: async () => {}, isPending: false }),
@@ -167,6 +171,33 @@ describe("묶음 한 목록(I-17 25 · 27)", () => {
     state.assets = [asset(1, "CASH", "지갑", 1000)];
     render(true);
     expect(text()).not.toMatch(/\bcash\b/);
+  });
+});
+
+describe("줄 설명 · 실패 호출 (I-17 후속)", () => {
+  it("예금 · 적금은 둘 다 SAVINGS 라 종류 이름을 '예적금' 으로 쓴다(정기예금에 '적금' 이라 쓰지 않는다)", () => {
+    state.assets = [asset(2, "SAVINGS", "정기예금", 10_000_000)];
+    render(true);
+    expect(text()).toContain("assetType.savingsDeposit");
+    expect(text()).not.toContain("assetType.savings\n");
+  });
+
+  it("신용카드 결제일은 한 번만 — '{d}일 결제' 하나(매월 문구와 겹치지 않는다)", () => {
+    state.assets = [
+      asset(3, "CREDIT_CARD", "생활 카드", -300_000, {
+        institution: "삼성카드",
+        paymentDay: 14,
+      }),
+    ];
+    render(true);
+    const t = text();
+    expect(t.split("paymentDayLabel").length - 1).toBe(1);
+    expect(t).not.toContain("assetDetail.billedMonthly");
+  });
+
+  it("관리 화면의 자산 목록 호출은 silent — 전역 오류 토스트 없이 화면 안 실패 한 벌만", () => {
+    render(true);
+    expect(state.useAssetsOpts).toEqual({ silent: true });
   });
 });
 

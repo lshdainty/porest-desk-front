@@ -61,7 +61,8 @@ export function AccountManager({
 }) {
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
-  const assetsQ = useAssets();
+  // 실패는 화면 안 Result Section 한 벌로 말한다 — 전역 오류 토스트가 상단 바를 가리지 않게 silent
+  const assetsQ = useAssets({ silent: true });
   const { data: assetsData, isLoading } = assetsQ;
   const failed = assetsQ.isError && !assetsData;
   const createAsset = useCreateAsset();

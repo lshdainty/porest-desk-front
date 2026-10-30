@@ -441,6 +441,7 @@ asset,assetType.creditcard,신용카드,Credit Card
 asset,assetType.checkcard,체크카드,Check Card
 asset,assetType.cash,현금,Cash
 asset,assetType.savings,적금,Savings
+asset,assetType.savingsDeposit,예적금,Savings / deposit
 asset,assetType.loan,대출,Loan
 asset,assetType.investment,투자,Investment
 asset,assetType.checking,입출금,Checking

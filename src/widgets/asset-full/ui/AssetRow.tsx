@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { ChevronRight } from "lucide-react";
 import { Badge } from "@/shared/ds/badge";
 import { Delta } from "@/shared/ds/card";
@@ -54,6 +55,15 @@ function InvestHoldingsSub({ asset }: { asset: Asset }) {
 }
 
 /**
+ * 관리 줄 설명의 종류 이름 — 예금 · 적금은 둘 다 SAVINGS 라 구분할 수 없어 "예적금"(I-17 :180). 정기예금 줄에 "적금" 이라 쓰면 틀린 말이다.
+ */
+function kindLabelOf(asset: Asset, t: TFunction<"asset">): string {
+  return asset.assetType === "SAVINGS"
+    ? t("assetType.savingsDeposit")
+    : assetTypeLabel(asset.assetType, asset.balance);
+}
+
+/**
  * 자산 줄(56) — ds List 줄: 앞 Logo Tile 40 · 제목 · 설명 Tag Group(기관 · 보유 요약 · 결제일) · 뒤 금액 + 작은 글(사용액 · 등락 · 배지) · ›.
  * 카드 사용 막대는 ds Progress limit(8, 넘으면 끝까지 fg-critical + "N원 초과", 70 · 90% 경고 색 없음) 을 줄 아래에 둔다.
  * 외화는 원화로 환산한 금액이 주 표기, 원 통화 잔액이 아래 한 줄. 이 자산만 가렸으면 금액을 전부 가린다.
@@ -97,17 +107,18 @@ export function AssetRow({
   const foreign = isForeignCurrency(asset.currency);
 
   const tags: ReactNode[] = [];
+  // 줄어드는 항목: 요약 설명은 기관 2 · 보유 요약/메모 1, 종류 설명은 기관만 1(종류 · 결제일은 0 — 꼭 보여야 한다, tag-group.md)
   if (asset.institution) {
     tags.push(
-      <TagGroupItem key="inst" shrink={2}>
+      <TagGroupItem key="inst" shrink={describe === "kind" ? 1 : 2}>
         {asset.institution}
       </TagGroupItem>,
     );
   }
   if (describe === "kind") {
     tags.push(
-      <TagGroupItem key="kind" shrink={1}>
-        {assetTypeLabel(asset.assetType, asset.balance)}
+      <TagGroupItem key="kind" shrink={0}>
+        {kindLabelOf(asset, t)}
       </TagGroupItem>,
     );
     const held = holdingsOf(asset).length;
@@ -115,13 +126,6 @@ export function AssetRow({
       tags.push(
         <TagGroupItem key="hold" shrink={0}>
           {t("holdings.countLabel", { n: held })}
-        </TagGroupItem>,
-      );
-    }
-    if (asset.assetType === "CREDIT_CARD" && asset.paymentDay != null) {
-      tags.push(
-        <TagGroupItem key="pay" shrink={0}>
-          {t("assetDetail.billedMonthly", { day: asset.paymentDay })}
         </TagGroupItem>,
       );
     }
@@ -138,6 +142,7 @@ export function AssetRow({
       </TagGroupItem>,
     );
   }
+  // 결제일 — 한 번만("14일 결제", 앱과 같은 글)
   if (asset.assetType === "CREDIT_CARD" && asset.paymentDay != null) {
     tags.push(
       <TagGroupItem key="pay" shrink={0}>

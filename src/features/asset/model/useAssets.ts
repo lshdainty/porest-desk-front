@@ -10,10 +10,10 @@ import type {
   ReorderItem,
 } from "@/entities/asset";
 
-export const useAssets = () => {
+export const useAssets = (opts?: { silent?: boolean }) => {
   return useQuery({
     queryKey: assetKeys.list(),
-    queryFn: () => assetApi.getAssets(),
+    queryFn: () => assetApi.getAssets(opts),
   });
 };
 
