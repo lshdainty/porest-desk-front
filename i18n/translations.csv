@@ -247,7 +247,7 @@ calendar,form.startDate,시작일,Start Date
 calendar,form.endDate,종료일,End Date
 calendar,form.endBeforeStart,종료가 시작보다 빠를 수 없어요,End cannot be before the start
 calendar,deleteConfirm.title,일정 삭제,Delete event
-calendar,deleteConfirm.message,'{{name}}' 일정을 지울까요? 지운 일정은 되돌릴 수 없어요.,"Delete the ""{{name}}"" event? This action cannot be undone."
+calendar,deleteConfirm.message,"""{{name}}"" 일정을 지울까요? 지운 일정은 되돌릴 수 없어요.","Delete the ""{{name}}"" event? This action cannot be undone."
 calendar,deleteConfirm.cancel,취소,Cancel
 calendar,deleteConfirm.confirm,삭제,Delete
 calendar,label,라벨,Label
