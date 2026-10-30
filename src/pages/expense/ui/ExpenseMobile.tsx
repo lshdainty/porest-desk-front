@@ -167,7 +167,11 @@ export function ExpenseMobileSkeleton({ month }: { month?: string }) {
             {week.map((c, i) =>
               c ? (
                 <LedgerCell key={c.ds} empty>
-                  <LedgerCellNum dow={i} future={c.ds > todayStr}>
+                  <LedgerCellNum
+                    dow={i}
+                    future={c.ds > todayStr}
+                    today={c.ds === todayStr}
+                  >
                     {c.d}
                   </LedgerCellNum>
                   <Skeleton text="t1" className="w-x8" />
@@ -649,6 +653,7 @@ export function ExpenseMobile({ onAddTx }: { onAddTx: () => void }) {
                           <LedgerCellNum
                             dow={i % 7}
                             future={c.ds > todayStr}
+                            today={c.ds === todayStr}
                             selected={isSel}
                           >
                             {c.d}

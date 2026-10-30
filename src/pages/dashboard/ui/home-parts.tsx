@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pie, PieChart } from "recharts";
-import { CircleCheck, Eye, EyeOff, Wallet } from "lucide-react";
+import { Eye, EyeOff, Wallet } from "lucide-react";
 import {
   Card,
   CardAction,
@@ -21,6 +21,7 @@ import {
   chartDonutRadii,
   type ChartColor,
 } from "@/shared/ds/chart";
+import { Checkmark } from "@/shared/ds/checkbox";
 import { dsMoney, useDsText, withCommaBreaks } from "@/shared/ds/i18n";
 import { List, ListButtonItem, ListItem } from "@/shared/ds/list";
 import { Progress } from "@/shared/ds/progress";
@@ -608,7 +609,7 @@ function useTopAlign() {
   return [ref, top ? ("top" as const) : ("center" as const)] as const;
 }
 
-/** 다가오는 일정 줄 — 앞 점 8(캘린더 색), 제목 줄바꿈, 뒤 "오늘" · "내일" · "D-n"(사흘 안 fg-critical) */
+/** 다가오는 일정 줄 — 앞 점 8(캘린더 색), 제목 줄바꿈, 뒤 "오늘" · "내일" · "D-n"(사흘 안 fg-warning — 곧 문제가 될 것, 넘침은 critical) */
 export function EventRows({
   events,
   onOpen,
@@ -642,7 +643,7 @@ export function EventRows({
             <span
               className={cn(
                 "whitespace-nowrap tabular-nums",
-                ev.daysUntil <= 3 && "text-fg-critical",
+                ev.daysUntil <= 3 && "text-fg-warning",
               )}
             >
               {ev.daysUntil === 0
@@ -660,7 +661,7 @@ export function EventRows({
 }
 
 /**
- * 최근 할 일 줄 — 앞 원은 표시용(누르면 줄 전체가 할 일로 간다 — 체크가 아니다), 완료는 circle-check + 취소선,
+ * 최근 할 일 줄 — 앞 칸은 할 일 화면과 같은 square neutral Checkbox 모양의 표시용(누르면 줄 전체가 할 일로 간다 — 체크가 아니다), 완료는 체크 + 취소선,
  * 뒤 마감 "MM-DD"(지난 것 fg-critical).
  */
 export function TodoRows({
@@ -683,30 +684,28 @@ export function TodoRows({
           <ListButtonItem
             key={td.rowId}
             title={
-              <span className={done ? "line-through" : undefined}>
+              <span
+                className={done ? "text-fg-disabled line-through" : undefined}
+              >
                 {td.title}
               </span>
             }
             align={align}
             prefix={
               <span className={PREFIX_LINE}>
-                {done ? (
-                  <CircleCheck
-                    aria-hidden
-                    size={20}
-                    className="text-fg-positive"
-                  />
-                ) : (
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "size-x5 rounded-full border-2 border-solid",
-                      isOver
-                        ? "border-fg-critical"
-                        : "border-stroke-neutral-solid",
-                    )}
-                  />
-                )}
+                <Checkmark
+                  aria-hidden
+                  tabIndex={-1}
+                  size="large"
+                  shape="square"
+                  tone="neutral"
+                  checked={done}
+                  className={cn(
+                    "pointer-events-none",
+                    isOver &&
+                      "data-[state=unchecked]:border-stroke-critical-solid",
+                  )}
+                />
               </span>
             }
             suffix={

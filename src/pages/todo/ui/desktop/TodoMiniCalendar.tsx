@@ -99,8 +99,8 @@ function DayCell({
         "num flex min-h-x6 min-w-x7 items-center justify-center rounded-r3 px-x1 text-t3 font-medium",
         !c.inMonth && "font-normal text-fg-neutral-subtle",
         future && "text-fg-neutral-subtle",
-        c.inMonth && !future && !isToday && "text-fg-neutral",
-        isToday && "bg-bg-brand-solid text-static-white",
+        c.inMonth && !future && "text-fg-neutral",
+        isToday && "bg-bg-neutral-weak font-bold",
       )}
     >
       {c.day}

@@ -453,12 +453,13 @@ describe("태블릿 원장 카드 (I-10 28)", () => {
     expect(byName("밤하늘")!.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("날 숫자 원은 36 이상이고 오는 날은 subtle · 오늘은 채움, 날을 누르면 목록이 그 날로", () => {
+  it("날 숫자 원은 36 이상이고 오는 날은 subtle · 오늘은 옅은 원, 날을 누르면 목록이 그 날로", () => {
     render();
     const today = dayButton("2026-10-22").firstElementChild as HTMLElement;
     expect(today.className).toContain("min-h-x9");
     expect(today.className).toContain("min-w-x9");
-    expect(today.className).toContain("bg-bg-brand-solid");
+    expect(today.className).toContain("bg-bg-neutral-weak");
+    expect(today.className).not.toContain("bg-bg-brand-solid");
     const future = dayButton("2026-10-23").firstElementChild as HTMLElement;
     expect(future.className).toContain("text-fg-neutral-subtle");
     // 폰과 같이 "건" 이 붙는다

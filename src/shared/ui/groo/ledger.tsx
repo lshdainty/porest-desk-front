@@ -282,16 +282,20 @@ export function LedgerCell({
 
 /**
  * 날 숫자 — 지난 날 · 오늘 fg-neutral, **오는 날 fg-neutral-subtle**(불투명도로 흐리지 않는다), 일요일 fg-critical · 토요일 fg-brand
- * (캘린더 정합). 고른 날은 브랜드 채움 알약(앱과 같은 36 — 큰 글자에서는 글을 따라 늘어난다).
+ * (캘린더 정합). 고른 날은 짙은 원(`bg-neutral-inverted` + `fg-neutral-inverted`), 오늘은 옅은 원(`bg-neutral-weak`) + 700
+ * (date-picker.md State — 브랜드 색으로 채우지 않는다. 고르면 고름이 이기고 700 은 남는다. 원은 앱과 같은 36 — 큰 글자에서는 글을 따라 늘어난다).
  */
 export function LedgerCellNum({
   className,
   selected = false,
+  today = false,
   dow,
   future = false,
   ...props
 }: React.ComponentProps<"span"> & {
   selected?: boolean;
+  /** 오늘 — 옅은 원 + 700 (고르면 짙은 원이 이기고 굵기만 남는다) */
+  today?: boolean;
   /** 요일(0 = 일) — 주말 색 */
   dow?: number;
   /** 오는 날 */
@@ -302,9 +306,9 @@ export function LedgerCellNum({
       className={cn(
         "inline-flex min-h-x9 min-w-x9 items-center justify-center rounded-full px-x1 text-t5 tabular-nums",
         selected
-          ? "bg-bg-brand-solid font-bold text-static-white"
+          ? "bg-bg-neutral-inverted font-bold text-fg-neutral-inverted"
           : cn(
-              "font-medium",
+              today ? "bg-bg-neutral-weak font-bold" : "font-medium",
               future
                 ? "text-fg-neutral-subtle"
                 : dow === 0

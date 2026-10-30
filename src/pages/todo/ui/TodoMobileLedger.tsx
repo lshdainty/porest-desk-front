@@ -431,6 +431,7 @@ export function TodoMobileLedger({
                       selected={isSel}
                       dow={i % 7}
                       future={c.ds > today}
+                      today={c.ds === today}
                     >
                       {c.d}
                     </LedgerCellNum>
