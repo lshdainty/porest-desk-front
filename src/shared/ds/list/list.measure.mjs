@@ -64,8 +64,8 @@ export default {
   "tile.color": [TILE, "color", "color"],
   "body.gap": [BODY, "px", "row-gap"],
   "body.paddingRight": [BODY, "px", "padding-right"],
-  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth("1em")는 글자 단위 값이라 재지 않는다 — 계산값이 26px(제목 글자 16 + 뒤 여백 10)로
-  // 풀려 스펙 글과 맞지 않는다. list.test.tsx 가 클래스로, i02-measure 가 크로미움에서 26 을 본다
+  // 뒤 붙이개가 길면 본문이 양보한다(Q-001 A). body.minWidth 는 재지 않는다 — 2026-10-30 부터 제목의 가장 긴 낱말 폭(min-content)이라 제목 따라 달라지는 값이다
+  // (스펙 문서는 "1em" 그대로 — 디자인 세션이 고친다). list.test.tsx 가 클래스로, 렌더 측정이 크로미움에서 본다
   "body.flexGrow": [BODY, "exact", "flex-grow"],
   "title.typography": ["[data-slot=list-title]", "typography"],
   "title.fontWeight": ["[data-slot=list-title]", "exact", "font-weight"],
