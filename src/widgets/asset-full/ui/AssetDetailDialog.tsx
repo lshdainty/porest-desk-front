@@ -2212,6 +2212,7 @@ export function AssetDetailDialog({
   mobile: boolean;
 }) {
   const { t } = useTranslation("asset");
+  const { t: tc } = useTranslation("common");
   // 여는 쪽은 클릭 시점의 asset 을 상태에 박아 넘긴다 — 열려 있는 동안 매수·취소가
   // 일어나면 리스트 쿼리는 새 값인데 prop 은 옛 스냅샷이라 수량·평가액이 낡은 채
   // 남는다. 같은 자산을 쿼리에서 다시 찾아 산 값을 쓴다.
@@ -2362,25 +2363,37 @@ export function AssetDetailDialog({
   };
 
   // 모바일은 [삭제][수정](spec drawer.md: 상세 = 삭제·수정). 금액 가리기는 카드
-  // 우상단 눈 버튼과 계정 > 보안에도 있어 여기서 뺀다. 데스크탑·태블릿은 목록 행에
-  // 삭제 아이콘이 따로 있어 [금액 가리기][수정] 그대로 둔다.
+  // 우상단 눈 버튼과 계정 > 보안에도 있어 여기서 뺀다. 데스크탑·태블릿은 [금액 가리기][수정] 이고,
+  // 관리 화면에서 열었으면(onDelete) 목록 줄에 연필 · 휴지통 · ⋮ 를 두지 않으므로(좁은 줄 ⋮ 원칙, 10-25)
+  // 지우는 길이 여기 [삭제] 다. 상세가 페이지가 되는 17-3 에서 머리 ⋯ 로 옮겨 간다.
   const Footer = (
     <ModalViewFooter
       leftSlot={
         mobile ? undefined : (
-          // 아이콘을 본문 콘텐츠 열에 맞춘다 — flush ghost 는 텍스트 버튼이라 hover 에
-          // 배경 없이 글자색으로만 반응한다(spec button.md Edge flush · dialog.md footer).
-          <Button
-            variant="ghost"
-            flush="left"
-            onClick={handleHideToggle}
-            type="button"
-          >
-            {assetHidden ? <Eye size={16} /> : <EyeOff size={16} />}
-            {assetHidden
-              ? t("assetDetail.showAmounts")
-              : t("assetDetail.hideAmounts")}
-          </Button>
+          <div className="flex items-center gap-x2">
+            {/* 아이콘을 본문 콘텐츠 열에 맞춘다 — flush ghost 는 텍스트 버튼이라 hover 에
+              배경 없이 글자색으로만 반응한다(spec button.md Edge flush · dialog.md footer). */}
+            <Button
+              variant="ghost"
+              flush="left"
+              onClick={handleHideToggle}
+              type="button"
+            >
+              {assetHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+              {assetHidden
+                ? t("assetDetail.showAmounts")
+                : t("assetDetail.hideAmounts")}
+            </Button>
+            {onDelete && (
+              <Button
+                variant="dangerSoft"
+                type="button"
+                onClick={() => onDelete(asset)}
+              >
+                {tc("delete")}
+              </Button>
+            )}
+          </div>
         )
       }
       onDelete={mobile && onDelete ? () => onDelete(asset) : undefined}
