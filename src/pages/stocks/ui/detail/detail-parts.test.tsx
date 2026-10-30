@@ -16,7 +16,7 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
-const { TradeTail, NamuNotice } = await import("./detail-parts");
+const { TradeTail, NamuNotice, InvestorBand } = await import("./detail-parts");
 let host: HTMLDivElement | null = null;
 afterEach(() => {
   host?.remove();
@@ -75,5 +75,38 @@ describe("나무 상세 안내", () => {
   it("둘째 줄만 — 토스증권 문구(첫째 줄)가 없다", () => {
     const t = mount(<NamuNotice />).textContent;
     expect(t).toBe("disclaimer.line2");
+  });
+});
+
+describe("투자자별 매매동향 폰 띠 (I-13b 22)", () => {
+  const q = (data: unknown[] | undefined, extra = {}) => ({
+    data: data as never,
+    isLoading: false,
+    isError: false,
+    refetch: () => {},
+    ...extra,
+  });
+  it("줄 다섯 · 날짜 아래 개인 · 외국인 · 기관 · 부호 없음 · 0 은 화살표 없음 · null 은 —", () => {
+    const rows = Array.from({ length: 6 }, (_, i) => ({
+      date: `2026-10-${String(23 - i).padStart(2, "0")}`,
+      individual: i === 0 ? null : "-12345",
+      foreigner: "0",
+      institution: "700",
+    }));
+    const el = mount(<InvestorBand q={q(rows)} />);
+    expect(el.querySelectorAll("li").length).toBe(5);
+    const first = el.querySelector("li")!.textContent!;
+    expect(first).toContain("—");
+    expect(first).toContain("▲ 700");
+    expect(first).not.toContain("-");
+    expect(first).not.toContain("▲ 0");
+  });
+  it("빈 목록은 안내 줄", () => {
+    const el = mount(<InvestorBand q={q([])} />);
+    expect(el.textContent).toContain("investor.empty");
+  });
+  it("실패는 실패 한 벌", () => {
+    const el = mount(<InvestorBand q={q(undefined, { isError: true })} />);
+    expect(el.textContent).toContain("investor.failTitle");
   });
 });

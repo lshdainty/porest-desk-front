@@ -129,3 +129,33 @@ export function marketLookup<T>(
   }
   return q.isError ? null : { pending: true };
 }
+
+/**
+ * 나무 장 상태(서버 어휘) → 장 상태 줄 글(I-13b 17). REGULAR 는 토스와 같이 "장중 · {시각}"(보이는 시각은 한국 시각 — 위 규칙),
+ * CLOSED 는 "장마감", 나머지는 새 글 `market.state.*`. 모르는 값은 null — 호출부가 그 시장을 그리지 않는다.
+ * 열림(점 fg-positive)은 정규장뿐이다. 나무는 장 상태를 서버가 판정해 주므로 달력 시각을 견주지 않는다.
+ */
+export function namuMarketStatus(
+  state: string,
+  now: Date = new Date(),
+): MarketStatus | null {
+  switch (state) {
+    case "REGULAR":
+      return {
+        open: true,
+        labelKey: "market.live",
+        time: clock12(clockAt(now)),
+      };
+    case "CLOSED":
+      return { open: false, labelKey: "market.afterClose" };
+    case "PRE":
+    case "AFTER":
+    case "DAYTIME":
+    case "SINGLE_PRICE":
+    case "HALTED":
+    case "BEFORE_OPEN":
+      return { open: false, labelKey: `market.state.${state}` };
+    default:
+      return null;
+  }
+}

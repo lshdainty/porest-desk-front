@@ -45,22 +45,30 @@ export const useTossPrices = (symbols: string[]) =>
     refetchInterval: 10_000,
   });
 
-export const useTossOrderbook = (symbol: string | null) =>
+/**
+ * 호가 · 체결은 **고른 탭의 질의만** 켠다(`enabled`, I-13b 21) — 둘 다 늘 5초로 부르면 본인 키 호출이 두 배다.
+ * 탭이 백그라운드이면 react-query 가 폴링을 멈춘다(`refetchIntervalInBackground` 기본 false).
+ */
+export const useTossOrderbook = (symbol: string | null, enabled = true) =>
   useQuery({
     queryKey: stockKeys.orderbook(symbol ?? ""),
     queryFn: () => stockApi.getOrderbook(symbol!),
-    enabled: !!symbol,
+    enabled: !!symbol && enabled,
     ...COMMON,
     staleTime: 3_000,
     // 호가는 변동이 잦음 → 5초 폴링. 백그라운드 탭 자동 일시정지.
     refetchInterval: 5_000,
   });
 
-export const useTossTrades = (symbol: string | null, count = 20) =>
+export const useTossTrades = (
+  symbol: string | null,
+  count = 20,
+  enabled = true,
+) =>
   useQuery({
     queryKey: stockKeys.trades(symbol ?? ""),
     queryFn: () => stockApi.getTrades(symbol!, count),
-    enabled: !!symbol,
+    enabled: !!symbol && enabled,
     ...COMMON,
     staleTime: 3_000,
     // 체결 테이프도 5초 폴링.
@@ -97,6 +105,33 @@ export const useTossCandles = (
     ...COMMON,
     // 일별표·등락률 계산용 캔들도 주기 갱신 — 1m 은 15초, 1d 는 60초.
     refetchInterval: interval === "1m" ? 15_000 : 60_000,
+  });
+
+/** 투자자별 매매동향 — 상세를 열 때 한 번, 5분 안에는 다시 안 묻는다(일별 값 · 폴링 없음) */
+export const useTossInvestors = (symbol: string | null, enabled = true) =>
+  useQuery({
+    queryKey: stockKeys.investors(symbol ?? ""),
+    queryFn: () => stockApi.getInvestorTrading(symbol!, 5),
+    enabled: !!symbol && enabled,
+    ...COMMON,
+    staleTime: 5 * 60_000,
+  });
+
+/**
+ * 주문 가능 금액 — 60초마다(초 단위로 볼 값이 아니다 · 보유는 10초 그대로). 화면이 보일 때만.
+ * 한도는 `ORDER_INFO` 초당 6회라 한 화면에서 둘(원화 · 달러)을 불러도 넉넉하다.
+ */
+export const useTossBuyingPower = (
+  accountSeq: number | null,
+  currency: "KRW" | "USD",
+) =>
+  useQuery({
+    queryKey: stockKeys.buyingPower(accountSeq ?? 0, currency),
+    queryFn: () => stockApi.getBuyingPower(accountSeq!, currency),
+    enabled: !!accountSeq,
+    ...COMMON,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   });
 
 export const useTossStockWarnings = (symbol: string | null) =>

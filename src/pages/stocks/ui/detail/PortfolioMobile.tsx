@@ -10,8 +10,10 @@ import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { brokerPath } from "@/features/stock/lib/broker";
 import { mergeNamuHoldings } from "@/features/stock/lib/holdings";
 import { num } from "@/features/stock/lib/format";
-import { useNamuHoldings } from "@/features/stock/model/useNamu";
-import { useSecuritiesExchangeRate } from "@/features/stock/model/useSecuritiesPrices";
+import {
+  useNamuExchangeRate,
+  useNamuHoldings,
+} from "@/features/stock/model/useNamu";
 import {
   useTossAccounts,
   useTossExchangeRate,
@@ -73,7 +75,7 @@ function NamuComposition() {
   const { t } = useTranslation("stocks");
   const krwQ = useNamuHoldings("KRW");
   const usdQ = useNamuHoldings("USD");
-  const fxQ = useSecuritiesExchangeRate();
+  const fxQ = useNamuExchangeRate();
   const view = useMemo(
     () => mergeNamuHoldings(krwQ.data, usdQ.data, fxQ.data?.rate ?? null),
     [krwQ.data, usdQ.data, fxQ.data],

@@ -21,6 +21,8 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import type { ApiResponse } from "@/shared/types";
 import {
+  candlesPath,
+  candleBrokerFromParam,
   type BrokerCandleCursorPage,
   type BrokerCandlePage,
 } from "@/features/stock/api/securitiesApi";
@@ -121,6 +123,8 @@ export function EmbedStockChartPage() {
   const initRange: Range = isRange(params.get("range"))
     ? (params.get("range") as Range)
     : "1D";
+  // 증권사도 첫 조회 전에 필요하다(어느 경로로 부를지) — 쿼리로만 받는다
+  const broker = candleBrokerFromParam(params.get("broker"));
   const initTheme: Theme = params.get("theme") === "dark" ? "dark" : "light";
 
   // 레거시 호환 — 토큰을 아직 쿼리로 싣는 옛 앱 빌드. 스토어를 안 쓰는 앱이라 옛 빌드가 필드에
@@ -180,9 +184,9 @@ export function EmbedStockChartPage() {
   const fetcher: CandleFetcher | undefined = useMemo(() => {
     if (!hasToken) return undefined;
     return async (sym, interval, opts) => {
-      // 증권사 무관 경로 — 토스 키가 없는 사용자도 차트가 뜬다.
+      // broker 가 있으면 그 증권사 경로, 없으면 증권사 무관 경로(옛 앱 · 토스 키가 없는 사용자도 차트가 뜬다).
       const resp: ApiResponse<BrokerCandleCursorPage> = await embedClient.get(
-        "/v1/securities/candles",
+        candlesPath(broker),
         {
           params: {
             symbol: sym,
@@ -198,7 +202,7 @@ export function EmbedStockChartPage() {
       };
       return page;
     };
-  }, [hasToken]);
+  }, [hasToken, broker]);
 
   if (!symbol || (!hasToken && waitedTooLong)) {
     return (

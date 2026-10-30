@@ -35,6 +35,12 @@ import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { fmtByCurrency } from "@/features/stock/lib/format";
 import { formatChangeRate } from "@/shared/lib/groo/format";
 import { tradeClock } from "@/features/stock/lib/market-state";
+import type {
+  InvestorTradingDay,
+  TossOrderbook,
+} from "@/features/stock/api/stockApi";
+import type { CandleBroker } from "@/features/stock/api/securitiesApi";
+import { useNamuExecutions } from "@/features/stock/model/useNamu";
 import { useWatchlist } from "@/features/stock/model/useWatchlist";
 import {
   useTossOrderbook,
@@ -54,6 +60,7 @@ import {
   KvListItem,
   PctDelta,
 } from "@/features/stock/ui/phone/phone-parts";
+import { directionOf } from "../../model/invest";
 
 /*
  * 폰 종목 상세 페이지의 조각(I-13 18 ~ 20) — 머리 · 관심 Toggle · 차트 · 키-값 · 호가 · 일별 시세 · 매매.
@@ -170,8 +177,10 @@ export function HeadBand({
   loading,
   symbol,
   isUs,
+  broker,
   watch,
   chartHeight = 168,
+  failed,
 }: {
   name: string;
   detail: string;
@@ -189,10 +198,14 @@ export function HeadBand({
   loading?: boolean;
   symbol: string;
   isUs: boolean;
+  /** 차트가 부를 증권사 — 그 탭의 증권사 */
+  broker: CandleBroker;
   /** 이름 줄 오른쪽 관심 Toggle(768 이상 머리 카드) */
   watch?: ReactNode;
   /** 차트 높이 — 폰 168 · 768 이상 200(지금 데스크톱 그대로) */
   chartHeight?: number;
+  /** 시세 질의 실패 — 머리에 한 번만 실패 한 벌을 둔다(그 질의에 기대는 띠는 부르는 쪽이 그리지 않는다) */
+  failed?: { title: string; onRetry: () => void };
 }) {
   const { t } = useTranslation("stocks");
   const title = (
@@ -217,14 +230,16 @@ export function HeadBand({
         title
       )}
       <div className="mt-x4">
-        {loading ? (
+        {failed ? (
+          <BandFailure title={failed.title} onRetry={failed.onRetry} />
+        ) : loading ? (
           <Skeleton text="t12" className="w-3/5" />
         ) : (
           <p className="m-0 text-t12 font-bold tabular-nums text-fg-neutral">
             {withCommaBreaks(priceText)}
           </p>
         )}
-        {pct != null && (
+        {!failed && pct != null && (
           <div className="mt-x1">
             {changeAmount != null && currency ? (
               <DeltaText
@@ -263,7 +278,12 @@ export function HeadBand({
           ))}
         </div>
       )}
-      <ChartBlock symbol={symbol} isUs={isUs} height={chartHeight} />
+      <ChartBlock
+        symbol={symbol}
+        isUs={isUs}
+        broker={broker}
+        height={chartHeight}
+      />
     </section>
   );
 }
@@ -272,10 +292,12 @@ export function HeadBand({
 function ChartBlock({
   symbol,
   isUs,
+  broker,
   height,
 }: {
   symbol: string;
   isUs: boolean;
+  broker: CandleBroker;
   height: number;
 }) {
   const { t } = useTranslation("stocks");
@@ -290,6 +312,7 @@ function ChartBlock({
             isUs={isUs}
             range={range}
             height={height}
+            broker={broker}
           />
         ) : availability === "no" ? (
           <div className="flex h-full flex-col items-center justify-center gap-x2 text-center text-t4 text-fg-neutral-subtle">
@@ -329,12 +352,22 @@ export function KvBand({
   id,
   rows,
   loading,
+  failed,
 }: {
   title: string;
   id: string;
   rows: KvLine[];
   loading?: boolean;
+  /** 실패 한 벌 — 제목 · 설명 · [다시 시도]. 오류 원문은 그리지 않는다 */
+  failed?: { title: string; onRetry: () => void };
 }) {
+  if (failed)
+    return (
+      <section aria-labelledby={id} className="pb-x6">
+        <BandTitle id={id}>{title}</BandTitle>
+        <BandFailure band title={failed.title} onRetry={failed.onRetry} />
+      </section>
+    );
   return (
     <section aria-labelledby={id}>
       <BandTitle id={id}>{title}</BandTitle>
@@ -358,23 +391,58 @@ export function KvBand({
 const ROW = "h-8";
 const num = (s: string) => Number.parseFloat(s);
 
-/** 호가 · 체결 띠 — Segmented [호가, 체결] + 위 12 에 표(`<table>`, 줄 32). 매도 informative · 매수 critical */
+/** 호가 질의 모양 — 토스는 자기 훅, 나무는 상세 시세 응답의 `orderbook`(부르는 쪽이 이 모양으로 넘긴다) */
+export interface BookQuery {
+  data: TossOrderbook | null | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => unknown;
+}
+
+/**
+ * 호가 · 체결 띠 — Segmented [호가, 체결] + 위 12 에 표(`<table>`, 줄 32). 매도 informative · 매수 critical.
+ * 두 증권사 공통(I-13b 21) — 호가는 같은 부품 · 같은 이름(`Orderbook` · `Trade`). **고른 탭의 질의만** 켠다(체결 5초 폴링은 체결 탭일 때만).
+ * 나무 호가는 상세 시세에 실려 와 서버 캐시(20초)만큼만 바뀐다.
+ */
 export function QuotesBand({
+  broker,
+  market,
   symbol,
   currency,
   lastPrice,
   changePct,
+  namuBook,
 }: {
+  broker: "TOSS" | "NAMU";
+  /** 나무 체결의 국내 · 미국 갈래 */
+  market: "KR" | "US" | null;
   symbol: string;
   currency: string;
   lastPrice: number | null;
   /** 전일 종가를 못 받았으면 null — 가운데 띠에 등락률을 지어내지 않는다(0.00% 금지) */
   changePct: number | null;
+  /** 나무 호가 — 상세 시세 질의에서 꺼내 넘긴다 */
+  namuBook?: BookQuery;
 }) {
   const { t } = useTranslation("stocks");
   const [tab, setTab] = useState<"book" | "tape">("book");
-  const bookQ = useTossOrderbook(symbol);
-  const tradesQ = useTossTrades(symbol);
+  const toss = broker === "TOSS";
+  const tossBookQ = useTossOrderbook(toss ? symbol : null, tab === "book");
+  const tossTradesQ = useTossTrades(toss ? symbol : null, 20, tab === "tape");
+  const namuTradesQ = useNamuExecutions(
+    toss ? null : market,
+    symbol,
+    tab === "tape",
+  );
+  const bookQ: BookQuery = toss
+    ? tossBookQ
+    : (namuBook ?? {
+        data: null,
+        isLoading: false,
+        isError: false,
+        refetch: () => {},
+      });
+  const tradesQ = toss ? tossTradesQ : namuTradesQ;
   const fmt = (p: number) => fmtByCurrency(p, currency);
   const asks = useMemo(
     () =>
@@ -597,8 +665,8 @@ function TableSkeleton({ label }: { label: string }) {
 // ---- 일별 시세 + 매매 ------------------------------------------------------------
 
 /** 일별 시세 — 최근 날짜부터 여덟 줄(종가 · 전 거래일 대비 등락률 · 거래량) */
-function useDailyRows(symbol: string) {
-  const q = useDailyCandles(symbol);
+function useDailyRows(symbol: string, broker: CandleBroker, enabled: boolean) {
+  const q = useDailyCandles(symbol, broker, enabled);
   const rows = useMemo(() => {
     const asc = [...(q.data?.candles ?? [])].sort((a, b) =>
       a.timestamp.localeCompare(b.timestamp),
@@ -629,15 +697,20 @@ function useDailyRows(symbol: string) {
 /** 일별 시세 띠 — List 줄: 제목 날짜 "10월 23일" · 설명 "거래량 …" · 오른쪽 종가 + 등락률. `tail` 은 끝에 오는 매매(토스) */
 export function DailyBand({
   symbol,
+  broker,
+  enabled = true,
   currency,
   tail,
 }: {
   symbol: string;
+  broker: CandleBroker;
+  /** 나무 상세는 상세 시세 질의가 끝난 뒤에 연다(처음 한꺼번에 몰리지 않게) */
+  enabled?: boolean;
   currency: string;
   tail?: ReactNode;
 }) {
   const { t } = useTranslation("stocks");
-  const { q, rows } = useDailyRows(symbol);
+  const { q, rows } = useDailyRows(symbol, broker, enabled);
   return (
     <section aria-labelledby="stock-daily" className="pb-x6">
       <BandTitle id="stock-daily">{t("daily.title")}</BandTitle>
@@ -694,15 +767,19 @@ export function DailyBand({
  */
 export function DailyCard({
   symbol,
+  broker,
+  enabled = true,
   currency,
   tail,
 }: {
   symbol: string;
+  broker: CandleBroker;
+  enabled?: boolean;
   currency: string;
   tail?: ReactNode;
 }) {
   const { t } = useTranslation("stocks");
-  const { q, rows } = useDailyRows(symbol);
+  const { q, rows } = useDailyRows(symbol, broker, enabled);
   return (
     <Card body="list" aria-labelledby="stock-daily">
       <CardHeader>
@@ -761,6 +838,177 @@ export function DailyCard({
         </TableBody>
       </Table>
       {tail && <div className="pb-x3">{tail}</div>}
+    </Card>
+  );
+}
+
+// ---- 투자자별 매매동향(국내 종목만 — I-13b 22) ------------------------------------
+
+/** 순매수 주 수 → 방향 + 부호 없는 쉼표 글. null → "—"(토스 당일 잠정 개인), 0 → "0" 화살표 없음 */
+function investorValue(v: string | null): {
+  dir: "up" | "down" | "flat";
+  text: string;
+} {
+  if (v == null || v.trim() === "" || !Number.isFinite(Number(v)))
+    return { dir: "flat", text: "—" };
+  const n = Number(v);
+  return { dir: directionOf(n), text: Math.abs(n).toLocaleString() };
+}
+
+const investorDate = (d: string) => {
+  const date = new Date(`${d.slice(0, 10)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? d : formatMonthDay(date);
+};
+
+/** 투자자별 질의 모양 — 토스 · 나무가 같은 응답이라 부르는 쪽이 이 모양으로 넘긴다 */
+export interface InvestorQuery {
+  data: InvestorTradingDay[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => unknown;
+}
+
+function InvestorUnit() {
+  const { t } = useTranslation("stocks");
+  return (
+    <span className="shrink-0 whitespace-nowrap text-t4 text-fg-neutral-subtle">
+      {t("investor.unit")}
+    </span>
+  );
+}
+
+/**
+ * 폰 "투자자별 매매동향" 띠 — 구역 제목 + 오른쪽 보조 글, List 줄 다섯(최신이 위):
+ * 제목 날짜 · 오른쪽 세 줄(라벨 폭 40 오른쪽 맞춤 + 사이 8 + 값). 빈 목록은 안내 줄.
+ */
+export function InvestorBand({ q }: { q: InvestorQuery }) {
+  const { t } = useTranslation("stocks");
+  const rows = (q.data ?? []).slice(0, 5);
+  const sides = [
+    ["individual", "investor.individual"],
+    ["foreigner", "investor.foreigner"],
+    ["institution", "investor.institution"],
+  ] as const;
+  return (
+    <section aria-labelledby="stock-investor" className="pb-x6">
+      <div className="flex items-baseline justify-between gap-x2 px-x6 pb-x1 pt-x6">
+        <h2
+          id="stock-investor"
+          className="m-0 text-t5 font-bold text-fg-neutral"
+        >
+          {t("investor.title")}
+        </h2>
+        <InvestorUnit />
+      </div>
+      {q.isLoading ? (
+        <List aria-busy aria-label={t("investor.loading")}>
+          {Array.from({ length: 5 }, (_, i) => (
+            <ListItem
+              key={i}
+              title={<Skeleton text="t5" className="w-1/4" />}
+              suffix={<Skeleton text="t3" className="h-14 w-24" />}
+            />
+          ))}
+        </List>
+      ) : q.isError ? (
+        <BandFailure
+          band
+          title={t("investor.failTitle")}
+          onRetry={() => void q.refetch()}
+        />
+      ) : rows.length === 0 ? (
+        <p className="m-0 px-x6 pb-x3 pt-x1 text-t4 text-fg-neutral-subtle">
+          {t("investor.empty")}
+        </p>
+      ) : (
+        <List aria-labelledby="stock-investor">
+          {rows.map((r) => (
+            <ListItem
+              key={r.date}
+              title={investorDate(r.date)}
+              suffix={
+                <span className="flex max-w-[60cqw] flex-col items-end gap-x0_5">
+                  {sides.map(([k, label]) => {
+                    const v = investorValue(r[k]);
+                    return (
+                      <span key={k} className="flex items-baseline gap-x2">
+                        <span className="w-10 shrink-0 text-end text-t3 text-fg-neutral-subtle">
+                          {t(label)}
+                        </span>
+                        <DeltaText dir={v.dir} text={withCommaBreaks(v.text)} />
+                      </span>
+                    );
+                  })}
+                </span>
+              }
+            />
+          ))}
+        </List>
+      )}
+    </section>
+  );
+}
+
+/** 768 이상 "투자자별 매매동향" 카드 — ds Table(머리 41 · 줄 45): 일자 · 개인 · 외국인 · 기관. 숫자 열은 줄바꿈을 허용한다 */
+export function InvestorCard({ q }: { q: InvestorQuery }) {
+  const { t } = useTranslation("stocks");
+  const rows = (q.data ?? []).slice(0, 5);
+  const cell = (v: string | null) => {
+    const x = investorValue(v);
+    return <DeltaText dir={x.dir} text={x.text} />;
+  };
+  return (
+    <Card body="list" aria-labelledby="stock-investor">
+      <CardHeader>
+        <CardTitle id="stock-investor">{t("investor.title")}</CardTitle>
+        <InvestorUnit />
+      </CardHeader>
+      <Table caption={t("investor.title")} className="mt-x2">
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("daily.date")}</TableHead>
+            <TableHead align="end">{t("investor.individual")}</TableHead>
+            <TableHead align="end">{t("investor.foreigner")}</TableHead>
+            <TableHead align="end">{t("investor.institution")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {q.isLoading ? (
+            <TableSkeletonRows
+              rows={5}
+              columns={[
+                { align: "start", width: "64px" },
+                { align: "end", width: "72px" },
+                { align: "end", width: "72px" },
+                { align: "end", width: "72px" },
+              ]}
+            />
+          ) : q.isError ? (
+            <TableStatusRow>
+              <BandFailure
+                band
+                title={t("investor.failTitle")}
+                onRetry={() => void q.refetch()}
+              />
+            </TableStatusRow>
+          ) : rows.length === 0 ? (
+            <TableStatusRow>
+              <p className="m-0 py-x3 text-center text-t4 text-fg-neutral-subtle">
+                {t("investor.empty")}
+              </p>
+            </TableStatusRow>
+          ) : (
+            rows.map((r) => (
+              <TableRow key={r.date}>
+                <TableRowHeader>{investorDate(r.date)}</TableRowHeader>
+                <TableCell align="end">{cell(r.individual)}</TableCell>
+                <TableCell align="end">{cell(r.foreigner)}</TableCell>
+                <TableCell align="end">{cell(r.institution)}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
     </Card>
   );
 }

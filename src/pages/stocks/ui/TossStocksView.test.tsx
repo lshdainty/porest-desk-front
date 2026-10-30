@@ -109,6 +109,13 @@ vi.mock("@/features/stock/model/useTossStocks", () => {
       st.fx === "error"
         ? q(undefined, { isError: true, isSuccess: false })
         : q({ rate: "1385.20" }),
+    useTossBuyingPower: (seq: number | null, currency: string) =>
+      seq == null
+        ? q(undefined, { isSuccess: false })
+        : q({
+            currency,
+            cashBuyingPower: currency === "KRW" ? "200000000" : "12345.67",
+          }),
     useTossIndicatorPrices: () =>
       st.idx === "error"
         ? q(undefined, { isError: true, isSuccess: false })
@@ -242,6 +249,24 @@ describe("토스 폰 화면", () => {
       e.getAttribute("data-section"),
     );
     expect(secs).toEqual(["invest", "market", "stocks"]);
+  });
+  it("내 투자 키-값 차례: 매입금액 → 일간 손익 → 주문 가능 원화 → 주문 가능 달러 → 보유 종목 (I-13b 18)", () => {
+    render();
+    const names = [
+      ...container.querySelectorAll("[data-section=invest] li"),
+    ].map((li) => li.textContent ?? "");
+    const order = [
+      "holding.purchaseAmount",
+      "holding.dailyPnl",
+      "invest.orderableKrw",
+      "invest.orderableUsd",
+      "summary.holdingsCount",
+    ].map((k) => names.findIndex((n) => n.includes(k)));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    const text = container.querySelector("[data-section=invest]")!.textContent!;
+    expect(text).toContain("200,000,000");
+    expect(text).toContain("$12,345.67");
   });
   it("머리는 TopNavigation(← + 증권)", () => {
     render();

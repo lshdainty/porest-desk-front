@@ -5,9 +5,9 @@
  * (logicalRange.from)이 임계치 아래로 떨어지면 백엔드 nextCursor 로 다음 과거 페이지를 당겨
  * prepend 한다. (백엔드 candle = groo-core CursorResponse 단일 페이지)
  *
- * 데이터는 **증권사 무관 경로**(`/v1/securities/candles`)에서 온다 — 사용자가 고른 소스로
- * 서버가 대신 조회한다. 커서의 뜻은 증권사가 정하므로(토스=불투명 문자열, 나무=날짜)
- * 여기서는 받은 값을 그대로 되돌려 주기만 한다.
+ * 데이터는 **그 탭의 증권사 경로**(`broker` — `/v1/toss/candles` · `/v1/namu/candles`)에서 온다.
+ * `broker` 가 없으면 증권사 무관 경로(`/v1/securities/candles` — 사용자의 기본 소스)다.
+ * 커서의 뜻은 증권사가 정하므로(토스=불투명 문자열, 나무=날짜) 여기서는 받은 값을 그대로 되돌려 주기만 한다.
  */
 import { useEffect, useRef, useState } from "react";
 import {
@@ -37,6 +37,7 @@ import {
   securitiesApi,
   type BrokerCandle,
   type BrokerCandlePage,
+  type CandleBroker,
 } from "@/features/stock/api/securitiesApi";
 
 /**
@@ -160,14 +161,17 @@ export function LightweightStockChart({
   isUs,
   range,
   height,
+  broker,
   fetcher = (symbol, interval, opts) =>
-    securitiesApi.getCandles(symbol, interval, opts),
+    securitiesApi.getCandles(symbol, interval, { ...opts, broker }),
 }: {
   symbol: string;
   isUs: boolean;
   range: Range;
   /** 차트 높이 — number(px) 또는 '100%'(부모 크기 따라감, embed 풀블리드용). */
   height: number | "100%";
+  /** 그 탭의 증권사 — 기본 fetcher 가 이 증권사 경로로 부른다(없으면 기본 증권사) */
+  broker?: CandleBroker;
   /**
    * 캔들 페치 함수. 기본=securitiesApi(쿠키), 임베드 컨텍스트에선 Bearer 토큰 client 주입.
    * 인증 컨텍스트를 담는 fetcher 는 useMemo 로 안정화할 것 — effect deps 는 [symbol, interval] 이라

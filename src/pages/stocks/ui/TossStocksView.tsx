@@ -16,13 +16,15 @@ import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { formatChangeRate } from "@/shared/lib/groo/format";
 import { useMasked, won } from "@/shared/lib/groo/money-text";
 import { brokerPath } from "@/features/stock/lib/broker";
-import { fmtFxRate, num } from "@/features/stock/lib/format";
+import { fmtByCurrency, fmtFxRate, num } from "@/features/stock/lib/format";
+import { Skeleton } from "@/shared/ds/skeleton";
 import { marketLookup } from "@/features/stock/lib/market-state";
 import { isHardError } from "@/features/stock/lib/query-state";
 import { visibleSymbols } from "@/features/stock/lib/watch-prices";
 import { useWatchGroups } from "@/features/stock/api/watchlistApi";
 import {
   useTossAccounts,
+  useTossBuyingPower,
   useTossExchangeRate,
   useTossHoldings,
   useTossIndicatorCandles,
@@ -133,6 +135,32 @@ export function TossStocksView({
     value: mask(`${won(Math.abs(summary.pnl))} · ${pctOf(summary.pnlPct)}`),
     text: t("invest.vsPurchase"),
   };
+  // 주문 가능 금액 둘(I-13b 18) — 60초마다. 값이 없으면(null) 줄을 그리지 않고, 질의가 실패하면 값 "—"(구역 실패가 아니다)
+  const bpKrwQ = useTossBuyingPower(accountSeq, "KRW");
+  const bpUsdQ = useTossBuyingPower(accountSeq, "USD");
+  const buyingRow = (
+    key: string,
+    name: string,
+    q: typeof bpKrwQ,
+    format: (n: number) => string,
+  ) => {
+    const v = q.data?.cashBuyingPower;
+    const has = v != null && v.trim() !== "";
+    if (!q.isError && !q.isLoading && !has) return [];
+    return [
+      {
+        key,
+        name,
+        value: q.isLoading ? (
+          <Skeleton text="t5" className="w-16" />
+        ) : has ? (
+          mask(format(num(v)))
+        ) : (
+          "—"
+        ),
+      },
+    ];
+  };
   const dailyDir = summary ? directionOfPct(summary.dailyPnlPct) : "flat";
   const investRows = [
     {
@@ -153,6 +181,10 @@ export function TossStocksView({
         />
       ),
     },
+    ...buyingRow("orderable-krw", t("invest.orderableKrw"), bpKrwQ, won),
+    ...buyingRow("orderable-usd", t("invest.orderableUsd"), bpUsdQ, (n) =>
+      fmtByCurrency(n, "USD"),
+    ),
     {
       key: "count",
       name: t("summary.holdingsCount"),
