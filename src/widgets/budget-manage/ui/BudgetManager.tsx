@@ -10,6 +10,7 @@ import {
   useDeleteExpenseBudget,
 } from "@/features/expense";
 import type { ExpenseBudget, ExpenseCategory } from "@/entities/expense";
+import { isHttpStatus } from "@/shared/api";
 import { MINUS } from "@/shared/lib/groo/format";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import { Icon } from "@/shared/ui/groo/primitives";
@@ -287,7 +288,11 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     const results = await Promise.allSettled(
       ids.map((id) => deleteMut.mutateAsync(id)),
     );
-    const left = ids.filter((_, i) => results[i]?.status === "rejected");
+    // 404 는 이미 지워진 것(다른 곳에서 지웠다) — 되돌리려던 결과와 같으므로 실패로 세지 않는다. 진짜 실패만 남긴다
+    const left = ids.filter((_, i) => {
+      const r = results[i];
+      return r?.status === "rejected" && !isHttpStatus(r.reason, 404);
+    });
     // 조용히 반만 지워지지 않게 — 남은 것만 다시 지운다
     if (left.length > 0) {
       snackbar.show({
