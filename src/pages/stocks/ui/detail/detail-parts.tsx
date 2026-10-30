@@ -891,7 +891,7 @@ export function InvestorBand({ q }: { q: InvestorQuery }) {
   ] as const;
   return (
     <section aria-labelledby="stock-investor" className="pb-x6">
-      <div className="flex items-baseline justify-between gap-x2 px-x6 pb-x1 pt-x6">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-x2 gap-y-x0_5 px-x6 pb-x1 pt-x6">
         <h2
           id="stock-investor"
           className="m-0 text-t5 font-bold text-fg-neutral"
