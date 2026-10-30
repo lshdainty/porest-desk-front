@@ -6,7 +6,7 @@ import {
   savingGoalKeys,
 } from "@/shared/config";
 import { useAssets, useAssetSummary } from "@/features/asset";
-import { holdingBalanceInKrw, type Asset } from "@/entities/asset";
+import type { Asset } from "@/entities/asset";
 import { groupAssets, useLiveAssets } from "@/widgets/asset-full";
 
 export {
@@ -60,7 +60,7 @@ export function useAssetGroups() {
       linked.reduce((s, a) => {
         if (a.isIncludedInTotal !== "Y") return s;
         const v = valMap.get(a.rowId);
-        return v != null ? s + (v - holdingBalanceInKrw(a)) : s;
+        return v != null ? s + (v - (a.holdingBalance ?? 0)) : s;
       }, 0),
     [linked, valMap],
   );

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { withLiveValuation, type Asset } from "@/entities/asset";
+import type { Asset } from "@/entities/asset";
 import { holdingsOf, useInvestValuation } from "@/features/asset";
 
 /**
@@ -19,11 +19,16 @@ export function useLiveAssets(assets: Asset[]) {
     for (const [k, v] of investValMap) m.set(k, v.value);
     return m;
   }, [investValMap]);
-  // 라이브 평가는 원화 — 외화 자산은 환율을 두 번 곱하지 않게 원화 잔액으로 얹는다(withLiveValuation)
   const list: Asset[] = useMemo(
     () =>
       assets.map((a) =>
-        valMap.has(a.rowId) ? withLiveValuation(a, valMap.get(a.rowId)!) : a,
+        valMap.has(a.rowId)
+          ? {
+              ...a,
+              holdingBalance: valMap.get(a.rowId)!,
+              balance: (a.cashBalance ?? 0) + valMap.get(a.rowId)!,
+            }
+          : a,
       ),
     [assets, valMap],
   );
