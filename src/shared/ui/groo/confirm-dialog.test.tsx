@@ -1,10 +1,6 @@
-// 삭제 확인창은 손으로 만든 footer 라 버튼 크기를 안 적었고, 취소도 ghost 라 배경이 없었다
-// (데스크톱·태블릿 실측 2026-09-16). 크기는 표준 footer 와 같은 `default`
-// (36 · 좌우 양쪽 16 · 14px)로 못 박는다 — 40 으로 올려 봤다가 대화상자에 비해 굵어 되돌렸다.
-//
-// 그리고 같은 "삭제 확인" 이 두 계열로 갈려 있었다 — 22곳은 Dialog 위에 얹은
-// ConfirmDialog(overlay 는 무시, ESC 는 취소), 3곳은 손수 만든 AlertDialog. 확인창은
-// **바깥 누르기로는 안 닫히고(Esc 는 취소) 기본 포커스가 취소** 여야 한다(spec alert-dialog.md Behavior).
+// 공용 확인창(ConfirmDialog)은 ds Alert Dialog(spec alert-dialog.md) 한 벌이다 — 모양 값은 ds 쪽(check-ds-spec)이 잰다.
+// 여기서는 종류별(삭제 · 일반 확정 · 통지 하나) 렌더와 계약(바깥 누르기 무시 · Esc 는 취소 · 확정은 호출처가 닫음 · 뒤로 가기)을 잠근다.
+// 이 시험은 작성만 했고 이 묶음에서는 돌리지 않았다(heavy.sh 규칙) — 다음 전체 실행에서 확인한다.
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -13,16 +9,10 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
-let device: "mobile" | "tablet" | "desktop" = "desktop";
-
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
   Trans: ({ children }: { children?: unknown }) => children ?? null,
   initReactI18next: { type: "3rdParty", init: () => {} },
-}));
-
-vi.mock("@/shared/lib/groo/responsive", () => ({
-  useDeviceSize: () => device,
 }));
 
 const { ConfirmDialog } = await import("@/shared/ui/groo/dialogs");
@@ -32,15 +22,30 @@ let root: Root;
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  device = "desktop";
+  window.history.replaceState(null, "");
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
+  if (!globalThis.ResizeObserver) {
+    globalThis.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
 });
 
-afterEach(() => {
+afterEach(async () => {
   act(() => root.unmount());
   container.remove();
+  document.body.removeAttribute("style");
+  await new Promise((r) => setTimeout(r, 30));
 });
 
 const render = (node: ReactNode) => act(() => root.render(node));
@@ -63,34 +68,52 @@ const confirm = (extra: Record<string, unknown> = {}) =>
     />,
   );
 
-describe("삭제 확인창 footer — 데스크탑·태블릿", () => {
-  it("버튼은 default(36 · 좌우 양쪽 16 · 14px) 다 — 표준 footer 와 같은 크기", () => {
-    confirm();
-    for (const label of ["취소", "삭제"]) {
-      const b = byText(label);
-      expect(b.classList, label).toContain("h-9");
-      expect(b.classList, label).toContain("px-4");
-      expect(b.classList, label).toContain("text-sm");
-    }
-  });
-
-  it("취소는 회색 채움(secondary)이다", () => {
-    confirm();
-    expect(byText("취소").classList).toContain("bg-secondary");
-  });
-
-  it("danger 면 확정은 솔리드 danger", () => {
+describe("종류별 렌더", () => {
+  it("삭제(danger) — 확정은 criticalSolid, 취소는 neutralWeak, 둘이 나란히 있다", () => {
     confirm({ danger: true });
-    expect(byText("삭제").classList).toContain("bg-destructive");
+    expect(byText("삭제").classList).toContain("bg-bg-critical-solid");
+    expect(byText("취소").classList).toContain("bg-bg-neutral-weak");
+    expect(
+      document.querySelectorAll("[data-slot=alert-dialog-footer] button"),
+    ).toHaveLength(2);
   });
-});
 
-describe("모바일은 그대로다", () => {
-  it("lg(48)", () => {
-    device = "mobile";
+  it("danger 가 아닌 확정은 neutralSolid 다", () => {
     confirm();
-    expect(byText("취소").classList).toContain("h-12");
-    expect(byText("삭제").classList).toContain("h-12");
+    expect(byText("삭제").classList).toContain("bg-bg-neutral-inverted");
+    expect(byText("삭제").classList).not.toContain("bg-bg-critical-solid");
+  });
+
+  it("제목 · 글이 ds 확인창의 제목 · 설명이고 닫기(X) 버튼이 없다", () => {
+    confirm({ title: "일정 삭제", message: "지울까요?\n되돌릴 수 없어요." });
+    const dlg = document.querySelector<HTMLElement>("[role=alertdialog]")!;
+    expect(dlg.getAttribute("data-slot")).toBe("alert-dialog-content");
+    expect(
+      dlg.querySelector("[data-slot=alert-dialog-title]")?.textContent,
+    ).toBe("일정 삭제");
+    const desc = dlg.querySelector("[data-slot=alert-dialog-description]")!;
+    expect(desc.textContent).toContain("되돌릴 수 없어요.");
+    expect(desc.classList).toContain("whitespace-pre-line");
+    expect(dlg.querySelectorAll("button")).toHaveLength(2);
+  });
+
+  it("singleAction 은 확인 하나, 폭 전체 — 취소가 없고 neutralSolid 다", () => {
+    confirm({ singleAction: true, danger: true, confirmLabel: "확인" });
+    const buttons = document.querySelectorAll(
+      "[data-slot=alert-dialog-footer] button",
+    );
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]!.textContent).toBe("확인");
+    expect(buttons[0]!.classList).toContain("bg-bg-neutral-inverted");
+  });
+
+  it("loading 이면 확정 버튼이 busy 이고 눌러도 onConfirm 을 부르지 않는다", () => {
+    const onConfirm = vi.fn();
+    confirm({ loading: true, onConfirm });
+    const b = byText("삭제");
+    expect(b.getAttribute("aria-busy")).toBe("true");
+    act(() => b.click());
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 });
 
@@ -100,6 +123,9 @@ describe("파괴적 확정은 버튼으로만 닫는다", () => {
     expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
     // Dialog 계열로 남아 있으면 안 된다.
     expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(
+      document.querySelector("[role=alertdialog]")?.getAttribute("aria-modal"),
+    ).toBe("true");
   });
 
   it("ESC 는 취소와 같다 — onCancel 을 부른다(03F-009)", () => {
@@ -127,23 +153,31 @@ describe("파괴적 확정은 버튼으로만 닫는다", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("기본 포커스는 취소다 — Enter 를 무심코 눌러도 삭제되지 않는다", () => {
+  it("처음 초점은 확인창(컨테이너)이다 — Enter 를 무심코 눌러도 삭제되지 않는다", () => {
     confirm();
-    expect(document.activeElement).toBe(byText("취소"));
+    expect(document.activeElement).toBe(
+      document.querySelector("[role=alertdialog]"),
+    );
+    expect(document.activeElement).not.toBe(byText("삭제"));
   });
 
-  it("취소가 없는 통지형은 확인이 그 자리를 대신한다", () => {
-    render(
-      <ConfirmDialog
-        title="삭제 불가"
-        message="자식이 있어요."
-        confirmLabel="확인"
-        singleAction
-        onCancel={() => {}}
-        onConfirm={() => {}}
-      />,
-    );
-    expect(document.activeElement).toBe(byText("확인"));
+  it("바깥(딤)을 눌러도 닫히지 않는다", () => {
+    const onCancel = vi.fn();
+    confirm({ onCancel });
+    const dim = document.querySelector("[data-slot=alert-dialog-overlay]")!;
+    act(() => {
+      dim.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      dim.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(document.querySelector("[role=alertdialog]")).not.toBeNull();
+  });
+
+  it("취소 버튼은 onCancel 을 부른다", () => {
+    const onCancel = vi.fn();
+    confirm({ onCancel });
+    act(() => byText("취소").click());
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it("확정을 눌러도 창은 호출처가 닫는다 — 스피너가 뜨는 동안 열려 있어야 한다", () => {
@@ -161,6 +195,8 @@ describe("파괴적 확정은 버튼으로만 닫는다", () => {
     );
     act(() => byText("삭제").click());
     expect(onConfirm).toHaveBeenCalledTimes(1);
+    // preventDefault — ds 의 확정 버튼이 스스로 닫지 않는다.
+    expect(document.querySelector("[role=alertdialog]")).not.toBeNull();
     // 확정이 취소까지 부르면 호출처가 상태를 지워 스피너가 사라진다.
     expect(onCancel).not.toHaveBeenCalled();
   });

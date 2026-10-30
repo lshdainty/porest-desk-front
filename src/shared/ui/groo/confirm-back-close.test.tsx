@@ -2,7 +2,8 @@
 //
 // 차례: 시트(ds `useBackClose`)가 닫히며 마이크로태스크에서 `history.go(-1)` 을 예약하고, 같은 커밋에서 확인창이 자기 칸을 `pushState` 한다.
 // `go(-1)` 이 지우는 칸은 확인창의 것이 되고, 그 `popstate` 를 옛 훅(걷었다 — `shared/lib/groo/use-back-close`)은 "뒤로 가기 = 확인창 닫기" 로 읽었다.
-// ds 훅은 자기가 부른 `go` 의 popstate 를 세어 건너뛴다. ModalShell · ConfirmDialog 가 ds 훅이면 확인창이 남는다. (#491 `detail-back-close.test.tsx` 와 같은 원인)
+// ds 훅은 자기가 부른 `go` 의 popstate 를 세어 건너뛴다. ModalShell · ConfirmDialog(ds AlertDialog 안의 같은 훅)이면 확인창이 남는다.
+// ConfirmDialog 는 자기 훅을 따로 두지 않는다 — ds AlertDialog 가 가진 훅 하나만 쓴다(중복 useBackClose 제거, 28-5). (#491 `detail-back-close.test.tsx` 와 같은 원인)
 //
 // 이 시험은 작성만 했고 이 묶음에서는 돌리지 않았다(heavy.sh 규칙) — 다음 전체 실행에서 확인한다.
 import { act, useState } from "react";
@@ -19,10 +20,6 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-// 확인창은 모바일에서만 뒤로 가기를 건다
-vi.mock("@/shared/lib/groo/responsive", () => ({
-  useDeviceSize: () => "mobile",
-}));
 
 const { ConfirmDialog, ModalShell } = await import("./dialogs");
 
@@ -34,6 +31,20 @@ let shellClosed = 0;
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   window.history.replaceState(null, "");
+  // 확인창의 뒤로 가기는 1280 미만에서만 건다(ds AlertDialog) — wide 가 아닌 폭으로 둔다
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  })) as unknown as typeof window.matchMedia;
+  if (!globalThis.ResizeObserver) {
+    globalThis.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
   cancelled = 0;
   shellClosed = 0;
   container = document.createElement("div");
