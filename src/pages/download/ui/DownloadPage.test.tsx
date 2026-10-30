@@ -15,10 +15,9 @@ vi.mock("react-i18next", () => ({
   }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-const toastSuccess = vi.hoisted(() => vi.fn());
-const toastError = vi.hoisted(() => vi.fn());
-vi.mock("sonner", () => ({
-  toast: { success: toastSuccess, error: toastError },
+const snackShow = vi.hoisted(() => vi.fn());
+vi.mock("@/shared/ds/snackbar", () => ({
+  useSnackbar: () => ({ show: snackShow, dismiss: () => {} }),
 }));
 
 const { DownloadPage } = await import("./DownloadPage");
@@ -68,8 +67,7 @@ beforeEach(() => {
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
-  toastSuccess.mockClear();
-  toastError.mockClear();
+  snackShow.mockClear();
 });
 afterEach(() => {
   act(() => root.unmount());
@@ -164,8 +162,10 @@ describe("DownloadPage — iOS 주소 (40)", () => {
     expect(writeText).toHaveBeenCalledWith(
       `${window.location.origin}/download/altstore.json`,
     );
-    expect(toastSuccess).toHaveBeenCalledTimes(1);
-    expect(toastSuccess.mock.calls[0]?.[0]).toBe("ios.copiedToast");
+    expect(snackShow).toHaveBeenCalledTimes(1);
+    expect(snackShow.mock.calls[0]?.[0]).toEqual({
+      message: "ios.copiedToast",
+    });
     expect(btn.textContent).toContain("ios.copy");
   });
 
@@ -178,8 +178,10 @@ describe("DownloadPage — iOS 주소 (40)", () => {
       buttonByText("ios.copy").click();
     });
     await flush();
-    expect(toastError).toHaveBeenCalledTimes(1);
-    expect(toastError.mock.calls[0]?.[0]).toBe("ios.copyFailed");
-    expect(toastSuccess).not.toHaveBeenCalled();
+    expect(snackShow).toHaveBeenCalledTimes(1);
+    expect(snackShow.mock.calls[0]?.[0]).toEqual({
+      message: "ios.copyFailed",
+      tone: "critical",
+    });
   });
 });
