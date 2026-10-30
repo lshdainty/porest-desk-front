@@ -30,6 +30,8 @@ const updates = vi.hoisted(
   () => [] as { id: number; data: CalendarEventFormValues; silent?: boolean }[],
 );
 const mocks = vi.hoisted(() => ({
+  updateError: false,
+  resets: 0,
   me: 7,
   roles: { 1: "READ" } as Record<number, string>,
   calendars: [] as unknown[],
@@ -53,6 +55,11 @@ vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
       o?.onSuccess?.();
     },
     isPending: false,
+    isError: mocks.updateError,
+    reset: () => {
+      mocks.resets++;
+      mocks.updateError = false;
+    },
   }),
 }));
 
@@ -68,6 +75,8 @@ beforeEach(async () => {
   setupFormDom(false);
   __resetPointerBlockForTest();
   updates.length = 0;
+  mocks.updateError = false;
+  mocks.resets = 0;
   mocks.me = 7;
   mocks.calendars = [
     {
@@ -439,6 +448,20 @@ describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
     press(askBtn("나가기"));
     await later();
     expect(title()).toBe("editEvent");
+  });
+
+  // W3 — 저장에 실패한 뒤 나갔다 다시 [수정] 하면 시도도 안 했는데 빨간 Callout 이 남던 것
+  it("저장 실패 뒤 ← 로 나갔다 다시 [수정] 하면 지난 실패 알림이 없다", async () => {
+    const { rerender } = toEdit([event(1)]);
+    mocks.updateError = true;
+    rerender([event(1)]);
+    expect(sheet().querySelector("[role=alert]")).not.toBeNull();
+    stepBack();
+    expect(title()).toBe("eventDetail");
+    press(footerButtons()[1]!);
+    expect(mocks.resets).toBeGreaterThan(0);
+    expect(title()).toBe("editEvent");
+    expect(sheet().querySelector("[role=alert]")).toBeNull();
   });
 
   it("폼 바닥 [삭제] 는 삭제 확인을 요청한다", () => {

@@ -168,6 +168,8 @@ export function EventDetailSurface({
   const toList = () => setStep({ kind: "list" });
   const startEdit = () => {
     if (!current) return;
+    // 지난 저장 실패의 알림이 다시 연 폼에 남지 않게 — 훅은 시트 수명 동안 살아 있어 isError 가 다음 저장까지 참이다
+    updateEvent.reset();
     setSnapshot(iEventToCalendarEvent(current));
     flow.resetScreen();
     setStep({ kind: "edit", ref: refOf(current) });
