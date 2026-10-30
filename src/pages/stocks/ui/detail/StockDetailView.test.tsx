@@ -162,7 +162,7 @@ vi.mock("@/features/stock/model/useTossStocks", async (orig) => {
   };
 });
 
-const { StockDetailMobile } = await import("./StockDetailMobile");
+const { StockDetailView } = await import("./StockDetailView");
 let container: HTMLDivElement;
 let root: Root;
 let qc: QueryClient;
@@ -204,7 +204,7 @@ const render = () =>
     root.render(
       <QueryClientProvider client={qc}>
         <MemoryRouter>
-          <StockDetailMobile broker="TOSS" symbol="A1" />
+          <StockDetailView broker="TOSS" symbol="A1" />
         </MemoryRouter>
       </QueryClientProvider>,
     ),
