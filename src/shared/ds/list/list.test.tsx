@@ -2028,3 +2028,32 @@ describe("ListCheckItem · locked (끌 수 없는 켬 — 칸만 막는다, list
     );
   });
 });
+
+describe("List — 값이 글인데 안에 버튼이 든 뒤 붙이개(일정 폼 시작 · 종료)", () => {
+  it("좁은 줄에서 값을 본문 아래로 내리는 규칙이 글 값(data-value=text)에도 걸려 있다", () => {
+    act(() =>
+      root.render(
+        <List aria-label="값">
+          <ListItem
+            title="시작"
+            suffixText
+            suffix={
+              <span>
+                <button type="button">11월 2일</button>
+              </span>
+            }
+          />
+        </List>,
+      ),
+    );
+    const suffix = container.querySelector<HTMLElement>(
+      "[data-slot=list-suffix]",
+    )!;
+    expect(suffix.dataset.value).toBe("text");
+    // 버튼이 직접 자식이 아닌 글 값 — 줄(content 층)의 클래스에 이 값을 아래로 내리는 선택자가 있다
+    const content = suffix.parentElement!;
+    expect(content.className).toContain(
+      "[data-value=text]:not(:has(>:is(svg,button",
+    );
+  });
+});

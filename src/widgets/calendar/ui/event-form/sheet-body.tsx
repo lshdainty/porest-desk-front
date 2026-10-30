@@ -38,11 +38,6 @@ import { NO_LABEL, reminderKey, type EventFormView } from "./types";
 
 const ROW_ICON = "size-[22px]";
 
-/** 줄 제목은 줄을 바꾸지 않는다 — 날짜 · 시각 줄은 값 조각이 넓어 글자 200% 에서 제목이 글자 하나 폭으로 눌린다("시 / 작") */
-function NoWrap({ children }: { children: ReactNode }) {
-  return <span className="whitespace-nowrap">{children}</span>;
-}
-
 /** 날짜 · 시각 조각 — 누르는 자리 44 이상, 글은 자르지 않고 줄을 바꾼다(time-picker.md:71) */
 function Piece({
   label,
@@ -154,7 +149,7 @@ export function EventFormSheetBody({
     return (
       <ListItem
         prefix={<Clock className={ROW_ICON} />}
-        title={<NoWrap>{t(`form.${kind}`)}</NoWrap>}
+        title={t(`form.${kind}`)}
         suffixText
         suffix={
           <span className="-mr-x1 flex flex-wrap items-center justify-end">
