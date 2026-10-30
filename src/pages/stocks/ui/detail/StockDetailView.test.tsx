@@ -31,6 +31,8 @@ const st = vi.hoisted(() => ({
     closePrice: string;
     volume: string;
   }[],
+  /** 시세 · 정보 · 마스터가 아직 안 왔다 — 통화를 모르는 첫 렌더(D1) */
+  currencyPending: false,
   bookPending: false,
   tradesPending: false,
   investors: [] as unknown[],
@@ -62,12 +64,14 @@ vi.mock("@/features/stock/model/useWatchlist", () => ({
 }));
 vi.mock("@/features/stock/model/useStockMaster", () => ({
   useStockBySymbol: () => ({
-    data: {
-      nameKr: "숲길전자",
-      marketCode: "KOSPI",
-      securityType: "STOCK",
-      currency: "KRW",
-    },
+    data: st.currencyPending
+      ? undefined
+      : {
+          nameKr: "숲길전자",
+          marketCode: "KOSPI",
+          securityType: "STOCK",
+          currency: "KRW",
+        },
   }),
 }));
 vi.mock("@/features/stock/model/useDailyCandles", () => ({
@@ -111,26 +115,32 @@ vi.mock("@/features/stock/model/useTossStocks", async (orig) => {
     changePctOf: real.changePctOf,
     usePrevClose: () => q(st.prevClose),
     useTossStockInfo: () =>
-      st.info === "error"
-        ? q(undefined, { isError: true, isSuccess: false })
-        : q(
-            st.infoEmpty ? [] : [info()],
-            st.info === "stale-error" ? { isError: true } : {},
-          ),
+      st.currencyPending
+        ? q(undefined, { isLoading: true, isPending: true, isSuccess: false })
+        : st.info === "error"
+          ? q(undefined, { isError: true, isSuccess: false })
+          : q(
+              st.infoEmpty ? [] : [info()],
+              st.info === "stale-error" ? { isError: true } : {},
+            ),
     useTossPrices: () =>
-      st.prices === "error"
-        ? q(undefined, { isError: true, isSuccess: false })
-        : q(
-            st.last == null || st.prices === "empty"
-              ? []
-              : [
-                  {
-                    symbol: "A1",
-                    lastPrice: st.last,
-                    ...(st.priceCurrency ? { currency: st.priceCurrency } : {}),
-                  },
-                ],
-          ),
+      st.currencyPending
+        ? q(undefined, { isLoading: true, isPending: true, isSuccess: false })
+        : st.prices === "error"
+          ? q(undefined, { isError: true, isSuccess: false })
+          : q(
+              st.last == null || st.prices === "empty"
+                ? []
+                : [
+                    {
+                      symbol: "A1",
+                      lastPrice: st.last,
+                      ...(st.priceCurrency
+                        ? { currency: st.priceCurrency }
+                        : {}),
+                    },
+                  ],
+            ),
     useTossExchangeRate: () => q({ rate: "1385.20" }),
     useTossStockWarnings: () => q([]),
     useTossAccounts: () => q([{ accountSeq: 1 }]),
@@ -220,6 +230,7 @@ beforeEach(() => {
   st.asks = true;
   st.bids = true;
   st.bars = [];
+  st.currencyPending = false;
   st.bookPending = false;
   st.tradesPending = false;
   st.investors = [];
@@ -545,5 +556,66 @@ describe("오늘 시세 — '오늘' 은 그 시장의 거래일이다(M7, I-13b
     st.bars = [bar("2026-10-28T00:00:00+09:00")];
     render();
     expect(todayRows()).not.toContain("today.open");
+  });
+
+  // ---- D1: 통화가 늦게 오는 실제 순서(시세 · 정보 · 마스터가 비동기) ----------------------
+  it("통화를 아직 모르면(시세 · 정보 · 마스터 모두 오는 중) 한국 날짜로 오늘 봉을 가르지 않고 기다린다 — 값이 없다", () => {
+    // 한국 10-30 03:00 = 뉴욕 10-29 14:00 — 한국 날짜가 뉴욕보다 앞선다
+    at("2026-10-30T03:00:00+09:00");
+    st.currencyPending = true;
+    st.bars = [bar("2026-10-29T00:00:00-04:00")];
+    render();
+    expect(todayRows()).not.toContain("$100.00");
+    expect(todayRows()).not.toContain("100원");
+  });
+  it("통화가 늦게 오면(USD) 타이머를 기다리지 않고 그 렌더에서 바로 오늘 봉이 나온다 — 60초 안 보이던 결함", () => {
+    at("2026-10-30T03:00:00+09:00");
+    st.currencyPending = true;
+    st.bars = [bar("2026-10-29T00:00:00-04:00")];
+    render();
+    // 시세 응답이 도착 — 시간대가 한국 → 뉴욕으로 바뀐다. 시계도 타이머도 움직이지 않았다
+    st.currencyPending = false;
+    st.priceCurrency = "USD";
+    st.koreanDetail = false;
+    render();
+    expect(todayRows()).toContain("today.open");
+    expect(todayRows()).toContain("$100.00");
+  });
+  it("한국 23:00(두 시장의 날짜가 같은 시각)에서도 같다 — 늦게 온 통화로 바뀌어도 띠가 유지된다", () => {
+    at("2026-10-29T23:00:00+09:00");
+    st.currencyPending = true;
+    st.bars = [bar("2026-10-29T00:00:00-04:00")];
+    render();
+    st.currencyPending = false;
+    st.priceCurrency = "USD";
+    st.koreanDetail = false;
+    render();
+    expect(todayRows()).toContain("$100.00");
+  });
+
+  // ---- D2: 투자자별 줄 이름 칸 — 고정 폭 40 이 아니라 가장 긴 낱말 폭까지 ----------------------
+  it("투자자별 라벨 칸은 고정 폭(w-10)이 아니다 — 최소 2.5rem(한국어 40 유지)에서 가장 긴 낱말 폭(max-content)까지 넓어지고, 낱말 안에서 꺾지 않는다", () => {
+    st.investors = [
+      {
+        date: "2026-10-29",
+        individual: "1",
+        foreigner: "-2",
+        institution: "3",
+      },
+    ];
+    render();
+    const band = container.querySelector("[data-section=investor]")!;
+    const grid = band.querySelector(".grid")!;
+    expect(grid.className).toContain("minmax(2.5rem,max-content)");
+    const labels = [...grid.querySelectorAll(":scope > span.text-end")];
+    expect(labels.length).toBe(3);
+    for (const l of labels) {
+      expect(l.className).not.toContain("w-10");
+      expect(l.className).not.toContain("break-all");
+      expect(l.className).not.toContain("[overflow-wrap:anywhere]");
+    }
+    // 값 칸이 먼저 줄어든다(minmax(0,1fr)) · 줄 안이 좁아 값이 본문 아래로 내려가면 60cqw 상한을 푼다(list.md)
+    expect(grid.className).toContain("minmax(0,1fr)");
+    expect(grid.className).toContain("max-w-none");
   });
 });

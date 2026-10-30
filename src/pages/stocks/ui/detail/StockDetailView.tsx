@@ -252,8 +252,10 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   // 오늘 봉 — "오늘" 은 그 시장의 거래일이다(미국은 뉴욕 날짜). 한국 날짜로 가르면 한국 자정 뒤 미국 장중에 띠가 사라진다(검수 M7).
   // 순서를 가정하지 않는다 — 날짜로 찾는다. 날이 바뀌면 `useDayKey` 가 다시 판정하게 한다
   const dayKey = useDayKey(isUs ? US_TZ : KR_TZ);
+  // 통화를 아직 모르면 시장(= 날짜 기준)을 모른다 — 한국 날짜로 가르지 않고 기다린다(아래 todayLoading)
+  const marketPending = !currency && (pricesQ.isLoading || infoQ.isLoading);
   const todayBar =
-    (todayQ.data?.candles ?? []).find(
+    (currency ? (todayQ.data?.candles ?? []) : []).find(
       (c) => dateKeyIn(c.timestamp, isUs ? US_TZ : KR_TZ) === dayKey,
     ) ?? null;
   const shares = num(info?.sharesOutstanding);
@@ -371,7 +373,7 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
         ]
       : []),
   ];
-  const todayLoading = todayQ.isLoading || limitsQ.isLoading;
+  const todayLoading = marketPending || todayQ.isLoading || limitsQ.isLoading;
   const todayFailed = isHardError(todayQ) && isHardError(limitsQ);
   const todayBand =
     todayLoading || todayFailed || todayRows.length > 0 ? (

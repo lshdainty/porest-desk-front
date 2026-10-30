@@ -1,5 +1,5 @@
 import { isHardError } from "@/features/stock/lib/query-state";
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LineChart, Star } from "lucide-react";
 import { useWideSurface } from "@/shared/ds/overlay/use-wide-surface";
@@ -899,7 +899,7 @@ export interface InvestorQuery {
 function InvestorUnit() {
   const { t } = useTranslation("stocks");
   return (
-    <span className="shrink-0 whitespace-nowrap text-t4 text-fg-neutral-subtle">
+    <span className="min-w-0 text-t4 text-fg-neutral-subtle">
       {t("investor.unit")}
     </span>
   );
@@ -955,16 +955,20 @@ export function InvestorBand({ q }: { q: InvestorQuery }) {
               key={r.date}
               title={investorDate(r.date)}
               suffix={
-                <span className="flex max-w-[60cqw] flex-col items-end gap-x0_5">
+                // 라벨 칸은 고정 폭이 아니라 "가장 긴 낱말 폭까지" 넓어진다 — 영어 Individual · Foreign · Institution 이 낱말 중간에서
+                // 꺾이지 않는다(한국어는 40 그대로: 최소 2.5rem). 값 칸이 먼저 줄어든다. 줄 안이 좁으면 ds List 가 값을 본문 아래로 내린다(list.md).
+                <span className="grid max-w-[60cqw] @max-[calc(16rem+48px)]/list-item:max-w-none grid-cols-[minmax(2.5rem,max-content)_minmax(0,1fr)] items-baseline gap-x-x2 gap-y-x0_5">
                   {sides.map(([k, label]) => {
                     const v = investorValue(r[k]);
                     return (
-                      <span key={k} className="flex items-baseline gap-x2">
-                        <span className="w-10 shrink-0 text-end text-t3 text-fg-neutral-subtle">
+                      <Fragment key={k}>
+                        <span className="text-end text-t3 text-fg-neutral-subtle [overflow-wrap:normal]">
                           {t(label)}
                         </span>
-                        <InvestorCell v={v} />
-                      </span>
+                        <span className="justify-self-end">
+                          <InvestorCell v={v} />
+                        </span>
+                      </Fragment>
                     );
                   })}
                 </span>
