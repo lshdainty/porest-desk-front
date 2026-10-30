@@ -31,6 +31,7 @@ const updates = vi.hoisted(
 );
 const mocks = vi.hoisted(() => ({
   updateError: false,
+  failSave: false,
   resets: 0,
   me: 7,
   roles: { 1: "READ" } as Record<number, string>,
@@ -52,7 +53,7 @@ vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
       o?: { onSuccess?: () => void },
     ) => {
       updates.push(v);
-      o?.onSuccess?.();
+      if (!mocks.failSave) o?.onSuccess?.();
     },
     isPending: false,
     isError: mocks.updateError,
@@ -76,6 +77,7 @@ beforeEach(async () => {
   __resetPointerBlockForTest();
   updates.length = 0;
   mocks.updateError = false;
+  mocks.failSave = false;
   mocks.resets = 0;
   mocks.me = 7;
   mocks.calendars = [
@@ -465,6 +467,93 @@ describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
     });
     expect(updates).toHaveLength(1);
     expect(updates[0]!.data.title).toBe("바뀐 제목");
+  });
+
+  // 칸이 reset 보다 먼저 붙으면 RHF 가 등록을 비워 빈 칸 · 안 먹는 값이 된다. 준비 표시(isSyncedWith)가 일정 객체로 가르므로 아래 경우 모두 새로 맞춰진 뒤에 칸이 그려진다
+  const saveBtn = () => footerButtons()[1] as HTMLButtonElement;
+  const clickSave = () =>
+    act(async () => {
+      saveBtn().click();
+    });
+  const openRow = (n: number) => press(rows()[n]!);
+  const backToList = () => {
+    stepBack(); // 폼 → 상세
+    stepBack(); // 상세 → 목록
+  };
+
+  it("① 같은 일정을 [수정] → ← → 다시 [수정] 해도 채워진 칸이고, 고쳐 저장한 본문에 새 값이 실린다", async () => {
+    toEdit([event(1, { title: "치과", location: "본사" })]);
+    expect(titleInput().value).toBe("치과");
+    stepBack();
+    expect(title()).toBe("eventDetail");
+    press(footerButtons()[1]!);
+    expect(title()).toBe("editEvent");
+    expect(titleInput().value).toBe("치과");
+    setValue(titleInput(), "치과 재진");
+    await clickSave();
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.data.title).toBe("치과 재진");
+    expect(updates[0]!.data.location).toBe("본사");
+  });
+
+  it("② 제목이 같은 다른 일정 A → B — B 의 값으로 채워지고 B 의 id 로 저장된다", async () => {
+    phone([
+      event(1, { title: "회의", location: "A동" }),
+      event(2, { title: "회의", location: "B동" }),
+    ]);
+    openRow(0);
+    press(footerButtons()[1]!);
+    expect(sheet().textContent).toContain("A동");
+    backToList();
+    expect(title()).toBe("10월 22일 (목)");
+    openRow(1);
+    press(footerButtons()[1]!);
+    expect(titleInput().value).toBe("회의");
+    expect(sheet().textContent).toContain("B동");
+    expect(sheet().textContent).not.toContain("A동");
+    setValue(titleInput(), "회의 2");
+    await clickSave();
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.id).toBe(2);
+    expect(updates[0]!.data.location).toBe("B동");
+  });
+
+  it("② 제목을 고치다 나간 뒤 같은 일정을 다시 열면 원래 제목으로 채워진다(고치던 값이 아니다)", () => {
+    toEdit([event(1, { title: "치과" })]);
+    setValue(titleInput(), "고치다 만 제목");
+    stepBack();
+    press(askBtn("나가기"));
+    expect(title()).toBe("eventDetail");
+    press(footerButtons()[1]!);
+    expect(titleInput().value).toBe("치과");
+  });
+
+  it("③ 저장이 실패한 채(폼에 남음) 다시 저장하면 두 번째 요청에도 고친 값이 실린다", async () => {
+    toEdit([event(1, { title: "치과" })]);
+    setValue(titleInput(), "치과 재진");
+    mocks.failSave = true;
+    await clickSave();
+    expect(title()).toBe("editEvent");
+    expect(titleInput().value).toBe("치과 재진");
+    mocks.failSave = false;
+    await clickSave();
+    expect(updates).toHaveLength(2);
+    expect(updates[1]!.data.title).toBe("치과 재진");
+    expect(title()).toBe("eventDetail");
+  });
+
+  it("③ 저장 성공 뒤 상세 → 다시 [수정] 하면 채워진 칸이고 또 고쳐 저장된다", async () => {
+    toEdit([event(1, { title: "치과" })]);
+    setValue(titleInput(), "치과 재진");
+    await clickSave();
+    expect(title()).toBe("eventDetail");
+    press(footerButtons()[1]!);
+    expect(title()).toBe("editEvent");
+    expect(titleInput().value).not.toBe("");
+    setValue(titleInput(), "치과 삼진");
+    await clickSave();
+    expect(updates).toHaveLength(2);
+    expect(updates[1]!.data.title).toBe("치과 삼진");
   });
 
   // W3 — 저장에 실패한 뒤 나갔다 다시 [수정] 하면 시도도 안 했는데 빨간 Callout 이 남던 것
