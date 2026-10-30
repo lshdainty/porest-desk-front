@@ -488,6 +488,70 @@ describe("지난달 복사 — 이번 달 질의가 값을 줄 때만 켠다(H1)
   });
 });
 
+describe("되돌리기 — 404 는 이미 지운 것(L1)", () => {
+  const copyThenUndo = async () => {
+    createAsync.mockClear();
+    deleteAsync.mockClear();
+    show.mockClear();
+    nextId = 100;
+    prev.data = [b(9, 7, 1), b(10, 8, 2), b(11, 9, 3)];
+    render(false);
+    await act(async () => {
+      Array.from(document.querySelectorAll("button"))
+        .find((x) => x.textContent?.includes("copyLastMonth"))!
+        .click();
+    });
+  };
+  const http = (status: number) =>
+    Object.assign(new Error(String(status)), { response: { status } });
+  afterEach(() => {
+    prev.data = [];
+  });
+
+  it("전부 404 — 실패 알림이 없다(다시 시도 고리가 없다)", async () => {
+    await copyThenUndo();
+    deleteAsync.mockImplementation(() => Promise.reject(http(404)));
+    await act(async () => show.mock.calls[0]![0].action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(3);
+    expect(show).toHaveBeenCalledTimes(1);
+    deleteAsync.mockImplementation(() => Promise.resolve());
+  });
+
+  it("500 은 실패 — 그것만 센다", async () => {
+    await copyThenUndo();
+    deleteAsync.mockImplementationOnce(() => Promise.resolve());
+    deleteAsync.mockImplementationOnce(() => Promise.reject(http(500)));
+    deleteAsync.mockImplementationOnce(() => Promise.resolve());
+    await act(async () => show.mock.calls[0]![0].action.onClick());
+    const fail = show.mock.calls[1]![0];
+    expect(fail.message).toBe('copyUndoFailed{"count":1}');
+    deleteAsync.mockClear();
+    await act(async () => fail.action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(1);
+    expect(deleteAsync).toHaveBeenCalledWith(101);
+  });
+
+  it("404 와 500 이 섞이면 500 만 세고, 다시 시도는 500 난 것만 지운다", async () => {
+    await copyThenUndo();
+    deleteAsync.mockImplementationOnce(() => Promise.reject(http(404)));
+    deleteAsync.mockImplementationOnce(() => Promise.reject(http(500)));
+    deleteAsync.mockImplementationOnce(() => Promise.reject(http(404)));
+    await act(async () => show.mock.calls[0]![0].action.onClick());
+    const fail = show.mock.calls[1]![0];
+    expect(fail.message).toBe('copyUndoFailed{"count":1}');
+    deleteAsync.mockClear();
+    await act(async () => fail.action.onClick());
+    expect(deleteAsync.mock.calls.map((c) => c[0])).toEqual([101]);
+  });
+
+  it("응답 없는 네트워크 오류는 404 가 아니다 — 실패로 센다", async () => {
+    await copyThenUndo();
+    deleteAsync.mockImplementationOnce(() => Promise.reject(new Error("net")));
+    await act(async () => show.mock.calls[0]![0].action.onClick());
+    expect(show.mock.calls[1]![0].message).toBe('copyUndoFailed{"count":1}');
+  });
+});
+
 describe("실패 알림은 스낵바 하나(M5) — 전역 오류 토스트를 끈다", () => {
   it("복사의 만들기 · 고치기 훅은 silent 로, 폼 저장용 훅은 그대로 켠 채 따로 쓴다", () => {
     createOpts.length = 0;
