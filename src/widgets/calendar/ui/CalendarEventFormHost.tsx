@@ -68,6 +68,7 @@ export function CalendarEventFormHost({
       event={event}
       selectedDate={draft?.start ?? selectedDate}
       selectedEndDate={draft?.end ?? selectedEndDate}
+      initialDirty={draft?.dirty}
       initial={
         draft
           ? {

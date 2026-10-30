@@ -67,7 +67,8 @@ export function DayPickSurface({
   const picker = (
     <DatePicker
       selection="single"
-      visibleRange={sheet ? "continuous" : "month"}
+      // 폼의 날짜 칸 = 한 달 · 6주(date-picker.md:61 · :110, I-09 26) — 이어지는 달 · 90% 높이는 기간 시트 모양이다
+      visibleRange="month"
       aria-label={title}
       value={draft}
       onValueChange={setDraft}
@@ -88,8 +89,8 @@ export function DayPickSurface({
   return sheet ? (
     <BottomSheet open={open} onOpenChange={setOpen}>
       {node}
-      <BottomSheetContent title={title} className="h-[90dvh]">
-        <BottomSheetBody className="overflow-hidden">{picker}</BottomSheetBody>
+      <BottomSheetContent title={title}>
+        <BottomSheetBody>{picker}</BottomSheetBody>
         <BottomSheetFooter>{done}</BottomSheetFooter>
       </BottomSheetContent>
     </BottomSheet>
@@ -242,7 +243,8 @@ export function ChoiceSheet<V extends string | number | undefined>({
                       ) : undefined
                     }
                     onClick={() => {
-                      onPick(it.value);
+                      // 고른 줄을 다시 누르면 아무것도 바꾸지 않고 닫는다(select.md:91) — 다시 넣으면 원래 RRULE(BYDAY 등)이 덮인다
+                      if (!on) onPick(it.value);
                       setOpen(false);
                     }}
                   />

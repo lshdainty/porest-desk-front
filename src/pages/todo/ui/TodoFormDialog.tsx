@@ -86,7 +86,8 @@ function DueDateField({
   const picker = (
     <DatePicker
       selection="single"
-      visibleRange={sheet ? "continuous" : "month"}
+      // 폼의 날짜 칸 = 한 달(date-picker.md:61 · :110) — 이어지는 달은 기간 시트 모양이다
+      visibleRange="month"
       aria-label={label}
       value={draft}
       onValueChange={setDraft}
@@ -109,10 +110,8 @@ function DueDateField({
       {sheet ? (
         <BottomSheet open={open} onOpenChange={setOpen}>
           {trigger}
-          <BottomSheetContent title={label} className="h-[90dvh]">
-            <BottomSheetBody className="overflow-hidden">
-              {picker}
-            </BottomSheetBody>
+          <BottomSheetContent title={label}>
+            <BottomSheetBody>{picker}</BottomSheetBody>
             <BottomSheetFooter>{done}</BottomSheetFooter>
           </BottomSheetContent>
         </BottomSheet>
