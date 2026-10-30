@@ -342,6 +342,46 @@ describe("시트 안 한 단계 (I-09 29)", () => {
     expect(asking()).toBe(true);
     expect(closed).toBe(0);
   });
+
+  // 검수 M1 — 물어서 닫지 않았으면 칸을 다시 쌓아야 한다. 안 쌓으면 두세 번째 뒤로 가기가 칸을 소진해 묻지 않고 페이지를 떠난다
+  it("기기 뒤로 가기 → [계속 작성] 을 세 번 반복해도 매번 묻고 폼은 열려 있다", async () => {
+    show(timed);
+    click(row("form.description"));
+    setValue(stepInput(), "쓰던 설명");
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        window.history.back();
+      });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      expect(asking()).toBe(true);
+      expect(closed).toBe(0);
+      click(leaveBtn("계속 작성"));
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      expect(asking()).toBeFalsy();
+      expect(
+        document.querySelector("[data-slot=bottom-sheet-back]"),
+      ).not.toBeNull();
+      expect(stepInput().value).toBe("쓰던 설명");
+    }
+  });
+
+  it("안 바꿨으면 뒤로 가기 한 번에 단계만 닫고 묻지 않는다 — 칸을 더 쌓지 않는다", async () => {
+    show(timed);
+    click(row("form.description"));
+    await act(async () => {
+      window.history.back();
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100));
+    });
+    expect(asking()).toBeFalsy();
+    expect(document.querySelector("[data-slot=bottom-sheet-back]")).toBeNull();
+    expect(closed).toBe(0);
+  });
 });
 
 describe("폼 시트는 바깥으로 닫히지 않는다 (I-09 21)", () => {

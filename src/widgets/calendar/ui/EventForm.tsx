@@ -175,9 +175,8 @@ export const EventForm = ({
     leave: cancelStep,
     contentRef,
   });
-  useStepBack(!wide && step !== "list", () => {
-    leave.request();
-  });
+  // 물었으면(false) 칸을 다시 쌓아 [계속 작성] 뒤에도 뒤로 가기가 이 단계로 온다
+  useStepBack(!wide && step !== "list", () => leave.request());
 
   if (wide) {
     return (
