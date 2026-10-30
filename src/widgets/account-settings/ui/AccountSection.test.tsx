@@ -21,7 +21,10 @@ const state = vi.hoisted(() => ({
   unlinkError: false,
   features: ["SECURITIES"] as string[],
 }));
-const toasts = vi.hoisted(() => ({ error: [] as string[] }));
+const toasts = vi.hoisted(() => ({
+  error: [] as string[],
+  opts: [] as { action?: { label: string; onClick: () => void } }[],
+}));
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -33,8 +36,12 @@ vi.mock("react-i18next", () => ({
 vi.mock("sonner", () => ({
   toast: {
     success: () => {},
-    error: (m: string) => {
+    error: (
+      m: string,
+      o?: { action?: { label: string; onClick: () => void } },
+    ) => {
       toasts.error.push(m);
+      toasts.opts.push(o ?? {});
     },
   },
 }));
@@ -88,6 +95,7 @@ let root: Root;
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   toasts.error.length = 0;
+  toasts.opts.length = 0;
   state.unlinkError = false;
   state.features = ["SECURITIES"];
   state.providers = {
@@ -236,5 +244,9 @@ describe("Google 줄 상태", () => {
     const unlink = buttons().find((b) => b.textContent === "account.unlink")!;
     act(() => unlink.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(toasts.error).toEqual(["account.toast.unlinkError"]);
+    // 다시 하면 되는 실패라 "다시 시도" 를 붙인다 — 누르면 다시 해제한다
+    expect(toasts.opts[0]?.action?.label).toBe("common.retry");
+    act(() => toasts.opts[0]!.action!.onClick());
+    expect(toasts.error).toHaveLength(2);
   });
 });

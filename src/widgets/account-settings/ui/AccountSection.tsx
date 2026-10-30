@@ -390,9 +390,11 @@ function GoogleRow() {
     unlinkGoogle.mutate("google", {
       // onSuccess 에서 provider 목록 재조회(invalidate) → 상태 자동 갱신.
       onSuccess: () => toast.success(t("account.toast.unlinked")),
+      // 다시 하면 되는 가벼운 실패라 "다시 시도" 를 붙인다(snackbar.md)
       onError: () =>
         toast.error(t("account.toast.unlinkError"), {
           id: "oauth-unlink-error",
+          action: { label: tDs("common.retry"), onClick: onUnlink },
         }),
     });
   };

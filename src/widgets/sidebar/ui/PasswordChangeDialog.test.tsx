@@ -249,4 +249,20 @@ describe("비밀번호 변경 실패 문구 (QA #128)", () => {
     expect(document.body.textContent).not.toContain("currentPasswordInvalid");
     expect(document.body.querySelector('[role="alert"]')).not.toBeNull();
   });
+
+  it("저장이 실패하면 Callout 을 보이는 자리로 올린다(scrollIntoView)", async () => {
+    next.error = {
+      message: "Request failed with status code 503",
+      response: { status: 503, data: { code: "SSO_001", message: "SSO down" } },
+    };
+    const calls: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      calls.push(this);
+    };
+    act(() =>
+      root.render(<PasswordChangeDialog open onOpenChange={() => {}} />),
+    );
+    await submit();
+    expect(calls.some((el) => el.querySelector('[role="alert"]'))).toBe(true);
+  });
 });

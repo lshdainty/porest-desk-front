@@ -32,6 +32,7 @@ import {
   type SectionDef,
   type SectionId,
 } from "../model/sections";
+import { linkedProviderName } from "../model/oauth-return";
 import { useSettingsBack } from "../model/use-settings-back";
 import { SettingsDesktopFrame } from "./SettingsDesktopFrame";
 import { SettingsMobileMenu } from "./SettingsMobileMenu";
@@ -39,9 +40,6 @@ import { SettingsTabletFrame } from "./SettingsTabletFrame";
 import { SettingsSubpageMobile } from "./SettingsSubpageMobile";
 
 type OutletCtx = { onAddTx: () => void; mobile: boolean };
-
-// 소셜 연동 provider → 표시 이름. 표에 없으면 고정 "Google"(연결할 수 있는 소셜이 하나다).
-const OAUTH_PROVIDER_LABELS: Record<string, string> = { google: "Google" };
 
 export const SettingsPage = () => {
   const { t } = useTranslation("settings");
@@ -96,9 +94,9 @@ export const SettingsPage = () => {
     oauthReturnHandled.current = true;
 
     if (linked) {
-      // 연결할 수 있는 소셜은 Google 하나다 — 주소에 실린 임의 글을 알림 이름으로 쓰지 않는다
-      const name = OAUTH_PROVIDER_LABELS[linked.toLowerCase()] ?? "Google";
-      toast.success(t("account.toast.linked", { name }));
+      // 표에 있는 값(지금 연결할 수 있는 소셜 = Google)만 알린다 — 주소에 실린 임의 글 · 프로토타입 키(constructor)로는 알림이 없다(앱과 같다)
+      const name = linkedProviderName(linked);
+      if (name) toast.success(t("account.toast.linked", { name }));
       queryClient.invalidateQueries({ queryKey: oauthKeys.all });
     } else if (linkError) {
       // 그루 계정이 쓴 글(linkError)은 화면에 내지 않는다 — 고정 글만(I-14 10)

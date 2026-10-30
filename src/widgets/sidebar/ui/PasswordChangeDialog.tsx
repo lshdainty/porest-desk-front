@@ -16,6 +16,7 @@ import {
   ResponsiveDialogFooter,
 } from "@/shared/ds/dialog";
 import { Field } from "@/shared/ds/field";
+import { useScrollToError } from "@/features/expense/model/useScrollToError";
 import { Input } from "@/shared/ds/input";
 import { PASSWORD_RULES, isPasswordValid } from "@/shared/lib";
 
@@ -44,6 +45,10 @@ export const PasswordChangeDialog = ({
   // 현재 비밀번호가 틀렸다는 서버 판정 — 그 칸 값을 고치면 걷는다
   const [currentWrong, setCurrentWrong] = useState(false);
   const [failed, setFailed] = useState(false);
+  // 실패마다 새로 생기는 값 — 같은 실패가 이어져도 Callout 을 보이는 자리로 다시 올린다
+  const [failedAt, setFailedAt] = useState(0);
+  // 글자를 키우거나 키보드가 올라와 본문이 스크롤될 때, 아래 [저장] 을 눌러 실패하면 맨 위 Callout 이 화면 밖이다(폼 저장 실패 규칙)
+  const failedRef = useScrollToError<HTMLDivElement>(failed, failedAt);
   const currentRef = useRef<HTMLInputElement>(null);
 
   const rulesOk = isPasswordValid(next);
@@ -79,6 +84,7 @@ export const PasswordChangeDialog = ({
             return;
           }
           setFailed(true);
+          setFailedAt((n) => n + 1);
         },
       },
     );
@@ -104,9 +110,11 @@ export const PasswordChangeDialog = ({
         <ResponsiveDialogBody>
           <div className="flex flex-col gap-x5">
             {failed && (
-              <Callout tone="critical" role="alert">
-                {t("passwordChangeError")}
-              </Callout>
+              <div ref={failedRef}>
+                <Callout tone="critical" role="alert">
+                  {t("passwordChangeError")}
+                </Callout>
+              </div>
             )}
             <Field
               id="currentPassword"
