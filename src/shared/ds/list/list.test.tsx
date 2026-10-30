@@ -319,7 +319,7 @@ describe("List · ListItem", () => {
         "text-fg-neutral-subtle",
         "[&>svg]:size-x4_5",
         "[&_a]:z-1",
-        "[&_button]:z-1",
+        "[&_button:not([data-slot=input-button]>button)]:z-1",
       ]),
     );
   });
@@ -675,7 +675,9 @@ describe("ListButtonItem · ListLinkItem", () => {
     expect(onRow).toHaveBeenCalledTimes(1);
     expect(onSmall).toHaveBeenCalledTimes(1);
     // 안의 버튼은 덮개 위로 올린다 — 줄을 어디 눌러도 눌리지만 버튼은 따로 눌린다
-    expect(classes(slot("list-suffix"))).toContain("[&_button]:z-1");
+    expect(classes(slot("list-suffix"))).toContain(
+      "[&_button:not([data-slot=input-button]>button)]:z-1",
+    );
   });
 
   it("className 은 버튼에 · rootProps 는 li 에 · ref 는 버튼으로 · type 을 바꿀 수 있다", () => {
