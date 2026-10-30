@@ -1804,6 +1804,33 @@ describe("가장 나쁜 값", () => {
     expect(plain!.getAttribute("style") ?? "").not.toContain("--list-lead");
   });
 
+  it("좁은 줄에서 값 안쪽의 오른쪽 맞춤 표식을 왼쪽으로 푼다 — 세 단계 모두, 값 요소와 자손만", () => {
+    render(
+      <List>
+        <ListItem title="줄" suffix={<b>1원</b>} />
+        <ListParentItem title="부모" expandLabel="부모 하위" defaultOpen>
+          <ListItem title="하위" suffix={<b>2원</b>} />
+        </ListParentItem>
+      </List>,
+    );
+    const [plain, parent, child] = slots("list-content");
+    const RIGHT =
+      ":is(.items-end,.justify-end,.text-end,.text-right,.self-end,.ml-auto)";
+    for (const [content, threshold] of [
+      [plain!, "calc(16rem+48px)"],
+      [parent!, "calc(16rem+28px)"],
+      [child!, "calc(16rem+128px)"],
+    ] as const) {
+      const cls = classes(content).join(" ");
+      expect(cls).toContain(`@max-[${threshold}]/list-item:`);
+      expect(cls).toContain(`${RIGHT}]:items-start!`);
+      expect(cls).toContain(`${RIGHT}]:text-start!`);
+      expect(cls).toContain(`${RIGHT}]:justify-start!`);
+      // 화살표 · 컨트롤은 건드리지 않는다 — 값 요소 선택자는 :not(컨트롤) 이다
+      expect(cls).toContain(":not(svg,button,a,input,[data-slot=list-mark])");
+    }
+  });
+
   it("ResizeObserver 를 쓰지 않는다 — 수백 줄 목록에서 줄마다 관찰자를 달지 않는다", () => {
     const ro = vi.fn();
     vi.stubGlobal("ResizeObserver", ro);
