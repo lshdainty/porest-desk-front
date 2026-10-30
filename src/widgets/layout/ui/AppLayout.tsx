@@ -18,9 +18,7 @@ import { AppTabBar } from "./AppTabBar";
 import { useDeviceSize } from "@/shared/lib/groo/responsive";
 import { SwipeActionsProvider } from "@/shared/ui/swipe-actions";
 import { AddTxSheet } from "@/widgets/add-tx";
-import { EventForm } from "@/widgets/calendar/ui/EventForm";
-import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
-import { useEventLabels } from "@/features/event-label";
+import { CalendarEventFormHost } from "@/widgets/calendar/ui/CalendarEventFormHost";
 import { useHideCardsSync } from "@/features/hide-amounts";
 import { useNotificationSSE } from "@/features/notification";
 import {
@@ -32,18 +30,9 @@ import {
 } from "../model/shell";
 
 /** 캘린더 일정 생성 폼 — AppLayout에서 + 버튼 클릭 시 마운트. */
-const CalendarEventAddForm = ({ onClose }: { onClose: () => void }) => {
-  const { data: labels = [] } = useEventLabels();
-  const createEvent = useCreateEvent();
-  return (
-    <EventForm
-      labels={labels}
-      onSubmit={(data) => createEvent.mutate(data, { onSuccess: onClose })}
-      onClose={onClose}
-      isLoading={createEvent.isPending}
-    />
-  );
-};
+const CalendarEventAddForm = ({ onClose }: { onClose: () => void }) => (
+  <CalendarEventFormHost onClose={onClose} />
+);
 
 /**
  * 화면을 옮길 때의 셸 몫 — 문서 제목 "{제목} - 그루 담다" 와, 옮긴 뒤 본문을 맨 위로 + 제목에 초점.

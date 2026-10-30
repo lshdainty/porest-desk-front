@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useCallback } from "react";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
+import { useWideSurface } from "@/shared/ds/overlay";
 import { useDragSelect } from "@/widgets/calendar/model/drag-select-context";
 import { DragSelectProvider } from "@/widgets/calendar/model/drag-select-provider";
 import {
@@ -61,8 +62,14 @@ interface IProps {
 function MonthGrid({ singleDayEvents, multiDayEvents, onEventClick }: IProps) {
   const { t } = useTranslation("calendar");
   const { selectedDate, setSelectedDate } = useCalendar();
-  const { startSelection, updateSelection, endSelection, isDateInSelection } =
-    useDragSelect();
+  const {
+    startSelection,
+    updateSelection,
+    endSelection,
+    isDateInSelection,
+    openQuickAdd,
+  } = useDragSelect();
+  const wide = useWideSurface();
   const { metrics, stackRef, chipRef, moreRef } =
     useChipMetrics(DESKTOP_METRICS);
 
@@ -159,7 +166,10 @@ function MonthGrid({ singleDayEvents, multiDayEvents, onEventClick }: IProps) {
                       })
                     : t("monthView.cellLabelEmpty", { date: dateLabel })
                 }
-                onClick={() => setSelectedDate(date)}
+                // 고른 날을 한 번 더 누르면 빠른 추가(1280 이상 — I-09 Q2-A), 아니면 그 날 고르기
+                onClick={() =>
+                  selected && wide ? openQuickAdd(date) : setSelectedDate(date)
+                }
                 data-slot="month-day-number"
                 className={cn(
                   // 원 26(글자 13/18 + 8) — 글자가 커지면 원도 따라 커진다. 왼쪽 6 · 아래 2
@@ -212,9 +222,14 @@ function MonthGrid({ singleDayEvents, multiDayEvents, onEventClick }: IProps) {
  * 고른 날 = 칸 `bg-brand-weak` + 짙은 원. 누름 = 날 고르기, 두 날 이상 끌어 놓음 = 그 기간으로 일정 폼.
  */
 export function CalendarMonthViewDesktop(props: IProps) {
-  const { setSelectedDate } = useCalendar();
+  const { selectedDate, setSelectedDate } = useCalendar();
+  const wide = useWideSurface();
   return (
-    <DragSelectProvider onSelectDay={setSelectedDate}>
+    <DragSelectProvider
+      onSelectDay={setSelectedDate}
+      selectedDate={selectedDate}
+      quickOnReselect={wide}
+    >
       <MonthGrid {...props} />
     </DragSelectProvider>
   );

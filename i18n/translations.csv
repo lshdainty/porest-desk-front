@@ -234,16 +234,16 @@ calendar,eventType.WORK,업무,Work
 calendar,eventType.BIRTHDAY,생일,Birthday
 calendar,eventType.HOLIDAY,휴일,Holiday
 calendar,form.title,제목,Title
-calendar,form.titlePlaceholder,일정 제목을 입력하세요,Enter event title
-calendar,form.titleRequired,제목을 입력해주세요,Title is required
+calendar,form.titlePlaceholder,예: 치과 정기 검진,e.g. Dental checkup
+calendar,form.titleRequired,제목을 입력해주세요,Enter a title
 calendar,form.description,설명,Description
-calendar,form.descriptionPlaceholder,일정 설명을 입력하세요,Enter event description
+calendar,form.descriptionPlaceholder,예: 준비물과 안내 사항,e.g. What to bring
 calendar,form.eventType,일정 유형,Event Type
 calendar,form.color,색상,Color
 calendar,form.allDay,종일,All Day
 calendar,form.startDate,시작일,Start Date
 calendar,form.endDate,종료일,End Date
-calendar,form.endBeforeStart,종료일이 시작일보다 빠를 수 없어요,End date cannot be before the start date
+calendar,form.endBeforeStart,종료가 시작보다 빠를 수 없어요,End cannot be before the start
 calendar,deleteConfirm.title,일정 삭제,Delete event
 calendar,deleteConfirm.message,'{{name}}' 일정을 지울까요? 지운 일정은 되돌릴 수 없어요.,"Delete the ""{{name}}"" event? This action cannot be undone."
 calendar,deleteConfirm.cancel,취소,Cancel
@@ -257,11 +257,11 @@ calendar,form.labelName,라벨 이름,Label Name
 calendar,form.labelNamePlaceholder,라벨 이름을 입력하세요,Enter label name
 calendar,form.label,라벨,Label
 calendar,form.location,장소,Location
-calendar,form.locationPlaceholder,장소를 입력하세요,Enter location
+calendar,form.locationPlaceholder,예: 본사 3층 회의실,e.g. 3rd floor meeting room
 calendar,form.recurrence,반복,Recurrence
 calendar,form.reminder,알림,Reminder
 calendar,form.addReminder,알림 추가,Add Reminder
-calendar,recurrence.none,반복 없음,No repeat
+calendar,recurrence.none,반복 안 함,Does not repeat
 calendar,recurrence.daily,매일,Daily
 calendar,recurrence.weekly,매주,Weekly
 calendar,recurrence.monthly,매월,Monthly
@@ -3129,3 +3129,18 @@ calendar,panel.count,일정 {{count}}개,{{count}} events
 calendar,panel.today,오늘,Today
 calendar,loadFailed,일정을 불러오지 못했어요,Couldn't load events
 calendar,loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
+calendar,form.none,없음,None
+calendar,form.noLabel,라벨 없음,No label
+calendar,form.noReminder,알림 없음,No reminder
+calendar,form.calendarLoadFailed,불러오지 못했어요,Could not load
+calendar,form.labelHint,라벨은 설정의 캘린더 라벨에서 만들어요,Create labels in Settings under Calendar labels
+calendar,form.start,시작,Start
+calendar,form.end,종료,End
+calendar,form.startDay,시작 날짜,Start date
+calendar,form.startTime,시작 시각,Start time
+calendar,form.endDay,종료 날짜,End date
+calendar,form.endTime,종료 시각,End time
+calendar,form.rows,일정 정보,Event details
+calendar,form.rowsMore,반복 · 알림 · 장소 · 설명,Repeat, reminder, location and description
+calendar,quickAdd.detail,자세히,Details
+calendar,form.saveFailed,일정을 저장하지 못했어요. 잠시 뒤에 다시 시도해주세요.,Could not save the event. Please try again in a moment.

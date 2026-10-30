@@ -69,7 +69,7 @@ describe("Switch", () => {
     expect(thumb().className).toContain("scale-[0.8]");
     expect(thumb().className).toContain("translate-x-0");
     expect(thumb().className).toContain(
-      "data-[state=checked]:translate-x-[0.875rem]",
+      "data-[state=checked]:translate-x-[14px]",
     );
   });
 
@@ -150,5 +150,23 @@ describe("Switchmark", () => {
 
     act(() => root.render(<Switchmark aria-label="결제 알림" />));
     expect(control().getAttribute("aria-label")).toBe("결제 알림");
+  });
+
+  // 큰 글자(루트 글자 크기 200%)에서 켠 손잡이가 몸통 밖으로 밀리던 것 — 몸통은 px 인데 손잡이 이동이 rem 이라 글자만 커졌다(2026-10-30).
+  // jsdom 은 레이아웃을 재지 못해 클래스의 단위로 잠근다 — 스펙 switch.yaml 은 몸통 · 손잡이 · 이동(translateX 10 · 14 · 20)을 모두 px 로 정한다.
+  // 실제 렌더 측정(루트 200% 에서 켠 손잡이 오른쪽 ≤ 몸통 오른쪽)은 ~/qa 하네스(i092-switch-200.mjs).
+  it("켠 손잡이의 이동은 몸통과 같은 px 단위다 — 글자 크기를 키워도 몸통 안에 있다", () => {
+    for (const [size, body, move] of [
+      ["16", "w-[26px]", "translate-x-[10px]"],
+      ["24", "w-[38px]", "translate-x-[14px]"],
+      ["32", "w-[52px]", "translate-x-[20px]"],
+    ] as const) {
+      render(<Switchmark size={size} aria-label="x" defaultChecked />);
+      expect(control().className).toContain(body);
+      expect(thumb().className).toContain(move);
+      expect(thumb().className).not.toMatch(
+        /checked\]:translate-x-(\d|\[[\d.]+rem\])/,
+      );
+    }
   });
 });

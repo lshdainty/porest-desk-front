@@ -15,16 +15,10 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
-vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
-  useCreateEvent: () => ({ mutate: vi.fn(), isPending: false }),
-}));
-vi.mock("@/features/event-label", () => ({
-  useEventLabels: () => ({ data: [] }),
-}));
 // 폼 자체는 이 테스트의 관심사가 아니다 — "떴는가" 와 "어느 날짜로 열렸나" 만 본다.
 // `toISOString()` 은 UTC 로 옮겨 KST 자정이 전날이 되므로 로컬 그대로 찍는다.
-vi.mock("@/widgets/calendar/ui/EventForm", () => ({
-  EventForm: ({ selectedDate: d }: { selectedDate: Date }) => (
+vi.mock("@/widgets/calendar/ui/CalendarEventFormHost", () => ({
+  CalendarEventFormHost: ({ selectedDate: d }: { selectedDate: Date }) => (
     <div data-testid="event-form">
       {`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
         d.getDate(),

@@ -6,7 +6,7 @@ import { CalendarDesktop } from "@/widgets/calendar/ui/CalendarDesktop";
 import { CalendarMobile } from "@/widgets/calendar/ui/CalendarMobile";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 
-import { EventForm } from "./EventForm";
+import { CalendarEventFormHost } from "./CalendarEventFormHost";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
@@ -33,19 +33,14 @@ const CalendarContainer = ({
   const isMobile = useIsMobile();
   const screen = useCalendarScreen(events);
   const {
-    labels,
     editingEvent,
     setEditingEvent,
     deletingEventId,
     setDeletingEventId,
     creatingDate,
     setCreatingDate,
-    createEvent,
-    updateEvent,
     deleteEvent,
-    handleSubmitEdit,
     handleConfirmDelete,
-    handleSubmitCreate,
   } = screen;
 
   return (
@@ -66,25 +61,20 @@ const CalendarContainer = ({
         />
       )}
 
-      {/* 일별 시트 [+] → 해당 날짜 기본값 이벤트 생성 폼 */}
+      {/* 일정 추가(그날 시트 · 패널 · 제목 줄) — 그 날 기본값. 폼 표면은 1280 에서 시트 ↔ 대화상자 */}
       {creatingDate && (
-        <EventForm
+        <CalendarEventFormHost
           selectedDate={creatingDate}
-          labels={labels}
-          onSubmit={handleSubmitCreate}
+          quick={!isMobile}
           onClose={() => setCreatingDate(null)}
-          isLoading={createEvent.isPending}
         />
       )}
 
-      {/* Edit Event Form */}
+      {/* 일정 수정 */}
       {editingEvent && (
-        <EventForm
+        <CalendarEventFormHost
           event={editingEvent}
-          labels={labels}
-          onSubmit={handleSubmitEdit}
           onClose={() => setEditingEvent(null)}
-          isLoading={updateEvent.isPending}
           onDelete={() => {
             setDeletingEventId(editingEvent.rowId);
             setEditingEvent(null);
