@@ -384,6 +384,8 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     await act(async () => opt.action.onClick());
     expect(deleteAsync).toHaveBeenCalledTimes(2);
     expect(deleteAsync).toHaveBeenLastCalledWith(2);
+    // 이미 확정한 삭제 — 다시 시도는 같은 질문을 두 번 하지 않는다
+    expect(dialog()).toBeNull();
   });
 });
 
