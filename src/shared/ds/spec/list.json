@@ -312,6 +312,9 @@
           "marginTop": 2,
           "textAlign": "start",
           "lineBreak": "금액은 쉼표 뒤 · 글 값은 줄 끝"
+        },
+        "suffixText": {
+          "textAlign": "start"
         }
       }
     },
@@ -664,6 +667,13 @@
       "slot": "suffix",
       "prop": "lineBreak",
       "note": "금액은 쉼표 뒤에서만 줄을 바꾼다(Typography v114 의 예외 — 결정 2 B, 웹 <wbr> · 앱 U+200B), 글 값(이메일 · 계좌번호)은 Q-001 A 그대로 줄 끝에서 끊는다"
+    },
+    {
+      "rule": 3,
+      "state": "enabled",
+      "slot": "suffixText",
+      "prop": "textAlign",
+      "note": "본문 아래로 내려간 글 값은 왼쪽 맞춤 — 평소의 end 를 여기서 바꾼다(list.md 큰 글자에서 값을 본문 아래로)"
     },
     {
       "rule": 4,
