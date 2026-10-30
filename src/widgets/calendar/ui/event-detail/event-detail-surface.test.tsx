@@ -27,7 +27,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 const updates = vi.hoisted(
-  () => [] as { id: number; data: CalendarEventFormValues }[],
+  () => [] as { id: number; data: CalendarEventFormValues; silent?: boolean }[],
 );
 const mocks = vi.hoisted(() => ({
   me: 7,
@@ -46,7 +46,7 @@ vi.mock("@/features/event-label", () => ({
 vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
   useUpdateEvent: () => ({
     mutate: (
-      v: { id: number; data: CalendarEventFormValues },
+      v: { id: number; data: CalendarEventFormValues; silent?: boolean },
       o?: { onSuccess?: () => void },
     ) => {
       updates.push(v);
@@ -331,6 +331,8 @@ describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
     });
     expect(updates).toHaveLength(1);
     expect(updates[0]!.id).toBe(1);
+    // 실패는 폼 Callout 이 알린다 — 전역 토스트를 끈다
+    expect(updates[0]!.silent).toBe(true);
     expect(updates[0]!.data.title).toBe("바꾼 제목");
     expect(updates[0]!.data.occurrenceStartDate).toBe("2026-10-22T10:00:00");
     expect(title()).toBe("eventDetail");

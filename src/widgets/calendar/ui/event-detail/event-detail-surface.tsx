@@ -121,7 +121,12 @@ export function EventDetailSurface({
     onSubmit: (data) => {
       if (!snapshot || step.kind !== "edit") return;
       updateEvent.mutate(
-        { id: snapshot.rowId, data: withOpenedOccurrence(data, snapshot) },
+        {
+          id: snapshot.rowId,
+          data: withOpenedOccurrence(data, snapshot),
+          // 실패는 폼 Callout 이 알린다 — 전역 토스트(서버 글)가 겹치지 않게 끈다
+          silent: true,
+        },
         {
           onSuccess: () => {
             // 저장하면 상세로 돌아와 새 값 — 날짜를 옮겨 그 날에 없으면 목록(위의 사라짐 규칙). 넓은 화면의 대화상자는 닫고 보기는 그대로
