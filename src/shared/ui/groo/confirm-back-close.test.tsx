@@ -1,7 +1,7 @@
 // 폰에서 폼 시트의 [삭제] 로 확인창을 열면 확인창이 뜨자마자 닫히던 회귀(09-2 — 시트가 ds 로 바뀌며 생김)를 잠근다.
 //
 // 차례: 시트(ds `useBackClose`)가 닫히며 마이크로태스크에서 `history.go(-1)` 을 예약하고, 같은 커밋에서 확인창이 자기 칸을 `pushState` 한다.
-// `go(-1)` 이 지우는 칸은 확인창의 것이 되고, 그 `popstate` 를 옛 훅(`shared/lib/groo/use-back-close`)은 "뒤로 가기 = 확인창 닫기" 로 읽었다.
+// `go(-1)` 이 지우는 칸은 확인창의 것이 되고, 그 `popstate` 를 옛 훅(걷었다 — `shared/lib/groo/use-back-close`)은 "뒤로 가기 = 확인창 닫기" 로 읽었다.
 // ds 훅은 자기가 부른 `go` 의 popstate 를 세어 건너뛴다. ModalShell · ConfirmDialog 가 ds 훅이면 확인창이 남는다. (#491 `detail-back-close.test.tsx` 와 같은 원인)
 //
 // 이 시험은 작성만 했고 이 묶음에서는 돌리지 않았다(heavy.sh 규칙) — 다음 전체 실행에서 확인한다.

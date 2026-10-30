@@ -13,7 +13,7 @@ import {
   TopNavigationTitle,
 } from "@/shared/ds/top-navigation";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
-import { useBackClose } from "@/shared/lib/groo/use-back-close";
+import { useBackClose } from "@/shared/ds/overlay";
 import { won, useMasked } from "@/shared/lib/groo/money-text";
 import type { ExpenseType } from "@/entities/expense";
 import { groupCheck, toggleGroup } from "../lib/fixed-groups";
@@ -35,7 +35,7 @@ export function FixedBulkPage({
 }) {
   const { t } = useTranslation("stats");
   const mask = useMasked("stats.fixed");
-  useBackClose(onClose, true);
+  useBackClose(true, () => onClose());
   const {
     kind,
     setKind,
