@@ -14,7 +14,7 @@ const legend = (up: boolean) => ({
 });
 
 describe("StockChartLegend(30)", () => {
-  it("글은 t3 · 400 · fg-neutral-subtle · 고정폭 숫자, 위치는 눈금(x1 · x1_5)이다", () => {
+  it("글은 t3 · 400 · fg-neutral-subtle · 고정폭 숫자, 여백은 눈금(x1 · x1_5)이고 차트 위 자기 줄이다", () => {
     const html = renderToStaticMarkup(
       <StockChartLegend legend={legend(true)} isUs={false} />,
     );
@@ -23,10 +23,13 @@ describe("StockChartLegend(30)", () => {
       "font-normal",
       "text-fg-neutral-subtle",
       "tabular-nums",
-      "top-x1",
-      "left-x1_5",
+      "px-x1_5",
+      "py-x1",
+      "flex-wrap",
     ])
       expect(html).toContain(c);
+    // 차트 위에 겹치지 않는다 — 자기 줄(절대 위치 · 포인터 막기 없음)
+    expect(html).not.toMatch(/absolute|top-x1 |left-x1_5|z-\[2\]/);
     expect(html).not.toMatch(/font-weight|font-size|--fg-|--status-/);
     expect(html).not.toContain("font-semibold");
   });

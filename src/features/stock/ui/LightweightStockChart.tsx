@@ -562,9 +562,20 @@ export function LightweightStockChart({
   }, [symbol, interval]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height }}>
-      <div ref={wrapRef} style={{ position: "absolute", inset: 0 }} />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height,
+      }}
+    >
+      {/* 범례는 그림 위 자기 줄이다 — 축 눈금 · 캔들과 겹치지 않고, 줄이 늘면 그림만 줄어든다. */}
       {legend && <StockChartLegend legend={legend} isUs={isUs} />}
+      <div
+        ref={wrapRef}
+        style={{ position: "relative", flex: "1 1 0", minHeight: 0 }}
+      />
     </div>
   );
 }
