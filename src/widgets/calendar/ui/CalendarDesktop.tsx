@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/ds/button";
@@ -76,6 +77,13 @@ const CalendarDesktop = ({ screen, isLoading, isFailed, onRetry }: IProps) => {
   // 그 밖의 표면(대화상자 480 · 480 시트)이 그릴 일정 — 월 보기가 아니거나 1280 미만
   const surfaceEvent =
     detail && !panelMode ? findEvent(filteredEvents, detail.ref) : undefined;
+
+  // 표면이 사라졌다(지움 · 날짜를 다음 달로 옮겨 저장 — 다시 받은 목록에서 빠짐) — 상세를 비운다. 안 비우면 그 일정이 다시 보이는 달로 돌아갈 때 시트가 저절로 열린다
+  const gone =
+    !!detail && !isLoading && !isFailed && !panelEvent && !surfaceEvent;
+  useEffect(() => {
+    if (gone) closeDetail();
+  }, [gone, closeDetail]);
 
   const monthBody = (
     <>

@@ -12,12 +12,14 @@ declare global {
 const mocks = vi.hoisted(() => ({
   setSelectedDate: vi.fn(),
   mutate: vi.fn(),
+  selected: new Date(2026, 9, 22),
+  view: "month",
 }));
 vi.mock("@/widgets/calendar/model/calendar-context", () => ({
   useCalendar: () => ({
-    selectedDate: new Date(2026, 9, 22),
+    selectedDate: mocks.selected,
     setSelectedDate: mocks.setSelectedDate,
-    view: "month",
+    view: mocks.view,
     isBuiltinSourceEnabled: () => true,
     isCalendarVisible: () => true,
   }),
@@ -67,7 +69,13 @@ const event = (id: number, over: Partial<IEvent> = {}): IEvent => ({
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  mocks.setSelectedDate.mockClear();
+  mocks.selected = new Date(2026, 9, 22);
+  mocks.view = "month";
+  mocks.setSelectedDate.mockReset();
+  // 고른 날을 실제 컨텍스트처럼 바꾼다 — 칩이 날을 고르고 상세를 여는 한 묶음이 그대로 서 있어야 한다
+  mocks.setSelectedDate.mockImplementation((d: Date) => {
+    mocks.selected = d;
+  });
   mocks.mutate.mockClear();
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -107,6 +115,45 @@ describe("일정 누름", () => {
       ),
     );
     expect(mocks.setSelectedDate).toHaveBeenCalledTimes(1);
+    expect(screen().detail).toBeNull();
+  });
+});
+
+const rerender = () => act(() => root.render(<Probe events={[]} />));
+
+// 가리기만 하면 22일 → 23일 → 22일 에서 지난 상세가 되살아나고, 보기를 바꾸면 누르지 않은 대화상자가 뜬다
+describe("고른 날 · 보기가 바뀌면 상세는 비워진다 (I-09b 15)", () => {
+  it("22일 상세 → 23일 → 22일 이어도 되살아나지 않는다", () => {
+    act(() => screen().openDetail(event(3)));
+    expect(screen().detail).not.toBeNull();
+    mocks.selected = new Date(2026, 9, 23);
+    rerender();
+    expect(screen().detail).toBeNull();
+    mocks.selected = new Date(2026, 9, 22);
+    rerender();
+    expect(screen().detail).toBeNull();
+  });
+
+  it("보기를 바꾸면 비워진다 — 월 → 주 에서 대화상자가 저절로 뜨지 않는다", () => {
+    act(() => screen().openDetail(event(3)));
+    mocks.view = "week";
+    rerender();
+    expect(screen().detail).toBeNull();
+    mocks.view = "month";
+    rerender();
+    expect(screen().detail).toBeNull();
+  });
+
+  it("같은 날 · 같은 보기로 다시 그려도 그대로다", () => {
+    act(() => screen().openDetail(event(3)));
+    rerender();
+    expect(screen().detail?.ref.id).toBe(3);
+  });
+
+  it("달을 옮기면(고른 날이 다른 달로) 비워진다", () => {
+    act(() => screen().openDetail(event(3)));
+    mocks.selected = new Date(2026, 10, 22);
+    rerender();
     expect(screen().detail).toBeNull();
   });
 });

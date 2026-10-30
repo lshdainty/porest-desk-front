@@ -68,10 +68,16 @@ export function useCalendarScreen(events: IEvent[]) {
     isCalendarVisible,
   } = useCalendar();
   // 상세 — 데스크톱 · 태블릿에서 어느 일정을 보고 있나(폰 그날 시트는 시트가 제 단계를 들고 있다).
-  // `day` 는 연 순간 고른 날 — 그날 패널은 같은 날을 보고 있을 때만 상세 단계를 보이고, 다른 날을 고르면 목록으로 돌아간다
-  const [detail, setDetail] = useState<{ ref: EventRef; day: string } | null>(
-    null,
-  );
+  // `day` · `view` 는 연 순간 고른 날 · 보기 — 날이나 보기가 바뀌면 상세는 **비운다**(가리기만 하면 22일 → 23일 → 22일 에서 되살아나고,
+  // 보기를 바꾸면 누르지 않은 대화상자가 뜬다 — I-09b 15 "다른 날을 고르면 패널은 그 날의 목록 단계로")
+  const [detail, setDetail] = useState<{
+    ref: EventRef;
+    day: string;
+    view: string;
+  } | null>(null);
+  if (detail && (detail.day !== dayKey(selectedDate) || detail.view !== view)) {
+    setDetail(null);
+  }
 
   // Edit/Delete state
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -92,9 +98,9 @@ export function useCalendarScreen(events: IEvent[]) {
       if (day) setSelectedDate(day);
       // 공휴일 칩은 날만 고른다 — 공휴일 상세는 없다(I-09b 5 · 16)
       if (event.sourceType !== "calendar") return;
-      setDetail({ ref: refOf(event), day: dayKey(picked) });
+      setDetail({ ref: refOf(event), day: dayKey(picked), view });
     },
-    [selectedDate, setSelectedDate],
+    [selectedDate, setSelectedDate, view],
   );
 
   const closeDetail = useCallback(() => setDetail(null), []);
