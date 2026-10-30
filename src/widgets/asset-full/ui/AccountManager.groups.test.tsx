@@ -250,6 +250,9 @@ describe("실패 · 빈 · 추가", () => {
     state.assets = [];
     render(true);
     expect(text()).toContain("emptyTitle");
+    // 이 화면 전용 글(자기 자신을 가리키는 asset 의 emptyDesc 가 아니다) — 상단 [추가] 를 가리킨다
+    expect(text()).toContain("manager.emptyHint");
+    expect(text()).not.toContain("emptyDesc");
     expect(headings()).not.toContain("accountDepositTitle");
     expect(container.querySelectorAll("button").length).toBe(0);
   });

@@ -513,6 +513,7 @@ asset,tab.accountDeposit,계좌·예금,Accounts & Deposits
 asset,manager.title,계좌·카드 관리,Manage accounts & cards
 asset,manager.description,계좌 · 카드 · 투자를 추가하거나 고칠 수 있어요.,"Add or edit your accounts, cards, and investments."
 asset,manager.loadFailed,계좌·카드를 불러오지 못했어요,"Couldn't load your accounts and cards"
+asset,manager.emptyHint,[추가]를 눌러 첫 계좌나 카드를 등록해 보세요.,Tap [Add] to register your first account or card.
 asset,excludedFromTotal,총액 제외,Excluded from total
 asset,deleteConfirm.titleAccount,계좌 삭제,Delete account
 asset,deleteConfirm.titleCard,카드 삭제,Delete card

@@ -278,7 +278,7 @@ export function AccountManager({
         size={mobile ? "large" : "medium"}
         icon={<Landmark aria-hidden />}
         title={t("emptyTitle")}
-        description={t("emptyDesc")}
+        description={t("manager.emptyHint")}
       />
     );
   } else {
@@ -354,10 +354,9 @@ export function AccountManager({
             setDetail(null);
           }}
           onDelete={(asset) => {
+            // 상세와 확인창 모두 ds 뒤로 가기 훅이라 같은 커밋 전환이 안전하다(use-back-close 가 칸을 개수로 센다)
+            setConfirmDelete(asset);
             setDetail(null);
-            // 폰: 상세 시트(ds)가 닫히며 쌓아 둔 히스토리 칸을 되감는데(history.go(-1), 마이크로태스크), 같은 커밋에서 확인창이 열리면
-            // 그 되감기가 확인창의 칸을 지워 확인창이 바로 닫힌다 — 시트가 되감기를 끝낸 뒤 연다.
-            window.setTimeout(() => setConfirmDelete(asset), 350);
           }}
           mobile={mobile}
         />
