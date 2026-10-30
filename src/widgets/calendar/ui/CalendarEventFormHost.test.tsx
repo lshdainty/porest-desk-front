@@ -14,13 +14,17 @@ import {
   setValue,
   setupFormDom,
 } from "./event-form/test-utils";
-import type { CalendarEventFormValues } from "@/entities/calendar";
+import type {
+  CalendarEvent,
+  CalendarEventFormValues,
+} from "@/entities/calendar";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
 const created = vi.hoisted(() => [] as Record<string, unknown>[]);
+const fail = vi.hoisted(() => ({ create: false, update: false }));
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -54,8 +58,13 @@ vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
   useCreateEvent: () => ({
     mutate: (v: CalendarEventFormValues) => created.push({ ...v }),
     isPending: false,
+    isError: fail.create,
   }),
-  useUpdateEvent: () => ({ mutate: () => {}, isPending: false }),
+  useUpdateEvent: () => ({
+    mutate: () => {},
+    isPending: false,
+    isError: fail.update,
+  }),
 }));
 
 const { CalendarEventFormHost } = await import("./CalendarEventFormHost");
@@ -67,6 +76,8 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   __resetPointerBlockForTest();
   created.length = 0;
+  fail.create = false;
+  fail.update = false;
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -79,13 +90,15 @@ afterEach(async () => {
   await new Promise((r) => setTimeout(r, 50));
 });
 
-const show = (quick: boolean) =>
+let closed = 0;
+const show = (quick: boolean, event?: CalendarEvent) =>
   act(() =>
     root.render(
       <CalendarEventFormHost
         selectedDate={new Date(2026, 9, 22)}
+        event={event}
         quick={quick}
-        onClose={() => {}}
+        onClose={() => closed++}
       />,
     ),
   );
@@ -158,5 +171,100 @@ describe("빠른 추가 → 자세히", () => {
     click(lastButton("quickAdd.detail"));
     expect(quickTitle()).toBeNull();
     expect(field("title").value).toBe("치과");
+  });
+});
+
+const saved: CalendarEvent = {
+  rowId: 5,
+  title: "정기 점검",
+  description: null,
+  eventType: "PERSONAL",
+  color: "#2c70bf",
+  startDate: "2026-10-22T10:00:00",
+  endDate: "2026-10-22T11:00:00",
+  isAllDay: false,
+  labelRowId: null,
+  labelName: null,
+  labelColor: null,
+  location: null,
+  rrule: null,
+  recurrenceId: null,
+  isException: false,
+  reminders: [],
+  calendarRowId: 1,
+  calendarName: "업무",
+  calendarColor: "#2c70bf",
+  createAt: "",
+  modifyAt: "",
+};
+
+// 저장 실패(snackbar.md:75) — 폼 맨 위 critical Callout(고정 문구), 폼은 열려 있고 입력값은 그대로
+describe("저장 실패", () => {
+  const alertText = () =>
+    document.querySelector("[role=alert]")?.textContent ?? "";
+
+  it.each([
+    ["시트", false],
+    ["대화상자", true],
+  ])(
+    "추가가 실패하면 %s 맨 위에 Callout 이 보이고 닫히지 않고 값이 남는다",
+    (_n, wide) => {
+      setupFormDom(wide);
+      closed = 0;
+      show(false);
+      setValue(field("title"), "치과");
+      fail.create = true;
+      show(false);
+      expect(alertText()).toContain("form.saveFailed");
+      expect(closed).toBe(0);
+      expect(field("title").value).toBe("치과");
+      // 맨 위 — 본문의 첫 자식
+      const body = document.querySelector("[data-slot$=body]")!;
+      expect(body.firstElementChild?.getAttribute("role")).toBe("alert");
+    },
+  );
+
+  it("수정이 실패해도 같다", () => {
+    setupFormDom(false);
+    fail.update = true;
+    show(false, saved);
+    expect(alertText()).toContain("form.saveFailed");
+  });
+
+  it("빠른 추가가 실패해도 대화상자 안에 보이고 제목이 남는다", () => {
+    setupFormDom(true);
+    show(true);
+    setValue(quickTitle()!, "치과");
+    fail.create = true;
+    show(true);
+    expect(alertText()).toContain("form.saveFailed");
+    expect(quickTitle()?.value).toBe("치과");
+  });
+
+  it("실패가 없으면 Callout 도 없다", () => {
+    setupFormDom(false);
+    show(false);
+    expect(alertText()).toBe("");
+  });
+});
+
+// 새 일정은 제목에 초점, 수정으로 열 때는 주지 않는다
+describe("처음 초점", () => {
+  it("새 일정(대화상자)은 제목에 초점이 간다", async () => {
+    setupFormDom(true);
+    show(false);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30));
+    });
+    expect(document.activeElement).toBe(field("title"));
+  });
+
+  it("수정으로 열면 제목에 초점을 주지 않는다", async () => {
+    setupFormDom(true);
+    show(false, saved);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30));
+    });
+    expect(document.activeElement).not.toBe(field("title"));
   });
 });

@@ -5,6 +5,7 @@ import { format, isSameDay } from "date-fns";
 
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
 import { Button } from "@/shared/ds/button";
+import { Callout } from "@/shared/ds/callout";
 import {
   Dialog,
   DialogBody,
@@ -44,6 +45,7 @@ export function QuickAddDialog({
   start,
   end,
   isLoading,
+  saveError = false,
   onClose,
   onDetail,
   onSave,
@@ -51,6 +53,8 @@ export function QuickAddDialog({
   start: Date;
   end: Date;
   isLoading?: boolean;
+  /** 저장 실패 — 맨 위 critical Callout, 값은 그대로 */
+  saveError?: boolean;
   onClose: () => void;
   onDetail: (draft: QuickAddDraft) => void;
   onSave: (values: CalendarEventFormValues) => void;
@@ -134,6 +138,11 @@ export function QuickAddDialog({
       >
         <DialogBody>
           <div className="flex flex-col gap-x6 pb-x2">
+            {saveError && (
+              <Callout tone="critical" role="alert">
+                {t("form.saveFailed")}
+              </Callout>
+            )}
             <Field
               label={t("form.title")}
               showRequiredIndicator

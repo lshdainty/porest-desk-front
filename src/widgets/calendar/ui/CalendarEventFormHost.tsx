@@ -55,6 +55,7 @@ export function CalendarEventFormHost({
         start={day}
         end={selectedEndDate ?? day}
         isLoading={createEvent.isPending}
+        saveError={createEvent.isError}
         onClose={onClose}
         onDetail={setDraft}
         onSave={(values) => createEvent.mutate(values, { onSuccess: onClose })}
@@ -78,6 +79,7 @@ export function CalendarEventFormHost({
       }
       labels={labels}
       isLoading={event ? updateEvent.isPending : createEvent.isPending}
+      saveError={event ? updateEvent.isError : createEvent.isError}
       onClose={onClose}
       onDelete={onDelete}
       onSubmit={(data) => {
