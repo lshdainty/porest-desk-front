@@ -60,3 +60,14 @@ export function fmtShares(n: number): string {
   if (isEn()) return formatChartAxis(n);
   return `${formatChartAxis(n)} 주`;
 }
+
+/**
+ * 환율 줄 값 — 소수 둘째 자리까지("1,385.20원"). 원 표기는 `fmtByCurrency` 의 원화와 같은 규칙(ko `…원` / en `₩…`)이다.
+ */
+export function fmtFxRate(rate: number): string {
+  const body = rate.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return isEn() ? `₩${body}` : `${body}원`;
+}

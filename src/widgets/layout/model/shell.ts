@@ -61,7 +61,9 @@ export function screenFloor(pathname: string): ScreenFloor {
     pathname === "/desk" ||
     under(pathname, "/desk/asset") ||
     under(pathname, "/desk/stats") ||
-    under(pathname, "/desk/budget")
+    under(pathname, "/desk/budget") ||
+    // 증권도 띠 화면이다 — 내 투자 · 시장 · 종목 띠(I-13 5, 폰 풀스크린)
+    under(pathname, "/desk/stocks")
   )
     return "bands";
   // 가계부 거래 · 전체는 화면 전체가 흰 층(I-12 2-B — 전체는 흰 면 하나). 캘린더도 같다 — 폰 달력은 "흰 면 하나"(I-09 1-A)라
@@ -104,6 +106,10 @@ export function screenTitleKey(pathname: string): string {
   // 가계부 묶음 넷은 머리 제목이 모두 "가계부" — 칸 이름은 위 Line Tabs 가 말한다(17-1)
   if (isMoneyPath(pathname)) return "expense";
   if (TITLE_KEYS[pathname]) return TITLE_KEYS[pathname];
+  // 증권 아래 페이지 — 포트폴리오 구성(정적 주소가 먼저) · 종목 상세(I-13 17). 사이드바 지금 항목은 그대로 "증권"
+  if (/^\/desk\/stocks\/[^/]+\/portfolio$/.test(pathname))
+    return "stockPortfolio";
+  if (/^\/desk\/stocks\/[^/]+\/[^/]+$/.test(pathname)) return "stockDetail";
   const nav = NAV.find((n) => n.path !== "/desk" && under(pathname, n.path));
   return nav?.labelKey ?? "home";
 }

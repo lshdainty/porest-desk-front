@@ -216,7 +216,14 @@ export function WatchGroupDialog({
       {confirmDelete && group && (
         <ConfirmDialog
           title={t("watch.groupDelete")}
-          message={t("watch.groupDeleteConfirm", { name: group.groupName })}
+          message={
+            group.items.length > 0
+              ? t("watch.groupDeleteConfirm", {
+                  name: group.groupName,
+                  count: group.items.length,
+                })
+              : t("watch.groupDeleteConfirmEmpty", { name: group.groupName })
+          }
           confirmLabel={t("watch.groupDelete")}
           danger
           loading={deleteMut.isPending}

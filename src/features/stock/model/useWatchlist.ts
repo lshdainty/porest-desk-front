@@ -31,7 +31,7 @@ export interface Watchlist {
   watchedSymbols: Set<string>;
   isWatched: (symbol: string) => boolean;
   /** 별 토글. 등록돼 있으면 전 그룹에서 빼고, 아니면 지금 그룹에 넣는다. */
-  toggleWatch: (symbol: string, marketCode?: string) => void;
+  toggleWatch: (symbol: string, marketCode?: string, groupId?: number) => void;
 }
 
 export function useWatchlist(): Watchlist {
@@ -56,7 +56,11 @@ export function useWatchlist(): Watchlist {
     [groups],
   );
 
-  const toggleWatch = (symbol: string, marketCode?: string) => {
+  const toggleWatch = (
+    symbol: string,
+    marketCode?: string,
+    pickedGroupId?: number,
+  ) => {
     const entries = findWatchEntries(groups, symbol);
     if (entries.length > 0) {
       // 별 해제 = 모든 그룹에서 제거 (기존 UX 유지)
@@ -72,7 +76,7 @@ export function useWatchlist(): Watchlist {
       });
       return;
     }
-    const groupId = activeGroupId ?? groups[0]!.rowId;
+    const groupId = pickedGroupId ?? activeGroupId ?? groups[0]!.rowId;
     addItemMut.mutate(
       { groupId, symbol, marketCode },
       { onError: () => toast.error(t("watch.addFail")) },

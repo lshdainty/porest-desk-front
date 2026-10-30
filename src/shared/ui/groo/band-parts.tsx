@@ -61,12 +61,15 @@ export function HeadNote({ children }: { children: ReactNode }) {
 /** 구역 안 실패 — Result Section medium failure + "다시 시도". 서버 오류 원문은 그리지 않는다(I-08 17 · 23 · 28) */
 export function BandFailure({
   title,
+  description,
   onRetry,
   band,
   className,
   size = "medium",
 }: {
   title: string;
+  /** 설명 — 기본 "잠시 뒤 다시 시도해주세요." */
+  description?: string;
   onRetry: () => void;
   band?: boolean;
   className?: string;
@@ -81,7 +84,7 @@ export function BandFailure({
       size={size}
       as="h3"
       title={title}
-      description={t("loadFailedDesc")}
+      description={description ?? t("loadFailedDesc")}
       primaryAction={{ label: dsT("common.retry"), onClick: onRetry }}
       className={cn(band && "px-x6", "[[data-slot=card]_&]:px-0", className)}
     />

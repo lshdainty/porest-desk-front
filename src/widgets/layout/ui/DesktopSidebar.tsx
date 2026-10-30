@@ -57,7 +57,10 @@ export function DesktopSidebar() {
               key={b}
               href={brokerPath(b)}
               label={brokerLabelOf(b)}
-              current={pathname === brokerPath(b)}
+              current={
+                pathname === brokerPath(b) ||
+                pathname.startsWith(`${brokerPath(b)}/`)
+              }
               onClick={link(brokerPath(b))}
             />
           ))}

@@ -369,10 +369,18 @@ function DiscoverPanel({
  *
  * @param header 셸이 끼워 넣는 증권사 탭. 연결이 하나뿐이면 없다.
  */
-export function TossStocksDesktop({ header }: { header?: React.ReactNode }) {
+export function TossStocksDesktop({
+  header,
+  initialSelected,
+}: {
+  header?: React.ReactNode;
+  initialSelected?: string;
+}) {
   const { t } = useTranslation("stocks");
   const { mobile } = useOutletContext<OutletCtx>();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(
+    initialSelected ?? null,
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [seg, setSeg] = useState<"holdings" | "watch" | "discover">("holdings");
 

@@ -81,10 +81,18 @@ type MarketFilter = "ALL" | "KRW" | "USD";
  * - 지수·장운영 캘린더가 없다 → 상태 줄 왼쪽이 비고 출처만 남는다
  * - 나무 해외는 **미국(USD)만** 된다. 서버가 다른 통화를 400(`SEC_012`)으로 거절한다
  */
-export function NamuStocksDesktop({ header }: { header?: React.ReactNode }) {
+export function NamuStocksDesktop({
+  header,
+  initialSelected,
+}: {
+  header?: React.ReactNode;
+  initialSelected?: string;
+}) {
   const { t } = useTranslation("stocks");
   const { mobile } = useOutletContext<OutletCtx>();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(
+    initialSelected ?? null,
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [seg, setSeg] = useState<"holdings" | "watch">("holdings");
   const [market, setMarket] = useState<MarketFilter>("ALL");

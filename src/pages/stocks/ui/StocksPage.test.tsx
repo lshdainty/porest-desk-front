@@ -42,13 +42,43 @@ vi.mock("react-i18next", () => ({
 }));
 // 본문 두 개는 각자 수십 개의 쿼리를 건다 — 여기선 "어느 쪽이 떴나" 만 보면 된다.
 vi.mock("./TossStocksPage", () => ({
-  TossStocksPage: ({ header }: { header?: ReactNode }) => (
-    <div data-broker="TOSS">{header}</div>
+  TossStocksPage: ({
+    header,
+    initialSelected,
+  }: {
+    header?: ReactNode;
+    initialSelected?: string;
+  }) => (
+    <div data-broker="TOSS" data-initial={initialSelected}>
+      {header}
+    </div>
   ),
 }));
 vi.mock("./NamuStocksPage", () => ({
-  NamuStocksPage: ({ header }: { header?: ReactNode }) => (
-    <div data-broker="NAMU">{header}</div>
+  NamuStocksPage: ({
+    header,
+    initialSelected,
+  }: {
+    header?: ReactNode;
+    initialSelected?: string;
+  }) => (
+    <div data-broker="NAMU" data-initial={initialSelected}>
+      {header}
+    </div>
+  ),
+}));
+vi.mock("./detail/StockDetailMobile", () => ({
+  StockDetailMobile: ({
+    broker,
+    symbol,
+  }: {
+    broker: string;
+    symbol: string;
+  }) => <div data-detail={`${broker}:${symbol}`} />,
+}));
+vi.mock("./detail/PortfolioMobile", () => ({
+  PortfolioMobile: ({ broker }: { broker: string }) => (
+    <div data-portfolio={broker} />
   ),
 }));
 
@@ -60,6 +90,12 @@ let root: Root;
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  // Line 탭이 크기를 지켜본다 — jsdom 에는 없다
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
   state.connectedBrokers = [];
   state.primaryBroker = null;
   state.isLoading = false;
@@ -95,6 +131,14 @@ function renderAt(path: string, mobile = false) {
           <Route element={<Shell mobile={mobile} />}>
             <Route path="/desk/stocks" element={<StocksPage />} />
             <Route path="/desk/stocks/:broker" element={<StocksPage />} />
+            <Route
+              path="/desk/stocks/:broker/portfolio"
+              element={<StocksPage view="portfolio" />}
+            />
+            <Route
+              path="/desk/stocks/:broker/:symbol"
+              element={<StocksPage view="detail" />}
+            />
             <Route path="/desk" element={<div data-dashboard />} />
           </Route>
         </Routes>
@@ -204,6 +248,40 @@ describe("StocksPage 증권사 전환 수단", () => {
     state.connectedBrokers = ["TOSS"];
     renderAt("/desk/stocks/toss", true);
     expect(tablist()).toBeNull();
+  });
+});
+
+describe("상세 · 포트폴리오 주소(I-13 17)", () => {
+  const detail = () =>
+    container.querySelector("[data-detail]")?.getAttribute("data-detail");
+  it("폰: 심볼 주소는 상세 페이지를 그린다 — 점 심볼도", () => {
+    state.connectedBrokers = ["TOSS"];
+    renderAt("/desk/stocks/toss/BRK.B", true);
+    expect(detail()).toBe("TOSS:BRK.B");
+  });
+  it("폰: 포트폴리오 주소는 정적이라 심볼보다 먼저다", () => {
+    state.connectedBrokers = ["TOSS"];
+    renderAt("/desk/stocks/toss/portfolio", true);
+    expect(container.querySelector("[data-portfolio]")).not.toBeNull();
+    expect(detail()).toBeUndefined();
+  });
+  it("768 이상 다리: 상세 주소는 지금 데스크톱 화면에 그 종목을 고른 채로", () => {
+    state.connectedBrokers = ["TOSS"];
+    renderAt("/desk/stocks/toss/A900001", false);
+    expect(shownBroker()).toBe("TOSS");
+    expect(
+      container.querySelector("[data-broker]")?.getAttribute("data-initial"),
+    ).toBe("A900001");
+  });
+  it("768 이상: 포트폴리오 주소는 목록으로 replace", () => {
+    state.connectedBrokers = ["TOSS"];
+    renderAt("/desk/stocks/toss/portfolio", false);
+    expect(path()).toBe("/desk/stocks/toss");
+  });
+  it("끊긴 증권사의 상세 주소는 기본 증권사 목록으로", () => {
+    state.connectedBrokers = ["NAMU"];
+    renderAt("/desk/stocks/toss/005930", true);
+    expect(path()).toBe("/desk/stocks/namu");
   });
 });
 

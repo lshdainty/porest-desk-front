@@ -8,8 +8,12 @@ import {
 } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ds/tabs";
+import {
+  TopNavigation,
+  TopNavigationBackButton,
+  TopNavigationTitle,
+} from "@/shared/ds/top-navigation";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import {
   brokerFromSlug,
@@ -19,6 +23,8 @@ import {
 } from "@/features/stock/lib/broker";
 import { TossStocksPage } from "./TossStocksPage";
 import { NamuStocksPage } from "./NamuStocksPage";
+import { StockDetailMobile } from "./detail/StockDetailMobile";
+import { PortfolioMobile } from "./detail/PortfolioMobile";
 
 interface OutletCtx {
   mobile: boolean;
@@ -42,10 +48,16 @@ interface OutletCtx {
  *
  * 가계부 자산은 반대다 — 필요한 게 시세뿐이라 사용자가 고른 기본 소스 하나로 통합돼 있다.
  */
-export function StocksPage() {
+export function StocksPage({
+  view = "list",
+}: {
+  /** list = 증권사 목록 · detail = 종목 상세 페이지 · portfolio = 포트폴리오 구성 페이지(I-13 17) */
+  view?: "list" | "detail" | "portfolio";
+}) {
+  const { t } = useTranslation("stocks");
   const { mobile } = useOutletContext<OutletCtx>();
   const navigate = useNavigate();
-  const { broker: brokerSlug } = useParams();
+  const { broker: brokerSlug, symbol } = useParams();
   const { data: features, isLoading } = useMyFeatures();
   const brokerLabelOf = useBrokerLabel();
 
@@ -71,15 +83,16 @@ export function StocksPage() {
   // **모바일엔 사이드바가 없다** — 탭을 지우면 증권사를 바꿀 길이 사라진다. 그래서 데스크톱만
   // 탭을 접고(사이드바 하위 메뉴가 그 일을 한다) 모바일은 그대로 둔다. 다만 상태가 아니라
   // 경로를 바꾼다 — 선택이 사는 곳이 한 군데여야 뒤로가기가 말이 된다.
+  // 증권사 고르기 = ds Tabs 1차 Line · Fill · medium 44 — 상단 바 바로 아래 화면 폭(I-13 6). 연결이 하나면 줄이 없다.
   const header =
-    mobile && connected.length > 1 ? (
+    mobile && connected.length > 1 && view === "list" ? (
       <Tabs
         value={requested}
         onValueChange={(b) => navigate(brokerPath(b), { replace: true })}
       >
-        <TabsList style={{ width: "100%" }}>
+        <TabsList layout="fill" size="medium" aria-label={t("broker.tabsAria")}>
           {connected.map((b) => (
-            <TabsTrigger key={b} value={b} style={{ flex: 1 }}>
+            <TabsTrigger key={b} value={b}>
               {brokerLabelOf(b)}
             </TabsTrigger>
           ))}
@@ -87,9 +100,23 @@ export function StocksPage() {
       </Tabs>
     ) : undefined;
 
+  // 포트폴리오 구성은 폰의 페이지다 — 768 이상은 같은 내용이 목록 화면의 카드로 있다(13-2 전까지는 목록 화면으로 돌려보낸다)
+  if (view === "portfolio" && !mobile)
+    return <Navigate to={brokerPath(requested)} replace />;
+  if (view === "portfolio" && (requested === "TOSS" || requested === "NAMU"))
+    return <PortfolioMobile broker={requested} />;
+  // 상세 주소: 폰은 상세 페이지, 768 이상은 지금 데스크톱 화면에 그 종목을 고른 채로 그린다(13-1 다리 — 13-2 가 걷는다)
+  if (view === "detail" && symbol && mobile) {
+    if (requested === "TOSS" || requested === "NAMU")
+      return <StockDetailMobile broker={requested} symbol={symbol} />;
+  }
+  const initialSelected = view === "detail" ? symbol : undefined;
+
   // 모르는 증권사 코드는 서버가 앞서 나갔다는 뜻이다 — 빈 화면 대신 안내를 띄운다.
-  if (requested === "NAMU") return <NamuStocksPage header={header} />;
-  if (requested === "TOSS") return <TossStocksPage header={header} />;
+  if (requested === "NAMU")
+    return <NamuStocksPage header={header} initialSelected={initialSelected} />;
+  if (requested === "TOSS")
+    return <TossStocksPage header={header} initialSelected={initialSelected} />;
   return <UnsupportedBroker mobile={mobile} header={header} />;
 }
 
@@ -118,8 +145,16 @@ function UnsupportedBroker({
   );
   return mobile ? (
     <>
-      <MobileBackHeader title={t("nav.title")} />
-      <div style={{ padding: "16px 24px 24px" }}>{body}</div>
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" />
+        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
+      </TopNavigation>
+      <div
+        className="bg-bg-layer-default"
+        style={{ padding: "16px 24px 24px" }}
+      >
+        {body}
+      </div>
     </>
   ) : (
     <div style={{ padding: 24 }}>{body}</div>
@@ -174,8 +209,16 @@ function ConnectGate({ mobile }: { mobile: boolean }) {
   );
   return mobile ? (
     <>
-      <MobileBackHeader title={t("nav.title")} />
-      <div style={{ padding: "16px 24px 24px" }}>{gate}</div>
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" />
+        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
+      </TopNavigation>
+      <div
+        className="bg-bg-layer-default"
+        style={{ padding: "16px 24px 24px" }}
+      >
+        {gate}
+      </div>
     </>
   ) : (
     <div style={{ padding: 24 }}>{gate}</div>
