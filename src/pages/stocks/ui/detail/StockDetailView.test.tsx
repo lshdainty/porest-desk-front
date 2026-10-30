@@ -22,6 +22,18 @@ const st = vi.hoisted(() => ({
   infoEmpty: false,
   asks: true,
   bids: true,
+  /** 토스 1d 봉(오늘 봉 판정 · M7) */
+  bars: [] as {
+    timestamp: string;
+    openPrice: string;
+    highPrice: string;
+    lowPrice: string;
+    closePrice: string;
+    volume: string;
+  }[],
+  bookPending: false,
+  tradesPending: false,
+  investors: [] as unknown[],
 }));
 
 vi.mock("react-i18next", () => ({
@@ -61,6 +73,7 @@ vi.mock("@/features/stock/model/useStockMaster", () => ({
 vi.mock("@/features/stock/model/useDailyCandles", () => ({
   useDailyCandles: () => ({
     isLoading: false,
+    isPending: false,
     isError: false,
     data: { candles: [] },
     refetch: () => {},
@@ -76,6 +89,7 @@ vi.mock("@/features/stock/model/useTossStocks", async (orig) => {
   const q = (data: unknown, extra = {}) => ({
     data,
     isLoading: false,
+    isPending: false,
     isError: false,
     isSuccess: true,
     refetch: () => {},
@@ -139,26 +153,41 @@ vi.mock("@/features/stock/model/useTossStocks", async (orig) => {
           : [],
       }),
     useTossPriceLimits: () => q(undefined),
+    // 13b-1 에서 늘어난 훅 — 진짜가 네트워크로 나가지 않게 덮는다(없는 훅이 던지지 않게 ...real 도 유지)
+    useTossCandles: () => q({ candles: st.bars }),
+    useTossInvestors: () => q(st.investors),
     useTossOrderbook: () =>
-      q({
-        asks: st.asks
-          ? [
-              { price: "15210", volume: "100" },
-              { price: "15220", volume: "200" },
-            ]
-          : [],
-        bids: st.bids
-          ? [
-              { price: "15190", volume: "100" },
-              { price: "15180", volume: "200" },
-            ]
-          : [],
-      }),
+      st.bookPending
+        ? q(undefined, { isPending: true, isSuccess: false })
+        : q({
+            asks: st.asks
+              ? [
+                  { price: "15210", volume: "100" },
+                  { price: "15220", volume: "200" },
+                ]
+              : [],
+            bids: st.bids
+              ? [
+                  { price: "15190", volume: "100" },
+                  { price: "15180", volume: "200" },
+                ]
+              : [],
+          }),
     useTossTrades: () =>
-      q([
-        { timestamp: "2026-10-29T13:00:05+09:00", price: "15200", volume: "3" },
-        { timestamp: "2026-10-29T13:00:01+09:00", price: "15190", volume: "4" },
-      ]),
+      st.tradesPending
+        ? q(undefined, { isPending: true, isSuccess: false })
+        : q([
+            {
+              timestamp: "2026-10-29T13:00:05+09:00",
+              price: "15200",
+              volume: "3",
+            },
+            {
+              timestamp: "2026-10-29T13:00:01+09:00",
+              price: "15190",
+              volume: "4",
+            },
+          ]),
   };
 });
 
@@ -190,6 +219,10 @@ beforeEach(() => {
   st.infoEmpty = false;
   st.asks = true;
   st.bids = true;
+  st.bars = [];
+  st.bookPending = false;
+  st.tradesPending = false;
+  st.investors = [];
   qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -438,5 +471,79 @@ describe("호가 — 한쪽이 비어도 있는 쪽은 보인다(M9)", () => {
     st.bids = false;
     render();
     expect(section("quotes").textContent).toContain("quotes.orderbookEmpty");
+  });
+});
+
+describe("꺼진 · 아직 시작 안 한 질의는 '없어요' 가 아니라 기다림이다(M1)", () => {
+  it("호가 질의가 시작 전(isPending, 데이터 없음)이면 '호가 정보가 없어요' 를 보이지 않는다", () => {
+    st.bookPending = true;
+    render();
+    const q = section("quotes");
+    expect(q.textContent).not.toContain("quotes.orderbookEmpty");
+    expect(q.textContent).not.toContain("quotes.orderbookFail");
+    expect(q.querySelector("[aria-busy]")).not.toBeNull();
+  });
+  it("체결 탭도 같다 — 막 켜진 질의가 '체결 내역이 없어요' 로 비치지 않는다", async () => {
+    st.tradesPending = true;
+    render();
+    const tab = [...container.querySelectorAll("[role=radio]")].find(
+      (e) => e.textContent === "quotes.trades",
+    ) as HTMLElement;
+    await act(async () => tab.click());
+    expect(section("quotes").textContent).not.toContain("quotes.tradesEmpty");
+    expect(section("quotes").querySelector("[aria-busy]")).not.toBeNull();
+  });
+});
+
+describe("오늘 시세 — '오늘' 은 그 시장의 거래일이다(M7, I-13b 20)", () => {
+  const bar = (timestamp: string) => ({
+    timestamp,
+    openPrice: "100",
+    highPrice: "110",
+    lowPrice: "95",
+    closePrice: "105",
+    volume: "12345",
+  });
+  afterEach(() => vi.useRealTimers());
+  const at = (iso: string) => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(iso));
+  };
+  const todayRows = () =>
+    container.querySelector("[data-section=today]")?.textContent ?? "";
+
+  it("미국 종목: 한국 자정 뒤(뉴욕은 아직 같은 날)에도 오늘 봉이 있다 — 띠가 사라지지 않는다", () => {
+    // 한국 10-30 02:00 = 뉴욕 10-29 13:00. 1d 봉은 현지 자정 고정(뉴욕 10-29)
+    at("2026-10-30T02:00:00+09:00");
+    st.priceCurrency = "USD";
+    st.bars = [
+      bar("2026-10-28T00:00:00-04:00"),
+      bar("2026-10-29T00:00:00-04:00"),
+    ];
+    render();
+    expect(todayRows()).toContain("today.open");
+    expect(todayRows()).toContain("today.volume");
+  });
+  it("미국 종목: 어제(뉴욕) 봉만 있으면 오늘 봉 줄은 없다", () => {
+    at("2026-10-30T02:00:00+09:00");
+    st.priceCurrency = "USD";
+    st.bars = [bar("2026-10-28T00:00:00-04:00")];
+    render();
+    expect(todayRows()).not.toContain("today.open");
+  });
+  it("국내 종목: 한국 날짜로 가른다 — 순서를 가정하지 않는다(최신이 앞이어도)", () => {
+    at("2026-10-29T13:00:00+09:00");
+    st.bars = [
+      bar("2026-10-29T00:00:00+09:00"),
+      bar("2026-10-28T00:00:00+09:00"),
+    ];
+    render();
+    expect(todayRows()).toContain("today.open");
+  });
+  it("국내 종목: 어제 봉만 있으면(휴장 · 장 시작 전) 오늘 봉 네 줄이 없다", () => {
+    at("2026-10-29T08:00:00+09:00");
+    st.bars = [bar("2026-10-28T00:00:00+09:00")];
+    render();
+    expect(todayRows()).not.toContain("today.open");
   });
 });

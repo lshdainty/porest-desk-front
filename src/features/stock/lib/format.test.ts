@@ -2,13 +2,7 @@
 // 옮기면서 값이 바뀌면 같은 금액이 화면마다 다르게 보인다 — 그 회귀를 여기서 막는다.
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import {
-  fmtByCurrency,
-  fmtCapKRW,
-  fmtCapUsd,
-  fmtShares,
-  num,
-} from "./format";
+import { fmtByCurrency, fmtCapKRW, fmtCapUsd, fmtShares, num } from "./format";
 
 describe("num", () => {
   it("서버가 String 으로 주는 금액을 숫자로 읽는다", () => {

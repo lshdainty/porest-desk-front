@@ -7,7 +7,6 @@ import {
 } from "@/shared/ds/top-navigation";
 import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { formatChangeRate, money } from "@/shared/lib/groo/format";
-import { todayLocalKey } from "@/shared/lib/date";
 import { useMasked, won } from "@/shared/lib/groo/money-text";
 import { brokerPath } from "@/features/stock/lib/broker";
 import { marketName } from "@/features/stock/lib/market-name";
@@ -41,7 +40,9 @@ import {
   useTossStockWarnings,
 } from "@/features/stock/model/useTossStocks";
 import { BandTitle, DeltaText } from "@/features/stock/ui/phone/phone-parts";
+import { dateKeyIn } from "@/features/stock/lib/prev-close";
 import { isHardError } from "@/features/stock/lib/query-state";
+import { useDayKey } from "@/features/stock/model/useDayKey";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { Card } from "@/shared/ds/card";
 import { DeskColumns, DeskFrame, DeskSlot } from "../desk/desk-frame";
@@ -113,6 +114,10 @@ export function StockDetailView({
     </>
   );
 }
+
+/** 오늘 봉을 가르는 시장 날짜 — 국내는 한국, 미국은 뉴욕(1d 봉은 현지 자정 고정) */
+const KR_TZ = "Asia/Seoul";
+const US_TZ = "America/New_York";
 
 const flush = (name: string, node: React.ReactNode) =>
   node ? (
@@ -244,15 +249,13 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   // 오늘 시세(I-13b 20) — 시가 · 고가 · 저가 · 거래량 = 일봉 오늘 봉(마지막 봉 날짜가 오늘일 때만), 상하한가 = 한도(국내만)
   const todayQ = useTossCandles(symbol, "1d", 3);
   const limits = limitsQ.data;
-  const todayBar = (() => {
-    const bars = todayQ.data?.candles ?? [];
-    const last = [...bars].sort((a, b) =>
-      a.timestamp.localeCompare(b.timestamp),
-    )[bars.length - 1];
-    return last && last.timestamp.slice(0, 10) === todayLocalKey()
-      ? last
-      : null;
-  })();
+  // 오늘 봉 — "오늘" 은 그 시장의 거래일이다(미국은 뉴욕 날짜). 한국 날짜로 가르면 한국 자정 뒤 미국 장중에 띠가 사라진다(검수 M7).
+  // 순서를 가정하지 않는다 — 날짜로 찾는다. 날이 바뀌면 `useDayKey` 가 다시 판정하게 한다
+  const dayKey = useDayKey(isUs ? US_TZ : KR_TZ);
+  const todayBar =
+    (todayQ.data?.candles ?? []).find(
+      (c) => dateKeyIn(c.timestamp, isUs ? US_TZ : KR_TZ) === dayKey,
+    ) ?? null;
   const shares = num(info?.sharesOutstanding);
   const priceInKrw =
     last == null
@@ -584,7 +587,11 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
 
   const name = master?.nameKr ?? q?.name ?? holding?.name ?? symbol;
   const currency: string =
-    q?.currency ?? (holding ? holding.currency : (master?.currency ?? "KRW"));
+    q?.currency ??
+    holding?.currency ??
+    master?.currency ??
+    // 어디서도 통화를 모르면 시장으로(국내 원 · 미국 달러), 시장도 모르면 빈 값 — 숫자만 보인다(13-1 M6)
+    (market === "KR" ? "KRW" : market === "US" ? "USD" : "");
   const isUs = market === "US" || currency === "USD";
   const last = numOrNull(q?.price);
   const prevClose = numOrNull(q?.previousClose);
@@ -747,7 +754,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       infoRows.push({
         key: "list",
         name: t("info.listDate"),
-        value: dateText(listed),
+        value: formatDateLong(dateText(listed)),
       });
     const shares = numOrNull(q.listedShares);
     if (shares != null && shares > 0)
@@ -770,19 +777,13 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       changeAmount={changeAmount}
       currency={currency}
       unavailable={
-        !quoteFailed && !quoteQ.isLoading && (last == null || last === 0)
+        !quoteFailed && !quoteQ.isPending && (last == null || last === 0)
           ? t("namu.priceEmpty")
           : undefined
       }
-      loading={quoteQ.isLoading}
-      failed={
-        quoteFailed
-          ? {
-              title: t("namu.quoteFailTitle"),
-              onRetry: () => void quoteQ.refetch(),
-            }
-          : undefined
-      }
+      loading={quoteQ.isPending}
+      failed={quoteFailed}
+      onRetry={() => void quoteQ.refetch()}
       warnings={(q?.warnings ?? []).map((w) =>
         t(`warning.${w.warningType}`, { defaultValue: w.warningType }),
       )}
@@ -800,12 +801,12 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     <KvBand id="stock-holding" title={t("holding.title")} rows={holdRows} />
   );
   const todayBand =
-    !quoteFailed && (quoteQ.isLoading || todayRows.length > 0) ? (
+    !quoteFailed && (quoteQ.isPending || todayRows.length > 0) ? (
       <KvBand
         id="stock-today"
         title={t("today.title")}
         rows={
-          quoteQ.isLoading
+          quoteQ.isPending
             ? (["open", "high", "low", "volume"] as const).map((k) => ({
                 key: k,
                 name: t(`today.${k}`),
@@ -813,7 +814,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
               }))
             : todayRows
         }
-        loading={quoteQ.isLoading}
+        loading={quoteQ.isPending}
       />
     ) : null;
   const quotesBand = quoteFailed ? null : (
@@ -826,7 +827,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       changePct={changePct}
       namuBook={{
         data: q?.orderbook ?? null,
-        isLoading: quoteQ.isLoading,
+        isPending: quoteQ.isPending,
         isError: false,
         refetch: () => void quoteQ.refetch(),
       }}

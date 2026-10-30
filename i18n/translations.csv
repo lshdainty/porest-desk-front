@@ -2902,7 +2902,6 @@ stocks,market.state.DAYTIME,주간거래,Daytime trading
 stocks,market.state.SINGLE_PRICE,단일가,Single-price session
 stocks,market.state.HALTED,일시 마감,Temporarily closed
 stocks,market.state.BEFORE_OPEN,개장 전,Before open
-stocks,namu.quoteFailTitle,시세를 불러오지 못했어요,Couldn't load quotes
 expense,fixed.switch.expense,고정 지출,Fixed expense
 expense,fixed.switch.income,고정 수입,Fixed income
 expense,fixed.hint.expense,월세·통신비처럼 매달 나가는 돈이에요. 통계에서 따로 나눠 볼 수 있어요,Money that goes out every month like rent or phone bills. You can view it separately in statistics

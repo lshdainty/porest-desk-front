@@ -180,7 +180,6 @@ export function HeadBand({
   broker,
   watch,
   chartHeight = 168,
-  failed,
 }: {
   name: string;
   detail: string;
@@ -204,8 +203,6 @@ export function HeadBand({
   watch?: ReactNode;
   /** 차트 높이 — 폰 168 · 768 이상 200(지금 데스크톱 그대로) */
   chartHeight?: number;
-  /** 시세 질의 실패 — 머리에 한 번만 실패 한 벌을 둔다(그 질의에 기대는 띠는 부르는 쪽이 그리지 않는다) */
-  failed?: { title: string; onRetry: () => void };
 }) {
   const { t } = useTranslation("stocks");
   const title = (
@@ -230,16 +227,14 @@ export function HeadBand({
         title
       )}
       <div className="mt-x4">
-        {failed ? (
-          <BandFailure title={failed.title} onRetry={failed.onRetry} />
-        ) : loading ? (
+        {loading ? (
           <Skeleton text="t12" className="w-3/5" />
         ) : (
           <p className="m-0 text-t12 font-bold tabular-nums text-fg-neutral">
             {withCommaBreaks(priceText)}
           </p>
         )}
-        {!failed && pct != null && (
+        {pct != null && (
           <div className="mt-x1">
             {changeAmount != null && currency ? (
               <DeltaText
@@ -389,12 +384,21 @@ export function KvBand({
 // ---- 호가 · 체결 ---------------------------------------------------------------
 
 const ROW = "h-8";
+/** 나무 응답은 모든 칸이 null 일 수 있다 — 읽지 못하면 null (NaN 이 막대 폭 · 글로 번지지 않게) */
+const fin = (s: string | null | undefined): number | null => {
+  if (s == null) return null;
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : null;
+};
+/** 일별 봉의 문자열 값 — 항상 숫자로 온다(없는 칸은 이미 걸러진 봉) */
 const num = (s: string) => Number.parseFloat(s);
+const qtyText = (q: number | null) => (q == null ? "—" : q.toLocaleString());
 
 /** 호가 질의 모양 — 토스는 자기 훅, 나무는 상세 시세 응답의 `orderbook`(부르는 쪽이 이 모양으로 넘긴다) */
 export interface BookQuery {
   data: TossOrderbook | null | undefined;
-  isLoading: boolean;
+  /** 아직 값도 오류도 없다(꺼져 있어 시작 전인 질의 포함) — 이때 "없어요" 를 보이지 않는다 */
+  isPending: boolean;
   isError: boolean;
   refetch: () => unknown;
 }
@@ -438,38 +442,43 @@ export function QuotesBand({
     ? tossBookQ
     : (namuBook ?? {
         data: null,
-        isLoading: false,
+        isPending: false,
         isError: false,
         refetch: () => {},
       });
   const tradesQ = toss ? tossTradesQ : namuTradesQ;
   const fmt = (p: number) => fmtByCurrency(p, currency);
-  const asks = useMemo(
-    () =>
-      (bookQ.data?.asks ?? [])
-        .slice(0, 5)
-        .map((e) => ({ p: num(e.price), q: Math.round(num(e.volume)) }))
-        .reverse(),
-    [bookQ.data],
+  // 값(가격)이 없는 줄은 그리지 않는다 · 수량이 없으면 칸 "—" 와 막대 0
+  const levels = (list: { price: string; volume: string }[] | undefined) =>
+    (list ?? [])
+      .map((e) => {
+        const q = fin(e.volume);
+        return { p: fin(e.price), q: q == null ? null : Math.round(q) };
+      })
+      .filter((e): e is { p: number; q: number | null } => e.p != null)
+      .slice(0, 5);
+  const asks = levels(bookQ.data?.asks).reverse();
+  const bids = levels(bookQ.data?.bids);
+  const maxQ = Math.max(
+    1,
+    ...asks.map((a) => a.q ?? 0),
+    ...bids.map((b) => b.q ?? 0),
   );
-  const bids = useMemo(
-    () =>
-      (bookQ.data?.bids ?? [])
-        .slice(0, 5)
-        .map((e) => ({ p: num(e.price), q: Math.round(num(e.volume)) })),
-    [bookQ.data],
-  );
-  const maxQ = Math.max(1, ...asks.map((a) => a.q), ...bids.map((b) => b.q));
-  const fills = (tradesQ.data ?? []).slice(0, 12).map((x, i, arr) => {
-    const p = num(x.price);
-    const prev = i + 1 < arr.length ? num(arr[i + 1]!.price) : p;
-    return {
-      time: tradeClock(x.timestamp),
-      p,
-      q: Math.round(num(x.volume)),
-      dir: p >= prev ? 1 : -1,
-    };
-  });
+  const barWidth = (q: number | null) => `${((q ?? 0) / maxQ) * 100}%`;
+  const fills = (tradesQ.data ?? [])
+    .map((x) => ({ x, p: fin(x.price) }))
+    .flatMap(({ x, p }) => (p == null ? [] : [{ x, p }]))
+    .slice(0, 12)
+    .map(({ x, p }, i, arr) => {
+      const prev = i + 1 < arr.length ? arr[i + 1]!.p : p;
+      const q = fin(x.volume);
+      return {
+        time: tradeClock(x.timestamp),
+        p,
+        q: q == null ? null : Math.round(q),
+        dir: p >= prev ? 1 : -1,
+      };
+    });
 
   const head = (cols: string[]) => (
     <thead>
@@ -490,7 +499,7 @@ export function QuotesBand({
       </tr>
     </thead>
   );
-  const bookRow = (e: { p: number; q: number }, side: "ask" | "bid") => (
+  const bookRow = (e: { p: number; q: number | null }, side: "ask" | "bid") => (
     <tr key={`${side}${e.p}`} className={ROW}>
       <td className="relative p-0">
         {side === "bid" && (
@@ -498,10 +507,10 @@ export function QuotesBand({
             <span
               aria-hidden
               className="absolute inset-y-x1 right-0 rounded-[4px] bg-bg-critical-weak"
-              style={{ width: `${(e.q / maxQ) * 100}%` }}
+              style={{ width: barWidth(e.q) }}
             />
             <span className="relative block pr-x1_5 text-end text-t3 tabular-nums text-fg-neutral-subtle">
-              {e.q.toLocaleString()}
+              {qtyText(e.q)}
             </span>
           </>
         )}
@@ -520,10 +529,10 @@ export function QuotesBand({
             <span
               aria-hidden
               className="absolute inset-y-x1 left-0 rounded-[4px] bg-bg-informative-weak"
-              style={{ width: `${(e.q / maxQ) * 100}%` }}
+              style={{ width: barWidth(e.q) }}
             />
             <span className="relative block pl-x1_5 text-t3 tabular-nums text-fg-neutral-subtle">
-              {e.q.toLocaleString()}
+              {qtyText(e.q)}
             </span>
           </>
         )}
@@ -549,7 +558,7 @@ export function QuotesBand({
         </SegmentedControl>
         <div className="mt-x3">
           {tab === "book" ? (
-            bookQ.isLoading ? (
+            bookQ.isPending ? (
               <TableSkeleton label={t("quotes.orderbookLoading")} />
             ) : isHardError(bookQ) ? (
               <BandFailure
@@ -601,7 +610,7 @@ export function QuotesBand({
                 </table>
               </div>
             )
-          ) : tradesQ.isLoading ? (
+          ) : tradesQ.isPending ? (
             <TableSkeleton label={t("quotes.tradesLoading")} />
           ) : isHardError(tradesQ) ? (
             <BandFailure
@@ -638,7 +647,7 @@ export function QuotesBand({
                         {fmt(f.p)}
                       </td>
                       <td className="p-0 text-end text-t3 tabular-nums text-fg-neutral-muted">
-                        {f.q.toLocaleString()}
+                        {qtyText(f.q)}
                       </td>
                     </tr>
                   ))}
@@ -714,7 +723,7 @@ export function DailyBand({
   return (
     <section aria-labelledby="stock-daily" className="pb-x6">
       <BandTitle id="stock-daily">{t("daily.title")}</BandTitle>
-      {q.isLoading ? (
+      {q.isPending ? (
         <List aria-busy aria-label={t("daily.loading")}>
           {Array.from({ length: 5 }, (_, i) => (
             <ListItem
@@ -795,7 +804,7 @@ export function DailyCard({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {q.isLoading ? (
+          {q.isPending ? (
             <TableSkeletonRows
               rows={5}
               columns={[
@@ -855,6 +864,24 @@ function investorValue(v: string | null): {
   return { dir: directionOf(n), text: Math.abs(n).toLocaleString() };
 }
 
+/**
+ * 값 한 칸 — 순매수 ▲ critical · 순매도 ▼ informative(부호 없음). **null "—" · 0 "0" 은 화살표 없는 보조 글**이다 —
+ * ds Delta flat 은 "변화 없음" 이라 이 자리(값 없음 · 순매수 0)에 맞지 않는다(I-13b 22).
+ */
+function InvestorCell({
+  v,
+}: {
+  v: { dir: "up" | "down" | "flat"; text: string };
+}) {
+  if (v.dir === "flat")
+    return (
+      <span className="text-t3 font-medium tabular-nums text-fg-neutral-subtle">
+        {v.text}
+      </span>
+    );
+  return <DeltaText dir={v.dir} text={withCommaBreaks(v.text)} />;
+}
+
 const investorDate = (d: string) => {
   const date = new Date(`${d.slice(0, 10)}T00:00:00`);
   return Number.isNaN(date.getTime()) ? d : formatMonthDay(date);
@@ -863,7 +890,8 @@ const investorDate = (d: string) => {
 /** 투자자별 질의 모양 — 토스 · 나무가 같은 응답이라 부르는 쪽이 이 모양으로 넘긴다 */
 export interface InvestorQuery {
   data: InvestorTradingDay[] | undefined;
-  isLoading: boolean;
+  /** 아직 값도 오류도 없다(꺼져 있어 시작 전인 질의 포함) — 이때 "없어요" 를 보이지 않는다 */
+  isPending: boolean;
   isError: boolean;
   refetch: () => unknown;
 }
@@ -900,7 +928,7 @@ export function InvestorBand({ q }: { q: InvestorQuery }) {
         </h2>
         <InvestorUnit />
       </div>
-      {q.isLoading ? (
+      {q.isPending ? (
         <List aria-busy aria-label={t("investor.loading")}>
           {Array.from({ length: 5 }, (_, i) => (
             <ListItem
@@ -935,7 +963,7 @@ export function InvestorBand({ q }: { q: InvestorQuery }) {
                         <span className="w-10 shrink-0 text-end text-t3 text-fg-neutral-subtle">
                           {t(label)}
                         </span>
-                        <DeltaText dir={v.dir} text={withCommaBreaks(v.text)} />
+                        <InvestorCell v={v} />
                       </span>
                     );
                   })}
@@ -953,10 +981,7 @@ export function InvestorBand({ q }: { q: InvestorQuery }) {
 export function InvestorCard({ q }: { q: InvestorQuery }) {
   const { t } = useTranslation("stocks");
   const rows = (q.data ?? []).slice(0, 5);
-  const cell = (v: string | null) => {
-    const x = investorValue(v);
-    return <DeltaText dir={x.dir} text={x.text} />;
-  };
+  const cell = (v: string | null) => <InvestorCell v={investorValue(v)} />;
   return (
     <Card body="list" aria-labelledby="stock-investor">
       <CardHeader>
@@ -973,7 +998,7 @@ export function InvestorCard({ q }: { q: InvestorQuery }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {q.isLoading ? (
+          {q.isPending ? (
             <TableSkeletonRows
               rows={5}
               columns={[
