@@ -229,6 +229,23 @@ describe("실패 · 빈 · 추가", () => {
     expect(state.refetched).toBe(1);
   });
 
+  it("목록 실패 크기 — 폰은 화면 전체라 large, 데스크톱 카드 안은 medium", () => {
+    state.isError = true;
+    state.data = false;
+    render(true);
+    expect(
+      container
+        .querySelector('[data-slot="result-section"]')
+        ?.getAttribute("data-size"),
+    ).toBe("large");
+    render(false);
+    expect(
+      container
+        .querySelector('[data-slot="result-section"]')
+        ?.getAttribute("data-size"),
+    ).toBe("medium");
+  });
+
   it("자산 0개 — 묶음 대신 빈 Result Section, 버튼은 없다", () => {
     state.assets = [];
     render(true);

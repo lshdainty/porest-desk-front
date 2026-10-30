@@ -252,6 +252,8 @@ export function AccountManager({
         title={t("manager.loadFailed")}
         onRetry={() => void assetsQ.refetch()}
         band={mobile}
+        // 폰은 화면 전체가 실패 한 벌 — large(앱 · 빈 화면과 같다), 데스크톱 카드 안은 medium
+        size={mobile ? "large" : "medium"}
       />
     );
   } else if (isLoading) {

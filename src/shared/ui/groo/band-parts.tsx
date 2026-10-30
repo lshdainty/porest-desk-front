@@ -64,18 +64,21 @@ export function BandFailure({
   onRetry,
   band,
   className,
+  size = "medium",
 }: {
   title: string;
   onRetry: () => void;
   band?: boolean;
   className?: string;
+  /** 화면 전체를 차지하는 실패(폰 목록)는 large, 카드 · 구역 안은 medium(result-section.md) */
+  size?: "large" | "medium";
 }) {
   const dsT = useDsText();
   const { t } = useTranslation("common");
   return (
     <ResultSection
       kind="failure"
-      size="medium"
+      size={size}
       as="h3"
       title={title}
       description={t("loadFailedDesc")}
