@@ -252,14 +252,28 @@ export const EventForm = ({
         </BottomSheetBody>
         {!inStep && (
           <BottomSheetFooter>
-            {del && (
-              <Button variant="ghost" ghostColor="critical" onClick={del}>
-                {tc("delete")}
+            {/* 바닥 왼쪽 [삭제] 는 ghost + critical 글자만큼(large), 주 버튼이 남은 폭을 채운다(bottom-sheet.md 바닥 · button.md 모달 footer 꼴) */}
+            <div className="flex w-full items-center gap-x2">
+              {del && (
+                <Button
+                  variant="ghost"
+                  ghostColor="critical"
+                  size="large"
+                  className="shrink-0"
+                  onClick={del}
+                >
+                  {tc("delete")}
+                </Button>
+              )}
+              <Button
+                size="large"
+                className="flex-1"
+                loading={isLoading}
+                onClick={save}
+              >
+                {tc("save")}
               </Button>
-            )}
-            <Button loading={isLoading} onClick={save}>
-              {tc("save")}
-            </Button>
+            </div>
           </BottomSheetFooter>
         )}
       </BottomSheetContent>

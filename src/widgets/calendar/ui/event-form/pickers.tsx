@@ -234,7 +234,11 @@ export function ChoiceSheet<V extends string | number | undefined>({
                     }
                     suffix={
                       on ? (
-                        <Check aria-hidden className="size-[18px]" />
+                        <Check
+                          aria-hidden
+                          strokeWidth={2.5}
+                          className="size-[18px] text-fg-neutral"
+                        />
                       ) : undefined
                     }
                     onClick={() => {
