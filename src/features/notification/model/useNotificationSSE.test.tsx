@@ -230,7 +230,9 @@ describe("useNotificationSSE", () => {
     });
     await flush();
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]?.[0]).toMatch(/\/v1\/notifications\/unread-count$/);
+    expect(fetchMock.mock.calls[0]?.[0]).toMatch(
+      /\/v1\/notifications\/unread-count$/,
+    );
     expect(fetchMock.mock.calls[0]?.[1]).toEqual({ credentials: "include" });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(120000);
