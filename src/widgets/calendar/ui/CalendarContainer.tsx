@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 
+import { useSnackbar } from "@/shared/ds/snackbar";
+
 import { useIsMobile } from "@/shared/hooks";
 import { useCalendarScreen } from "@/widgets/calendar/model/use-calendar-screen";
 import { CalendarDesktop } from "@/widgets/calendar/ui/CalendarDesktop";
@@ -31,6 +33,7 @@ const CalendarContainer = ({
   onRetry = () => {},
 }: IProps) => {
   const { t } = useTranslation("calendar");
+  const snackbar = useSnackbar();
   const isMobile = useIsMobile();
   const screen = useCalendarScreen(events);
   const {
@@ -121,7 +124,14 @@ const CalendarContainer = ({
           danger
           loading={deleteEvent.isPending}
           onCancel={() => setDeleting(null)}
-          onConfirm={handleConfirmDelete}
+          onConfirm={() =>
+            handleConfirmDelete(() =>
+              snackbar.show({
+                message: t("deleteConfirm.failed"),
+                tone: "critical",
+              }),
+            )
+          }
         />
       )}
     </div>

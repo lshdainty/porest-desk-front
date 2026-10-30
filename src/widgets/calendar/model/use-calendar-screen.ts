@@ -114,16 +114,29 @@ export function useCalendarScreen(events: IEvent[]) {
     setDeleting(deleteTargetOf(event));
   }, []);
 
-  const handleConfirmDelete = useCallback(() => {
-    if (deleting === null) return;
-    deleteEvent.mutate(deleting.id, {
-      onSuccess: () => {
-        setDeleting(null);
-        // 지운 일정을 보던 상세는 닫는다 — 그날 패널은 목록으로, 480 시트 · 대화상자는 닫힘
-        setDetail((d) => (d?.ref.id === deleting.id ? null : d));
-      },
-    });
-  }, [deleting, deleteEvent]);
+  /**
+   * 삭제 확정. 실패는 서버 글 대신 호출처가 알린다(`onFailed` — 확인창은 닫고 고정 문구 스낵바, 28-3 규칙) — 전역 오류 토스트는 끈다(`silent`).
+   */
+  const handleConfirmDelete = useCallback(
+    (onFailed?: () => void) => {
+      if (deleting === null) return;
+      deleteEvent.mutate(
+        { id: deleting.id, silent: true },
+        {
+          onSuccess: () => {
+            setDeleting(null);
+            // 지운 일정을 보던 상세는 닫는다 — 그날 패널은 목록으로, 480 시트 · 대화상자는 닫힘
+            setDetail((d) => (d?.ref.id === deleting.id ? null : d));
+          },
+          onError: () => {
+            setDeleting(null);
+            onFailed?.();
+          },
+        },
+      );
+    },
+    [deleting, deleteEvent],
+  );
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {

@@ -76,7 +76,7 @@ beforeEach(() => {
   mocks.setSelectedDate.mockImplementation((d: Date) => {
     mocks.selected = d;
   });
-  mocks.mutate.mockClear();
+  mocks.mutate.mockReset();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -168,6 +168,27 @@ describe("삭제", () => {
     });
     act(() => screen().requestDelete(event(4)));
     expect(screen().deleting?.recurring).toBe(false);
+  });
+
+  // W8 — 삭제 실패는 서버 글 대신 호출처가 알린다: 요청은 silent, 실패하면 확인창을 닫고 호출처 알림
+  it("삭제 요청은 silent 로 부른다 — 전역 토스트(서버 글)가 겹치지 않는다", () => {
+    act(() => screen().requestDelete(event(3)));
+    act(() => screen().handleConfirmDelete());
+    expect(mocks.mutate).toHaveBeenCalledTimes(1);
+    expect(mocks.mutate.mock.calls[0]![0]).toEqual({ id: 3, silent: true });
+  });
+
+  it("삭제가 실패하면 확인창을 닫고 호출처 알림을 부른다 — 상세는 그대로", () => {
+    mocks.mutate.mockImplementation((_v: unknown, o: { onError: () => void }) =>
+      o.onError(),
+    );
+    const failed = vi.fn();
+    act(() => screen().openDetail(event(3)));
+    act(() => screen().requestDelete(event(3)));
+    act(() => screen().handleConfirmDelete(failed));
+    expect(failed).toHaveBeenCalledTimes(1);
+    expect(screen().deleting).toBeNull();
+    expect(screen().detail?.ref.id).toBe(3);
   });
 
   it("지운 일정의 상세는 닫힌다 — 다른 일정의 상세는 그대로", () => {

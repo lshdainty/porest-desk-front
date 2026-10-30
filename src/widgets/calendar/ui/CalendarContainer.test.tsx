@@ -13,6 +13,9 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: "ko" } }),
 }));
+vi.mock("@/shared/ds/snackbar", () => ({
+  useSnackbar: () => ({ show: () => {}, dismiss: () => {} }),
+}));
 vi.mock("@/shared/hooks", () => ({ useIsMobile: () => mocks.mobile }));
 vi.mock("@/shared/ui/groo/dialogs", () => ({ ConfirmDialog: () => null }));
 vi.mock("./CalendarEventFormHost", () => ({
