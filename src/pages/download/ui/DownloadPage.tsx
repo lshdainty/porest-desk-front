@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Apple, Copy, Download, Smartphone } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/shared/ds/button";
 import { Callout } from "@/shared/ds/callout";
 import { Divider } from "@/shared/ds/divider";
+import { useSnackbar } from "@/shared/ds/snackbar";
 
 /**
  * 앱 받기 — 로그인 없이 열리는 공개 페이지.
@@ -32,6 +32,7 @@ export const DownloadPage = () => {
   const { t } = useTranslation("download");
   const [release, setRelease] = useState<AppRelease | null>(null);
   const [failed, setFailed] = useState(false);
+  const snackbar = useSnackbar();
 
   // AltStore 에 붙여 넣을 주소. 이 페이지가 어디에 떠 있든 그 호스트를 그대로 쓴다.
   const sourceUrl = `${window.location.origin}${DOWNLOAD_BASE}/altstore.json`;
@@ -39,10 +40,10 @@ export const DownloadPage = () => {
   const copySource = async () => {
     try {
       await navigator.clipboard.writeText(sourceUrl);
-      toast.success(t("ios.copiedToast"), { id: "download-copy" });
+      snackbar.show({ message: t("ios.copiedToast") });
     } catch {
       // 클립보드가 막힌 브라우저(비 HTTPS 등) — 주소는 눈에 보이니 직접 골라 복사하면 된다.
-      toast.error(t("ios.copyFailed"), { id: "download-copy" });
+      snackbar.show({ message: t("ios.copyFailed"), tone: "critical" });
     }
   };
 
