@@ -7,7 +7,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { fmtByCurrency, num, trendColor } from "@/features/stock/lib/format";
-import { PctBadge, StockBadge, WatchStar } from "@/features/stock/ui/stock-row";
+import { PctBadge, WatchStar } from "@/features/stock/ui/stock-row";
 import { StockChartCard } from "@/features/stock/ui/stock-chart-card";
 import { DailyQuoteTable } from "@/features/stock/ui/daily-quote-table";
 import type { TossHoldingsItem } from "@/features/stock/api/stockApi";
@@ -52,7 +52,6 @@ export function StockDetailBody({
   const name = master?.nameKr ?? info?.name ?? holding?.name ?? ticker;
   const currency =
     info?.currency ?? master?.currency ?? holding?.currency ?? "KRW";
-  const countryCode = master?.countryCode ?? (currency === "USD" ? "US" : "KR");
   const isUs = currency === "USD";
   const warnings = warningsQ.data ?? [];
 
@@ -69,12 +68,6 @@ export function StockDetailBody({
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* 헤더: 종목명·관심 토글 */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <StockBadge
-          name={name}
-          symbol={ticker}
-          countryCode={countryCode}
-          size={46}
-        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{

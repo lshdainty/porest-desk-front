@@ -321,7 +321,6 @@ export function NamuStocksDesktop({ header }: { header?: React.ReactNode }) {
         stock={{
           symbol: OVERVIEW,
           name: t("portfolio.allTitle"),
-          countryCode: "ALL",
           currency: "KRW",
         }}
         hideSymbol
@@ -501,7 +500,6 @@ function NamuHoldingRow({
       stock={{
         symbol: item.symbol,
         name: item.name || item.symbol,
-        countryCode: item.currency === "KRW" ? "KR" : "US",
         currency: item.currency,
       }}
       active={active}

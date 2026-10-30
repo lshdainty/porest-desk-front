@@ -113,7 +113,6 @@ export function StockSearchDialog({
                 stock={{
                   symbol: s.symbol,
                   name: s.nameKr,
-                  countryCode: s.countryCode,
                   currency: s.currency,
                 }}
                 sub={`${t(`market.${s.marketCode}`, { defaultValue: s.marketCode })} · ${t(`securityType.${s.securityType}`, { defaultValue: s.securityType })}`}

@@ -10,7 +10,7 @@ import {
   WATCH_POLL_MS,
 } from "@/features/stock/model/useSecuritiesPrices";
 import { useStockBySymbol } from "@/features/stock/model/useStockMaster";
-import { PctBadge, StockBadge, WatchStar } from "@/features/stock/ui/stock-row";
+import { PctBadge, WatchStar } from "@/features/stock/ui/stock-row";
 import { StockChartCard } from "@/features/stock/ui/stock-chart-card";
 import { DailyQuoteTable } from "@/features/stock/ui/daily-quote-table";
 
@@ -45,7 +45,6 @@ export function NamuStockDetail({
   const currency: string = holding
     ? holding.currency
     : (master?.currency ?? "KRW");
-  const countryCode = master?.countryCode ?? (currency === "USD" ? "US" : "KR");
   const isUs = currency === "USD";
 
   // 현재가 — 보유 종목이면 잔고 응답에 이미 있다(추가 호출 없음).
@@ -71,12 +70,6 @@ export function NamuStockDetail({
           flexWrap: "wrap",
         }}
       >
-        <StockBadge
-          name={name}
-          symbol={symbol}
-          countryCode={countryCode}
-          size={46}
-        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{

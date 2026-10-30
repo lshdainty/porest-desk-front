@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { tileRadius } from "@/shared/lib";
 import { KRW, formatChangeRate, money } from "@/shared/lib/groo/format";
 import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
 import { Card } from "@/shared/ui/card";
@@ -197,7 +196,6 @@ function RankRow({
   onPick: (symbol: string) => void;
   mobile?: boolean;
 }) {
-  const country = /^[A-Za-z]/.test(item.symbol) ? "US" : "KR";
   const last = num(item.price.lastPrice);
   const changePct =
     item.price.changeRate != null ? num(item.price.changeRate) * 100 : null;
@@ -226,7 +224,6 @@ function RankRow({
           stock={{
             symbol: item.symbol,
             name: name ?? item.symbol,
-            countryCode: country,
             currency: item.currency,
           }}
           active={active}
@@ -239,7 +236,7 @@ function RankRow({
   );
 }
 
-// 랭킹 로딩 스켈레톤 — RankRow/StockRow 의 골격(순위 22 + 배지 40 + 12px 상하 패딩 = 행 높이 64)을
+// 랭킹 로딩 스켈레톤 — RankRow/StockRow 의 골격(순위 22 + 12px 상하 패딩)을
 // 그대로 따라, 로딩→실데이터 전환에서 행 위치가 튀지 않게 한다.
 function RankRowsSkeleton({
   mobile,
@@ -265,7 +262,7 @@ function RankRowsSkeleton({
       >
         <SkeletonBase className="h-3 w-3.5" />
       </div>
-      {/* StockRow 자리 — padding/gap/배지 크기를 StockRow 에서 그대로 가져온다. */}
+      {/* StockRow 자리 — padding/gap 을 StockRow 에서 그대로 가져온다. */}
       <div
         style={{
           flex: 1,
@@ -276,10 +273,6 @@ function RankRowsSkeleton({
           padding: mobile ? "12px 0" : "12px 14px",
         }}
       >
-        <SkeletonBase
-          className="h-10 w-10 shrink-0"
-          style={{ borderRadius: tileRadius(40) }}
-        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <SkeletonBase className="h-4 w-1/2" />
           <SkeletonBase className="h-3 w-1/4" style={{ marginTop: 3 }} />
@@ -602,7 +595,6 @@ export function TossStocksDesktop({ header }: { header?: React.ReactNode }) {
         stock={{
           symbol: OVERVIEW,
           name: t("portfolio.allTitle"),
-          countryCode: "ALL",
           currency: "KRW",
         }}
         hideSymbol
@@ -626,9 +618,6 @@ export function TossStocksDesktop({ header }: { header?: React.ReactNode }) {
         const ev = num(h.marketValue.amount);
         const pnl = num(h.profitLoss.amount);
         const pct = num(h.profitLoss.rate);
-        const heldUs =
-          h.marketCountry.toUpperCase() === "US" ||
-          h.currency.toUpperCase() === "USD";
         return (
           <StockRow
             mobile={mobile}
@@ -636,7 +625,6 @@ export function TossStocksDesktop({ header }: { header?: React.ReactNode }) {
             stock={{
               symbol: h.symbol,
               name: h.name || h.symbol,
-              countryCode: heldUs ? "US" : "KR",
               currency: h.currency,
             }}
             active={selected === h.symbol}
