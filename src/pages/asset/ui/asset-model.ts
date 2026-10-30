@@ -5,14 +5,9 @@ import {
   recurringTransactionKeys,
   savingGoalKeys,
 } from "@/shared/config";
-import {
-  useAssets,
-  useAssetSummary,
-  useInvestValuation,
-  holdingsOf,
-} from "@/features/asset";
+import { useAssets, useAssetSummary } from "@/features/asset";
 import type { Asset } from "@/entities/asset";
-import { groupAssets } from "@/widgets/asset-full";
+import { groupAssets, useLiveAssets } from "@/widgets/asset-full";
 
 export {
   ACCOUNT_TYPES,
@@ -24,6 +19,8 @@ export {
   useAssetHidden,
   useAssetMask,
 } from "@/widgets/asset-full";
+
+const EMPTY_ASSETS: Asset[] = [];
 
 export type OutletCtx = { onAddTx: () => void; mobile: boolean };
 
@@ -48,37 +45,11 @@ export function useAssetGroups() {
   const queryClient = useQueryClient();
   const assetsQ = useAssets();
   const summaryQ = useAssetSummary();
-  // 연동 보유가 있는 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다(프로+토스 연결 시에만, 그 외 빈 맵).
-  // holdings(다건) 우선, 구버전 단일 tossSymbol 은 holdingsOf 가 합성해 하위호환.
-  const linked = useMemo(
-    () =>
-      (assetsQ.data?.assets ?? []).filter((a) =>
-        holdingsOf(a).some((h) => h.linked),
-      ),
-    [assetsQ.data],
+  // 연동 보유가 있는 투자 자산은 라이브 평가액으로 잔액을 덮어쓴다 — 관리 화면과 같은 훅(`useLiveAssets`).
+  const { list, linked, investValMap, valMap } = useLiveAssets(
+    assetsQ.data?.assets ?? EMPTY_ASSETS,
   );
-  const investValMap = useInvestValuation(linked);
-  const valMap = useMemo(() => {
-    const m = new Map<number, number>();
-    for (const [k, v] of investValMap) m.set(k, v.value);
-    return m;
-  }, [investValMap]);
-
-  const groups = useMemo(() => {
-    // 연결 종목은 토스 라이브 평가액(시세×수량)으로 치환 → 목록·구성비·합계가 실시간 반영.
-    // 라이브 평가는 '보유분'만이라 예수금을 더해야 총액이 된다(안 더하면 증권계좌에 넣어 둔
-    // 매수 대기 자금이 목록에서 통째로 빠진다).
-    const list: Asset[] = (assetsQ.data?.assets ?? []).map((a) =>
-      valMap.has(a.rowId)
-        ? {
-            ...a,
-            holdingBalance: valMap.get(a.rowId)!,
-            balance: (a.cashBalance ?? 0) + valMap.get(a.rowId)!,
-          }
-        : a,
-    );
-    return groupAssets(list);
-  }, [assetsQ.data, valMap]);
+  const groups = useMemo(() => groupAssets(list), [list]);
 
   // 백엔드 summary(DB 잔액 기준)에 연결 자산의 (라이브−DB) 차액만큼 순자산/변화를 보정.
   //

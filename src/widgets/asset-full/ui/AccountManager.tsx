@@ -28,6 +28,7 @@ import { AlertConfirm } from "@/shared/ui/groo/alert-confirm";
 import { BandEmpty, BandFailure } from "@/shared/ui/groo/band-parts";
 import { ManagerHead } from "@/shared/ui/groo/manager-layout";
 import { groupAssets, useAssetMask } from "../lib/asset-groups";
+import { useLiveAssets } from "../lib/use-live-assets";
 import { AssetDetailDialog } from "./AssetDetailDialog";
 import { AssetEditDialog } from "./AssetEditDialog";
 import { AssetRow, GroupRowsSkeleton } from "./AssetRow";
@@ -118,7 +119,9 @@ export function AccountManager({
     }
   }
 
-  const groups = useMemo(() => groupAssets(assets), [assets]);
+  // 투자 줄 금액은 자산 화면과 같은 라이브 평가(같은 훅 — 줄마다 시세 타이머를 두지 않는다)
+  const { list: liveAssets } = useLiveAssets(assets);
+  const groups = useMemo(() => groupAssets(liveAssets), [liveAssets]);
 
   const handleCreate = (values: AssetFormValues) => {
     createAsset.mutate(values, {
@@ -165,30 +168,37 @@ export function AccountManager({
 
   const isSubmitting = createAsset.isPending || updateAsset.isPending;
 
-  const rowFor = (asset: Asset) => (
-    <AssetRow
-      key={asset.rowId}
-      asset={asset}
-      card={CARD}
-      end="none"
-      describe="kind"
-      usageBar={false}
-      onOpenDetail={setDetail}
-      wrap={
-        mobile
-          ? (row: ReactNode) => (
-              <SwipeActions
-                rowLabel={asset.assetName}
-                enabled
-                actions={swipeActionsFor(asset)}
-              >
-                <List>{row}</List>
-              </SwipeActions>
-            )
-          : undefined
-      }
-    />
-  );
+  // 줄에 그리는 값은 라이브 평가로 덮은 것이라, 상세 · 수정 · 삭제에는 서버가 준 원본을 넘긴다(폼이 라이브 값을 저장하지 않게)
+  const originalOf = (a: Asset): Asset =>
+    assets.find((x) => x.rowId === a.rowId) ?? a;
+
+  const rowFor = (live: Asset) => {
+    const asset = originalOf(live);
+    return (
+      <AssetRow
+        key={live.rowId}
+        asset={live}
+        card={CARD}
+        end="none"
+        describe="kind"
+        usageBar={false}
+        onOpenDetail={() => setDetail(asset)}
+        wrap={
+          mobile
+            ? (row: ReactNode) => (
+                <SwipeActions
+                  rowLabel={asset.assetName}
+                  enabled
+                  actions={swipeActionsFor(asset)}
+                >
+                  <List>{row}</List>
+                </SwipeActions>
+              )
+            : undefined
+        }
+      />
+    );
+  };
 
   const sections: {
     key: string;

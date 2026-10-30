@@ -17,6 +17,7 @@ const state = vi.hoisted(() => ({
   data: true,
   refetched: 0,
   opened: null as string | null,
+  live: new Map<number, { value: number }>(),
 }));
 
 vi.mock("react-i18next", () => ({
@@ -25,6 +26,8 @@ vi.mock("react-i18next", () => ({
 }));
 vi.mock("@/features/asset", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/asset")>()),
+  // 라이브 평가는 이 시험 밖 — 빈 맵(연결 없음)
+  useInvestValuation: () => state.live,
   useAssets: () => ({
     data: state.data ? { assets: state.assets } : undefined,
     isLoading: state.isLoading,
@@ -100,6 +103,7 @@ beforeEach(() => {
   state.data = true;
   state.refetched = 0;
   state.opened = null;
+  state.live = new Map();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -163,6 +167,21 @@ describe("묶음 한 목록(I-17 25 · 27)", () => {
     state.assets = [asset(1, "CASH", "지갑", 1000)];
     render(true);
     expect(text()).not.toMatch(/\bcash\b/);
+  });
+});
+
+describe("투자 줄 — 자산 화면과 같은 라이브 평가", () => {
+  it("연동 보유가 있는 투자 자산은 라이브 평가액 + 예수금으로 그린다", () => {
+    state.assets = [
+      asset(5, "INVESTMENT", "연금", 700_000, {
+        cashBalance: 100_000,
+        holdings: [{ linked: true, tossSymbol: "A005930", quantity: 1 }],
+      }),
+    ];
+    state.live = new Map([[5, { value: 900_000 }]]);
+    render(true);
+    expect(text()).toContain("1,000,000"); // 900,000 + 예수금 100,000
+    expect(text()).not.toContain("700,000");
   });
 });
 
