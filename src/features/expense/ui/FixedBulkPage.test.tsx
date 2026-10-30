@@ -28,6 +28,7 @@ vi.mock("@/shared/ds/snackbar", () => ({
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const mutate = vi.fn();
+const mState = { isError: false };
 const refetch = vi.fn();
 const qState = { error: false };
 vi.mock("../model/useExpenses", () => ({
@@ -50,7 +51,11 @@ vi.mock("../model/useExpenses", () => ({
           },
         ],
   }),
-  useBulkMarkFixed: () => ({ mutate, isPending: false }),
+  useBulkMarkFixed: () => ({
+    mutate,
+    isPending: false,
+    isError: mState.isError,
+  }),
 }));
 
 const { FixedBulkPage } = await import("./FixedBulkPage");
@@ -66,6 +71,7 @@ beforeEach(() => {
 afterEach(() => {
   qState.error = false;
   snacks.length = 0;
+  mState.isError = false;
   mutate.mockReset();
   act(() => root.unmount());
   container.remove();
@@ -116,10 +122,8 @@ describe("폰 고정 정리 페이지", () => {
     expect(mutate).toHaveBeenCalledTimes(1);
   });
 
-  it("[적용] 이 실패하면 critical 스낵바 + [다시 시도] — 같은 id · 방향을 다시 묻지 않고 바로 보낸다 (요청은 silent)", () => {
-    mutate.mockImplementation((_v: unknown, o: { onError?: () => void }) =>
-      o.onError?.(),
-    );
+  it("[적용] 이 실패하면 스낵바가 아니라 폼 맨 위 critical Callout — 폼은 열린 채, 다시 시도는 [적용] 이 한다", () => {
+    mState.isError = true;
     act(() =>
       root.render(
         <FixedBulkPage
@@ -130,28 +134,70 @@ describe("폰 고정 정리 페이지", () => {
       ),
     );
     const page = document.querySelector("[data-slot=fixed-bulk-page]")!;
+    const callout = page.querySelector("[role=alert]")!;
+    expect(callout).not.toBeNull();
+    expect(callout.textContent).toContain("fixed.bulk.failed");
+    // 맨 위 — 안내 글(desc)보다 앞이다
+    const desc = Array.from(page.querySelectorAll("p")).find((p) =>
+      p.textContent?.includes("fixed.bulk.desc"),
+    )!;
+    expect(
+      callout.compareDocumentPosition(desc) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(snacks).toEqual([]);
+    // 폼은 그대로 — [적용] 이 다시 누를 수 있다
     act(() => (page.querySelector("[role=checkbox]") as HTMLElement).click());
     const apply = Array.from(page.querySelectorAll("button")).find((b) =>
       b.textContent?.includes("fixed.bulk.apply"),
     ) as HTMLButtonElement;
+    expect(apply.disabled).toBe(false);
     act(() => apply.click());
-
     expect(mutate.mock.calls[0]![0]).toEqual({
       ids: [1],
       isFixed: true,
       silent: true,
     });
+  });
+
+  it("실패가 없으면 Callout 도 없다", () => {
+    act(() =>
+      root.render(
+        <FixedBulkPage
+          startDate="2026-10-01"
+          endDate="2026-10-31"
+          onClose={() => {}}
+        />,
+      ),
+    );
+    expect(document.querySelector("[role=alert]")).toBeNull();
+  });
+
+  it("[적용] 이 성공하면 닫은 뒤 neutral 스낵바(마침표) — 토스트가 아니다", () => {
+    mutate.mockImplementation(
+      (_v: unknown, o: { onSuccess?: (r: { updatedCount: number }) => void }) =>
+        o.onSuccess?.({ updatedCount: 3 }),
+    );
+    const onClose = vi.fn();
+    act(() =>
+      root.render(
+        <FixedBulkPage
+          startDate="2026-10-01"
+          endDate="2026-10-31"
+          onClose={onClose}
+        />,
+      ),
+    );
+    const page = document.querySelector("[data-slot=fixed-bulk-page]")!;
+    act(() => (page.querySelector("[role=checkbox]") as HTMLElement).click());
+    const apply = Array.from(page.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("fixed.bulk.apply"),
+    ) as HTMLButtonElement;
+    act(() => apply.click());
+    expect(onClose).toHaveBeenCalledTimes(1);
     expect(snacks).toHaveLength(1);
-    expect(snacks[0]).toMatchObject({
-      message: "fixed.bulk.failed",
-      tone: "critical",
-      action: { label: "fixed.bulk.retry" },
-    });
-    // 다시 시도 — 같은 요청을 바로(확인 · 선택 단계 없이)
-    act(() => snacks[0]!.action!.onClick());
-    expect(mutate).toHaveBeenCalledTimes(2);
-    expect(mutate.mock.calls[1]![0]).toEqual(mutate.mock.calls[0]![0]);
-    expect(snacks).toHaveLength(2);
+    expect(snacks[0]!.message).toContain("fixed.bulk.doneFixed");
+    expect(snacks[0]!.tone).toBeUndefined();
+    expect(snacks[0]!.action).toBeUndefined();
   });
 
   it("거래 질의가 실패하면 빈 목록 글이 아니라 실패 상자 + 다시 시도", () => {

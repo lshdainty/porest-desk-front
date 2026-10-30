@@ -1,3 +1,4 @@
+import { Callout } from "@/shared/ds/callout";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/ds/button";
@@ -64,6 +65,13 @@ export function FixedBulkPage({
         <TopNavigationTitle>{t("fixed.bulk.title")}</TopNavigationTitle>
       </TopNavigation>
       <div className="min-h-0 flex-1 overflow-y-auto pb-x4">
+        {mut.isError && (
+          <div className="px-x6 pt-x2">
+            <Callout tone="critical" role="alert" className="">
+              {t("fixed.bulk.failed")}
+            </Callout>
+          </div>
+        )}
         <p className="m-0 px-x6 pt-x2 text-t3 text-fg-neutral-muted">
           {t("fixed.bulk.desc", { start: startDate, end: endDate })}
         </p>

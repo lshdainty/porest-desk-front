@@ -4,6 +4,7 @@ import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter } from "@/shared/ui/groo/modal-footer";
+import { Callout } from "@/shared/ds/callout";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Skeleton } from "@/shared/ui/skeleton";
 import {
@@ -171,6 +172,12 @@ function FixedBulkModal({
         />
       }
     >
+      {mut.isError && (
+        // 적용이 실패했다 — 폼 맨 위 critical Callout(고정 문구), 폼은 열린 채 · 고른 것 그대로. 다시 시도는 [적용]
+        <Callout tone="critical" role="alert" className="mb-x4">
+          {t("fixed.bulk.failed")}
+        </Callout>
+      )}
       <p
         style={{
           margin: "0 0 14px",

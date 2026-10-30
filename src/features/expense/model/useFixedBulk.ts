@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { useSnackbar } from "@/shared/ds/snackbar";
 import type { ExpenseType } from "@/entities/expense";
 import { groupForFixed } from "../lib/fixed-groups";
@@ -34,33 +33,25 @@ export function useFixedBulk({
     setKindState(next);
     setPicked(new Set());
   };
-  // 같은 id · 같은 방향으로 보낸다 — 실패 스낵바의 [다시 시도] 는 다시 묻지 않고 바로 재전송
-  const send = (ids: number[], toFixedDir: boolean) =>
-    mut.mutate(
-      { ids, isFixed: toFixedDir, silent: true },
-      {
-        onSuccess: ({ updatedCount }) => {
-          toast.success(
-            t(toFixedDir ? "fixed.bulk.doneFixed" : "fixed.bulk.doneVariable", {
-              count: updatedCount,
-            }),
-          );
-          onClose();
-        },
-        onError: () =>
-          snackbar.show({
-            message: t("fixed.bulk.failed"),
-            tone: "critical",
-            action: {
-              label: t("fixed.bulk.retry"),
-              onClick: () => send(ids, toFixedDir),
-            },
-          }),
-      },
-    );
   const apply = () => {
     if (picked.size === 0 || mut.isPending) return;
-    send([...picked], toFixed);
+    // 실패는 스낵바가 아니라 폼 맨 위 Callout(`mut.isError`, 두 화면이 보여 준다) — 폼은 열린 채, 다시 시도는 [적용] 이 한다.
+    // 성공은 닫은 뒤 스낵바(neutral). 스낵바는 Provider 소유라 이 훅이 사라져도 남는다.
+    const dirToFixed = toFixed;
+    mut.mutate(
+      { ids: [...picked], isFixed: dirToFixed, silent: true },
+      {
+        onSuccess: ({ updatedCount }) => {
+          snackbar.show({
+            message: t(
+              dirToFixed ? "fixed.bulk.doneFixed" : "fixed.bulk.doneVariable",
+              { count: updatedCount },
+            ),
+          });
+          onClose();
+        },
+      },
+    );
   };
   return {
     kind,

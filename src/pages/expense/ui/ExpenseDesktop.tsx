@@ -296,6 +296,9 @@ export function ExpenseDesktop() {
     return { span, fixTarget };
   }, [chosen, assets]);
   // 삭제가 끝난 뒤 환급이 있으면 알림 창(Alert Dialog single)을 먼저 띄우고, 닫으면 스낵바를 띄운다(I-28 D4 B).
+  // 열림(boolean)과 내용(금액)을 나눈다 — 닫히는 동안(사라지는 모션) 내용을 지우면 "0원이 돌아왔어요" 가 비친다.
+  // 내용은 다음에 열 때까지 마지막 값을 그대로 둔다.
+  const [refundOpen, setRefundOpen] = useState(false);
   const [refundNotice, setRefundNotice] = useState<{
     amount: number;
     after: () => void;
@@ -332,13 +335,16 @@ export function ExpenseDesktop() {
             }
           : {}),
       });
-    if (refunded > 0) setRefundNotice({ amount: refunded, after: showSnack });
-    else showSnack();
+    if (refunded > 0) {
+      setRefundNotice({ amount: refunded, after: showSnack });
+      setRefundOpen(true);
+    } else showSnack();
   };
   const confirmDelete = () => runDelete(chosenIds);
   const closeRefundNotice = () => {
+    if (!refundOpen) return;
     const after = refundNotice?.after;
-    setRefundNotice(null);
+    setRefundOpen(false);
     after?.();
   };
 
@@ -453,7 +459,7 @@ export function ExpenseDesktop() {
         onConfirm={confirmDelete}
       />
       <AlertDialog
-        open={refundNotice != null}
+        open={refundOpen}
         onOpenChange={(o) => {
           if (!o) closeRefundNotice();
         }}
