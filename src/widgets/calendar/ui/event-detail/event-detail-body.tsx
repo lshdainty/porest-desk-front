@@ -37,10 +37,11 @@ function NoWrap({ children }: { children: ReactNode }) {
 /** 캘린더 · 라벨 값 — 색 점 8 + 사이 6 + 이름(일정 폼 줄과 같은 점) */
 function DotValue({ color, children }: { color: string; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-x1_5">
+    <span className="inline-flex items-start gap-x1_5">
       <span
         aria-hidden
-        className="size-[8px] shrink-0 rounded-full"
+        // 점은 첫 줄 높이에 둔다 — 이름이 두 줄이어도 가운데로 내려오지 않는다(줄 높이 t5 22 − 점 8 의 절반 위 여백)
+        className="mt-[calc((var(--text-t5--line-height)-8px)/2)] size-[8px] shrink-0 rounded-full"
         style={{ background: color }}
       />
       <span>{children}</span>

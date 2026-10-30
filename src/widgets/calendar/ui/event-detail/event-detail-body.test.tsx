@@ -165,6 +165,28 @@ describe("색은 줄의 점으로만", () => {
   });
 });
 
+describe("색 점은 첫 줄 높이", () => {
+  it("캘린더 · 라벨 값의 점은 가운데가 아니라 위(첫 줄)에 맞추고, 글은 점 오른쪽 한 덩어리로 줄을 바꾼다", () => {
+    render(
+      event({
+        calendarName: "가".repeat(29),
+        labelRowId: 1,
+        labelName: "라".repeat(20),
+        labelColor: "#8b4dba",
+      }),
+    );
+    const dots = [...container.querySelectorAll("[aria-hidden].rounded-full")];
+    expect(dots).toHaveLength(2);
+    for (const d of dots) {
+      expect(d.parentElement!.className).toContain("items-start");
+      expect(d.parentElement!.className).not.toContain("items-center");
+      expect(d.className).toContain("mt-[calc((var(--text-t5--line-height)");
+      // 글은 점 옆 span 하나 — 둘째 줄이 첫 줄 글자 시작에 맞는다
+      expect(d.nextElementSibling!.tagName).toBe("SPAN");
+    }
+  });
+});
+
 describe("D-day 배지", () => {
   const badge = () => container.querySelector("[data-slot=badge]")!;
   it("오늘 · 1 ~ 3일 남음은 warning, 4일 이상 남음 · 지남은 neutral", () => {
