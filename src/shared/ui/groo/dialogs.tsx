@@ -6,7 +6,7 @@ import {
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDeviceSize } from "@/shared/lib/groo/responsive";
-import { useBackClose } from "@/shared/lib/groo/use-back-close";
+import { useBackClose } from "@/shared/ds/overlay";
 import { isEnterSave } from "@/shared/lib/groo/enter-save";
 import {
   Dialog,
@@ -74,9 +74,10 @@ export function ModalShell({
   onEnterSave?: () => void;
 }) {
   const { t } = useTranslation("common");
-  // 모바일 뒤로가기 = 닫기(QA #129). 여기 한 곳에 거는 이유는 desk 의 대화상자·시트가
+  // 모바일 뒤로가기 = 닫기(QA #129). ds 의 뒤로 가기 훅을 쓴다 — ds 시트가 닫히며 되감는 history.go(-1) 의 popstate 를 옛 훅은 "뒤로 가기" 로 읽어,
+  // 폼 시트에서 [삭제] 로 확인창을 열면 확인창이 뜨자마자 닫혔다(폰 — `confirm-back-close.test.tsx`). 여기 한 곳에 거는 이유는 desk 의 대화상자·시트가
   // 전부 이 껍데기를 지나기 때문이다 — 화면마다 붙이면 새로 만드는 시트가 조용히 빠진다.
-  useBackClose(onClose, mobile);
+  useBackClose(mobile, () => onClose());
   // 본문 어디서든 Enter 로 저장 — `<form>` 의 암묵적 제출을 대신한다. 무엇을 거르는지는
   // `isEnterSave` 에 적혀 있다(한글 조합 중 Enter · 여러 줄 칸 · 포털 안의 칸).
   const onBodyKeyDown = onEnterSave
@@ -184,9 +185,9 @@ export function ConfirmDialog({
   // 취소가 없는 통지형(singleAction)은 Radix 가 포커스를 줄 자리가 없다 — 확인이 그
   // 자리를 대신한다(spec alert-dialog.md acknowledge 변형).
   const confirmRef = useRef<HTMLButtonElement>(null);
-  // 확인창도 뒤로가기로 닫힌다 — 취소와 같은 자리다(QA #129). 시트 위에 겹쳐 떠도
+  // 확인창도 뒤로가기로 닫힌다 — 취소와 같은 자리다(QA #129, ds 훅 — 위 ModalShell 과 같은 까닭). 시트 위에 겹쳐 떠도
   // 뒤로가기 한 번은 맨 위 하나만 닫는다.
-  useBackClose(onCancel, isMobile);
+  useBackClose(isMobile, () => onCancel());
   return (
     <AlertDialog
       open={true}

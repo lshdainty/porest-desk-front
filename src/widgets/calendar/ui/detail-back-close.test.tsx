@@ -9,7 +9,6 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { useBackClose as dsBackClose } from "@/shared/ds/overlay";
-import { useBackClose as legacyBackClose } from "@/shared/lib/groo/use-back-close";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -32,7 +31,7 @@ afterEach(() => {
   container.remove();
 });
 
-function Screen({ detailHook }: { detailHook: "ds" | "legacy" }) {
+function Screen() {
   const [sheet, setSheet] = useState(true);
   const [detail, setDetail] = useState(false);
   // 그날 시트 — ds Bottom Sheet 가 하는 일
@@ -42,8 +41,7 @@ function Screen({ detailHook }: { detailHook: "ds" | "legacy" }) {
     closedDetail++;
     setDetail(false);
   };
-  if (detailHook === "ds") dsBackClose(detail, () => close());
-  else legacyBackClose(close, detail);
+  dsBackClose(detail, () => close());
   return (
     <button
       onClick={() => {
@@ -57,8 +55,8 @@ function Screen({ detailHook }: { detailHook: "ds" | "legacy" }) {
   );
 }
 
-const run = async (hook: "ds" | "legacy") => {
-  act(() => root.render(<Screen detailHook={hook} />));
+const run = async () => {
+  act(() => root.render(<Screen />));
   await act(async () => {
     container.querySelector("button")!.click();
   });
@@ -69,13 +67,9 @@ const run = async (hook: "ds" | "legacy") => {
 };
 
 describe("그날 시트 → 상세", () => {
-  it("옛 useBackClose 는 시트가 되감는 popstate 를 상세 닫기로 읽는다 — 원인", async () => {
-    await run("legacy");
-    expect(closedDetail).toBe(1);
-  });
-
+  // 옛 `useBackClose`(shared/lib/groo)는 이 되감기의 popstate 를 "상세 닫기" 로 읽어 상세가 바로 닫혔다 — 그 훅은 걷었다(같은 회귀가 확인창에서도 났다)
   it("ds useBackClose 는 자기가 부른 되감기를 건너뛴다 — 상세가 열려 있다", async () => {
-    await run("ds");
+    await run();
     expect(closedDetail).toBe(0);
   });
 });

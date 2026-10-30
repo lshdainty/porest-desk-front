@@ -21,7 +21,6 @@ vi.mock("@/widgets/calendar/model/calendar-context", () => ({
 vi.mock("@/widgets/calendar/ui/header/calendar-source-toggle", () => ({
   CalendarSourceToggle: () => <button data-testid="source" type="button" />,
 }));
-vi.mock("@/shared/lib/groo/use-back-close", () => ({ useBackClose: () => {} }));
 
 const { CalendarHeaderMobile } = await import("./calendar-header-mobile");
 
