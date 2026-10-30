@@ -165,8 +165,8 @@ describe("색은 줄의 점으로만", () => {
   });
 });
 
-describe("색 점은 첫 줄 높이", () => {
-  it("캘린더 · 라벨 값의 점은 가운데가 아니라 위(첫 줄)에 맞추고, 글은 점 오른쪽 한 덩어리로 줄을 바꾼다", () => {
+describe("색 점은 글 흐름 안, 첫 글자 바로 앞", () => {
+  it("캘린더 · 라벨 값의 점은 글 span 안 첫 글자 앞에 붙고(사이 6), 점과 첫 글자는 한 덩어리로 줄이 안 갈린다", () => {
     render(
       event({
         calendarName: "가".repeat(29),
@@ -175,15 +175,26 @@ describe("색 점은 첫 줄 높이", () => {
         labelColor: "#8b4dba",
       }),
     );
-    const dots = [...container.querySelectorAll("[aria-hidden].rounded-full")];
+    const dots = [...container.querySelectorAll("[data-slot=dot-value-dot]")];
     expect(dots).toHaveLength(2);
     for (const d of dots) {
-      expect(d.parentElement!.className).toContain("items-start");
-      expect(d.parentElement!.className).not.toContain("items-center");
-      expect(d.className).toContain("mt-[calc((var(--text-t5--line-height)");
-      // 글은 점 옆 span 하나 — 둘째 줄이 첫 줄 글자 시작에 맞는다
-      expect(d.nextElementSibling!.tagName).toBe("SPAN");
+      expect(d.className).toContain("mr-x1_5");
+      // 점 + 첫 글자는 nowrap 한 덩어리, 나머지 글은 그 바깥 같은 span 안
+      const head = d.parentElement!;
+      expect(head.className).toContain("whitespace-nowrap");
+      expect(head.textContent).toHaveLength(1);
+      expect(head.parentElement!.textContent!.length).toBeGreaterThan(10);
+      // 점이 가운데 정렬 flex 나 옆 칸이 아니다
+      expect(head.parentElement!.className).not.toContain("flex");
     }
+    expect(container.innerHTML).not.toContain("mt-[calc((var(--text-t5");
+  });
+
+  it("짧은 이름도 점 + 글 한 덩어리", () => {
+    render(event({ calendarName: "개인" }));
+    const d = container.querySelector("[data-slot=dot-value-dot]")!;
+    expect(d.parentElement!.textContent).toBe("개");
+    expect(d.parentElement!.parentElement!.textContent).toBe("개인");
   });
 });
 

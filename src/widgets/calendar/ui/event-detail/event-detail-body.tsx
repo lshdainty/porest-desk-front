@@ -23,26 +23,12 @@ import { List, ListItem } from "@/shared/ds/list";
 import { formatTimeValue } from "@/shared/ds/time-picker";
 import { cn } from "@/shared/lib/cn";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { DotValue } from "@/widgets/calendar/ui/dot-value";
 import { reminderKey } from "@/widgets/calendar/ui/event-form/types";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 const ROW_ICON = "size-[22px]";
-
-/** 캘린더 · 라벨 값 — 색 점 8 + 사이 6 + 이름(일정 폼 줄과 같은 점) */
-function DotValue({ color, children }: { color: string; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-start gap-x1_5">
-      <span
-        aria-hidden
-        // 점은 첫 줄 높이에 둔다 — 이름이 두 줄이어도 가운데로 내려오지 않는다(줄 높이 t5 22 − 점 8 의 절반 위 여백)
-        className="mt-[calc((var(--text-t5--line-height)-8px)/2)] size-[8px] shrink-0 rounded-full"
-        style={{ background: color }}
-      />
-      <span>{children}</span>
-    </span>
-  );
-}
 
 /** 값의 조각들 — 자르지 않고 조각 단위로 줄을 바꾼다. 날짜 조각 + 사이 8 + 시각 조각 */
 function Pieces({ children }: { children: ReactNode }) {
