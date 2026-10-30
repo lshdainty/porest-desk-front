@@ -152,7 +152,7 @@ export function EventFormSheetBody({
         title={t(`form.${kind}`)}
         suffixText
         suffix={
-          <span className="-mr-x1 flex flex-wrap items-center justify-end">
+          <span className="-mr-x1 flex flex-wrap items-center justify-end @max-[calc(16rem+48px)]/list-item:mr-0 @max-[calc(16rem+48px)]/list-item:-ml-x1">
             <DayPickSurface
               title={dayName}
               value={day}
