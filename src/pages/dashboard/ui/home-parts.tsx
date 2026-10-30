@@ -346,7 +346,7 @@ export function MonthNote({
           {" "}
           {t("avg.vsPrev")}{" "}
           <b className="font-bold tabular-nums text-fg-neutral">
-            {Math.abs(savingsPct).toFixed(0)}%
+            {formatChangeRate(Math.abs(savingsPct), { sign: "none" })}
           </b>{" "}
           {savingsPct > 0
             ? t("avg.saving")

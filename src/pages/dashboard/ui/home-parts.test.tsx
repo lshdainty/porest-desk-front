@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DashboardSummary } from "@/features/dashboard";
-import { EventRows, TodoRows } from "./home-parts";
+import { EventRows, MonthNote, TodoRows } from "./home-parts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -109,5 +109,17 @@ describe("최근 할 일 줄", () => {
     expect(boxes[2]!.className).toContain("border-stroke-critical-solid");
     const done = container.querySelector(".line-through")!;
     expect(done.className).toContain("text-fg-disabled");
+  });
+});
+
+describe("MonthNote 전월 대비 비율", () => {
+  it("소수 둘째 자리까지 보인다 — 3.76% (4% 로 반올림하지 않는다)", () => {
+    act(() => {
+      root.render(
+        <MonthNote dailyAvg={34593} prevExpense={1042400} savingsPct={3.76} />,
+      );
+    });
+    expect(container.textContent).toContain("3.76%");
+    expect(container.textContent).not.toContain("4%");
   });
 });
