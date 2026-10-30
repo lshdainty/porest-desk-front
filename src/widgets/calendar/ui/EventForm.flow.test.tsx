@@ -185,6 +185,14 @@ describe("날짜 조각 → Date Picker 시트", () => {
   });
 });
 
+describe("날짜 시트는 한 달이다 (date-picker.md:61 · :110)", () => {
+  it("시작 날짜 시트가 이어지는 달이 아니라 한 달의 달력이다", () => {
+    show(timed);
+    click(piece("form.startDay"));
+    expect(document.querySelectorAll("[role=grid]")).toHaveLength(1);
+  });
+});
+
 describe("저장은 켜 두고 누를 때 알린다 (field.md:86)", () => {
   it("저장 버튼은 끄지 않는다 — 제목이 비어도, 끝이 시작보다 빨라도", async () => {
     show(timed);
@@ -240,27 +248,138 @@ describe("시트 안 한 단계 (I-09 29)", () => {
     expect(closed).toBe(0);
   });
 
-  it("← 는 친 글을 버리고 돌아간다 — 이전 값 그대로", () => {
-    show({ ...timed, location: "본사" });
-    click(row("form.location"));
-    setValue(stepInput(), "버려질 글");
+  const asking = () =>
+    document.body.textContent?.includes("작성한 내용이 사라져요");
+  const leaveBtn = (label: string) =>
+    [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === label,
+    )!;
+  const back = () =>
     click(
       document.querySelector<HTMLElement>("[data-slot=bottom-sheet-back]")!,
     );
-    expect(rowText("form.location")).toContain("본사");
-    expect(rowText("form.location")).not.toContain("버려질 글");
-    expect(closed).toBe(0);
-  });
-
-  it("Esc 도 한 단계만 돌아가고 시트는 닫지 않는다", () => {
-    show(timed);
-    click(row("form.description"));
+  const esc = () =>
     act(() => {
       document.dispatchEvent(
         new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
       );
     });
+
+  // 친 글이 들어올 때와 같으면 묻지 않는다 · 다르면 묻는다(bottom-sheet.md:109 · :187, 10-29 17-1 Q3)
+  it("← 는 글을 안 바꿨으면 묻지 않고 줄 칸으로 돌아간다", async () => {
+    show({ ...timed, location: "본사" });
+    click(row("form.location"));
+    back();
+    await tick();
+    expect(asking()).toBeFalsy();
+    expect(rowText("form.location")).toContain("본사");
+    expect(closed).toBe(0);
+  });
+
+  it("← 는 글을 바꿨으면 먼저 묻고 [계속 작성] 이면 그 단계에 남는다", async () => {
+    show({ ...timed, location: "본사" });
+    click(row("form.location"));
+    setValue(stepInput(), "버려질 글");
+    back();
+    await tick();
+    expect(asking()).toBe(true);
+    click(leaveBtn("계속 작성"));
+    await tick();
+    expect(
+      document.querySelector("[data-slot=bottom-sheet-back]"),
+    ).not.toBeNull();
+    expect(stepInput().value).toBe("버려질 글");
+  });
+
+  it("← 로 물었을 때 [나가기] 는 친 글을 버리고 돌아간다 — 이전 값 그대로", async () => {
+    show({ ...timed, location: "본사" });
+    click(row("form.location"));
+    setValue(stepInput(), "버려질 글");
+    back();
+    await tick();
+    click(leaveBtn("나가기"));
+    await tick();
+    expect(rowText("form.location")).toContain("본사");
+    expect(rowText("form.location")).not.toContain("버려질 글");
+    expect(closed).toBe(0);
+  });
+
+  it('"완료" 는 묻지 않고 친 글을 넣는다', async () => {
+    show(timed);
+    click(row("form.location"));
+    setValue(stepInput(), "치과 3층");
+    click(lastButton("done"));
+    await tick();
+    expect(asking()).toBeFalsy();
+    expect(rowText("form.location")).toContain("치과 3층");
+  });
+
+  it("Esc 도 같다 — 안 바꿨으면 한 단계만 돌아가고, 바꿨으면 묻는다. 시트는 닫지 않는다", async () => {
+    show(timed);
+    click(row("form.description"));
+    esc();
+    await tick();
+    expect(asking()).toBeFalsy();
     expect(rowText("form.description")).toBeTruthy();
+    click(row("form.description"));
+    setValue(stepInput(), "쓰던 설명");
+    esc();
+    await tick();
+    expect(asking()).toBe(true);
+    expect(closed).toBe(0);
+  });
+
+  it("기기 뒤로 가기(popstate)도 같다 — 바꿨으면 묻는다", async () => {
+    show(timed);
+    click(row("form.description"));
+    setValue(stepInput(), "쓰던 설명");
+    await act(async () => {
+      window.history.back();
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100));
+    });
+    expect(asking()).toBe(true);
+    expect(closed).toBe(0);
+  });
+
+  // 검수 M1 — 물어서 닫지 않았으면 칸을 다시 쌓아야 한다. 안 쌓으면 두세 번째 뒤로 가기가 칸을 소진해 묻지 않고 페이지를 떠난다
+  it("기기 뒤로 가기 → [계속 작성] 을 세 번 반복해도 매번 묻고 폼은 열려 있다", async () => {
+    show(timed);
+    click(row("form.description"));
+    setValue(stepInput(), "쓰던 설명");
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        window.history.back();
+      });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      expect(asking()).toBe(true);
+      expect(closed).toBe(0);
+      click(leaveBtn("계속 작성"));
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      expect(asking()).toBeFalsy();
+      expect(
+        document.querySelector("[data-slot=bottom-sheet-back]"),
+      ).not.toBeNull();
+      expect(stepInput().value).toBe("쓰던 설명");
+    }
+  });
+
+  it("안 바꿨으면 뒤로 가기 한 번에 단계만 닫고 묻지 않는다 — 칸을 더 쌓지 않는다", async () => {
+    show(timed);
+    click(row("form.description"));
+    await act(async () => {
+      window.history.back();
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100));
+    });
+    expect(asking()).toBeFalsy();
+    expect(document.querySelector("[data-slot=bottom-sheet-back]")).toBeNull();
     expect(closed).toBe(0);
   });
 });

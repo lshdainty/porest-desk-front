@@ -251,6 +251,8 @@ export function useEventForm({
   ]);
 
   const handleRecurrenceChange = (option: RecurrenceOption) => {
+    // 같은 값을 다시 고르면 건드리지 않는다 — 원래 RRULE(BYDAY · INTERVAL 등)이 단순 규칙으로 덮이거나 다섯 밖 규칙이 풀린다(select.md:91 · I-09 27)
+    if (option === recurrence) return;
     setRecurrence(option);
     setValue("rrule", recurrenceToRrule[option], { shouldDirty: true });
   };
@@ -263,6 +265,8 @@ export function useEventForm({
 
   /** 캘린더를 고른다 — 일정 색 칸은 없고, 저장값은 그 캘린더 색으로 채운 그대로다 */
   const handleCalendarChange = (rowId: number) => {
+    // 같은 캘린더를 다시 고르면 저장 색을 캘린더 색으로 덮지 않는다
+    if (rowId === selectedCalendarRowId) return;
     const cal = selectableCalendars.find((c) => c.rowId === rowId);
     if (!cal) return;
     setValue("calendarRowId", cal.rowId, { shouldDirty: true });

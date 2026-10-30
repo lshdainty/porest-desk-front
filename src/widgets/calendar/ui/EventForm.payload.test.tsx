@@ -251,6 +251,33 @@ describe("고른 값을 싣는다", () => {
   });
 });
 
+// 고른 줄을 다시 누르면 아무것도 안 바꾸고 닫힌다(select.md:91) — 안 그러면 원래 RRULE 이 덮인다
+describe("고른 반복을 다시 눌러도 원래 규칙이 남는다", () => {
+  it('BYDAY 가 든 매주 규칙에서 체크된 "매주" 를 다시 눌러도 그대로 나간다', async () => {
+    const sent = await submit(
+      { ...filled, rrule: "FREQ=WEEKLY;BYDAY=MO,WE" },
+      () => pick("form.recurrence", "recurrence.weekly"),
+    );
+    expect(sent).toHaveProperty("rrule", "FREQ=WEEKLY;BYDAY=MO,WE");
+  });
+
+  it('다섯 밖 규칙("반복 안 함" 으로 보임)에서 "반복 안 함" 을 눌러도 규칙이 풀리지 않는다', async () => {
+    const sent = await submit(
+      { ...filled, rrule: "FREQ=HOURLY;INTERVAL=2" },
+      () => pick("form.recurrence", "recurrence.none"),
+    );
+    expect(sent).toHaveProperty("rrule", "FREQ=HOURLY;INTERVAL=2");
+  });
+
+  it("다른 값을 고르면 그 값으로 바뀐다", async () => {
+    const sent = await submit(
+      { ...filled, rrule: "FREQ=WEEKLY;BYDAY=MO,WE" },
+      () => pick("form.recurrence", "recurrence.monthly"),
+    );
+    expect(sent).toHaveProperty("rrule", "FREQ=MONTHLY");
+  });
+});
+
 describe("채워 둔 값은 그대로 나간다", () => {
   it("손대지 않은 설명·장소·반복·라벨은 값 그대로다", async () => {
     const sent = await submit(filled);

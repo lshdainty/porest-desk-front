@@ -95,3 +95,20 @@ describe("일정 생성 POST 본문", () => {
     expect(bodyOf(post)).toMatchObject({ eventType: "PERSONAL" });
   });
 });
+
+// silent 는 호출처 옵션이다 — 옵션이 없으면 요청 설정 자체를 넘기지 않아 전역 토스트가 그대로 난다
+describe("silent 옵션", () => {
+  it("옵션이 없으면 설정을 넘기지 않는다(생성 · 수정)", async () => {
+    await calendarApi.createEvent(workEvent);
+    await calendarApi.updateEvent(7, workEvent);
+    expect(post.mock.calls[0]![2]).toBeUndefined();
+    expect(put.mock.calls[0]![2]).toBeUndefined();
+  });
+
+  it("silent: true 면 { silent: true } 를 싣는다(생성 · 수정)", async () => {
+    await calendarApi.createEvent(workEvent, { silent: true });
+    await calendarApi.updateEvent(7, workEvent, { silent: true });
+    expect(post.mock.calls[0]![2]).toEqual({ silent: true });
+    expect(put.mock.calls[0]![2]).toEqual({ silent: true });
+  });
+});

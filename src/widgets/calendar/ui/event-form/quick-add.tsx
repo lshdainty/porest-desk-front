@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format, isSameDay } from "date-fns";
@@ -28,6 +28,8 @@ import type { CalendarEventFormValues } from "@/entities/calendar";
 
 /** 빠른 추가가 "자세히" 로 넘기는 값 */
 export interface QuickAddDraft {
+  /** 빠른 추가에서 바꾼 값이 있다 — 일정 폼이 닫을 때 묻는다 */
+  dirty: boolean;
   title: string;
   isAllDay: boolean;
   calendarRowId?: number;
@@ -70,6 +72,11 @@ export function QuickAddDialog({
   const [allDay, setAllDay] = useState(true);
   const [calendarId, setCalendarId] = useState<number | undefined>();
   const [showError, setShowError] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+  // 저장 실패 알림이 화면 밖에 뜨지 않게 맨 위로(큰 글자에서 본문이 스크롤될 때)
+  useEffect(() => {
+    if (saveError) errorRef.current?.scrollIntoView({ block: "nearest" });
+  }, [saveError]);
   const [today] = useState(() => new Date());
 
   const calendar =
@@ -87,6 +94,7 @@ export function QuickAddDialog({
 
   const detail = () =>
     onDetail({
+      dirty,
       title,
       isAllDay: allDay,
       calendarRowId: calendar?.rowId,
@@ -139,9 +147,11 @@ export function QuickAddDialog({
         <DialogBody>
           <div className="flex flex-col gap-x6 pb-x2">
             {saveError && (
-              <Callout tone="critical" role="alert">
-                {t("form.saveFailed")}
-              </Callout>
+              <div ref={errorRef}>
+                <Callout tone="critical" role="alert">
+                  {t("form.saveFailed")}
+                </Callout>
+              </div>
             )}
             <Field
               label={t("form.title")}

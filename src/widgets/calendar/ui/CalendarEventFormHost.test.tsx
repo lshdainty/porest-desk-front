@@ -24,6 +24,7 @@ declare global {
 }
 
 const created = vi.hoisted(() => [] as Record<string, unknown>[]);
+const updated = vi.hoisted(() => [] as Record<string, unknown>[]);
 const fail = vi.hoisted(() => ({ create: false, update: false }));
 
 vi.mock("react-i18next", () => ({
@@ -56,12 +57,14 @@ vi.mock("@/features/event-label", () => ({
 }));
 vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
   useCreateEvent: () => ({
-    mutate: (v: CalendarEventFormValues) => created.push({ ...v }),
+    // 변수는 { data, silent } — 호출처가 silent 를 넘기는지 본다
+    mutate: (v: { data: CalendarEventFormValues; silent?: boolean }) =>
+      created.push({ ...v }),
     isPending: false,
     isError: fail.create,
   }),
   useUpdateEvent: () => ({
-    mutate: () => {},
+    mutate: (v: Record<string, unknown>) => updated.push({ ...v }),
     isPending: false,
     isError: fail.update,
   }),
@@ -76,6 +79,8 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   __resetPointerBlockForTest();
   created.length = 0;
+  updated.length = 0;
+  closed = 0;
   fail.create = false;
   fail.update = false;
   container = document.createElement("div");
@@ -142,7 +147,7 @@ describe("빠른 추가 → 자세히", () => {
     setValue(quickTitle()!, "치과");
     click(lastButton("save"));
     expect(created).toHaveLength(1);
-    expect(created[0]).toMatchObject({
+    expect(created[0]!.data).toMatchObject({
       title: "치과",
       isAllDay: true,
       startDate: "2026-10-22",
@@ -265,11 +270,25 @@ describe("처음 초점", () => {
     expect(document.activeElement).toBe(field("title"));
   });
 
-  it("다른 칸에 초점이 가 있으면 열림 초점이 덮지 않는다 — 수정은 어느 칸에도 주지 않는다", async () => {
+  // 수정으로 열 때는 제목이 아니라 **표면 자신**이 초점을 받아야 한다 — 막고(preventDefault) 아무 데도 안 주면 키보드 · 읽기 프로그램이 폼에 못 들어온다
+  const surfaceEl = () =>
+    document.querySelector<HTMLElement>(
+      "[data-slot=bottom-sheet-content], [data-slot=dialog-content]",
+    )!;
+
+  it("수정으로 열면(시트) 초점을 받는 것은 시트 자신이다 — 제목이 아니다", async () => {
     setupFormDom(false);
     show(false, saved);
     await act(async () => {});
+    expect(document.activeElement).toBe(surfaceEl());
     expect(document.activeElement).not.toBe(field("title"));
+  });
+
+  it("수정으로 열면(대화상자) 초점을 받는 것은 대화상자 자신이다", async () => {
+    setupFormDom(true);
+    show(false, saved);
+    await act(async () => {});
+    expect(document.activeElement).toBe(surfaceEl());
   });
 
   it("빠른 추가는 제목에 초점이 간다", async () => {
@@ -278,11 +297,104 @@ describe("처음 초점", () => {
     await act(async () => {});
     expect(document.activeElement).toBe(quickTitle());
   });
+});
 
-  it("수정으로 열면 제목에 초점을 주지 않는다", async () => {
+// 빠른 추가 → [자세히] 로 들고 온 값도 바뀐 값이다 — 닫을 때 묻는다(RHF 기본값이 되어 isDirty 가 false 였다)
+describe("빠른 추가 → 자세히 뒤 닫기", () => {
+  const asking = () =>
+    document.body.textContent?.includes("작성한 내용이 사라져요");
+
+  it("제목을 쓰고 [자세히] 로 간 뒤 [취소] 하면 묻는다", async () => {
     setupFormDom(true);
-    show(false, saved);
+    show(true);
+    setValue(quickTitle()!, "치과");
+    click(lastButton("quickAdd.detail"));
+    click(lastButton("cancel"));
     await act(async () => {});
-    expect(document.activeElement).not.toBe(field("title"));
+    expect(asking()).toBe(true);
+    expect(closed).toBe(0);
+  });
+
+  it("아무것도 안 쓰고 [자세히] 로 간 뒤 [취소] 하면 묻지 않고 닫는다", async () => {
+    setupFormDom(true);
+    show(true);
+    click(lastButton("quickAdd.detail"));
+    click(lastButton("cancel"));
+    await act(async () => {});
+    expect(asking()).toBeFalsy();
+    expect(closed).toBe(1);
+  });
+});
+
+// 저장 실패 알림이 화면 밖에 있지 않게 맨 위로 — 아래까지 내려와 저장해도 Callout 이 보인다(snackbar.md:75)
+describe("저장 실패 알림 스크롤", () => {
+  it("실패하면 Callout 을 화면에 들인다(scrollIntoView)", () => {
+    setupFormDom(false);
+    const spy = vi.fn();
+    Element.prototype.scrollIntoView = spy;
+    show(false);
+    expect(spy).not.toHaveBeenCalled();
+    fail.create = true;
+    show(false);
+    expect(spy).toHaveBeenCalled();
+    expect(
+      (spy.mock.contexts[0] as HTMLElement).querySelector("[role=alert]"),
+    ).not.toBeNull();
+  });
+});
+
+// 실패는 폼 Callout 이 알린다 — 전역 토스트(서버 글)가 같이 뜨면 Callout 을 가리고 서버 글이 그대로 나온다.
+// silent 는 API 가 아니라 이 호출처가 고른다(다른 useCreateEvent · useUpdateEvent 호출처는 안 넘긴다).
+describe("저장 요청은 silent 로 부른다", () => {
+  it("빠른 추가 [저장] 은 silent: true", () => {
+    setupFormDom(true);
+    show(true);
+    setValue(quickTitle()!, "치과");
+    click(lastButton("save"));
+    expect(created).toHaveLength(1);
+    expect(created[0]!.silent).toBe(true);
+  });
+
+  it("일정 폼 추가 [저장] 은 silent: true", () => {
+    setupFormDom(false);
+    show(false);
+    setValue(field("title"), "치과");
+    click(lastButton("save"));
+    expect(created).toHaveLength(1);
+    expect(created[0]!.silent).toBe(true);
+    expect(updated).toHaveLength(0);
+  });
+
+  it("일정 폼 수정 [저장] 도 silent: true", () => {
+    setupFormDom(false);
+    show(false, saved);
+    setValue(field("title"), "정기 점검 2");
+    click(lastButton("save"));
+    expect(updated).toHaveLength(1);
+    expect(updated[0]).toMatchObject({ id: 5, silent: true });
+    expect(created).toHaveLength(0);
+  });
+});
+
+describe("다른 호출처는 silent 를 넘기지 않는다", () => {
+  it("useCreateEvent · useUpdateEvent 는 Host 밖에서 쓰이지 않는다 — 기본(전역 토스트)이 남는다", async () => {
+    const { readdirSync, readFileSync, statSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const hits: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) walk(full);
+        else if (/\.tsx?$/.test(name) && !/\.test\./.test(name)) {
+          const text = readFileSync(full, "utf8");
+          if (/\buse(Create|Update)Event\(/.test(text)) hits.push(full);
+        }
+      }
+    };
+    walk(join(process.cwd(), "src"));
+    const callers = hits.filter((f) => !f.endsWith("useCalendarEvents.ts"));
+    expect(callers.map((f) => f.split("/").pop())).toEqual([
+      "CalendarEventFormHost.tsx",
+    ]);
   });
 });

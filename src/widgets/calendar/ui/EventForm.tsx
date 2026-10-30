@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -7,6 +7,7 @@ import {
   BottomSheetContent,
   BottomSheetFooter,
 } from "@/shared/ds/bottom-sheet";
+import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
 import { Button } from "@/shared/ds/button";
 import { Callout } from "@/shared/ds/callout";
 import {
@@ -48,6 +49,8 @@ interface EventFormProps {
   onSubmit: (data: CalendarEventFormValues) => void;
   onClose: () => void;
   isLoading?: boolean;
+  /** 빠른 추가에서 쓴 값을 들고 왔다 — 그 값도 "바뀐 값" 으로 쳐서 닫을 때 묻는다(RHF 기본값이 되어 isDirty 가 false 이므로) */
+  initialDirty?: boolean;
   /** 저장(추가 · 수정)이 실패했다 — 폼 맨 위에 critical Callout(고정 문구), 폼은 열려 있고 입력값은 그대로 */
   saveError?: boolean;
   /** 수정 모드 삭제 — 제공 시 바닥 왼쪽에 [삭제](ghost critical)를 둔다. 확인창은 부르는 쪽이 연다. */
@@ -67,6 +70,7 @@ export const EventForm = ({
   selectedDate,
   selectedEndDate,
   initial,
+  initialDirty = false,
   labels = [],
   onSubmit,
   onClose,
@@ -89,11 +93,14 @@ export const EventForm = ({
   const [showErrors, setShowErrors] = useState(false);
   const [step, setStep] = useState<Step>("list");
   const [draft, setDraft] = useState("");
+  const [stepOrigin, setStepOrigin] = useState("");
   const endRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const titleEmpty = !title;
   const rangeError = showErrors && dateRangeInvalid;
-  const dirty = form.formState.isDirty;
+  const dirty = form.formState.isDirty || initialDirty;
 
   const view: EventFormView = {
     ctrl,
@@ -121,16 +128,23 @@ export const EventForm = ({
 
   // 저장 실패 — 서버 글 대신 고정 문구(snackbar.md:75). 폼 맨 위, 나중에 나타나는 위험이라 role=alert
   const errorCallout = saveError ? (
-    <Callout tone="critical" role="alert" className="mb-x4">
-      {t("form.saveFailed")}
-    </Callout>
+    <div ref={errorRef}>
+      <Callout tone="critical" role="alert" className="mb-x4">
+        {t("form.saveFailed")}
+      </Callout>
+    </div>
   ) : null;
+  // 실패하면 폼 맨 위로 — 아래(설명 · 바닥 가까이)까지 내려온 채 저장했을 때 위의 알림이 화면 밖에 있지 않게(snackbar.md:75)
+  useEffect(() => {
+    if (saveError) errorRef.current?.scrollIntoView({ block: "nearest" });
+  }, [saveError]);
 
   // 새 일정은 제목에 초점(Text Field focused — 안쪽 2px 짙은 테두리 + 캐럿). 정식 길: 표면의 열림 초점(Radix onOpenAutoFocus)에서 기본(표면 자신)을 막고
-  // 제목 칸에 직접 초점을 준다 — 타이머 없음. 수정으로 열 때는 주지 않는다(표면이 받는다)
+  // 제목 칸에 직접 초점을 준다 — 타이머 없음. 수정으로 열 때는 주지 않고 표면이 받는다
   const focusTitleOnOpen = (e: Event) => {
-    e.preventDefault();
+    // 수정으로 열 때는 막지 않는다 — 기본 동작(표면 자신이 초점을 받는다)을 그대로 둔다. 막으면 초점이 어디에도 안 간다
     if (event) return;
+    e.preventDefault();
     const root = e.target instanceof HTMLElement ? e.target : document;
     const input = root.querySelector<HTMLInputElement>('input[name="title"]');
     if (input) input.focus({ preventScroll: true });
@@ -142,7 +156,10 @@ export const EventForm = ({
 
   // 장소 · 설명 한 단계
   const enterStep = (next: "location" | "description") => {
-    setDraft((next === "location" ? ctrl.location : ctrl.description) ?? "");
+    const origin =
+      (next === "location" ? ctrl.location : ctrl.description) ?? "";
+    setDraft(origin);
+    setStepOrigin(origin);
     setStep(next);
   };
   const confirmStep = () => {
@@ -152,7 +169,14 @@ export const EventForm = ({
     setStep("list");
   };
   const cancelStep = () => setStep("list");
-  useStepBack(!wide && step !== "list", cancelStep);
+  // ← · 기기 뒤로 가기 · Esc — 친 글이 들어올 때와 다르면 "작성한 내용이 사라져요" 를 묻고, 같으면 묻지 않는다(bottom-sheet.md 두 단계 시트의 머리 ←). "완료" 는 묻지 않는다
+  const leave = useLeaveConfirm({
+    dirty: step !== "list" && draft !== stepOrigin,
+    leave: cancelStep,
+    contentRef,
+  });
+  // 물었으면(false) 칸을 다시 쌓아 [계속 작성] 뒤에도 뒤로 가기가 이 단계로 온다
+  useStepBack(!wide && step !== "list", () => leave.request());
 
   if (wide) {
     return (
@@ -199,17 +223,19 @@ export const EventForm = ({
       dirty={dirty && !inStep}
       onOpenChange={(next) => {
         if (next) return;
-        if (inStep) cancelStep();
+        if (inStep) leave.request();
         else onClose();
       }}
     >
       <BottomSheetContent
         title={inStep ? t(`form.${step}`) : heading}
         aria-describedby={undefined}
+        ref={contentRef}
         showCloseButton={!inStep}
-        onBack={inStep ? cancelStep : undefined}
+        onBack={inStep ? () => void leave.request() : undefined}
         onOpenAutoFocus={focusTitleOnOpen}
       >
+        {leave.node}
         {inStep && <SheetStepDone onClick={confirmStep} />}
         <BottomSheetBody scrollFog>
           {step === "list" && errorCallout}

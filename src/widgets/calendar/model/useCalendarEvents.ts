@@ -15,8 +15,14 @@ export const useCreateEvent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CalendarEventFormValues) =>
-      calendarApi.createEvent(data),
+    mutationFn: ({
+      data,
+      silent,
+    }: {
+      data: CalendarEventFormValues;
+      /** 실패를 호출처가 자기 자리에서 알리면 true — 기본(생략)은 전역 오류 토스트 */
+      silent?: boolean;
+    }) => calendarApi.createEvent(data, { silent }),
     onSuccess: () => invalidateFor(queryClient, "calendar-event"),
   });
 };
@@ -25,8 +31,16 @@ export const useUpdateEvent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CalendarEventFormValues }) =>
-      calendarApi.updateEvent(id, data),
+    mutationFn: ({
+      id,
+      data,
+      silent,
+    }: {
+      id: number;
+      data: CalendarEventFormValues;
+      /** 실패를 호출처가 자기 자리에서 알리면 true — 기본(생략)은 전역 오류 토스트 */
+      silent?: boolean;
+    }) => calendarApi.updateEvent(id, data, { silent }),
     onSuccess: () => invalidateFor(queryClient, "calendar-event"),
   });
 };

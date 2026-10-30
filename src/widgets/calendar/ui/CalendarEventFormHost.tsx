@@ -58,7 +58,13 @@ export function CalendarEventFormHost({
         saveError={createEvent.isError}
         onClose={onClose}
         onDetail={setDraft}
-        onSave={(values) => createEvent.mutate(values, { onSuccess: onClose })}
+        // 실패는 대화상자의 Callout 이 알린다 — 전역 토스트(서버 글)는 끈다
+        onSave={(values) =>
+          createEvent.mutate(
+            { data: values, silent: true },
+            { onSuccess: onClose },
+          )
+        }
       />
     );
   }
@@ -68,6 +74,7 @@ export function CalendarEventFormHost({
       event={event}
       selectedDate={draft?.start ?? selectedDate}
       selectedEndDate={draft?.end ?? selectedEndDate}
+      initialDirty={draft?.dirty}
       initial={
         draft
           ? {
@@ -87,11 +94,15 @@ export function CalendarEventFormHost({
           // 반복 일정은 연 회차를 함께 알린다 — 안 알리면 서버가 그 회차 날짜를 반복의
           // 새 시작으로 써서 앞 회차들이 사라졌다(QA 30 2).
           updateEvent.mutate(
-            { id: event.rowId, data: withOpenedOccurrence(data, event) },
+            {
+              id: event.rowId,
+              data: withOpenedOccurrence(data, event),
+              silent: true,
+            },
             { onSuccess: onClose },
           );
         } else {
-          createEvent.mutate(data, { onSuccess: onClose });
+          createEvent.mutate({ data, silent: true }, { onSuccess: onClose });
         }
       }}
     />

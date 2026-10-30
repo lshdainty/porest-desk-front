@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/api";
+import { apiClient, type QuietRequestConfig } from "@/shared/api";
 import type { ApiResponse } from "@/shared/types";
 import type {
   CalendarEvent,
@@ -53,13 +53,26 @@ function toApiPayload(data: CalendarEventFormValues) {
   };
 }
 
+/**
+ * `silent` 는 **호출처가 고른다**(기본은 전역 토스트가 실패를 알린다) — 실패를 자기 자리
+ * (폼 Callout)로 알리는 화면만 true 로 넘겨 서버 글이 겹쳐 뜨지 않게 한다.
+ */
+export type EventRequestOptions = { silent?: boolean };
+
+const quiet = (
+  options?: EventRequestOptions,
+): QuietRequestConfig | undefined =>
+  options?.silent ? { silent: true } : undefined;
+
 export const calendarApi = {
   createEvent: async (
     data: CalendarEventFormValues,
+    options?: EventRequestOptions,
   ): Promise<CalendarEvent> => {
     const resp: ApiResponse<CalendarEvent> = await apiClient.post(
       "/v1/calendar/event",
       toApiPayload(data),
+      quiet(options),
     );
     return fromApiEvent(resp.data as unknown as Record<string, unknown>);
   },
@@ -87,6 +100,7 @@ export const calendarApi = {
   updateEvent: async (
     id: number,
     data: CalendarEventFormValues,
+    options?: EventRequestOptions,
   ): Promise<CalendarEvent> => {
     // 종류(eventType)는 수정 본문에 싣지 않는다. 수정 폼에 종류를 고르는 칸이 없으니
     // 여기서 보내는 값은 늘 화면이 지어낸 추측이고, 그 추측이 업무·생일 일정을
@@ -97,6 +111,7 @@ export const calendarApi = {
     const resp: ApiResponse<CalendarEvent> = await apiClient.put(
       `/v1/calendar/event/${id}`,
       payload,
+      quiet(options),
     );
     return fromApiEvent(resp.data as unknown as Record<string, unknown>);
   },
