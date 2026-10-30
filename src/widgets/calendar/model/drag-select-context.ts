@@ -14,6 +14,8 @@ export interface DragSelectContextType {
   updateSelection: (date: Date) => void;
   endSelection: () => void;
   isDateInSelection: (date: Date) => boolean;
+  /** 이미 고른 날을 한 번 더 눌렀다 — 그 날로 빠른 추가를 연다(1280 이상) */
+  openQuickAdd: (date: Date) => void;
 }
 
 export const DragSelectContext = createContext<DragSelectContextType | null>(

@@ -76,10 +76,43 @@ export const ensureEndAfterStart = (
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 };
 
+/** 새 일정의 시작 값 — 종일이 아니면 시각을 붙인다(종일 줄을 끌 때와 같은 기본 09:00 ~ 10:00) */
+function newEventValues(
+  day: string,
+  endDay: string,
+  calendar: { rowId: number; color: string } | undefined,
+  title: string,
+  allDay: boolean,
+): CalendarEventFormValues {
+  return {
+    title,
+    description: "",
+    eventType: "PERSONAL",
+    color: calendar?.color ?? DEFAULT_EVENT_COLOR,
+    startDate: allDay ? day : `${day}T09:00`,
+    endDate: allDay ? endDay : `${endDay}T10:00`,
+    isAllDay: allDay,
+    labelRowId: undefined,
+    location: "",
+    rrule: undefined,
+    reminderMinutes: [],
+    calendarRowId: calendar?.rowId,
+  };
+}
+
+/** 빠른 추가에서 "자세히" 로 넘어올 때 들고 오는 값 */
+export interface EventFormInitial {
+  title?: string;
+  isAllDay?: boolean;
+  calendarRowId?: number;
+}
+
 export interface UseEventFormArgs {
   event?: CalendarEvent | null;
   selectedDate?: Date;
   selectedEndDate?: Date;
+  /** 새 일정의 시작 값(빠른 추가에서 들고 온 값) */
+  initial?: EventFormInitial;
   onSubmit: (data: CalendarEventFormValues) => void;
 }
 
@@ -91,6 +124,7 @@ export function useEventForm({
   event,
   selectedDate,
   selectedEndDate,
+  initial,
   onSubmit,
 }: UseEventFormArgs) {
   const {
@@ -122,7 +156,11 @@ export function useEventForm({
   // 기본 선택도 **같은 목록에서** 고른다. 목록만 거르고 여기를 두면 기본 캘린더가 숨겨져 있을 때
   // 목록에 없는 값이 선택돼 있는 상태가 된다.
   const defaultCalendar =
-    selectableCalendars.find((c) => c.isDefault) ?? selectableCalendars[0];
+    selectableCalendars.find((c) => c.rowId === initial?.calendarRowId) ??
+    selectableCalendars.find((c) => c.isDefault) ??
+    selectableCalendars[0];
+  const initialTitle = initial?.title ?? "";
+  const initialAllDay = initial?.isAllDay ?? true;
 
   // 반복·알림은 `event` 에서 시드한다. 마운트는 초기값으로, 이후 `event` 가 바뀌면
   // 렌더 중 조정으로 다시 맞춘다 — effect 안에서 setState 하면 커밋을 한 번 더 태운다.
@@ -140,20 +178,13 @@ export function useEventForm({
   }
 
   const form = useForm<CalendarEventFormValues>({
-    defaultValues: {
-      title: "",
-      description: "",
-      eventType: "PERSONAL",
-      color: defaultCalendar?.color ?? DEFAULT_EVENT_COLOR,
-      startDate: defaultDate,
-      endDate: defaultEndDate,
-      isAllDay: true,
-      labelRowId: undefined,
-      location: "",
-      rrule: undefined,
-      reminderMinutes: [],
-      calendarRowId: defaultCalendar?.rowId,
-    },
+    defaultValues: newEventValues(
+      defaultDate,
+      defaultEndDate,
+      defaultCalendar,
+      initialTitle,
+      initialAllDay,
+    ),
   });
   const { handleSubmit, reset, setValue, getValues, control } = form;
 
@@ -199,22 +230,25 @@ export function useEventForm({
         calendarRowId: event.calendarRowId ?? defaultCalendar?.rowId,
       });
     } else {
-      reset({
-        title: "",
-        description: "",
-        eventType: "PERSONAL",
-        color: defaultCalendar?.color ?? DEFAULT_EVENT_COLOR,
-        startDate: defaultDate,
-        endDate: defaultEndDate,
-        isAllDay: true,
-        labelRowId: undefined,
-        location: "",
-        rrule: undefined,
-        reminderMinutes: [],
-        calendarRowId: defaultCalendar?.rowId,
-      });
+      reset(
+        newEventValues(
+          defaultDate,
+          defaultEndDate,
+          defaultCalendar,
+          initialTitle,
+          initialAllDay,
+        ),
+      );
     }
-  }, [event, reset, defaultDate, defaultEndDate, defaultCalendar]);
+  }, [
+    event,
+    reset,
+    defaultDate,
+    defaultEndDate,
+    defaultCalendar,
+    initialTitle,
+    initialAllDay,
+  ]);
 
   const handleRecurrenceChange = (option: RecurrenceOption) => {
     setRecurrence(option);

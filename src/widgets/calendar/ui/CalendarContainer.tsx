@@ -65,6 +65,7 @@ const CalendarContainer = ({
       {creatingDate && (
         <CalendarEventFormHost
           selectedDate={creatingDate}
+          quick={!isMobile}
           onClose={() => setCreatingDate(null)}
         />
       )}

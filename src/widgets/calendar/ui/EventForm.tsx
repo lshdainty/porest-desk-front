@@ -23,6 +23,7 @@ import {
   CONTENT_MAX,
   LOCATION_MAX,
   useEventForm,
+  type EventFormInitial,
 } from "@/widgets/calendar/model/use-event-form";
 import { EventFormDialogBody } from "./event-form/dialog-body";
 import { EventFormSheetBody } from "./event-form/sheet-body";
@@ -40,6 +41,8 @@ interface EventFormProps {
   event?: CalendarEvent | null;
   selectedDate?: Date;
   selectedEndDate?: Date;
+  /** 빠른 추가에서 "자세히" 로 들고 온 값 */
+  initial?: EventFormInitial;
   labels?: EventLabel[];
   onSubmit: (data: CalendarEventFormValues) => void;
   onClose: () => void;
@@ -60,6 +63,7 @@ export const EventForm = ({
   event,
   selectedDate,
   selectedEndDate,
+  initial,
   labels = [],
   onSubmit,
   onClose,
@@ -69,7 +73,13 @@ export const EventForm = ({
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
   const wide = useWideSurface();
-  const ctrl = useEventForm({ event, selectedDate, selectedEndDate, onSubmit });
+  const ctrl = useEventForm({
+    event,
+    selectedDate,
+    selectedEndDate,
+    initial,
+    onSubmit,
+  });
   const { form, title, dateRangeInvalid, onFormSubmit, handleSubmit } = ctrl;
 
   const [showErrors, setShowErrors] = useState(false);

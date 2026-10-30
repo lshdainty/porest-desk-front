@@ -3142,3 +3142,4 @@ calendar,form.endDay,종료 날짜,End date
 calendar,form.endTime,종료 시각,End time
 calendar,form.rows,일정 정보,Event details
 calendar,form.rowsMore,반복 · 알림 · 장소 · 설명,Repeat, reminder, location and description
+calendar,quickAdd.detail,자세히,Details

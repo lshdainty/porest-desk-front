@@ -44,6 +44,7 @@ vi.mock("@/widgets/calendar/model/drag-select-provider", async () => {
           updateSelection: () => {},
           endSelection: () => {},
           isDateInSelection: () => false,
+          openQuickAdd: () => {},
         }}
       >
         {children}

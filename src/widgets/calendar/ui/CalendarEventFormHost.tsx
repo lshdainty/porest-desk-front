@@ -1,3 +1,6 @@
+import { useState } from "react";
+
+import { useWideSurface } from "@/shared/ds/overlay";
 import { useEventLabels } from "@/features/event-label";
 import { withOpenedOccurrence } from "@/widgets/calendar/lib/helpers";
 import {
@@ -5,6 +8,10 @@ import {
   useUpdateEvent,
 } from "@/widgets/calendar/model/useCalendarEvents";
 import { EventForm } from "@/widgets/calendar/ui/EventForm";
+import {
+  QuickAddDialog,
+  type QuickAddDraft,
+} from "@/widgets/calendar/ui/event-form/quick-add";
 
 import type { CalendarEvent } from "@/entities/calendar";
 
@@ -14,30 +21,61 @@ import type { CalendarEvent } from "@/entities/calendar";
  * 라벨 · 저장(만들기 · 수정 + 반복 회차 알림) · 닫기만 여기서 이어 준다.
  *
  * `event` 가 있으면 수정, 없으면 `selectedDate` ~ `selectedEndDate` 로 새 일정.
+ * `quick` 이면 1280 이상에서 먼저 가운데 작은 빠른 추가 대화상자가 뜨고 "자세히" 로 일정 폼 대화상자에 간다
+ * (1280 미만은 곧바로 일정 폼 시트). 빠른 추가 → 자세히 사이에 쓴 값이 넘어가고, 창 폭을 넘나들어도 단계가 남는다.
  */
 export function CalendarEventFormHost({
   event,
   selectedDate,
   selectedEndDate,
+  quick = false,
   onClose,
   onDelete,
 }: {
   event?: CalendarEvent | null;
   selectedDate?: Date;
   selectedEndDate?: Date;
+  /** 1280 이상에서 빠른 추가로 먼저 연다(새 일정만) */
+  quick?: boolean;
   onClose: () => void;
   /** 수정 폼 바닥 [삭제] — 확인창은 부르는 쪽이 연다 */
   onDelete?: () => void;
 }) {
+  const wide = useWideSurface();
   const { data: labels = [] } = useEventLabels();
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
+  // "자세히" 를 눌렀으면 그 값을 들고 있다 — 없으면 빠른 추가 단계
+  const [draft, setDraft] = useState<QuickAddDraft | null>(null);
+
+  if (quick && wide && !event && !draft) {
+    const day = selectedDate ?? new Date();
+    return (
+      <QuickAddDialog
+        start={day}
+        end={selectedEndDate ?? day}
+        isLoading={createEvent.isPending}
+        onClose={onClose}
+        onDetail={setDraft}
+        onSave={(values) => createEvent.mutate(values, { onSuccess: onClose })}
+      />
+    );
+  }
 
   return (
     <EventForm
       event={event}
-      selectedDate={selectedDate}
-      selectedEndDate={selectedEndDate}
+      selectedDate={draft?.start ?? selectedDate}
+      selectedEndDate={draft?.end ?? selectedEndDate}
+      initial={
+        draft
+          ? {
+              title: draft.title,
+              isAllDay: draft.isAllDay,
+              calendarRowId: draft.calendarRowId,
+            }
+          : undefined
+      }
       labels={labels}
       isLoading={event ? updateEvent.isPending : createEvent.isPending}
       onClose={onClose}
