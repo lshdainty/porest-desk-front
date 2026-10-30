@@ -81,6 +81,9 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   const createMut = useCreateExpenseBudget();
   const updateMut = useUpdateExpenseBudget();
   const deleteMut = useDeleteExpenseBudget();
+  // 복사 전용 — 실패는 아래 스낵바("…가져오지 못했어요 + 다시 시도")가 알린다. 서버 원문 전역 토스트는 끈다(폼 저장은 위 두 개가 그대로 켠다)
+  const copyCreateMut = useCreateExpenseBudget({ silent: true });
+  const copyUpdateMut = useUpdateExpenseBudget({ silent: true });
   const snackbar = useSnackbar();
 
   const [editing, setEditing] = useState<ExpenseBudget | "new" | null>(null);
@@ -222,21 +225,23 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
     existingByKey: Map<string, ExpenseBudget>,
     retried: boolean,
   ) => {
+    const before = new Set(Array.from(existingByKey.values(), (x) => x.rowId));
     const results = await Promise.allSettled(
       entries.map((p) => {
         const exists = existingByKey.get(`${p.categoryRowId ?? "overall"}`);
         return exists
-          ? updateMut
+          ? copyUpdateMut
               .mutateAsync({ id: exists.rowId, budgetAmount: p.budgetAmount })
               .then(() => null)
-          : createMut
+          : copyCreateMut
               .mutateAsync({
                 categoryRowId: p.categoryRowId ?? null,
                 budgetAmount: p.budgetAmount,
                 budgetYear: year,
                 budgetMonth: month,
               })
-              .then((made) => made.rowId);
+              // 서버는 upsert 라 같은 키가 있으면 그 행의 rowId 를 돌려준다. 복사 직전 목록에 있던 행은 "이번에 만든 것" 이 아니므로 되돌리기 대상에서 뺀다
+              .then((made) => (before.has(made.rowId) ? null : made.rowId));
       }),
     );
     const failed = entries.filter((_, i) => results[i]?.status === "rejected");
@@ -269,7 +274,7 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
   };
   const startCopy = async (undoable: boolean) => {
     const prevList = prevBudgetsQ.data ?? [];
-    if (prevList.length === 0) return;
+    if (prevList.length === 0 || budgetsQ.data === undefined) return;
     const existingByKey = new Map<string, ExpenseBudget>();
     for (const b of budgetList)
       existingByKey.set(`${b.categoryRowId ?? "overall"}`, b);
@@ -345,6 +350,8 @@ export function BudgetManager({ mobile }: { mobile: boolean }) {
       }
       disabled={
         copying ||
+        // 겹침 판정은 이번 달 질의의 값으로 한다 — 값이 있을 때만 켠다(로딩 · 실패 중엔 겹침 0 으로 보여 확인창 없이 덮어쓴다)
+        budgetsQ.data === undefined ||
         prevBudgetsQ.isLoading ||
         (prevBudgetsQ.data?.length ?? 0) === 0
       }

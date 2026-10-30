@@ -52,13 +52,22 @@ const createAsync = vi.fn(() => Promise.resolve({ rowId: nextId++ }));
 const updateAsync = vi.fn(() => Promise.resolve());
 const prev = { data: [] as unknown[], isLoading: false };
 
+const createOpts: unknown[] = [];
+const updateOpts: unknown[] = [];
+
 vi.mock("@/features/expense", () => ({
   useExpenseBudgets: (a: { month: number }) =>
     a.month === new Date().getMonth() + 1 ? state.budgets : prev,
   useRangeSummary: () => state.summary,
   useExpenseCategories: () => state.cats,
-  useCreateExpenseBudget: () => ({ ...mut(), mutateAsync: createAsync }),
-  useUpdateExpenseBudget: () => ({ ...mut(), mutateAsync: updateAsync }),
+  useCreateExpenseBudget: (o?: unknown) => {
+    createOpts.push(o);
+    return { ...mut(), mutateAsync: createAsync };
+  },
+  useUpdateExpenseBudget: (o?: unknown) => {
+    updateOpts.push(o);
+    return { ...mut(), mutateAsync: updateAsync };
+  },
   useDeleteExpenseBudget: () => ({ ...mut(), mutateAsync: deleteAsync }),
 }));
 
@@ -375,5 +384,117 @@ describe("예산 확인창 — ds Alert Dialog (I-28 3-6)", () => {
     await act(async () => opt.action.onClick());
     expect(deleteAsync).toHaveBeenCalledTimes(2);
     expect(deleteAsync).toHaveBeenLastCalledWith(2);
+  });
+});
+
+describe("지난달 복사 — 이번 달 질의가 값을 줄 때만 켠다(H1)", () => {
+  const copyBtn = () =>
+    Array.from(document.querySelectorAll("button")).find((x) =>
+      x.textContent?.includes("copyLastMonth"),
+    ) as HTMLButtonElement | undefined;
+  const press = async (el: Element | null | undefined) => {
+    await act(async () => {
+      (el as HTMLElement).click();
+    });
+  };
+
+  afterEach(() => {
+    prev.data = [];
+  });
+
+  it("이번 달 불러오는 중 — 지난달 값이 캐시에 있어도 버튼이 막혀 누를 수 없다", async () => {
+    createAsync.mockClear();
+    updateAsync.mockClear();
+    prev.data = [b(9, 7, 500_000)];
+    state.budgets = q(undefined);
+    render(false);
+    expect(copyBtn()).toBeDefined();
+    expect(copyBtn()!.disabled).toBe(true);
+    await press(copyBtn());
+    expect(createAsync).not.toHaveBeenCalled();
+    expect(updateAsync).not.toHaveBeenCalled();
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+  });
+
+  it("이번 달 불러오기 실패 중 — 실패 화면 위에서도 막힌다", async () => {
+    createAsync.mockClear();
+    prev.data = [b(9, 7, 500_000)];
+    state.budgets = q(undefined, { isError: true, isLoading: false });
+    render(false);
+    expect(copyBtn()!.disabled).toBe(true);
+    await press(copyBtn());
+    expect(createAsync).not.toHaveBeenCalled();
+  });
+
+  it("이번 달이 빈 목록으로 성공했으면 켜진다(빈 값 ≠ 값 없음)", () => {
+    prev.data = [b(9, 7, 500_000)];
+    state.budgets = q([]);
+    render(false);
+    expect(copyBtn()!.disabled).toBe(false);
+  });
+
+  it("이번 달 값이 있으면 켜지고, 지난달이 비어 있으면 여전히 막힌다", () => {
+    prev.data = [b(9, 7, 500_000)];
+    render(false);
+    expect(copyBtn()!.disabled).toBe(false);
+    prev.data = [];
+    render(false);
+    expect(copyBtn()!.disabled).toBe(true);
+  });
+
+  it("불러오는 중이던 버튼이 응답이 오면 켜진다", () => {
+    prev.data = [b(9, 7, 500_000)];
+    state.budgets = q(undefined);
+    render(false);
+    expect(copyBtn()!.disabled).toBe(true);
+    state.budgets = q([b(1, null, 1_000_000)]);
+    render(false);
+    expect(copyBtn()!.disabled).toBe(false);
+  });
+
+  it("되돌리기 — 서버가 복사 직전 목록에 있던 행의 rowId 를 돌려줘도(upsert) 그 행은 지우지 않는다", async () => {
+    createAsync.mockClear();
+    deleteAsync.mockClear();
+    show.mockClear();
+    nextId = 100;
+    // 직전 목록에 rowId 1(총 예산)·2(카테고리 1). 첫 create 가 1 을 돌려준다 = 원래 행
+    createAsync.mockImplementationOnce(() => Promise.resolve({ rowId: 1 }));
+    prev.data = [b(9, 7, 500_000), b(10, 8, 300_000)];
+    render(false);
+    await press(copyBtn());
+    expect(createAsync).toHaveBeenCalledTimes(2);
+    const opt = show.mock.calls[0]![0];
+    expect(opt.action.label).toBe("copyUndo");
+    await act(async () => opt.action.onClick());
+    expect(deleteAsync.mock.calls.map((c) => c[0])).toEqual([100]);
+    expect(deleteAsync).not.toHaveBeenCalledWith(1);
+    expect(deleteAsync).not.toHaveBeenCalledWith(2);
+  });
+
+  it("되돌리기 — 겹침이 없던 새 행만 지운다(원래 행의 id 는 한 번도 안 나간다)", async () => {
+    createAsync.mockClear();
+    deleteAsync.mockClear();
+    show.mockClear();
+    nextId = 200;
+    prev.data = [b(9, 7, 500_000), b(10, 8, 300_000)];
+    render(false);
+    await press(copyBtn());
+    await act(async () => show.mock.calls[0]![0].action.onClick());
+    const ids = deleteAsync.mock.calls.map((c) => c[0]).sort();
+    expect(ids).toEqual([200, 201]);
+    for (const original of [1, 2]) expect(ids).not.toContain(original);
+  });
+});
+
+describe("실패 알림은 스낵바 하나(M5) — 전역 오류 토스트를 끈다", () => {
+  it("복사의 만들기 · 고치기 훅은 silent 로, 폼 저장용 훅은 그대로 켠 채 따로 쓴다", () => {
+    createOpts.length = 0;
+    updateOpts.length = 0;
+    render(false);
+    expect(createOpts).toContainEqual({ silent: true });
+    expect(updateOpts).toContainEqual({ silent: true });
+    // 폼 저장(저장 실패는 전역 토스트가 알린다)은 옵션 없이 부른 훅을 쓴다
+    expect(createOpts).toContain(undefined);
+    expect(updateOpts).toContain(undefined);
   });
 });
