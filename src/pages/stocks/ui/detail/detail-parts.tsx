@@ -910,7 +910,7 @@ export function InvestorBand({ q }: { q: InvestorQuery }) {
             />
           ))}
         </List>
-      ) : q.isError ? (
+      ) : isHardError(q) ? (
         <BandFailure
           band
           title={t("investor.failTitle")}
@@ -983,7 +983,7 @@ export function InvestorCard({ q }: { q: InvestorQuery }) {
                 { align: "end", width: "72px" },
               ]}
             />
-          ) : q.isError ? (
+          ) : isHardError(q) ? (
             <TableStatusRow>
               <BandFailure
                 band

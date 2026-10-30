@@ -369,7 +369,7 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       : []),
   ];
   const todayLoading = todayQ.isLoading || limitsQ.isLoading;
-  const todayFailed = todayQ.isError && limitsQ.isError;
+  const todayFailed = isHardError(todayQ) && isHardError(limitsQ);
   const todayBand =
     todayLoading || todayFailed || todayRows.length > 0 ? (
       <KvBand
@@ -577,7 +577,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   // 상세 시세 하나(13b-0 3) — 머리 · 오늘 시세 · 호가 · 기본 정보가 이 응답이다. 보유 종목도 부른다. 10초 · 상세가 보일 때만
   const quoteQ = useNamuQuote(market, symbol);
   const q = quoteQ.data ?? null;
-  const quoteFailed = quoteQ.isError;
+  const quoteFailed = isHardError(quoteQ);
   // 나무 초당 5회 한도 — 상세 시세가 끝난 뒤(성공 · 실패 모두) 투자자별 · 일별 시세를 연다
   const afterQuote = quoteQ.isFetched;
   const investorsQ = useNamuInvestors(symbol, market === "KR" && afterQuote);
@@ -823,7 +823,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       symbol={symbol}
       currency={currency}
       lastPrice={last}
-      changePct={changePct ?? 0}
+      changePct={changePct}
       namuBook={{
         data: q?.orderbook ?? null,
         isLoading: quoteQ.isLoading,

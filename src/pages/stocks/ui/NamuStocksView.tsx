@@ -183,14 +183,14 @@ export function NamuStocksView({
   function orderableRows() {
     const out: { key: string; name: string; value: ReactNode }[] = [];
     const orderable = krwQ.data?.orderableAmount;
-    if (krwQ.isError || hasValue(orderable))
+    if (isHardError(krwQ) || hasValue(orderable))
       out.push({
         key: "orderable-krw",
         name: t("invest.orderableKrw"),
         value: hasValue(orderable) ? mask(won(num(orderable))) : dash,
       });
     const deposit = marginQ.data?.foreignDeposit;
-    if (marginQ.isError || marginQ.isLoading || hasValue(deposit))
+    if (isHardError(marginQ) || marginQ.isLoading || hasValue(deposit))
       out.push({
         key: "deposit-usd",
         name: t("invest.depositUsd"),
@@ -372,7 +372,9 @@ export function NamuStocksView({
   // 실패 한 벌은 기다림이 끝난 뒤 환율과 대표 시세가 둘 다 실패했을 때만(대표를 기다리느라 실패로 보이면 안 된다).
   const statesWaiting = loading || watchQ.isLoading || repQ.isLoading;
   const marketFailed =
-    !statesWaiting && fxQ.isError && (repSymbols.length === 0 || repQ.isError);
+    !statesWaiting &&
+    isHardError(fxQ) &&
+    (repSymbols.length === 0 || isHardError(repQ));
   const marketBand = (
     <MarketBand
       markets={marketStates}

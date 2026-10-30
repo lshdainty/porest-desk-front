@@ -146,7 +146,7 @@ export function TossStocksView({
   ) => {
     const v = q.data?.cashBuyingPower;
     const has = v != null && v.trim() !== "";
-    if (!q.isError && !q.isLoading && !has) return [];
+    if (!isHardError(q) && !q.isLoading && !has) return [];
     return [
       {
         key,

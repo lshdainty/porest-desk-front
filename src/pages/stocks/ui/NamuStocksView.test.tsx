@@ -9,7 +9,7 @@ declare global {
 }
 
 const st = vi.hoisted(() => ({
-  fx: "ok" as "ok" | "null" | "error",
+  fx: "ok" as "ok" | "null" | "error" | "stale",
   prices: "ok" as "ok" | "error" | "nostate",
   mstate: { kr: "REGULAR", us: "AFTER" } as Record<string, string | null>,
   krwOrderable: "200000000" as string | null,
@@ -94,11 +94,13 @@ vi.mock("@/features/stock/model/useNamu", () => {
     useNamuExchangeRate: () =>
       st.fx === "error"
         ? q(undefined, { isError: true })
-        : q({
-            base: "USD",
-            quote: "KRW",
-            rate: st.fx === "ok" ? 1385.2 : null,
-          }),
+        : st.fx === "stale"
+          ? q({ base: "USD", quote: "KRW", rate: 1385.2 }, { isError: true })
+          : q({
+              base: "USD",
+              quote: "KRW",
+              rate: st.fx === "ok" ? 1385.2 : null,
+            }),
     useNamuMargin: () =>
       st.margin === "error"
         ? q(undefined, { isError: true })
@@ -271,6 +273,13 @@ describe("나무 시장 띠 (I-13b 17)", () => {
     st.prices = "error";
     render();
     expect(section("market").textContent).toContain("market.failTitle");
+  });
+  it("받아 둔 값이 있으면 폴링 한 번의 실패(isError)로 실패 한 벌을 띄우지 않는다", () => {
+    st.fx = "stale";
+    st.prices = "error";
+    render();
+    expect(section("market").textContent).not.toContain("market.failTitle");
+    expect(section("market").textContent).toContain("1,385.20");
   });
   it("하나만 실패하면 남은 줄이 보인다(실패 한 벌 아님)", () => {
     st.fx = "error";
