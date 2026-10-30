@@ -1,18 +1,3 @@
-export const formatCurrency = (
-  amount: number,
-  currency: string = "KRW",
-): string => {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-export const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat("ko-KR").format(num);
-};
-
 export const formatDuration = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);

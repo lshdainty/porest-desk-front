@@ -287,7 +287,7 @@ const PrefixDemo = () => (
                 }
                 title="점심 · 김치찌개"
                 detail="식비"
-                suffix={<Amount>-9,000원</Amount>}
+                suffix={<Amount>−9,000원</Amount>}
               />
               <ListButtonItem
                 prefix={
@@ -297,7 +297,7 @@ const PrefixDemo = () => (
                 }
                 title="주유"
                 detail="교통"
-                suffix={<Amount>-62,000원</Amount>}
+                suffix={<Amount>−62,000원</Amount>}
               />
             </List>
           </Specimen>
@@ -474,7 +474,7 @@ const PrefixDemo = () => (
                     <TagGroupItem>10월 2일 오후 2:30</TagGroupItem>
                   </TagGroup>
                 }
-                suffix={<Amount>-89,000원</Amount>}
+                suffix={<Amount>−89,000원</Amount>}
               />
             </List>
           </Specimen>
@@ -607,7 +607,7 @@ const AlignHighlightDemo = () => (
                 }
                 suffix={
                   <b className="font-bold text-fg-neutral-subtle line-through">
-                    -89,000원
+                    −89,000원
                   </b>
                 }
               />

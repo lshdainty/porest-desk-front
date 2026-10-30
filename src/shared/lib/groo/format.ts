@@ -76,14 +76,18 @@ export const KRW = (
   { sign = false, abs = false }: { sign?: boolean; abs?: boolean } = {},
 ): string => {
   const v = abs ? Math.abs(n) : n;
-  const s = v.toLocaleString("ko-KR");
+  // 음수는 U+2212 + 절댓값 — 기본 toLocaleString 은 ASCII 하이픈을 낸다(I-31, 스펙 chart.md "빼기는 U+2212").
+  const s =
+    v < 0
+      ? `${MINUS}${(-v).toLocaleString("ko-KR")}`
+      : v.toLocaleString("ko-KR");
   if (sign && n > 0) return `+${s}`;
   return s;
 };
 
 /**
  * 통화 표기 — ko `10,000원`(기존 `${KRW(n)}원`과 100% 동일) / en `₩10,000`.
- * KRW 숫자부(부호·abs 포함)를 재사용하고, en 은 선행 부호 뒤에 ₩ 삽입(`-₩10,000`).
+ * KRW 숫자부(부호·abs 포함)를 재사용하고, en 은 선행 부호 뒤에 ₩ 삽입(`−₩10,000`(U+2212)).
  * ko 회귀0: ko 분기는 `${KRW(n, opts)}원` 그대로.
  */
 export const money = (
@@ -92,7 +96,7 @@ export const money = (
 ): string => {
   const s = KRW(n, opts);
   if (!isEn()) return `${s}원`;
-  const m = /^([+-]?)(.*)$/.exec(s);
+  const m = /^([+\-\u2212]?)(.*)$/.exec(s);
   return m ? `${m[1]}₩${m[2]}` : `₩${s}`;
 };
 
@@ -120,8 +124,8 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 export const formatChartAxis = (v: number): string => {
   const n = Math.abs(v);
   if (isEn()) {
-    // en 은 Intl 로케일 부호(ASCII)를 그대로 — 앱 NumberFormat.compact(en) 과 같은 글자.
-    return `${v < 0 ? "-" : ""}${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n)}`;
+    // en 도 빼기는 U+2212 (I-31) — 앱 formatChartAxis(en) 과 같은 글자.
+    return `${v < 0 ? MINUS : ""}${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n)}`;
   }
   const sign = v < 0 ? MINUS : "";
   if (n < 10_000) return `${sign}${n.toLocaleString("ko-KR")}`;

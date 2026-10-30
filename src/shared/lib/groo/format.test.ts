@@ -7,6 +7,7 @@ import {
   formatChangeRate,
   formatChartAxis,
   minusOf,
+  money,
   plusOf,
 } from "./format";
 import { niceAxis, niceCeil } from "./chartAxis";
@@ -168,7 +169,7 @@ describe("formatChartAxis (ko)", () => {
  * 지우고 `formatChartAxis` 하나로 모았다. `StatsPage` 의 `fmtTick` 이 이 함수다.
  *
  * 눈금은 `chartAxis` 의 nice 값(1·2·2.5·5×10ⁿ 배수)만 들어오므로, 여기서 만드는 라벨이
- * 실제로 축에 찍히는 문자열 전부다. 축 폭은 `<YAxis width={52} />` 고정(11px 글자).
+ * 실제로 축에 찍히는 문자열 전부다. 축 폭은 `measureTickWidth` 가 이 글자를 재서 정한다(11px 글자).
  */
 describe("통계 추이 축 눈금 (fmtTick = formatChartAxis)", () => {
   const orig = i18n.language;
@@ -261,10 +262,11 @@ describe("formatChartAxis (en)", () => {
     await i18n.changeLanguage(orig);
   });
 
-  it("Intl compact 그대로 — 부호도 Intl 쪽 ASCII 를 쓴다", () => {
+  it("Intl compact 숫자부 + 빼기는 U+2212 (I-31)", () => {
     expect(formatChartAxis(120000000)).toBe("120M");
     expect(formatChartAxis(52000)).toBe("52K");
-    expect(formatChartAxis(-52000)).toBe("-52K");
+    expect(formatChartAxis(-52000)).toBe("\u221252K");
+    expect(formatChartAxis(-52000)).not.toContain("-");
   });
 });
 
@@ -300,5 +302,39 @@ describe("formatChangeRate", () => {
     expect(formatChangeRate(1234.5)).toBe("1,234.50%");
     expect(formatChangeRate(NaN)).toBe("—");
     expect(formatChangeRate(Infinity)).toBe("—");
+  });
+});
+
+/** I-31 — 음수 금액의 빼기는 U+2212 하나다(스펙 chart.md "빼기는 U+2212"). */
+describe("KRW / money 음수 부호 (I-31)", () => {
+  const orig = i18n.language;
+  afterEach(async () => {
+    await i18n.changeLanguage(orig);
+  });
+
+  it("KRW 음수는 U+2212 + 절댓값, ASCII 하이픈이 없다", () => {
+    expect(KRW(-1000)).toBe("\u22121,000");
+    expect(KRW(-30_400_000)).toBe("\u221230,400,000");
+    expect(KRW(-1000)).not.toContain("-");
+    expect(KRW(1000)).toBe("1,000");
+    expect(KRW(0)).toBe("0");
+  });
+
+  it("KRW 의 sign · abs 계약은 그대로 — 양수만 +, abs 는 부호를 없앤다", () => {
+    expect(KRW(1000, { sign: true })).toBe("+1,000");
+    expect(KRW(-1000, { sign: true })).toBe("\u22121,000");
+    expect(KRW(-1000, { abs: true })).toBe("1,000");
+  });
+
+  it("money ko — 음수는 −1,000원", async () => {
+    await i18n.changeLanguage("ko");
+    expect(money(-1000)).toBe("\u22121,000원");
+  });
+
+  it("money en — 정규식이 U+2212 를 알아 부호가 ₩ 앞에 온다(−₩1,000)", async () => {
+    await i18n.changeLanguage("en");
+    expect(money(-1000)).toBe("\u2212₩1,000");
+    expect(money(1000, { sign: true })).toBe("+₩1,000");
+    expect(money(1000)).toBe("₩1,000");
   });
 });

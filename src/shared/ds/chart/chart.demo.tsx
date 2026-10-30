@@ -1,3 +1,4 @@
+import { measureTickWidth, niceTickLabels } from "@/shared/lib/groo/axisWidth";
 import { useState, type ReactNode } from "react";
 import {
   Area,
@@ -157,6 +158,14 @@ const Trend = ({
             <YAxis
               yAxisId="income"
               tickFormatter={unit}
+              width={measureTickWidth(
+                niceTickLabels(
+                  data.flatMap((d) =>
+                    dual ? [d.income] : [d.income, d.expense],
+                  ),
+                  unit,
+                ),
+              )}
               {...chartAxisProps(dual ? { color: "blue" } : {})}
             />
             {dual && (
@@ -164,6 +173,12 @@ const Trend = ({
                 yAxisId="expense"
                 orientation="right"
                 tickFormatter={unit}
+                width={measureTickWidth(
+                  niceTickLabels(
+                    data.map((d) => d.expense),
+                    unit,
+                  ),
+                )}
                 {...chartAxisProps({ color: "red" })}
               />
             )}
@@ -248,7 +263,16 @@ const Bars = ({
           <BarChart data={data} barGap={4}>
             <CartesianGrid {...chartGridProps} />
             <XAxis dataKey="week" {...chartAxisProps()} />
-            <YAxis tickFormatter={formatAxisWon} {...chartAxisProps()} />
+            <YAxis
+              tickFormatter={formatAxisWon}
+              width={measureTickWidth(
+                niceTickLabels(
+                  data.flatMap((d) => [d.income, d.expense]),
+                  formatAxisWon,
+                ),
+              )}
+              {...chartAxisProps()}
+            />
             <ChartTooltip
               content={
                 <ChartTooltipContent
