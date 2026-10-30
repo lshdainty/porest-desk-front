@@ -1,5 +1,6 @@
 import { CalendarHeaderMobile } from "@/widgets/calendar/ui/header/calendar-header-mobile";
 import { CalendarLoadFailed } from "@/widgets/calendar/ui/calendar-load-failed";
+import { EventDetailSurface } from "@/widgets/calendar/ui/event-detail/event-detail-surface";
 import {
   CalendarMonthViewMobile,
   WeekdayRow,
@@ -16,11 +17,19 @@ interface IProps {
 }
 
 /**
- * 폰(768 미만) 캘린더 — 달 줄 + 월 격자만. 날을 누르면 그날 시트가 뜬다(`dayDate`). 시트(`EventDetailSurface` — 목록 → 상세 → 수정 폼,
- * I-09b 5 · 9)는 `CalendarContainer` 가 그린다 — 폰을 가로로 돌려 768 이상이 되어 이 화면이 사라져도 시트와 쓰던 값이 남게(I-09 31).
+ * 폰(768 미만) 캘린더 — 달 줄 + 월 격자만. 날을 누르면 그날 시트가 뜨고, 일정을 누르면 같은 시트가 상세로 바뀐다
+ * (목록 → 상세 → 수정 폼 — `EventDetailSurface`, I-09b 5 · 9).
  */
 const CalendarMobile = ({ screen, isLoading, isFailed, onRetry }: IProps) => {
-  const { singleDayEvents, multiDayEvents, setDayDate } = screen;
+  const {
+    singleDayEvents,
+    multiDayEvents,
+    dayDate,
+    setDayDate,
+    dayEvents,
+    setCreatingDate,
+    requestDelete,
+  } = screen;
 
   return (
     <>
@@ -42,6 +51,20 @@ const CalendarMobile = ({ screen, isLoading, isFailed, onRetry }: IProps) => {
           singleDayEvents={singleDayEvents}
           multiDayEvents={multiDayEvents}
           onDayClick={setDayDate}
+        />
+      )}
+
+      {/* 그날 시트 — 한 시트 안에서 목록 → 상세 → 수정 폼. 시트를 닫았다 다시 열지 않는다 */}
+      {dayDate && (
+        <EventDetailSurface
+          listDate={dayDate}
+          events={dayEvents}
+          onClose={() => setDayDate(null)}
+          onAdd={() => {
+            setCreatingDate(dayDate);
+            setDayDate(null);
+          }}
+          onRequestDelete={requestDelete}
         />
       )}
     </>

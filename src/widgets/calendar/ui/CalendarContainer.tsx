@@ -6,7 +6,6 @@ import { useIsMobile } from "@/shared/hooks";
 import { useCalendarScreen } from "@/widgets/calendar/model/use-calendar-screen";
 import { CalendarDesktop } from "@/widgets/calendar/ui/CalendarDesktop";
 import { CalendarMobile } from "@/widgets/calendar/ui/CalendarMobile";
-import { EventDetailSurface } from "@/widgets/calendar/ui/event-detail/event-detail-surface";
 import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
 
 import { CalendarEventFormHost } from "./CalendarEventFormHost";
@@ -45,10 +44,6 @@ const CalendarContainer = ({
     setCreatingDate,
     deleteEvent,
     handleConfirmDelete,
-    dayDate,
-    setDayDate,
-    dayEvents,
-    requestDelete,
   } = screen;
 
   return (
@@ -66,20 +61,6 @@ const CalendarContainer = ({
           isLoading={isLoading}
           isFailed={isFailed}
           onRetry={onRetry}
-        />
-      )}
-
-      {/* 그날 시트 — 한 시트 안에서 목록 → 상세 → 수정 폼. 폰 · 데스크톱 화면 밖에서 그려 가로로 돌려 화면이 바뀌어도 시트와 값이 남는다 */}
-      {dayDate && (
-        <EventDetailSurface
-          listDate={dayDate}
-          events={dayEvents}
-          onClose={() => setDayDate(null)}
-          onAdd={() => {
-            setCreatingDate(dayDate);
-            setDayDate(null);
-          }}
-          onRequestDelete={requestDelete}
         />
       )}
 
