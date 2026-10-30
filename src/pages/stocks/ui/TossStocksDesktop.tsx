@@ -33,10 +33,10 @@ import {
   SummaryStrip,
   type StatTile,
 } from "@/features/stock/ui/summary-strip";
+import { marketState } from "@/features/stock/lib/market-state";
 import { WatchlistPanel } from "@/features/stock/ui/watchlist-panel";
 import { useWatchlist } from "@/features/stock/model/useWatchlist";
 import type {
-  TossMarketSession,
   TossRankingItem,
   WatchGroup,
 } from "@/features/stock/api/stockApi";
@@ -71,39 +71,6 @@ const OVERVIEW = "__overview__" as const;
 // ---- 일별 시세 표 (토스 candles 1d) ---------------------------------------
 
 // ---- 장 상태 바 (토스 market-calendar + 국내 지수) --------------------------
-
-/** 'HH:MM:SS' → 'HH:MM' */
-const hhmm = (t?: string | null) => (t ? t.slice(0, 5) : null);
-
-/** 시장 현지 시각 'HH:MM' (TZ 무관 — Intl) */
-function nowInTz(tz: string): string {
-  const p = new Intl.DateTimeFormat("en-US", {
-    timeZone: tz,
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-  }).formatToParts(new Date());
-  const h = p.find((x) => x.type === "hour")?.value ?? "00";
-  const m = p.find((x) => x.type === "minute")?.value ?? "00";
-  return `${h}:${m}`;
-}
-
-type MarketStatus = { open: boolean; labelKey: string; time?: string };
-
-function marketState(
-  session: TossMarketSession | null | undefined,
-  tz: string,
-): MarketStatus {
-  const start = hhmm(session?.startTime);
-  const end = hhmm(session?.endTime);
-  if (!start || !end) return { open: false, labelKey: "market.holiday" };
-  const now = nowInTz(tz);
-  if (now >= start && now <= end)
-    return { open: true, labelKey: "market.live", time: now };
-  if (now < start)
-    return { open: false, labelKey: "market.preopen", time: start };
-  return { open: false, labelKey: "market.afterClose" };
-}
 
 /**
  * 장 상태 점 — 상태 줄 왼쪽에 선다.
