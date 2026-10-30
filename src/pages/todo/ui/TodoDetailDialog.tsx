@@ -53,7 +53,7 @@ export function TodoDetailDialog({
         }}
       >
         <ResponsiveDialogContent title={t("detailTitle")}>
-          <ResponsiveDialogBody scrollFog>
+          <ResponsiveDialogBody>
             <h3
               className={cn(
                 "m-0 pb-x2 font-sans text-t6 font-bold [overflow-wrap:anywhere]",

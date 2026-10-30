@@ -200,7 +200,7 @@ export function SavingGoalAddDialog({
           nameRef.current?.focus({ preventScroll: true });
         }}
       >
-        <ResponsiveDialogBody scrollFog>
+        <ResponsiveDialogBody>
           <div className="flex flex-col gap-x6">
             <Field
               label={t("savingGoal.name")}

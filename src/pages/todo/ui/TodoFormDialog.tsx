@@ -217,7 +217,7 @@ export function TodoFormDialog({
           titleRef.current?.focus({ preventScroll: true });
         }}
       >
-        <ResponsiveDialogBody scrollFog>
+        <ResponsiveDialogBody>
           <div className="flex flex-col gap-x4 pb-x2">
             <Field
               label={t("form.title")}

@@ -282,7 +282,7 @@ export function CategoryEditDialog({
           nameRef.current?.focus({ preventScroll: true });
         }}
       >
-        <ResponsiveDialogBody scrollFog>
+        <ResponsiveDialogBody>
           <div className="mb-x2 flex items-start gap-x3">
             <span
               aria-hidden

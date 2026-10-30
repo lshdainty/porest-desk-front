@@ -428,7 +428,7 @@ export function WithdrawDialog({
               : undefined
           }
         >
-          <ResponsiveDialogBody scrollFog>{body}</ResponsiveDialogBody>
+          <ResponsiveDialogBody>{body}</ResponsiveDialogBody>
           {footer}
         </ResponsiveDialogContent>
       </ResponsiveDialog>
