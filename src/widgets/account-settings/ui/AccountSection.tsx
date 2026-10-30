@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Avatar } from "@/shared/ds/avatar";
 import { Badge } from "@/shared/ds/badge";
 import { Button } from "@/shared/ds/button";
+import { Callout } from "@/shared/ds/callout";
 import { Card, CardHeader, CardTitle } from "@/shared/ds/card";
 import { List, ListButtonItem, ListHeader, ListItem } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
@@ -112,11 +113,23 @@ export function AccountSection({
       {isPro ? "Pro" : "Free"}
     </Badge>
   );
-  // [수정] 은 개인정보 변경 자리라 누르는 동작이 없다(메모리 09-10 — 죽은 버튼으로 걷지 않는다).
+  // [수정] 은 개인정보 변경 자리라 아직 열리지 않는다 — 누르는 동작이 있는 척하지 않고 막은 단추 + 이유 Callout 이다
+  // (D3 B). 단추의 설명(aria-describedby)이 Callout 이라 읽는 이름과 이유가 이어진다.
+  const editReasonId = useId();
   const editButton = (
-    <Button variant="neutralWeak" size="small">
+    <Button
+      variant="neutralWeak"
+      size="small"
+      disabled
+      aria-describedby={editReasonId}
+    >
       {t("account.edit")}
     </Button>
+  );
+  const editReason = (
+    <Callout id={editReasonId} tone="informative">
+      {t("account.editSoon")}
+    </Callout>
   );
 
   return (
@@ -150,6 +163,7 @@ export function AccountSection({
               {joinedText}
             </div>
           )}
+          <div className="mt-x4 w-full text-start">{editReason}</div>
         </div>
       ) : (
         <Card data-account-head>
@@ -175,6 +189,7 @@ export function AccountSection({
               {editButton}
             </div>
           </div>
+          <div className="mt-x4">{editReason}</div>
         </Card>
       )}
 

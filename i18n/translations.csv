@@ -1917,6 +1917,7 @@ settings,groups.data,데이터,Data
 settings,groups.account,계정,Account
 settings,account.defaultName,사용자,User
 settings,account.edit,수정,Edit
+settings,account.editSoon,프로필 수정은 곧 열려요.,Profile editing is coming soon.
 settings,account.joined,가입 {{date}},Joined {{date}}
 settings,account.group.security,보안,Security
 settings,account.group.connected,연결된 계정,Linked Accounts

@@ -189,6 +189,22 @@ describe("계정 구역 줄", () => {
   });
 });
 
+describe("프로필 [수정] (D3 B)", () => {
+  it("막은 단추 + 이유 Callout 이고, 단추의 설명이 Callout 이다", () => {
+    for (const mobile of [true, false]) {
+      act(() => root.unmount());
+      root = createRoot(container);
+      render(mobile);
+      const edit = buttons().find((b) => b.textContent === "account.edit")!;
+      expect(edit.disabled).toBe(true);
+      const reason = container.querySelector(
+        `#${CSS.escape(edit.getAttribute("aria-describedby")!)}`,
+      );
+      expect(reason?.textContent).toContain("account.editSoon");
+    }
+  });
+});
+
 describe("Google 줄 상태", () => {
   it("불러오는 중에는 버튼이 막힌다", () => {
     state.providers = { ...state.providers, data: undefined, isLoading: true };
