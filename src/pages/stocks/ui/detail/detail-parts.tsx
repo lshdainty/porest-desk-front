@@ -18,7 +18,11 @@ import {
   TableStatusRow,
 } from "@/shared/ds/table";
 import { Badge } from "@/shared/ds/badge";
-import { BottomSheet, BottomSheetContent } from "@/shared/ds/bottom-sheet";
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetContent,
+} from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
 import { Callout } from "@/shared/ds/callout";
 import { withCommaBreaks } from "@/shared/ds/i18n";
@@ -110,7 +114,9 @@ export function WatchToggle({
   const sheet = (
     <BottomSheet open={picking} onOpenChange={setPicking}>
       <BottomSheetContent title={t("watch.pickGroup")}>
-        {choices}
+        <BottomSheetBody scrollFog className="px-0">
+          {choices}
+        </BottomSheetBody>
       </BottomSheetContent>
     </BottomSheet>
   );

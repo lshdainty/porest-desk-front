@@ -166,6 +166,7 @@ export function BudgetFormDialog({
                 ariaLabel={`${t("edit.categoryLabel")}, ${selectedCat?.categoryName ?? t("edit.noneSelected")}`}
                 readOnly={!isNew}
                 surfaceTitle={t("edit.categoryLabel")}
+                scrollFog
                 errorMessage={
                   show.cat && catError ? t("edit.errCategory") : null
                 }

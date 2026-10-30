@@ -481,7 +481,7 @@ export function TodoMobileLedger({
       {/* 거르기 시트 — 고르기(바깥 누름 · 끌어내림으로 닫힌다). 바꾸는 즉시 목록에 걸린다 */}
       <BottomSheet open={filterOpen} onOpenChange={setFilterOpen}>
         <BottomSheetContent title={t("tdm.filter")}>
-          <BottomSheetBody>
+          <BottomSheetBody scrollFog>
             <div className="flex flex-col gap-x6 pb-x2">
               <TodoFilterSection label={t("tag")}>
                 <TodoTagFilterBody

@@ -282,7 +282,7 @@ export function CategoryEditDialog({
           nameRef.current?.focus({ preventScroll: true });
         }}
       >
-        <ResponsiveDialogBody>
+        <ResponsiveDialogBody scrollFog>
           <div className="mb-x2 flex items-start gap-x3">
             <span
               aria-hidden
@@ -364,6 +364,7 @@ export function CategoryEditDialog({
                 value={parent ? parent.categoryName : t("rootOption")}
                 dot={parent ? getPaletteByColor(parent.color).color : undefined}
                 surfaceTitle={t("parentCategory")}
+                scrollFog
               >
                 {({ close }) => (
                   <>
