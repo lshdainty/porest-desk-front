@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/api";
+import { apiClient, type QuietRequestConfig } from "@/shared/api";
 import type { ApiResponse } from "@/shared/types";
 import type {
   ExpenseBudget,
@@ -11,13 +11,21 @@ export interface BudgetListParams {
   month: number;
 }
 
+/** 호출처가 실패를 직접 알릴 때 전역 오류 토스트를 끈다 */
+export interface QuietOpts {
+  silent?: boolean;
+}
+
 export const expenseBudgetApi = {
   createBudget: async (
     data: ExpenseBudgetFormValues,
+    opts?: QuietOpts,
   ): Promise<ExpenseBudget> => {
+    const config: QuietRequestConfig = { silent: opts?.silent };
     const resp: ApiResponse<ExpenseBudget> = await apiClient.post(
       "/v1/expense/budget",
       data,
+      config,
     );
     return resp.data;
   },
@@ -33,17 +41,23 @@ export const expenseBudgetApi = {
   updateBudget: async (
     id: number,
     data: { budgetAmount: number },
+    opts?: QuietOpts,
   ): Promise<ExpenseBudget> => {
+    const config: QuietRequestConfig = { silent: opts?.silent };
     const resp: ApiResponse<ExpenseBudget> = await apiClient.put(
       `/v1/expense/budget/${id}`,
       data,
+      config,
     );
     return resp.data;
   },
 
   deleteBudget: async (id: number): Promise<void> => {
+    // silent — 호출처(BudgetManager)가 실패를 자기 스낵바("…하지 못했어요 + 다시 시도")로 알린다. 서버 원문 전역 토스트를 겹치지 않는다
+    const config: QuietRequestConfig = { silent: true };
     const resp: ApiResponse<void> = await apiClient.delete(
       `/v1/expense/budget/${id}`,
+      config,
     );
     return resp.data;
   },

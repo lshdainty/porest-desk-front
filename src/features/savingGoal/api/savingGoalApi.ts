@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/api";
+import { apiClient, type QuietRequestConfig } from "@/shared/api";
 import type { ApiResponse } from "@/shared/types";
 import type {
   SavingGoal,
@@ -53,8 +53,11 @@ export const savingGoalApi = {
   },
 
   deleteSavingGoal: async (id: number): Promise<void> => {
+    // silent — 호출처(SavingGoalManager)가 실패를 자기 스낵바로 알린다. 서버 원문 전역 토스트를 겹치지 않는다
+    const config: QuietRequestConfig = { silent: true };
     const resp: ApiResponse<void> = await apiClient.delete(
       `/v1/saving-goal/${id}`,
+      config,
     );
     return resp.data;
   },
