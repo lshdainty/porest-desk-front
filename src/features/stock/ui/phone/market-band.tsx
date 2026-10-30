@@ -146,15 +146,22 @@ export function MarketBand({
               : indices.map((i) => (
                   <ListItem
                     key={i.symbol}
-                    title={i.name}
+                    // 지수 이름은 낱말 안에서 접히지 않는다(List 규칙: 본문 최소 폭 = 제목의 가장 긴 낱말) — 모자라면 추이선이 먼저 빠진다
+                    title={
+                      <span className="break-keep [overflow-wrap:normal]">
+                        {i.name}
+                      </span>
+                    }
                     className="[&_[data-slot=list-content]]:py-x2_5"
                     suffix={
                       <span className="flex items-center gap-x3">
                         {i.series && i.series.length > 1 && (
-                          <IndexSpark
-                            values={i.series}
-                            color={lineColor(i.trendPct)}
-                          />
+                          <span className="flex @max-[16rem]/list-item:hidden">
+                            <IndexSpark
+                              values={i.series}
+                              color={lineColor(i.trendPct)}
+                            />
+                          </span>
                         )}
                         <span className="flex flex-col items-end">
                           <span className="text-end text-t5 font-bold tabular-nums text-fg-neutral">

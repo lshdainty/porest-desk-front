@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ChartPie, ChevronRight } from "lucide-react";
 import { CardStat, type DeltaProps } from "@/shared/ds/card";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { List, ListButtonItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
@@ -32,6 +33,7 @@ export function InvestBand({
   failDescription,
   onRetry,
   emptyNote,
+  columns,
 }: {
   label: string;
   amount: string;
@@ -50,6 +52,11 @@ export function InvestBand({
   onRetry?: () => void;
   /** 보유가 없을 때 지표 아래 글(나무) */
   emptyNote?: string;
+  /**
+   * 데스크톱 · 태블릿 카드 안(13-2 28) — 키-값을 지표 아래 20 에 가로 칸으로 늘어놓는다(라벨 위 · 값 아래).
+   * 포트폴리오 구성 줄은 두지 않는다(오른쪽 · 아래에 구성 카드가 있다).
+   */
+  columns?: boolean;
 }) {
   const { t } = useTranslation("stocks");
   return (
@@ -89,18 +96,48 @@ export function InvestBand({
               </p>
             )}
           </div>
-          <List className="mt-x3" aria-label={t("invest.title")}>
-            {rows.map((r) => (
-              <KvListItem
-                key={r.key}
-                name={r.name}
-                value={r.value}
-                loading={loading}
-              />
-            ))}
-            {onOpenPortfolio && <PortfolioLink onOpen={onOpenPortfolio} />}
-            {extraLinks}
-          </List>
+          {columns ? (
+            <dl
+              className="m-0 mt-x5 grid gap-x4 px-x6"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(Math.max(rows.length, 1), 3)}, minmax(0, 1fr))`,
+              }}
+              aria-label={t("invest.title")}
+            >
+              {rows.map((r) => (
+                <div key={r.key} className="min-w-0">
+                  <dt className="text-t3 font-medium text-fg-neutral-subtle">
+                    {r.name}
+                  </dt>
+                  <dd
+                    data-slot="kv-value"
+                    className="m-0 mt-x1 text-t5 font-bold tabular-nums text-fg-neutral [&_[data-slot=line-value]]:max-w-none [&_[data-slot=line-value]]:items-start"
+                  >
+                    {loading ? (
+                      <Skeleton text="t5" className="w-16" />
+                    ) : typeof r.value === "string" ? (
+                      withCommaBreaks(r.value)
+                    ) : (
+                      r.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <List className="mt-x3" aria-label={t("invest.title")}>
+              {rows.map((r) => (
+                <KvListItem
+                  key={r.key}
+                  name={r.name}
+                  value={r.value}
+                  loading={loading}
+                />
+              ))}
+              {onOpenPortfolio && <PortfolioLink onOpen={onOpenPortfolio} />}
+              {extraLinks}
+            </List>
+          )}
         </div>
       )}
     </section>

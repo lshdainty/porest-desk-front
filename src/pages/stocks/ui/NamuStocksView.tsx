@@ -30,6 +30,7 @@ import { useNamuHoldings } from "@/features/stock/model/useNamu";
 import { useSecuritiesExchangeRate } from "@/features/stock/model/useSecuritiesPrices";
 import { useVisibleIds } from "@/features/stock/model/useVisibleIds";
 import { useNamuWatchQuotes } from "@/features/stock/model/useWatchQuotes";
+import { Card } from "@/shared/ds/card";
 import { InvestBand } from "@/features/stock/ui/phone/invest-band";
 import { MarketBand } from "@/features/stock/ui/phone/market-band";
 import {
@@ -46,7 +47,10 @@ import {
   WatchGroupForm,
   WatchGroups,
 } from "@/features/stock/ui/phone/watch-groups";
+import { DeskColumns, DeskFrame, DeskSlot } from "./desk/desk-frame";
+import { CompositionCard, StocksCard } from "./desk/desk-cards";
 import {
+  composition,
   directionOf,
   namuHoldingLines,
   namuInvestSummary,
@@ -59,10 +63,17 @@ const stockPath = (symbol: string) =>
   `${brokerPath("NAMU")}/${encodeURIComponent(symbol)}`;
 
 /**
- * 나무증권 폰 화면(I-13 8 · 10) — 토스와 같은 띠 틀. 나무에 없는 것(지수 · 호가 · 발견 · 일간 손익)은 그리지 않는다.
+ * 나무증권 증권 화면(I-13 8 · 10 · 26 ~ 31) — 토스와 같은 틀(폰은 띠 · 768 이상은 카드). 나무에 없는 것(지수 · 호가 · 발견 · 일간 손익)은 그리지 않는다.
  * 국내 · 해외 두 응답은 한 목록으로 합쳐 보이고, 통화를 나눠 보려면 목록 위 Segmented 로 거른다.
  */
-export function NamuStocksMobile({ header }: { header?: ReactNode }) {
+export function NamuStocksView({
+  header,
+  layout = "phone",
+}: {
+  header?: ReactNode;
+  /** phone = 띠(768 미만) · desk = 카드 2 : 1(1280 이상) / 한 칸 720(768 ~ 1279) */
+  layout?: "phone" | "desk";
+}) {
   const { t } = useTranslation("stocks");
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -268,83 +279,74 @@ export function NamuStocksMobile({ header }: { header?: ReactNode }) {
     </>
   );
 
-  return (
+  const desk = layout === "desk";
+  const investBand = (columns: boolean) => (
+    <InvestBand
+      label={metric.label}
+      amount={metric.amount}
+      delta={"delta" in metric ? metric.delta : undefined}
+      note={"note" in metric ? metric.note : undefined}
+      rows={investRows}
+      loading={loading}
+      failed={bothFailed}
+      failDescription={t("namu.failDesc")}
+      onRetry={retryInvest}
+      columns={columns}
+      emptyNote={
+        !loading && !bothFailed && summary.count === 0
+          ? t("namu.holdingsEmpty")
+          : undefined
+      }
+      onOpenPortfolio={
+        columns ? null : () => navigate(`${brokerPath("NAMU")}/portfolio`)
+      }
+    />
+  );
+  const marketBand =
+    fxRate != null && fxRate > 0 ? (
+      <MarketBand
+        markets={[]}
+        indices={[]}
+        fx={{ value: fmtFxRate(fxRate), base: t("namu.fxBase") }}
+      />
+    ) : null;
+  const comp = composition(lines);
+  const stocksTabs = (
     <>
-      <TopNavigation type="standard">
-        <TopNavigationBackButton fallbackHref="/desk/more" />
-        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
-      </TopNavigation>
-      {header}
-      <ScreenBands>
-        <div data-band="flush" data-section="invest">
-          <InvestBand
-            label={metric.label}
-            amount={metric.amount}
-            delta={"delta" in metric ? metric.delta : undefined}
-            note={"note" in metric ? metric.note : undefined}
-            rows={investRows}
-            loading={loading}
-            failed={bothFailed}
-            failDescription={t("namu.failDesc")}
-            onRetry={retryInvest}
-            emptyNote={
-              !loading && !bothFailed && summary.count === 0
-                ? t("namu.holdingsEmpty")
-                : undefined
-            }
-            onOpenPortfolio={() => navigate(`${brokerPath("NAMU")}/portfolio`)}
+      <Tabs value={seg} onValueChange={(v) => setSeg(v as Seg)}>
+        <ChipTabsList
+          variant="solid"
+          size="medium"
+          aria-label={t("list.tabsAria")}
+        >
+          <ChipTabsTrigger value="holdings">
+            {t("segments.holdings")}
+          </ChipTabsTrigger>
+          <ChipTabsTrigger value="watch">{t("segments.watch")}</ChipTabsTrigger>
+        </ChipTabsList>
+      </Tabs>
+      <div role="tabpanel" aria-labelledby="stocks-list-title">
+        {seg === "holdings" ? (
+          holdingsList
+        ) : (
+          <WatchGroups
+            groups={groups}
+            loading={watchQ.isLoading}
+            failed={isHardError(watchQ)}
+            onRetry={() => void watchQ.refetch()}
+            priceOf={quotes.priceOf}
+            track={track}
+            onOpen={open}
+            onAddGroup={() => setForm({ group: null })}
+            onRenameGroup={(g) => setForm({ group: g })}
+            onDeleteGroup={setDeleting}
           />
-        </div>
-        {fxRate != null && fxRate > 0 && (
-          <div data-band="flush" data-section="market">
-            <MarketBand
-              markets={[]}
-              indices={[]}
-              fx={{ value: fmtFxRate(fxRate), base: t("namu.fxBase") }}
-            />
-          </div>
         )}
-        <div data-band="flush" data-section="stocks">
-          <BandTitle id="stocks-list-title">{t("list.title")}</BandTitle>
-          <StockSearchEntry
-            className="px-x6 pt-x2"
-            onPick={(item) => open(item.symbol)}
-          />
-          <Tabs value={seg} onValueChange={(v) => setSeg(v as Seg)}>
-            <ChipTabsList
-              variant="solid"
-              size="medium"
-              aria-label={t("list.tabsAria")}
-            >
-              <ChipTabsTrigger value="holdings">
-                {t("segments.holdings")}
-              </ChipTabsTrigger>
-              <ChipTabsTrigger value="watch">
-                {t("segments.watch")}
-              </ChipTabsTrigger>
-            </ChipTabsList>
-          </Tabs>
-          <div role="tabpanel" aria-labelledby="stocks-list-title">
-            {seg === "holdings" ? (
-              holdingsList
-            ) : (
-              <WatchGroups
-                groups={groups}
-                loading={watchQ.isLoading}
-                failed={isHardError(watchQ)}
-                onRetry={() => void watchQ.refetch()}
-                priceOf={quotes.priceOf}
-                track={track}
-                onOpen={open}
-                onAddGroup={() => setForm({ group: null })}
-                onRenameGroup={(g) => setForm({ group: g })}
-                onDeleteGroup={setDeleting}
-              />
-            )}
-          </div>
-          <SourceLine>{t("namu.dataNotice")}</SourceLine>
-        </div>
-      </ScreenBands>
+      </div>
+    </>
+  );
+  const dialogs = (
+    <>
       {form && (
         <WatchGroupForm group={form.group} onClose={() => setForm(null)} />
       )}
@@ -354,6 +356,84 @@ export function NamuStocksMobile({ header }: { header?: ReactNode }) {
           onClose={() => setDeleting(null)}
         />
       )}
+    </>
+  );
+
+  if (desk)
+    return (
+      <>
+        <DeskFrame
+          slot="stocks-desktop"
+          title={t("nav.title")}
+          source={t("namu.dataNotice")}
+        >
+          <DeskColumns
+            left={
+              <>
+                <DeskSlot order={1} slot="invest">
+                  <Card className="p-0">{investBand(true)}</Card>
+                </DeskSlot>
+                <DeskSlot order={4} slot="stocks">
+                  <StocksCard onPick={open}>{stocksTabs}</StocksCard>
+                </DeskSlot>
+              </>
+            }
+            right={
+              <>
+                {marketBand && (
+                  <DeskSlot order={2} slot="market">
+                    <Card className="p-0">{marketBand}</Card>
+                  </DeskSlot>
+                )}
+                <DeskSlot order={3} slot="composition">
+                  <CompositionCard
+                    data={{
+                      items: comp.items,
+                      notice:
+                        view.fxMissing || comp.fxMissing
+                          ? t("namu.donutNeedsFx")
+                          : undefined,
+                    }}
+                    loading={loading}
+                    failed={bothFailed}
+                    onRetry={retryInvest}
+                  />
+                </DeskSlot>
+              </>
+            }
+          />
+        </DeskFrame>
+        {dialogs}
+      </>
+    );
+
+  return (
+    <>
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" />
+        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
+      </TopNavigation>
+      {header}
+      <ScreenBands>
+        <div data-band="flush" data-section="invest">
+          {investBand(false)}
+        </div>
+        {marketBand && (
+          <div data-band="flush" data-section="market">
+            {marketBand}
+          </div>
+        )}
+        <div data-band="flush" data-section="stocks">
+          <BandTitle id="stocks-list-title">{t("list.title")}</BandTitle>
+          <StockSearchEntry
+            className="px-x6 pt-x2"
+            onPick={(item) => open(item.symbol)}
+          />
+          {stocksTabs}
+          <SourceLine>{t("namu.dataNotice")}</SourceLine>
+        </div>
+      </ScreenBands>
+      {dialogs}
     </>
   );
 }

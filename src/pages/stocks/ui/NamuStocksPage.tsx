@@ -1,20 +1,8 @@
 import { useOutletContext } from "react-router-dom";
-import { NamuStocksDesktop } from "./NamuStocksDesktop";
-import { NamuStocksMobile } from "./NamuStocksMobile";
+import { NamuStocksView } from "./NamuStocksView";
 
-/** 나무증권 본문 — 폭으로 가른다(768 미만 폰 · 이상 데스크톱 · 태블릿). */
-export function NamuStocksPage({
-  header,
-  initialSelected,
-}: {
-  header?: React.ReactNode;
-  /** 768 이상에서 상세 주소로 들어왔을 때 처음 고를 종목(13-1 다리 — 13-2 가 걷는다) */
-  initialSelected?: string;
-}) {
+/** 나무증권 본문 — 폭만 가른다(768 미만 폰 띠 · 이상 카드). 768 ~ 1279 는 한 칸, 1280 이상은 2 : 1 이다(CSS). */
+export function NamuStocksPage({ header }: { header?: React.ReactNode }) {
   const { mobile } = useOutletContext<{ mobile: boolean }>();
-  return mobile ? (
-    <NamuStocksMobile header={header} />
-  ) : (
-    <NamuStocksDesktop header={header} initialSelected={initialSelected} />
-  );
+  return <NamuStocksView header={header} layout={mobile ? "phone" : "desk"} />;
 }

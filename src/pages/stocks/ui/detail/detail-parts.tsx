@@ -2,6 +2,21 @@ import { isHardError } from "@/features/stock/lib/query-state";
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LineChart, Star } from "lucide-react";
+import { useWideSurface } from "@/shared/ds/overlay/use-wide-surface";
+import { Popover, PopoverAnchor, PopoverContent } from "@/shared/ds/popover";
+import { Toggle } from "@/shared/ds/toggle";
+import { Card, CardHeader, CardTitle } from "@/shared/ds/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableRowHeader,
+  TableSkeletonRows,
+  TableStatusRow,
+} from "@/shared/ds/table";
 import { Badge } from "@/shared/ds/badge";
 import { BottomSheet, BottomSheetContent } from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
@@ -45,49 +60,96 @@ import {
  * 증권사 무관한 것만 둔다. 금액은 글로 만들어 받는다(가리기 · 통화 반영은 부르는 쪽).
  */
 
-/** 상단 바 오른쪽 관심 Toggle — 이름 고정 "관심 등록", 눌림은 aria-pressed(켬 선 2.5 · 끔 선 2). 그룹이 둘 이상이면 담을 그룹을 고른다(Q3) */
+/**
+ * 관심 Toggle — 이름 고정 "관심 등록", 눌림은 aria-pressed(켬 선 2.5 · 끔 선 2). 그룹이 둘 이상이면 담을 그룹을 고른다(Q3).
+ * 폰은 상단 바 오른쪽 아이콘 단추 + Bottom Sheet. 768 이상(`body`)은 머리 카드 이름 줄 오른쪽 본문 Toggle(보이는 40 · 누르는 44)이고,
+ * 고르기는 1280 미만 Bottom Sheet · 이상 Popover(Select 기본 자리)다.
+ */
 export function WatchToggle({
   symbol,
   marketCode,
+  body,
 }: {
   symbol: string;
   marketCode?: string;
+  /** 본문 Toggle(768 이상 머리 카드) — 없으면 상단 바 아이콘 단추 */
+  body?: boolean;
 }) {
   const { t } = useTranslation("stocks");
   const wl = useWatchlist();
+  const wide = useWideSurface();
   const [picking, setPicking] = useState(false);
   const watched = wl.isWatched(symbol);
   const onPress = () => {
     if (!watched && wl.groups.length > 1) setPicking(true);
     else wl.toggleWatch(symbol, marketCode);
   };
-  return (
+  const pick = (rowId: number) => {
+    setPicking(false);
+    wl.toggleWatch(symbol, marketCode, rowId);
+  };
+  const choices = (
+    <List aria-label={t("watch.pickGroup")}>
+      {wl.groups.map((g) => (
+        <ListButtonItem
+          key={g.rowId}
+          title={g.groupName}
+          detail={t("unit.count", { count: g.items.length })}
+          onClick={() => pick(g.rowId)}
+        />
+      ))}
+    </List>
+  );
+  const sheet = (
+    <BottomSheet open={picking} onOpenChange={setPicking}>
+      <BottomSheetContent title={t("watch.pickGroup")}>
+        {choices}
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+  if (!body)
+    return (
+      <>
+        <TopNavigationIconButton
+          aria-label={t("watch.add")}
+          aria-pressed={watched}
+          aria-disabled={!wl.ready && !wl.failed ? true : undefined}
+          onClick={onPress}
+        >
+          <Star aria-hidden strokeWidth={watched ? 2.5 : 2} />
+        </TopNavigationIconButton>
+        {sheet}
+      </>
+    );
+  const toggle = (
+    <Toggle
+      aria-label={t("watch.add")}
+      pressed={watched}
+      aria-disabled={!wl.ready && !wl.failed ? true : undefined}
+      icon={<Star aria-hidden />}
+      onClick={(e) => {
+        // 그룹이 둘 이상이고 아직 안 담았으면 고르러 간다 — 켬 · 끔은 Toggle 이 먼저 바꾸지 않게 막는다
+        if (!watched && wl.groups.length > 1) {
+          e.preventDefault();
+          setPicking(true);
+        }
+      }}
+      onPressedChange={() => wl.toggleWatch(symbol, marketCode)}
+    />
+  );
+  return wide ? (
+    <Popover open={picking} onOpenChange={setPicking}>
+      <PopoverAnchor asChild>
+        <span className="inline-flex">{toggle}</span>
+      </PopoverAnchor>
+      <PopoverContent aria-label={t("watch.pickGroup")} align="end">
+        {choices}
+      </PopoverContent>
+    </Popover>
+  ) : (
     <>
-      <TopNavigationIconButton
-        aria-label={t("watch.add")}
-        aria-pressed={watched}
-        aria-disabled={!wl.ready && !wl.failed ? true : undefined}
-        onClick={onPress}
-      >
-        <Star aria-hidden strokeWidth={watched ? 2.5 : 2} />
-      </TopNavigationIconButton>
-      <BottomSheet open={picking} onOpenChange={setPicking}>
-        <BottomSheetContent title={t("watch.pickGroup")}>
-          <List aria-label={t("watch.pickGroup")}>
-            {wl.groups.map((g) => (
-              <ListButtonItem
-                key={g.rowId}
-                title={g.groupName}
-                detail={t("unit.count", { count: g.items.length })}
-                onClick={() => {
-                  setPicking(false);
-                  wl.toggleWatch(symbol, marketCode, g.rowId);
-                }}
-              />
-            ))}
-          </List>
-        </BottomSheetContent>
-      </BottomSheet>
+      {toggle}
+      {sheet}
     </>
   );
 }
@@ -108,6 +170,8 @@ export function HeadBand({
   loading,
   symbol,
   isUs,
+  watch,
+  chartHeight = 168,
 }: {
   name: string;
   detail: string;
@@ -125,10 +189,14 @@ export function HeadBand({
   loading?: boolean;
   symbol: string;
   isUs: boolean;
+  /** 이름 줄 오른쪽 관심 Toggle(768 이상 머리 카드) */
+  watch?: ReactNode;
+  /** 차트 높이 — 폰 168 · 768 이상 200(지금 데스크톱 그대로) */
+  chartHeight?: number;
 }) {
   const { t } = useTranslation("stocks");
-  return (
-    <section aria-labelledby="stock-name">
+  const title = (
+    <>
       <h2
         id="stock-name"
         className="m-0 text-t7 font-bold text-fg-neutral [overflow-wrap:break-word]"
@@ -136,6 +204,18 @@ export function HeadBand({
         {name}
       </h2>
       <p className="m-0 mt-x0_5 text-t3 text-fg-neutral-subtle">{detail}</p>
+    </>
+  );
+  return (
+    <section aria-labelledby="stock-name">
+      {watch ? (
+        <div className="flex items-start justify-between gap-x2">
+          <div className="min-w-0">{title}</div>
+          <div className="-mt-x1 shrink-0">{watch}</div>
+        </div>
+      ) : (
+        title
+      )}
       <div className="mt-x4">
         {loading ? (
           <Skeleton text="t12" className="w-3/5" />
@@ -183,25 +263,33 @@ export function HeadBand({
           ))}
         </div>
       )}
-      <ChartBlock symbol={symbol} isUs={isUs} />
+      <ChartBlock symbol={symbol} isUs={isUs} height={chartHeight} />
     </section>
   );
 }
 
 /** 차트(05-1 그대로 · 높이 168) + 기간 Segmented 5칸(식별자는 `1D` 그대로, 글만 "1일") */
-function ChartBlock({ symbol, isUs }: { symbol: string; isUs: boolean }) {
+function ChartBlock({
+  symbol,
+  isUs,
+  height,
+}: {
+  symbol: string;
+  isUs: boolean;
+  height: number;
+}) {
   const { t } = useTranslation("stocks");
   const [range, setRange] = useState<Range>("1D");
   const availability = useCandleAvailability();
   return (
     <div className="mt-x4">
-      <div style={{ height: 168 }}>
+      <div style={{ height }}>
         {availability === "yes" ? (
           <LightweightStockChart
             symbol={symbol}
             isUs={isUs}
             range={range}
-            height={168}
+            height={height}
           />
         ) : availability === "no" ? (
           <div className="flex h-full flex-col items-center justify-center gap-x2 text-center text-t4 text-fg-neutral-subtle">
@@ -508,17 +596,8 @@ function TableSkeleton({ label }: { label: string }) {
 
 // ---- 일별 시세 + 매매 ------------------------------------------------------------
 
-/** 일별 시세 띠 — List 줄: 제목 날짜 "10월 23일" · 설명 "거래량 …" · 오른쪽 종가 + 등락률. `tail` 은 끝에 오는 매매(토스) */
-export function DailyBand({
-  symbol,
-  currency,
-  tail,
-}: {
-  symbol: string;
-  currency: string;
-  tail?: ReactNode;
-}) {
-  const { t } = useTranslation("stocks");
+/** 일별 시세 — 최근 날짜부터 여덟 줄(종가 · 전 거래일 대비 등락률 · 거래량) */
+function useDailyRows(symbol: string) {
   const q = useDailyCandles(symbol);
   const rows = useMemo(() => {
     const asc = [...(q.data?.candles ?? [])].sort((a, b) =>
@@ -544,6 +623,21 @@ export function DailyBand({
     }
     return out.slice(0, 8);
   }, [q.data]);
+  return { q, rows };
+}
+
+/** 일별 시세 띠 — List 줄: 제목 날짜 "10월 23일" · 설명 "거래량 …" · 오른쪽 종가 + 등락률. `tail` 은 끝에 오는 매매(토스) */
+export function DailyBand({
+  symbol,
+  currency,
+  tail,
+}: {
+  symbol: string;
+  currency: string;
+  tail?: ReactNode;
+}) {
+  const { t } = useTranslation("stocks");
+  const { q, rows } = useDailyRows(symbol);
   return (
     <section aria-labelledby="stock-daily" className="pb-x6">
       <BandTitle id="stock-daily">{t("daily.title")}</BandTitle>
@@ -591,6 +685,83 @@ export function DailyBand({
       )}
       {tail}
     </section>
+  );
+}
+
+/**
+ * 일별 시세 카드(768 이상, I-13 34) — 머리 "일별 시세" + ds Table(머리 41 · 줄 45 · 일자 · 종가 · 등락률 · 거래량, 카드 가장자리까지).
+ * `tail` 은 끝에 오는 매매(토스 — 위 20 · 좌우 24 · 아래 24).
+ */
+export function DailyCard({
+  symbol,
+  currency,
+  tail,
+}: {
+  symbol: string;
+  currency: string;
+  tail?: ReactNode;
+}) {
+  const { t } = useTranslation("stocks");
+  const { q, rows } = useDailyRows(symbol);
+  return (
+    <Card body="list" aria-labelledby="stock-daily">
+      <CardHeader>
+        <CardTitle id="stock-daily">{t("daily.title")}</CardTitle>
+      </CardHeader>
+      <Table caption={t("daily.title")} className="mt-x2">
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("daily.date")}</TableHead>
+            <TableHead align="end">{t("daily.close")}</TableHead>
+            <TableHead align="end">{t("daily.changeRate")}</TableHead>
+            <TableHead align="end">{t("daily.volume")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {q.isLoading ? (
+            <TableSkeletonRows
+              rows={5}
+              columns={[
+                { align: "start", width: "64px" },
+                { align: "end", width: "80px" },
+                { align: "end", width: "56px" },
+                { align: "end", width: "64px" },
+              ]}
+            />
+          ) : isHardError(q) ? (
+            <TableStatusRow>
+              <BandFailure
+                band
+                title={t("daily.failTitle")}
+                onRetry={() => void q.refetch()}
+              />
+            </TableStatusRow>
+          ) : rows.length === 0 ? (
+            <TableStatusRow>
+              <p className="m-0 py-x3 text-center text-t3 text-fg-neutral-subtle">
+                {t("daily.empty")}
+              </p>
+            </TableStatusRow>
+          ) : (
+            rows.map((r) => (
+              <TableRow key={r.date}>
+                <TableRowHeader>
+                  {formatMonthDay(new Date(`${r.date}T00:00:00`))}
+                </TableRowHeader>
+                <TableCell align="end">
+                  {fmtByCurrency(r.close, currency)}
+                </TableCell>
+                <TableCell align="end">
+                  <PctDelta pct={r.chg} />
+                </TableCell>
+                <TableCell align="end">{r.vol.toLocaleString()}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+      {tail && <div className="pb-x3">{tail}</div>}
+    </Card>
   );
 }
 

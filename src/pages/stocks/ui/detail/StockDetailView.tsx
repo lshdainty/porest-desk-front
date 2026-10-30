@@ -39,9 +39,12 @@ import {
 import { BandTitle, DeltaText } from "@/features/stock/ui/phone/phone-parts";
 import { isHardError } from "@/features/stock/lib/query-state";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
+import { Card } from "@/shared/ds/card";
+import { DeskColumns, DeskFrame, DeskSlot } from "../desk/desk-frame";
 import { directionOf, directionOfPct } from "../../model/invest";
 import {
   DailyBand,
+  DailyCard,
   HeadBand,
   KvBand,
   NamuNotice,
@@ -52,21 +55,41 @@ import {
 } from "./detail-parts";
 
 /**
- * 종목 상세 페이지 — 폰(I-13 18 ~ 21). 상단 바(← "종목 상세" + 관심 Toggle) 아래 띠:
+ * 종목 상세 페이지(I-13 18 ~ 21 · 33 ~ 35). 폰은 상단 바(← "종목 상세" + 관심 Toggle) 아래 띠:
  * ① 머리 · 차트 ② 내 보유(보유일 때만) ③ 호가 · 체결(토스) ④ 기본 정보 ⑤ 일별 시세(+ 토스는 끝에 매매).
- * 주소만으로 열린다 — 보유 종목인지는 같은 보유 질의에서 찾는다.
+ * 768 이상은 같은 구역을 카드로 — 제목 줄 위 "‹ 증권", 1280 이상 2 : 1(왼쪽 머리 · 차트 → 일별 시세, 오른쪽 내 보유 → 호가 · 체결 → 기본 정보),
+ * 미만은 폰 띠 차례의 한 칸 720. 주소만으로 열린다 — 보유 종목인지는 같은 보유 질의에서 찾는다.
  */
-export function StockDetailMobile({
+export function StockDetailView({
   broker,
   symbol,
+  layout = "phone",
 }: {
   broker: "TOSS" | "NAMU";
   symbol: string;
+  layout?: "phone" | "desk";
 }) {
   const { t } = useTranslation("stocks");
   const master = useStockBySymbol(symbol).data ?? null;
-  const toss = broker === "TOSS" ? <TossBody symbol={symbol} /> : null;
-  const namu = broker === "NAMU" ? <NamuBody symbol={symbol} /> : null;
+  const desk = layout === "desk";
+  const toss =
+    broker === "TOSS" ? <TossBody symbol={symbol} desk={desk} /> : null;
+  const namu =
+    broker === "NAMU" ? <NamuBody symbol={symbol} desk={desk} /> : null;
+  if (desk)
+    return (
+      <DeskFrame
+        slot="stock-detail-desktop"
+        title={t("detail.sheetTitle")}
+        parent={{ to: brokerPath(broker), label: t("nav.title") }}
+        source={
+          broker === "NAMU" ? t("namu.dataNotice") : t("market.dataNotice")
+        }
+      >
+        {toss}
+        {namu}
+      </DeskFrame>
+    );
   return (
     <>
       <TopNavigation type="standard">
@@ -91,7 +114,7 @@ const flush = (name: string, node: React.ReactNode) =>
     </div>
   ) : null;
 
-function TossBody({ symbol }: { symbol: string }) {
+function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   const { t } = useTranslation("stocks");
   const mask = useMasked("stocks.detail");
   const master = useStockBySymbol(symbol).data ?? null;
@@ -298,77 +321,113 @@ function TossBody({ symbol }: { symbol: string }) {
       : []),
   ];
 
-  return (
-    <>
-      <div>
-        <HeadBand
-          name={name}
-          detail={`${symbol} · ${marketLabel} · ${kind}`}
-          priceText={last != null ? fmtByCurrency(last, currency) : "—"}
-          pct={changePct}
-          changeAmount={changeAmount}
-          currency={currency}
-          approx={
-            isUs && last != null && fxRate != null
-              ? `≈ ${won(Math.round(last * fxRate))}`
-              : undefined
-          }
-          unavailable={
-            last == null && !pricesQ.isLoading && !isHardError(pricesQ)
-              ? t("detail.priceUnavailable")
-              : undefined
-          }
-          failed={isHardError(pricesQ)}
-          onRetry={() => void pricesQ.refetch()}
-          loading={pricesQ.isLoading}
-          warnings={(warningsQ.data ?? []).map((w) =>
-            t(`warning.${w.warningType}`, { defaultValue: w.warningType }),
-          )}
-          symbol={symbol}
-          isUs={isUs}
+  const head = (
+    <HeadBand
+      name={name}
+      detail={`${symbol} · ${marketLabel} · ${kind}`}
+      priceText={last != null ? fmtByCurrency(last, currency) : "—"}
+      pct={changePct}
+      changeAmount={changeAmount}
+      currency={currency}
+      approx={
+        isUs && last != null && fxRate != null
+          ? `≈ ${won(Math.round(last * fxRate))}`
+          : undefined
+      }
+      unavailable={
+        last == null && !pricesQ.isLoading && !isHardError(pricesQ)
+          ? t("detail.priceUnavailable")
+          : undefined
+      }
+      failed={isHardError(pricesQ)}
+      onRetry={() => void pricesQ.refetch()}
+      loading={pricesQ.isLoading}
+      warnings={(warningsQ.data ?? []).map((w) =>
+        t(`warning.${w.warningType}`, { defaultValue: w.warningType }),
+      )}
+      symbol={symbol}
+      isUs={isUs}
+      watch={
+        desk ? (
+          <WatchToggle symbol={symbol} marketCode={master?.marketCode} body />
+        ) : undefined
+      }
+      chartHeight={desk ? 200 : 168}
+    />
+  );
+  const holdBand = holding && (
+    <KvBand id="stock-holding" title={t("holding.title")} rows={holdRows} />
+  );
+  const quotesBand = (
+    <QuotesBand
+      symbol={symbol}
+      currency={currency}
+      lastPrice={last}
+      changePct={changePct}
+    />
+  );
+  // 정보 조회가 실패했는데 "정상" 으로 그리면 거래정지 종목이 멀쩡해 보인다 — 실패 한 벌(검수 H2)
+  const infoBand = isHardError(infoQ) ? (
+    <section aria-labelledby="stock-info">
+      <BandTitle id="stock-info">{t("info.title")}</BandTitle>
+      <div className="pb-x6 pt-x3">
+        <BandFailure
+          band
+          title={t("info.failTitle")}
+          onRetry={() => void infoQ.refetch()}
         />
       </div>
-      {holding &&
-        flush(
-          "holding",
-          <KvBand
-            id="stock-holding"
-            title={t("holding.title")}
-            rows={holdRows}
-          />,
-        )}
-      {flush(
-        "quotes",
-        <QuotesBand
-          symbol={symbol}
-          currency={currency}
-          lastPrice={last}
-          changePct={changePct}
-        />,
-      )}
-      {flush(
-        "info",
-        // 정보 조회가 실패했는데 "정상" 으로 그리면 거래정지 종목이 멀쩡해 보인다 — 실패 한 벌(검수 H2)
-        isHardError(infoQ) ? (
-          <section aria-labelledby="stock-info">
-            <BandTitle id="stock-info">{t("info.title")}</BandTitle>
-            <div className="pb-x6 pt-x3">
-              <BandFailure
-                band
-                title={t("info.failTitle")}
-                onRetry={() => void infoQ.refetch()}
+    </section>
+  ) : (
+    <KvBand
+      id="stock-info"
+      title={t("info.title")}
+      rows={infoRows}
+      loading={infoQ.isLoading}
+    />
+  );
+
+  if (desk)
+    return (
+      <DeskColumns
+        left={
+          <>
+            <DeskSlot order={1} slot="head">
+              <Card>{head}</Card>
+            </DeskSlot>
+            <DeskSlot order={5} slot="daily">
+              <DailyCard
+                symbol={symbol}
+                currency={currency}
+                tail={<TradeTail isUs={isUs} />}
               />
-            </div>
-          </section>
-        ) : (
-          <KvBand
-            id="stock-info"
-            title={t("info.title")}
-            rows={infoRows}
-            loading={infoQ.isLoading}
-          />
-        ),
-      )}
+            </DeskSlot>
+          </>
+        }
+        right={
+          <>
+            {holdBand && (
+              <DeskSlot order={2} slot="holding">
+                <Card className="p-0">{holdBand}</Card>
+              </DeskSlot>
+            )}
+            <DeskSlot order={3} slot="quotes">
+              <Card className="p-0">{quotesBand}</Card>
+            </DeskSlot>
+            <DeskSlot order={4} slot="info">
+              <Card className="p-0">{infoBand}</Card>
+            </DeskSlot>
+          </>
+        }
+      />
+    );
+
+  return (
+    <>
+      <div>{head}</div>
+      {holdBand && flush("holding", holdBand)}
+      {flush("quotes", quotesBand)}
+      {flush("info", infoBand)}
       {flush(
         "daily",
         <DailyBand
@@ -381,7 +440,7 @@ function TossBody({ symbol }: { symbol: string }) {
   );
 }
 
-function NamuBody({ symbol }: { symbol: string }) {
+function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   const { t } = useTranslation("stocks");
   const mask = useMasked("stocks.detail");
   const master = useStockBySymbol(symbol).data ?? null;
@@ -481,43 +540,76 @@ function NamuBody({ symbol }: { symbol: string }) {
       value: master?.securityType === "ETF" ? "ETF" : t("info.stock"),
     },
   ];
+  const head = (
+    <HeadBand
+      name={name}
+      detail={
+        master ? `${symbol} · ${marketName(t, master.marketCode)}` : symbol
+      }
+      priceText={last != null && last > 0 ? fmtByCurrency(last, currency) : "—"}
+      pct={changePct}
+      changeAmount={changeAmount}
+      currency={currency}
+      unavailable={
+        (last == null || last === 0) && !quoteQ.isLoading
+          ? t("namu.priceEmpty")
+          : undefined
+      }
+      loading={krwQ.isLoading && usdQ.isLoading}
+      symbol={symbol}
+      isUs={isUs}
+      watch={
+        desk ? (
+          <WatchToggle symbol={symbol} marketCode={master?.marketCode} body />
+        ) : undefined
+      }
+      chartHeight={desk ? 200 : 168}
+    />
+  );
+  const holdBand = holding && (
+    <KvBand id="stock-holding" title={t("holding.title")} rows={holdRows} />
+  );
+  const infoBand = (
+    <KvBand id="stock-info" title={t("info.title")} rows={infoRows} />
+  );
+
+  if (desk)
+    return (
+      <DeskColumns
+        left={
+          <>
+            <DeskSlot order={1} slot="head">
+              <Card>{head}</Card>
+            </DeskSlot>
+            <DeskSlot order={5} slot="daily">
+              <DailyCard
+                symbol={symbol}
+                currency={currency}
+                tail={<NamuNotice />}
+              />
+            </DeskSlot>
+          </>
+        }
+        right={
+          <>
+            {holdBand && (
+              <DeskSlot order={2} slot="holding">
+                <Card className="p-0">{holdBand}</Card>
+              </DeskSlot>
+            )}
+            <DeskSlot order={4} slot="info">
+              <Card className="p-0">{infoBand}</Card>
+            </DeskSlot>
+          </>
+        }
+      />
+    );
+
   return (
     <>
-      <div>
-        <HeadBand
-          name={name}
-          detail={
-            master ? `${symbol} · ${marketName(t, master.marketCode)}` : symbol
-          }
-          priceText={
-            last != null && last > 0 ? fmtByCurrency(last, currency) : "—"
-          }
-          pct={changePct}
-          changeAmount={changeAmount}
-          currency={currency}
-          unavailable={
-            (last == null || last === 0) && !quoteQ.isLoading
-              ? t("namu.priceEmpty")
-              : undefined
-          }
-          loading={krwQ.isLoading && usdQ.isLoading}
-          symbol={symbol}
-          isUs={isUs}
-        />
-      </div>
-      {holding &&
-        flush(
-          "holding",
-          <KvBand
-            id="stock-holding"
-            title={t("holding.title")}
-            rows={holdRows}
-          />,
-        )}
-      {flush(
-        "info",
-        <KvBand id="stock-info" title={t("info.title")} rows={infoRows} />,
-      )}
+      <div>{head}</div>
+      {holdBand && flush("holding", holdBand)}
+      {flush("info", infoBand)}
       {flush(
         "daily",
         <DailyBand symbol={symbol} currency={currency} tail={<NamuNotice />} />,

@@ -140,6 +140,30 @@ describe("종목 찾기 입구", () => {
     ).not.toBeNull();
     wide = false;
   });
+  it("1280 이상: 입구 단추가 트리거라 열린 동안 aria-expanded 가 켜지고, Esc 로 닫으면 초점이 입구로 돌아온다(M8)", async () => {
+    wide = true;
+    render(<StockSearchEntry compact onPick={() => {}} />);
+    const entry = container.querySelector<HTMLButtonElement>(
+      "[data-slot=stock-search-entry]",
+    )!;
+    // 트리거는 감싼 div 가 아니라 단추 자신이다
+    expect(entry.getAttribute("data-slot")).toBe("stock-search-entry");
+    expect(entry.getAttribute("aria-expanded")).toBe("false");
+    expect(entry.parentElement?.getAttribute("aria-expanded")).toBeNull();
+    entry.focus();
+    await act(async () => {
+      entry.click();
+    });
+    expect(entry.getAttribute("aria-expanded")).toBe("true");
+    await act(async () => {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    });
+    expect(document.querySelector("[data-slot=popover-content]")).toBeNull();
+    expect(document.activeElement).toBe(entry);
+    wide = false;
+  });
   it("↓ 로 강조하고 Enter 로 고르면 표면이 닫히고 그 종목이 넘어간다", async () => {
     mocks.results = [
       {

@@ -192,7 +192,7 @@ vi.mock("@/features/stock/ui/phone/stock-search", () => ({
   StockSearchEntry: () => <button data-slot="stock-search-entry" />,
 }));
 
-const { TossStocksMobile } = await import("./TossStocksMobile");
+const { TossStocksView } = await import("./TossStocksView");
 let container: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
@@ -230,7 +230,7 @@ const render = () =>
   act(() =>
     root.render(
       <MemoryRouter initialEntries={["/desk/stocks/toss"]}>
-        <TossStocksMobile />
+        <TossStocksView />
       </MemoryRouter>,
     ),
   );

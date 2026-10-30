@@ -12,11 +12,6 @@ export function num(s: string | null | undefined): number {
   return s == null ? 0 : Number(s) || 0;
 }
 
-/** 상승/하락 색 — 국내 증권 통념: 상승=빨강(danger), 하락=파랑(brand). */
-export function trendColor(pct: number): string {
-  return pct >= 0 ? "var(--status-danger-fg)" : "var(--fg-brand)";
-}
-
 /**
  * 통화별 가격 표기 — KRW 는 원화 포맷, USD 는 $, 그 외(CNY·JPY 등)는 통화코드 병기.
  *
