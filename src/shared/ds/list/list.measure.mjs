@@ -87,6 +87,8 @@ export default {
   // 금액 · 화살표 · 컨트롤은 줄지 않고, 글로 넘긴 값만 본문이 1em 이 된 뒤에 준다 — list-suffix 의 data-value 로 가른다
   "suffix.shrink": [`${SUFFIX}[data-value=node]`, "exact", "flex-shrink"],
   "suffixText.shrink": [`${SUFFIX}[data-value=text]`, "exact", "flex-shrink"],
+  // 값은 줄 수와 상관없이 줄 끝 오른쪽 맞춤 — 좁은 줄에서 본문 아래로 내려간 모양은 start(list.yaml rule 3)
+  "suffixText.textAlign": [`${SUFFIX}[data-value=text]`, "exact", "text-align"],
   "suffixText.overflowWrap": [
     `${SUFFIX}[data-value=text]`,
     "exact",
