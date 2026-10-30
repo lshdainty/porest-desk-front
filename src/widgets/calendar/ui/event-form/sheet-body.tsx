@@ -38,7 +38,7 @@ import { NO_LABEL, reminderKey, type EventFormView } from "./types";
 
 const ROW_ICON = "size-[22px]";
 
-/** 날짜 · 시각 조각 — 누르는 자리 44 이상, 글은 자르지 않고 줄을 바꾼다(time-picker.md:71) */
+/** 날짜 · 시각 조각 — 누르는 자리 44 이상, 글은 자르지 않고 줄을 바꾼다(time-picker.md:71). 줄 높이는 다른 줄과 같게 위아래로 블리드한다(44 − 22 의 절반 11, list.md "위아래로 블리드해 줄 높이를 바꾸지 않는다") */
 function Piece({
   label,
   onClick,
@@ -60,7 +60,7 @@ function Piece({
       aria-haspopup="dialog"
       aria-expanded={expanded}
       onClick={onClick}
-      className="min-h-[44px] cursor-pointer rounded-r2 border-0 bg-transparent px-x1 text-t5 text-fg-neutral-subtle hover:bg-bg-neutral-weak-pressed focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-stroke-focus-ring"
+      className="-my-[11px] min-h-[44px] cursor-pointer rounded-r2 border-0 bg-transparent px-x1 text-t5 text-fg-neutral-subtle hover:bg-bg-neutral-weak-pressed focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-stroke-focus-ring"
     >
       {children}
     </button>
@@ -152,7 +152,7 @@ export function EventFormSheetBody({
         title={t(`form.${kind}`)}
         suffixText
         suffix={
-          <span className="-mr-x1 flex flex-wrap items-center justify-end @max-[calc(16rem+48px)]/list-item:mr-0 @max-[calc(16rem+48px)]/list-item:-ml-x1">
+          <span className="-mr-x1 flex flex-wrap items-center justify-end gap-y-[22px] @max-[calc(16rem+48px)]/list-item:mr-0 @max-[calc(16rem+48px)]/list-item:-ml-x1">
             <DayPickSurface
               title={dayName}
               value={day}
