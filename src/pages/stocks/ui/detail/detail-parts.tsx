@@ -393,32 +393,34 @@ export function QuotesBand({
                 {t("quotes.orderbookEmpty")}
               </p>
             ) : (
-              <table className="w-full border-collapse">
-                <caption className="sr-only">{t("quotes.orderbook")}</caption>
-                {head([
-                  t("orderbook.bidVolume"),
-                  t("quotes.tradePrice"),
-                  t("orderbook.askVolume"),
-                ])}
-                <tbody>
-                  {asks.map((a) => bookRow(a, "ask"))}
-                  <tr className={ROW}>
-                    <td
-                      colSpan={3}
-                      className="border-y border-dashed border-stroke-neutral-subtle p-0 text-center"
-                    >
-                      <span
-                        className="text-t4 font-bold tabular-nums"
-                        style={{ color: trendColor(changePct) }}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <caption className="sr-only">{t("quotes.orderbook")}</caption>
+                  {head([
+                    t("orderbook.bidVolume"),
+                    t("quotes.tradePrice"),
+                    t("orderbook.askVolume"),
+                  ])}
+                  <tbody>
+                    {asks.map((a) => bookRow(a, "ask"))}
+                    <tr className={ROW}>
+                      <td
+                        colSpan={3}
+                        className="border-y border-dashed border-stroke-neutral-subtle p-0 text-center"
                       >
-                        {lastPrice != null ? fmt(lastPrice) : "—"}
-                      </span>{" "}
-                      <PctDelta pct={changePct} />
-                    </td>
-                  </tr>
-                  {bids.map((b) => bookRow(b, "bid"))}
-                </tbody>
-              </table>
+                        <span
+                          className="text-t4 font-bold tabular-nums"
+                          style={{ color: trendColor(changePct) }}
+                        >
+                          {lastPrice != null ? fmt(lastPrice) : "—"}
+                        </span>{" "}
+                        <PctDelta pct={changePct} />
+                      </td>
+                    </tr>
+                    {bids.map((b) => bookRow(b, "bid"))}
+                  </tbody>
+                </table>
+              </div>
             )
           ) : tradesQ.isLoading ? (
             <TableSkeleton label={t("quotes.tradesLoading")} />
@@ -432,32 +434,34 @@ export function QuotesBand({
               {t("quotes.tradesEmpty")}
             </p>
           ) : (
-            <table className="w-full table-fixed border-collapse">
-              <caption className="sr-only">{t("quotes.trades")}</caption>
-              {head([
-                t("quotes.tradeTime"),
-                t("quotes.tradePrice"),
-                t("quotes.tradeVolume"),
-              ])}
-              <tbody>
-                {fills.map((f, i) => (
-                  <tr key={i} className={ROW}>
-                    <td className="p-0 text-t3 tabular-nums text-fg-neutral-subtle">
-                      {f.time}
-                    </td>
-                    <td
-                      className="p-0 text-end text-t4 font-bold tabular-nums"
-                      style={{ color: trendColor(f.dir) }}
-                    >
-                      {fmt(f.p)}
-                    </td>
-                    <td className="p-0 text-end text-t3 tabular-nums text-fg-neutral-muted">
-                      {f.q.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <caption className="sr-only">{t("quotes.trades")}</caption>
+                {head([
+                  t("quotes.tradeTime"),
+                  t("quotes.tradePrice"),
+                  t("quotes.tradeVolume"),
+                ])}
+                <tbody>
+                  {fills.map((f, i) => (
+                    <tr key={i} className={ROW}>
+                      <td className="p-0 text-t3 tabular-nums text-fg-neutral-subtle">
+                        {f.time}
+                      </td>
+                      <td
+                        className="p-0 text-end text-t4 font-bold tabular-nums"
+                        style={{ color: trendColor(f.dir) }}
+                      >
+                        {fmt(f.p)}
+                      </td>
+                      <td className="p-0 text-end text-t3 tabular-nums text-fg-neutral-muted">
+                        {f.q.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
