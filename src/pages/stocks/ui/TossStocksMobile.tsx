@@ -96,13 +96,11 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
   const accountSeq = accountsQ.data?.[0]?.accountSeq ?? null;
   const holdingsQ = useTossHoldings(accountSeq);
   const holdings = holdingsQ.data;
-  // 계좌가 하나도 없는 응답이 빈 목록인지 오류인지 확인하지 못했다 — 실패 한 벌로 보인다(I-13 12)
+  // 서버는 토스 응답을 그대로 넘긴다(TossQueryServiceImpl:212) — 정상 응답의 빈 목록([])은 빈 상태, 오류 응답은 실패 한 벌이다
+  // (실제 응답은 확인하지 못했다 — 어느 쪽이 와도 맞게 보인다)
   const investLoading =
     accountsQ.isLoading || (accountSeq != null && holdingsQ.isLoading);
-  const investFailed =
-    accountsQ.isError ||
-    holdingsQ.isError ||
-    (accountsQ.isSuccess && accountSeq == null);
+  const investFailed = accountsQ.isError || holdingsQ.isError;
   const retryInvest = () => {
     void accountsQ.refetch();
     if (accountSeq != null) void holdingsQ.refetch();
