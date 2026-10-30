@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useBackClose } from "@/shared/lib/groo/use-back-close";
+import { useBackClose } from "@/shared/ds/overlay";
 import { DayEventsDialog } from "@/widgets/calendar/ui/DayEventsDialog";
 import { EventDetailPopover } from "@/widgets/calendar/ui/EventDetailPopover";
 import { CalendarHeaderMobile } from "@/widgets/calendar/ui/header/calendar-header-mobile";
@@ -46,7 +46,9 @@ const CalendarMobile = ({ screen, isLoading, isFailed, onRetry }: IProps) => {
     setSelectedEvent,
   } = screen;
   // 일정 상세는 모바일에서만 drawer 다(데스크톱은 Popover) — 그때만 뒤로가기로 닫는다(QA #129).
-  useBackClose(handleClosePopover, !!selectedEvent);
+  // ds 의 뒤로 가기 훅을 쓴다 — 그날 시트(ds Bottom Sheet)가 닫히며 되감는 popstate 를 옛 훅은 "상세 닫기" 로 읽어 일정을 눌러도 상세가 안 떴다
+  // (09-1 회귀 — `detail-back-close.test.tsx`). ds 훅은 자기가 부른 되감기의 popstate 를 건너뛴다.
+  useBackClose(!!selectedEvent, () => handleClosePopover());
 
   return (
     <>
