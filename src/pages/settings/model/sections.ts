@@ -214,7 +214,6 @@ export const NEEDS_DESKTOP_HEAD: SectionId[] = [
  * `SettingsSubpageMobile.test.tsx` 가 잠근다. 남은 id 와 걷을 지시서는 I-16-1-web-result.md 표.
  */
 export const TEMP_BODY_PADDING: SectionId[] = [
-  "accounts",
   "recurring",
   "presets",
   "calendar-share",

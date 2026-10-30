@@ -186,7 +186,7 @@ export const SettingsPage = () => {
           <CategoryManager mobile={m} addRequest={addRequests.categories} />
         );
       case "accounts":
-        return <AccountManager mobile={m} />;
+        return <AccountManager mobile={m} addRequest={addRequests.accounts} />;
       case "budget":
         return <BudgetManager mobile={m} />;
       case "goals":
