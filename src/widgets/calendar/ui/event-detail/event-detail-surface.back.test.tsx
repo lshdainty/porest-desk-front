@@ -4,7 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
-import { click, setupFormDom } from "../event-form/test-utils";
+import { click, setValue, setupFormDom } from "../event-form/test-utils";
 
 import type { CalendarEventFormValues } from "@/entities/calendar";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
@@ -161,5 +161,36 @@ describe("폰 그날 시트 — 기기 뒤로 가기", () => {
       await new Promise((r) => setTimeout(r, 80));
     });
     expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  // M-7 — 수정 폼에서 바꾼 채 기기 뒤로 가기: 묻고, [계속 작성] 을 반복해도 칸이 소진되지 않는다(keep)
+  it("수정 폼에서 바꾼 뒤 기기 뒤로 가기 → [계속 작성] 을 반복해도 매번 묻고 폼에 남는다", async () => {
+    phone([event(1)]);
+    press(rows()[0]!);
+    press(
+      [
+        ...sheet().querySelectorAll("[data-slot=bottom-sheet-footer] button"),
+      ][1]!,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 120));
+    });
+    setValue(sheet().querySelector<HTMLInputElement>("[name=title]")!, "바꾼");
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        window.history.back();
+        await new Promise((r) => setTimeout(r, 120));
+      });
+      const alert = document.querySelector("[role=alertdialog]");
+      expect(alert).not.toBeNull();
+      const stay = [...alert!.querySelectorAll("button")].find(
+        (b) => b.textContent === "계속 작성",
+      )!;
+      press(stay);
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 120));
+      });
+      expect(title()).toBe("editEvent");
+    }
   });
 });

@@ -17,17 +17,25 @@ import { EventFormDialogBody } from "./dialog-body";
 export function EventFormDialogPanel({ flow }: { flow: EventFormFlow }) {
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
-  const { view, heading, del, isLoading, save } = flow;
+  const {
+    view,
+    heading,
+    del,
+    isLoading,
+    save,
+    saveError,
+    focusTitleOnOpen,
+    setErrorEl,
+  } = flow;
   return (
-    <DialogContent
-      title={heading}
-      onOpenAutoFocus={flow.focusTitleOnOpen}
-    >
+    <DialogContent title={heading} onOpenAutoFocus={focusTitleOnOpen}>
       <DialogBody scrollFog>
-        {flow.saveError && (
-          <Callout tone="critical" role="alert" className="mb-x4">
-            {t("form.saveFailed")}
-          </Callout>
+        {saveError && (
+          <div ref={setErrorEl}>
+            <Callout tone="critical" role="alert" className="mb-x4">
+              {t("form.saveFailed")}
+            </Callout>
+          </div>
         )}
         <EventFormDialogBody view={view} />
       </DialogBody>

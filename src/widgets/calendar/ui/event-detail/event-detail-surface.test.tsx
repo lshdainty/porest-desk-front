@@ -4,7 +4,12 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
-import { click, setValue, setupFormDom } from "../event-form/test-utils";
+import {
+  click,
+  row as formRow,
+  setValue,
+  setupFormDom,
+} from "../event-form/test-utils";
 
 import type { CalendarEventFormValues } from "@/entities/calendar";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
@@ -341,6 +346,97 @@ describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
     });
     rerender([]);
     expect(title()).toBe("10월 22일 (목)");
+  });
+
+  // M-7 — 한 단계 ← 규칙(09-2 후속 PR2)을 상세 → 수정 폼 단계에도 그대로: 단계에 들어올 때 값과 같으면 묻지 않고, 다르면 묻는다
+  const asking = () => document.querySelector("[role=alertdialog]");
+  const askBtn = (label: string) =>
+    [...document.querySelectorAll("[role=alertdialog] button")].find(
+      (b) => b.textContent === label,
+    )!;
+  // 확인창이 닫히는 것(Presence)을 기다린다
+  const later = () =>
+    act(async () => {
+      await new Promise((r) => setTimeout(r, 80));
+    });
+  const stepBack = () =>
+    press(sheet().querySelector("[data-slot=bottom-sheet-back]")!);
+  const titleInput = () =>
+    sheet().querySelector<HTMLInputElement>("[name=title]")!;
+
+  it("수정 폼 머리에 ← 가 있다 — 안 바꿨으면 묻지 않고 상세로 돌아간다", async () => {
+    toEdit();
+    expect(
+      sheet().querySelector("[data-slot=bottom-sheet-back]"),
+    ).not.toBeNull();
+    stepBack();
+    expect(asking()).toBeNull();
+    expect(title()).toBe("eventDetail");
+  });
+
+  it("← 는 바꿨으면 먼저 묻는다 — [계속 작성] 이면 폼에 남고 친 값 그대로, [나가기] 면 상세", async () => {
+    toEdit();
+    setValue(titleInput(), "바꾼 제목");
+    stepBack();
+    expect(asking()).not.toBeNull();
+    press(askBtn("계속 작성"));
+    await later();
+    expect(asking()).toBeNull();
+    expect(title()).toBe("editEvent");
+    expect(titleInput().value).toBe("바꾼 제목");
+    stepBack();
+    press(askBtn("나가기"));
+    await later();
+    expect(title()).toBe("eventDetail");
+    expect(updates).toHaveLength(0);
+  });
+
+  it("바꿨다가 원래 값으로 되돌리면 묻지 않는다 — 들어올 때 값과 같다", async () => {
+    toEdit();
+    setValue(titleInput(), "바꾼 제목");
+    setValue(titleInput(), "일정 1");
+    stepBack();
+    expect(asking()).toBeNull();
+    expect(title()).toBe("eventDetail");
+  });
+
+  it("닫기 원은 안 바꿨으면 바로 시트 전체를 닫는다", async () => {
+    const { f } = toEdit();
+    press(sheet().querySelector("[data-slot=bottom-sheet-close]")!);
+    expect(asking()).toBeNull();
+    expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("바꾼 뒤 닫기 원은 묻는다 — [계속 작성] 이면 닫히지 않는다", async () => {
+    const { f } = toEdit();
+    setValue(titleInput(), "바꾼 제목");
+    press(sheet().querySelector("[data-slot=bottom-sheet-close]")!);
+    expect(asking()).not.toBeNull();
+    press(askBtn("계속 작성"));
+    await later();
+    expect(f.onClose).not.toHaveBeenCalled();
+    expect(title()).toBe("editEvent");
+    press(sheet().querySelector("[data-slot=bottom-sheet-close]")!);
+    press(askBtn("나가기"));
+    await later();
+    expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("장소 안 단계의 ← 는 글을 안 바꿨으면 묻지 않고 폼으로, 바꿨으면 묻는다 — 상세로 나가지 않는다", async () => {
+    toEdit();
+    press(formRow("form.location"));
+    expect(title()).toBe("form.location");
+    stepBack();
+    expect(asking()).toBeNull();
+    expect(title()).toBe("editEvent");
+    press(formRow("form.location"));
+    const input = sheet().querySelector<HTMLInputElement>("input")!;
+    setValue(input, "쓰던 장소");
+    stepBack();
+    expect(asking()).not.toBeNull();
+    press(askBtn("나가기"));
+    await later();
+    expect(title()).toBe("editEvent");
   });
 
   it("폼 바닥 [삭제] 는 삭제 확인을 요청한다", () => {

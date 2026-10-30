@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useLeaveConfirm } from "@/shared/ds/alert-dialog";
 import { useWideSurface } from "@/shared/ds/overlay";
 import {
   useEventForm,
@@ -15,6 +16,9 @@ import type {
 } from "@/entities/calendar";
 import type { EventLabel } from "@/entities/event-label";
 
+// 묻기 전 초점 자리가 사라졌을 때 돌아갈 표면 — 없다(초점은 묻기 전 자리로만 돌아간다). 렌더 안에서 ref 모양 객체를 만들면 react-hooks/refs 가 막아 모듈에 둔다
+const NO_FALLBACK_SURFACE: RefObject<HTMLElement | null> = { current: null };
+
 export type EventFormStep = "list" | "location" | "description";
 
 export interface EventFormFlowArgs {
@@ -24,6 +28,8 @@ export interface EventFormFlowArgs {
   initial?: EventFormInitial;
   labels?: EventLabel[];
   isLoading?: boolean;
+  /** 빠른 추가에서 쓴 값을 들고 왔다 — 그 값도 "바뀐 값" 으로 쳐서 닫을 때 묻는다(RHF 기본값이 되어 isDirty 가 false 이므로) */
+  initialDirty?: boolean;
   /** 저장(추가 · 수정)이 실패했다 — 폼 맨 위에 critical Callout(고정 문구), 폼은 열려 있고 입력값은 그대로 */
   saveError?: boolean;
   onSubmit: (data: CalendarEventFormValues) => void;
@@ -42,6 +48,7 @@ export function useEventFormFlow({
   selectedEndDate,
   initial,
   labels = [],
+  initialDirty = false,
   isLoading,
   saveError = false,
   onSubmit,
@@ -61,11 +68,14 @@ export function useEventFormFlow({
   const [showErrors, setShowErrors] = useState(false);
   const [step, setStep] = useState<EventFormStep>("list");
   const [draft, setDraft] = useState("");
+  const [stepOrigin, setStepOrigin] = useState("");
   const endRef = useRef<HTMLButtonElement>(null);
+  // 요소는 상태로 든다(콜백 ref = 상태 설정자) — ref 객체를 이 훅이 돌려주면 받는 쪽이 렌더 중 ref 를 읽는 것으로 잡힌다(react-hooks/refs)
+  const [errorEl, setErrorEl] = useState<HTMLDivElement | null>(null);
 
   const titleEmpty = !title;
   const rangeError = showErrors && dateRangeInvalid;
-  const dirty = form.formState.isDirty;
+  const dirty = form.formState.isDirty || initialDirty;
 
   const view: EventFormView = {
     ctrl,
@@ -96,7 +106,10 @@ export function useEventFormFlow({
 
   // 장소 · 설명 한 단계
   const enterStep = (next: "location" | "description") => {
-    setDraft((next === "location" ? ctrl.location : ctrl.description) ?? "");
+    const origin =
+      (next === "location" ? ctrl.location : ctrl.description) ?? "";
+    setDraft(origin);
+    setStepOrigin(origin);
     setStep(next);
   };
   const confirmStep = () => {
@@ -106,12 +119,26 @@ export function useEventFormFlow({
     setStep("list");
   };
   const cancelStep = () => setStep("list");
-  useStepBack(!wide && step !== "list", cancelStep);
+  // ← · 기기 뒤로 가기 · Esc — 친 글이 들어올 때와 다르면 "작성한 내용이 사라져요" 를 묻고, 같으면 묻지 않는다. "완료" 는 묻지 않는다.
+  // 물었으면(false) 칸을 다시 쌓아 [계속 작성] 뒤에도 뒤로 가기가 이 단계로 온다
+  const leave = useLeaveConfirm({
+    dirty: step !== "list" && draft !== stepOrigin,
+    leave: cancelStep,
+    contentRef: NO_FALLBACK_SURFACE,
+  });
+  const requestCancelStep = () => leave.request();
+  useStepBack(!wide && step !== "list", requestCancelStep);
+
+  // 실패하면 폼 맨 위로 — 아래까지 내려온 채 저장했을 때 위의 알림이 화면 밖에 있지 않게(snackbar.md:75)
+  useEffect(() => {
+    if (saveError) errorEl?.scrollIntoView({ block: "nearest" });
+  }, [saveError, errorEl]);
 
   // 새 일정은 제목에 초점. 표면의 열림 초점(Radix onOpenAutoFocus)에서 기본(표면 자신)을 막고 제목 칸에 직접 준다 — 수정으로 열 때는 주지 않는다(표면이 받는다)
   const focusTitleOnOpen = (e: Event) => {
-    e.preventDefault();
+    // 수정으로 열 때는 막지 않는다 — 기본 동작(표면 자신이 초점을 받는다)을 그대로 둔다. 막으면 초점이 어디에도 안 간다
     if (event) return;
+    e.preventDefault();
     const root = e.target instanceof HTMLElement ? e.target : document;
     const input = root.querySelector<HTMLInputElement>('input[name="title"]');
     if (input) input.focus({ preventScroll: true });
@@ -143,6 +170,9 @@ export function useEventFormFlow({
     enterStep,
     confirmStep,
     cancelStep,
+    leaveNode: leave.node,
+    requestCancelStep,
+    setErrorEl,
     resetScreen,
   };
 }

@@ -117,6 +117,7 @@ export function EventDetailSurface({
     event: snapshot,
     labels,
     isLoading: updateEvent.isPending,
+    saveError: updateEvent.isError,
     onSubmit: (data) => {
       if (!snapshot || step.kind !== "edit") return;
       updateEvent.mutate(
@@ -169,7 +170,7 @@ export function EventDetailSurface({
   /** ← · Esc · 기기 뒤로 가기 — 한 단계 뒤 */
   const stepBack = () => {
     if (step.kind === "edit") {
-      if (flow.inStep) flow.cancelStep();
+      if (flow.inStep) flow.requestCancelStep();
       else editLeave.request();
     } else if (step.kind === "detail" && hasList) toList();
     else onClose();
@@ -177,7 +178,10 @@ export function EventDetailSurface({
 
   // 기기 뒤로 가기 — 단계마다 히스토리 칸을 하나 더 쌓아 시트 전체가 닫히지 않고 이 단계만 되돌린다.
   // (시트 자체의 칸은 ds Bottom Sheet 가 쌓는다) 폼 단계는 바뀐 값을 묻는다 — 묻고만 끝났으면 칸을 다시 쌓는다.
-  useStepBack(!wide && hasList && step.kind !== "list" && !!current, toList);
+  useStepBack(!wide && hasList && step.kind !== "list" && !!current, () => {
+    toList();
+    return true;
+  });
   useBackClose(!wide && step.kind === "edit" && !!current, (keep) => {
     if (!editLeave.request()) keep();
   });
@@ -285,7 +289,11 @@ export function EventDetailSurface({
         }}
       >
         {inEdit ? (
-          <EventFormSheetPanel flow={flow} {...sheetProps} />
+          <EventFormSheetPanel
+            flow={flow}
+            onStepBack={() => void editLeave.request()}
+            {...sheetProps}
+          />
         ) : step.kind === "detail" && current ? (
           <BottomSheetContent
             {...sheetProps}

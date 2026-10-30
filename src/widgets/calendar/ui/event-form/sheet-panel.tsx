@@ -27,9 +27,13 @@ import type { ComponentProps } from "react";
  */
 export function EventFormSheetPanel({
   flow,
+  onStepBack,
+  ref: externalRef,
   ...contentProps
 }: {
   flow: EventFormFlow;
+  /** 폼 단계(줄 칸)의 머리 ← — 일정 상세가 든 시트에서 상세로 돌아간다. 장소 · 설명 안 단계의 ← 는 늘 있다 */
+  onStepBack?: () => void;
 } & Omit<
   ComponentProps<typeof BottomSheetContent>,
   "title" | "children" | "showCloseButton" | "onBack"
@@ -37,7 +41,6 @@ export function EventFormSheetPanel({
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
   const {
-    ctrl,
     view,
     step,
     inStep,
@@ -49,25 +52,32 @@ export function EventFormSheetPanel({
     save,
     enterStep,
     confirmStep,
-    cancelStep,
+    requestCancelStep,
+    saveError,
+    focusTitleOnOpen,
+    setErrorEl,
+    leaveNode,
   } = flow;
-  const { form } = ctrl;
   return (
     <BottomSheetContent
       title={inStep ? t(`form.${step}`) : heading}
       aria-describedby={undefined}
       showCloseButton={!inStep}
-      onBack={inStep ? cancelStep : undefined}
-      onOpenAutoFocus={flow.focusTitleOnOpen}
+      ref={externalRef}
+      onBack={inStep ? () => void requestCancelStep() : onStepBack}
+      onOpenAutoFocus={focusTitleOnOpen}
       {...contentProps}
     >
+      {leaveNode}
       {inStep && <SheetStepDone onClick={confirmStep} />}
       <BottomSheetBody scrollFog>
-        {step === "list" && flow.saveError && (
+        {step === "list" && saveError && (
           // 저장 실패 — 서버 글 대신 고정 문구(snackbar.md:75). 폼 맨 위, 나중에 나타나는 위험이라 role=alert
-          <Callout tone="critical" role="alert" className="mb-x4">
-            {t("form.saveFailed")}
-          </Callout>
+          <div ref={setErrorEl}>
+            <Callout tone="critical" role="alert" className="mb-x4">
+              {t("form.saveFailed")}
+            </Callout>
+          </div>
         )}
         {step === "list" && (
           <EventFormSheetBody view={view} onStep={enterStep} />

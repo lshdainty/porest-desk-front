@@ -47,7 +47,7 @@ export const EventForm = ({ onClose, ...args }: EventFormProps) => {
       dirty={flow.dirty && !flow.inStep}
       onOpenChange={(next) => {
         if (next) return;
-        if (flow.inStep) flow.cancelStep();
+        if (flow.inStep) flow.requestCancelStep();
         else onClose();
       }}
     >
