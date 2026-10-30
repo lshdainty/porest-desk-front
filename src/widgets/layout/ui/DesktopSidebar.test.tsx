@@ -167,6 +167,33 @@ describe("DesktopSidebar 증권 하위 메뉴", () => {
     expect(topItem("stocks")?.getAttribute("aria-current")).toBeNull();
   });
 
+  it("종목 상세 · 포트폴리오 주소에서도 그 증권사 항목이 지금이다 — 하위 경로를 정확 일치로 보지 않는다(I-13 31)", () => {
+    state.connectedBrokers = ["TOSS", "NAMU"];
+    for (const path of [
+      "/desk/stocks/toss/005930",
+      "/desk/stocks/toss/BRK.B",
+      "/desk/stocks/toss/portfolio",
+    ]) {
+      render(path);
+      expect(subLinks().map((a) => a.getAttribute("aria-current"))).toEqual([
+        "page",
+        null,
+      ]);
+      expect(topItem("stocks")?.getAttribute("aria-expanded")).toBe("true");
+      act(() => root.unmount());
+      root = createRoot(container);
+    }
+  });
+
+  it("다른 증권사 이름이 접두사로 겹쳐도 지금이 되지 않는다 — /desk/stocks/toss 와 /desk/stocks/tossx", () => {
+    state.connectedBrokers = ["TOSS", "NAMU"];
+    render("/desk/stocks/tossx");
+    expect(subLinks().map((a) => a.getAttribute("aria-current"))).toEqual([
+      null,
+      null,
+    ]);
+  });
+
   it("하위가 지금이면 저절로 펼쳐지고, 증권 화면 밖에서는 접혀 있다", () => {
     state.connectedBrokers = ["TOSS", "NAMU"];
     render("/desk/stocks/namu");

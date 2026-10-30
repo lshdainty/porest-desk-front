@@ -2,7 +2,7 @@
 // 옮기면서 값이 바뀌면 같은 금액이 화면마다 다르게 보인다 — 그 회귀를 여기서 막는다.
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { fmtByCurrency, fmtCapKRW, fmtShares, num, trendColor } from "./format";
+import { fmtByCurrency, fmtCapKRW, fmtShares, num } from "./format";
 
 describe("num", () => {
   it("서버가 String 으로 주는 금액을 숫자로 읽는다", () => {
@@ -14,14 +14,6 @@ describe("num", () => {
     expect(num(undefined)).toBe(0);
     expect(num("")).toBe(0);
     expect(num("abc")).toBe(0);
-  });
-});
-
-describe("trendColor — 국내 증권 통념(상승=빨강, 하락=파랑)", () => {
-  it("상승·보합은 danger, 하락은 brand", () => {
-    expect(trendColor(1)).toBe("var(--status-danger-fg)");
-    expect(trendColor(0)).toBe("var(--status-danger-fg)");
-    expect(trendColor(-1)).toBe("var(--fg-brand)");
   });
 });
 

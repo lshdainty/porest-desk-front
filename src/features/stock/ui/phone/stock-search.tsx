@@ -1,5 +1,12 @@
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+} from "react";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/shared/lib/cn";
 import { Search } from "lucide-react";
 import { BottomSheet, BottomSheetContent } from "@/shared/ds/bottom-sheet";
 import { useInputButtonSurface } from "@/shared/ds/input-button";
@@ -24,31 +31,33 @@ import { useStockSearch } from "../../model/useStockMaster";
  * 서버 검색은 마지막 입력 뒤 300ms 에 한 번(ds 가 기다린다). 고르면 표면을 닫고 `onPick` 이 상세 주소로 보낸다.
  */
 
-/** 입구 — Searchable List 칸 모양의 단추(밑줄형 large 40 · 앞 돋보기 24 · 글 t6) */
-function SearchEntryButton({
-  open,
-  onClick,
-  compact,
-}: {
-  open: boolean;
-  onClick: () => void;
-  /** 카드 머리(13-2 30) — 입구 폭은 둘러싼 상자가 정하고, 1280 이상은 medium 34 · 글 t5 · 돋보기 20 */
-  compact?: boolean;
-}) {
+/**
+ * 입구 — Searchable List 칸 모양의 단추(밑줄형 large 40 · 앞 돋보기 24 · 글 t6).
+ * 단추 자신이 Popover 트리거가 된다(`PopoverTrigger asChild`) — 감싼 div 가 트리거면 닫을 때 초점을 돌려줄 곳이 없다(검수 M8).
+ * 그래서 ref 와 button 속성(aria-expanded · onClick …)을 그대로 받아 단추에 건다.
+ */
+const SearchEntryButton = forwardRef<
+  HTMLButtonElement,
+  ComponentPropsWithoutRef<"button"> & {
+    /** 카드 머리(13-2 30) — 입구 폭은 둘러싼 상자가 정하고, 1280 이상은 medium 34 · 글 t5 · 돋보기 20 */
+    compact?: boolean;
+  }
+>(({ compact, className, ...props }, ref) => {
   const { t } = useTranslation("stocks");
   return (
     <button
+      ref={ref}
       type="button"
       aria-haspopup="dialog"
-      aria-expanded={open}
       aria-label={t("search.label")}
       data-slot="stock-search-entry"
-      onClick={onClick}
-      className={
+      {...props}
+      className={cn(
         compact
           ? "flex min-h-[40px] w-full cursor-pointer items-center gap-x2_5 py-x2 text-t6 text-fg-placeholder shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)] lg:min-h-[34px] lg:gap-x2 lg:py-x1_5 lg:text-t5"
-          : "flex min-h-[40px] w-full cursor-pointer items-center gap-x2_5 py-x2 text-t6 text-fg-placeholder shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)]"
-      }
+          : "flex min-h-[40px] w-full cursor-pointer items-center gap-x2_5 py-x2 text-t6 text-fg-placeholder shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)]",
+        className,
+      )}
     >
       <Search
         aria-hidden
@@ -59,7 +68,8 @@ function SearchEntryButton({
       </span>
     </button>
   );
-}
+});
+SearchEntryButton.displayName = "SearchEntryButton";
 
 export function StockSearchEntry({
   onPick,
@@ -74,15 +84,6 @@ export function StockSearchEntry({
   const { t } = useTranslation("stocks");
   const surface = useInputButtonSurface();
   const [open, setOpen] = useState(false);
-  const entry = (
-    <div className={className}>
-      <SearchEntryButton
-        open={open}
-        compact={compact}
-        onClick={() => setOpen(true)}
-      />
-    </div>
-  );
   const body: ReactNode = open ? (
     <SearchBody
       onPick={(item) => {
@@ -93,7 +94,13 @@ export function StockSearchEntry({
   ) : null;
   return surface === "sheet" ? (
     <BottomSheet open={open} onOpenChange={setOpen}>
-      {entry}
+      <div className={className}>
+        <SearchEntryButton
+          compact={compact}
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+        />
+      </div>
       <BottomSheetContent
         title={t("search.label")}
         onOpenAutoFocus={focusSearchableList}
@@ -103,7 +110,11 @@ export function StockSearchEntry({
     </BottomSheet>
   ) : (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{entry}</PopoverTrigger>
+      <div className={className}>
+        <PopoverTrigger asChild>
+          <SearchEntryButton compact={compact} />
+        </PopoverTrigger>
+      </div>
       <PopoverContent
         aria-label={t("search.label")}
         align={compact ? "end" : "start"}
