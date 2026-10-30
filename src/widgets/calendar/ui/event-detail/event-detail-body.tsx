@@ -1,122 +1,128 @@
+import { useState, type ReactNode, type Ref } from "react";
 import {
   differenceInCalendarDays,
   differenceInMinutes,
-  format,
+  isSameDay,
   parseISO,
 } from "date-fns";
-import { enUS, ko } from "date-fns/locale";
-import { Bell, MapPin, Repeat, Tag } from "lucide-react";
+import {
+  Bell,
+  Calendar,
+  Clock,
+  MapPin,
+  Repeat,
+  Sun,
+  Tag,
+  Text,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { eventBadgeTone } from "@/widgets/calendar/lib/helpers";
+import { Badge } from "@/shared/ds/badge";
+import { formatDateValue } from "@/shared/ds/date-picker";
+import { List, ListItem } from "@/shared/ds/list";
+import { formatTimeValue } from "@/shared/ds/time-picker";
+import { cn } from "@/shared/lib/cn";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
+import { reminderKey } from "@/widgets/calendar/ui/event-form/types";
 
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
-interface EventDetailBodyProps {
-  event: IEvent;
+const ROW_ICON = "size-[22px]";
+
+/** 줄 제목은 줄을 바꾸지 않는다 — 긴 값이 와도 제목이 글자 하나 폭으로 눌리지 않게 값이 줄을 바꾼다 */
+function NoWrap({ children }: { children: ReactNode }) {
+  return <span className="whitespace-nowrap">{children}</span>;
 }
 
-function getRruleText(rrule: string, t: (key: string) => string): string {
-  if (rrule.includes("FREQ=DAILY")) return t("recurrence.daily");
-  if (rrule.includes("FREQ=WEEKLY")) return t("recurrence.weekly");
-  if (rrule.includes("FREQ=MONTHLY")) return t("recurrence.monthly");
-  if (rrule.includes("FREQ=YEARLY")) return t("recurrence.yearly");
-  return rrule;
-}
-
-function getReminderText(minutes: number, t: (key: string) => string): string {
-  if (minutes === 5) return t("reminder.5min");
-  if (minutes === 15) return t("reminder.15min");
-  if (minutes === 30) return t("reminder.30min");
-  if (minutes === 60) return t("reminder.1hour");
-  if (minutes === 1440) return t("reminder.1day");
-  return `${minutes}min`;
-}
-
-/** 디자인 CAL_PALETTE 공식 — 이벤트 색을 surface/fg 와 섞어 다크 자동 적응. */
-
-/** 원형 tone 아이콘 + 캡션/값 — 디자인 DetailRow 미러(34 원형, caption 11/600, label 13/500). */
-function DetailRow({
-  icon,
-  caption,
-  label,
-  tone,
-}: {
-  icon: React.ReactNode;
-  caption: string;
-  label: string;
-  tone: { bg: string; fg: string };
-}) {
+/** 캘린더 · 라벨 값 — 색 점 8 + 사이 6 + 이름(일정 폼 줄과 같은 점) */
+function DotValue({ color, children }: { color: string; children: ReactNode }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 14,
-        padding: "11px 2px",
-      }}
-    >
+    <span className="inline-flex items-center gap-x1_5">
       <span
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: "var(--radius-full)",
-          background: tone.bg,
-          color: tone.fg,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        {icon}
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: "var(--text-badge)",
-            fontWeight: 600,
-            color: "var(--fg-tertiary)",
-            marginBottom: 1,
-          }}
-        >
-          {caption}
-        </div>
-        <div
-          style={{
-            fontSize: "var(--text-label-sm)",
-            color: "var(--fg-primary)",
-            fontWeight: 500,
-            wordBreak: "keep-all",
-          }}
-        >
-          {label}
-        </div>
-      </div>
-    </div>
+        aria-hidden
+        className="size-[8px] shrink-0 rounded-full"
+        style={{ background: color }}
+      />
+      <span>{children}</span>
+    </span>
   );
 }
 
-/** 일정 상세 본문 — 디자인 EventDetailDialog 미러(모바일 drawer / 데스크톱 popover 공용). 바닥 버튼은 `EventDetailActions`. */
-const EventDetailBody = ({ event }: EventDetailBodyProps) => {
-  const { t, i18n } = useTranslation("calendar");
-  const isKo = i18n.language.startsWith("ko");
-  const locale = isKo ? ko : enUS;
-  const timeFormat = isKo ? "a h:mm" : "h:mm a";
-  const shortDateFormat = isKo ? "M월 d일 (EE)" : "MMM d (EEE)";
+/** 값의 조각들 — 자르지 않고 조각 단위로 줄을 바꾼다. 날짜 조각 + 사이 8 + 시각 조각 */
+function Pieces({ children }: { children: ReactNode }) {
+  return (
+    <span className="flex flex-wrap items-center justify-end gap-x-x2">
+      {children}
+    </span>
+  );
+}
 
-  const startDate = parseISO(event.startDate);
-  const endDate = parseISO(event.endDate);
-  const sameDay =
-    format(startDate, "yyyy-MM-dd") === format(endDate, "yyyy-MM-dd");
-  const tone = eventBadgeTone(event);
-  const calendarTone = event.calendarColor
-    ? getPaletteByColor(event.calendarColor)
-    : tone;
+function Piece({ muted, children }: { muted?: boolean; children: ReactNode }) {
+  return (
+    <span
+      className={cn("whitespace-nowrap", muted && "text-fg-neutral-subtle")}
+    >
+      {children}
+    </span>
+  );
+}
 
-  // D-day (오늘 기준, 시작일)
-  const dd = differenceInCalendarDays(startDate, new Date());
+/** 걸린 시간 — 같은 날 시각 일정만. "2시간" · "1시간 30분" · "45분" */
+function durationLabel(
+  start: Date,
+  end: Date,
+  t: (key: string, o?: Record<string, unknown>) => string,
+): string | null {
+  const min = differenceInMinutes(end, start);
+  if (min <= 0) return null;
+  if (min < 60) return t("detail.durationM", { m: min });
+  const h = Math.floor(min / 60);
+  return min % 60
+    ? t("detail.durationHM", { h, m: min % 60 })
+    : t("detail.durationH", { h });
+}
+
+/** 반복 한 줄 — 매일 · 매주 · 매월 · 매년 밖의 규칙은 일정 폼과 같은 갈래("반복 안 함"으로 보인다) */
+function recurrenceKey(rrule: string | null): string {
+  if (rrule?.includes("FREQ=DAILY")) return "recurrence.daily";
+  if (rrule?.includes("FREQ=WEEKLY")) return "recurrence.weekly";
+  if (rrule?.includes("FREQ=MONTHLY")) return "recurrence.monthly";
+  if (rrule?.includes("FREQ=YEARLY")) return "recurrence.yearly";
+  return "recurrence.none";
+}
+
+interface EventDetailBodyProps {
+  event: IEvent;
+  /**
+   * 어느 자리에 놓이나 — 머리 좌우 여백만 다르다. sheet(시트 · 대화상자) 좌우 24, panel(그날 패널) 왼쪽 24 · 오른쪽 20.
+   * 이 부품은 가장자리까지 닿는 상자 안에 둔다(줄이 화면 끝까지 눌린다).
+   */
+  placement?: "sheet" | "panel";
+  /** 제목 요소 — 상세로 들어갈 때 초점을 받는다(tabIndex -1) */
+  titleRef?: Ref<HTMLHeadingElement>;
+}
+
+/**
+ * 일정 상세 본문 (I-09b 6 · 1-2B) — 제목 + D-day 배지 아래 List 줄. 일정 폼 줄과 같은 차례 · 같은 아이콘이고 꺾쇠만 없다.
+ * 없는 값(라벨 · 알림 · 장소 · 설명)은 줄을 두지 않고 반복은 늘 둔다. 색은 캘린더 · 라벨 줄의 점으로만 — 일정 색은 그리지 않는다.
+ * 폰 그날 시트 · 데스크톱 그날 패널 · 480 시트 / 대화상자가 이 부품 하나를 같이 쓴다. 바닥 버튼은 `EventDetailActions`.
+ */
+export function EventDetailBody({
+  event,
+  placement = "sheet",
+  titleRef,
+}: EventDetailBodyProps) {
+  const { t } = useTranslation("calendar");
+  const [today] = useState(() => new Date());
+
+  const start = parseISO(event.startDate);
+  const end = parseISO(event.endDate);
+  const sameDay = isSameDay(start, end);
+  const dayText = (d: Date) => formatDateValue(d, today);
+  const timeText = (d: Date) => formatTimeValue(d);
+
+  // D-day — 시작일 기준 · 오늘 0. 오늘 · 1 ~ 3일 남음은 곧 닥친 일이라 warning, 그 밖(4일 이상 · 지남)은 neutral
+  const dd = differenceInCalendarDays(start, today);
   const ddLabel =
     dd === 0
       ? t("detail.dday")
@@ -124,281 +130,148 @@ const EventDetailBody = ({ event }: EventDetailBodyProps) => {
         ? t("detail.ddayLeft", { n: dd })
         : t("detail.ddayPast", { n: -dd });
 
-  // 기간 — 같은 날 시간 일정만(다일은 날짜로 이미 표현), 종일은 '종일'
-  const durMin =
-    !event.isAllDay && sameDay ? differenceInMinutes(endDate, startDate) : null;
-  const durLabel =
-    durMin != null && durMin > 0
-      ? durMin >= 60
-        ? durMin % 60
-          ? t("detail.durationHM", {
-              h: Math.floor(durMin / 60),
-              m: durMin % 60,
-            })
-          : t("detail.durationH", { h: Math.floor(durMin / 60) })
-        : t("detail.durationM", { m: durMin })
-      : null;
+  // 색은 캘린더 · 라벨 줄의 점으로만 — 일정 색(event.color)은 상세 어디에도 그리지 않는다(09-25 데이터 원칙)
+  const calendarDot = getPaletteByColor(event.calendarColor ?? undefined).color;
+  const reminders = [...event.reminders]
+    .map((r) => r.minutesBefore)
+    .sort((a, b) => a - b)
+    .map((m) => t(reminderKey(m)))
+    .join(", ");
+  const duration =
+    !event.isAllDay && sameDay ? durationLabel(start, end, t) : null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      {/* Hero — 좌측 컬러 바 + 캘린더 pill·그룹·D-day + 큰 제목 */}
-      <div style={{ display: "flex", gap: 14, marginBottom: 6 }}>
-        <span
-          style={{
-            width: 4,
-            borderRadius: "var(--radius-full)",
-            background: tone.color,
-            flexShrink: 0,
-            alignSelf: "stretch",
-          }}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
-              marginBottom: 5,
-            }}
-          >
-            {event.calendarName && (
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 5,
-                  fontSize: "var(--text-badge)",
-                  fontWeight: 600,
-                  color: calendarTone.fg,
-                  background: calendarTone.bg,
-                  padding: "3px 10px",
-                  borderRadius: "var(--radius-full)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <span
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: "var(--radius-full)",
-                    background: calendarTone.color,
-                  }}
-                />
-                {event.calendarName}
-              </span>
-            )}
-            <span
-              className="num"
-              style={{
-                marginLeft: "auto",
-                fontSize: "var(--text-badge)",
-                fontWeight: 700,
-                whiteSpace: "nowrap",
-                color:
-                  dd >= 0 && dd <= 3
-                    ? "var(--color-fg-critical)"
-                    : "var(--fg-tertiary)",
-                background: "var(--bg-muted)",
-                padding: "3px 10px",
-                borderRadius: "var(--radius-full)",
-              }}
-            >
-              {ddLabel}
-            </span>
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-title-lg)",
-              fontWeight: 700,
-              letterSpacing: "-0.02em",
-              wordBreak: "keep-all",
-              lineHeight: 1.3,
-            }}
-          >
-            {event.title}
-          </div>
-        </div>
-      </div>
-
-      {/* 시간 블록 — 시작 → 종료 */}
+    <div data-slot="event-detail">
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          background: "var(--bg-muted)",
-          borderRadius: "var(--radius-md)",
-          padding: "16px 18px",
-          margin: "14px 0",
-        }}
+        data-slot="event-detail-head"
+        className={cn(
+          "flex flex-col items-start gap-x2 pb-x2",
+          placement === "panel" ? "pl-x6 pr-x5" : "px-x6",
+        )}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              fontWeight: 600,
-              color: "var(--fg-tertiary)",
-              marginBottom: 3,
-            }}
-          >
-            {t("detail.start")}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-body-sm)",
-              fontWeight: 700,
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {format(startDate, shortDateFormat, { locale })}
-          </div>
-          {!event.isAllDay && (
-            <div
-              className="num"
-              style={{
-                fontSize: "var(--text-label-sm)",
-                color: "var(--fg-secondary)",
-                marginTop: 2,
-              }}
-            >
-              {format(startDate, timeFormat, { locale })}
-            </div>
-          )}
-        </div>
-        <div
-          style={{
-            color: "var(--fg-tertiary)",
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 3,
-          }}
+        <h3
+          ref={titleRef}
+          tabIndex={-1}
+          data-slot="event-detail-title"
+          className="m-0 break-keep text-t7 font-bold text-fg-neutral [overflow-wrap:break-word] focus:outline-none"
         >
-          <span aria-hidden style={{ display: "inline-flex" }}>
-            →
-          </span>
-          {(durLabel || event.isAllDay) && (
-            <span
-              style={{
-                fontSize: "var(--text-badge)",
-                fontWeight: 600,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {event.isAllDay ? t("allDay") : durLabel}
-            </span>
-          )}
-        </div>
-        <div style={{ flex: 1, minWidth: 0, textAlign: "right" }}>
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              fontWeight: 600,
-              color: "var(--fg-tertiary)",
-              marginBottom: 3,
-            }}
-          >
-            {t("detail.end")}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-body-sm)",
-              fontWeight: 700,
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {format(sameDay ? startDate : endDate, shortDateFormat, { locale })}
-          </div>
-          {!event.isAllDay && (
-            <div
-              className="num"
-              style={{
-                fontSize: "var(--text-label-sm)",
-                color: "var(--fg-secondary)",
-                marginTop: 2,
-              }}
-            >
-              {format(endDate, timeFormat, { locale })}
-            </div>
-          )}
-        </div>
+          {event.title}
+        </h3>
+        <Badge
+          size="large"
+          variant="weak"
+          tone={dd >= 0 && dd <= 3 ? "warning" : "neutral"}
+        >
+          {ddLabel}
+        </Badge>
       </div>
 
-      {/* Detail rows — 장소/라벨(있을 때만) · 반복(항상) · 알림(있을 때만) */}
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {event.location && (
-          <DetailRow
-            icon={<MapPin size={15} />}
-            caption={t("form.location")}
-            label={event.location}
-            tone={tone}
+      <List aria-label={t("eventDetail")}>
+        {event.calendarName && (
+          <ListItem
+            prefix={<Calendar className={ROW_ICON} />}
+            title={<NoWrap>{t("form.calendar")}</NoWrap>}
+            suffixText
+            suffix={
+              <DotValue color={calendarDot}>{event.calendarName}</DotValue>
+            }
           />
         )}
         {event.labelName && (
-          <DetailRow
-            icon={<Tag size={15} />}
-            caption={t("form.label")}
-            label={event.labelName}
-            tone={event.labelColor ? getPaletteByColor(event.labelColor) : tone}
+          <ListItem
+            prefix={<Tag className={ROW_ICON} />}
+            title={<NoWrap>{t("form.label")}</NoWrap>}
+            suffixText
+            suffix={
+              <DotValue
+                color={
+                  getPaletteByColor(
+                    event.labelColor ?? event.calendarColor ?? undefined,
+                  ).color
+                }
+              >
+                {event.labelName}
+              </DotValue>
+            }
           />
         )}
-        <DetailRow
-          icon={<Repeat size={15} />}
-          caption={t("form.recurrence")}
-          label={
-            event.rrule ? getRruleText(event.rrule, t) : t("recurrence.none")
-          }
-          tone={tone}
+        {event.isAllDay ? (
+          <ListItem
+            prefix={<Sun className={ROW_ICON} />}
+            title={<NoWrap>{t("form.allDay")}</NoWrap>}
+            suffixText
+            suffix={
+              <Pieces>
+                <Piece>{dayText(start)}</Piece>
+                {!sameDay && <Piece>{`~ ${dayText(end)}`}</Piece>}
+              </Pieces>
+            }
+          />
+        ) : (
+          <>
+            <ListItem
+              prefix={<Clock className={ROW_ICON} />}
+              title={<NoWrap>{t("form.start")}</NoWrap>}
+              suffixText
+              suffix={
+                <Pieces>
+                  <Piece>{dayText(start)}</Piece>
+                  <Piece>{timeText(start)}</Piece>
+                </Pieces>
+              }
+            />
+            <ListItem
+              prefix={<Clock className={ROW_ICON} />}
+              title={<NoWrap>{t("form.end")}</NoWrap>}
+              suffixText
+              suffix={
+                <Pieces>
+                  <Piece>{dayText(end)}</Piece>
+                  <Piece>{timeText(end)}</Piece>
+                  {duration && <Piece muted>{duration}</Piece>}
+                </Pieces>
+              }
+            />
+          </>
+        )}
+        <ListItem
+          prefix={<Repeat className={ROW_ICON} />}
+          title={<NoWrap>{t("form.recurrence")}</NoWrap>}
+          suffix={t(recurrenceKey(event.rrule))}
         />
-        {event.reminders.length > 0 && (
-          <DetailRow
-            icon={<Bell size={15} />}
-            caption={t("form.reminder")}
-            label={event.reminders
-              .map((r) => getReminderText(r.minutesBefore, t))
-              .join(", ")}
-            tone={tone}
+        {reminders && (
+          <ListItem
+            prefix={<Bell className={ROW_ICON} />}
+            title={<NoWrap>{t("form.reminder")}</NoWrap>}
+            suffix={reminders}
           />
         )}
-      </div>
-
-      {/* 메모 */}
+        {event.location && (
+          <ListItem
+            prefix={<MapPin className={ROW_ICON} />}
+            title={<NoWrap>{t("form.location")}</NoWrap>}
+            suffixText
+            suffix={
+              <span className="whitespace-pre-wrap">{event.location}</span>
+            }
+          />
+        )}
+        {event.description && (
+          <ListItem
+            prefix={<Text className={ROW_ICON} />}
+            title={<NoWrap>{t("form.description")}</NoWrap>}
+          />
+        )}
+      </List>
       {event.description && (
-        <div
-          style={{
-            marginTop: 10,
-            padding: "14px 16px",
-            background: "var(--bg-muted)",
-            borderRadius: "var(--radius-md)",
-          }}
+        // 줄 제목 글 시작과 맞춘다(24 + 아이콘 22 + 사이 12) — 말줄임 없이 다 보인다
+        <p
+          data-slot="event-detail-description"
+          className="m-0 whitespace-pre-wrap pb-x4 pl-[58px] pr-x6 text-article-body text-fg-neutral [overflow-wrap:break-word]"
         >
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              fontWeight: 600,
-              color: "var(--fg-tertiary)",
-              marginBottom: 6,
-            }}
-          >
-            {t("detail.memo")}
-          </div>
-          <div
-            style={{
-              fontSize: "var(--text-label-sm)",
-              color: "var(--fg-primary)",
-              lineHeight: 1.55,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {event.description}
-          </div>
-        </div>
+          {event.description}
+        </p>
       )}
     </div>
   );
-};
-
-export { EventDetailBody };
+}
