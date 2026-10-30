@@ -1,20 +1,10 @@
 import {
   CATEGORIES,
   type CategoryKey,
-  type Tx,
   type Account,
 } from "@/shared/lib/groo/data";
-import { KRW, money, isEn, formatChangeRate } from "@/shared/lib/groo/format";
-import { HideUnit, MaskAmount } from "@/shared/lib/groo/hide-amounts";
+import { money, formatChangeRate } from "@/shared/lib/groo/format";
 import * as LucideIcons from "lucide-react";
-import {
-  LedgerRow,
-  LedgerRowAmt,
-  LedgerRowMain,
-  LedgerRowSep,
-  LedgerRowSub,
-  LedgerRowTitle,
-} from "./ledger";
 
 type LucideIconName = keyof typeof LucideIcons;
 
@@ -120,44 +110,6 @@ export function CatIcon({
     >
       <Icon name={def.icon} size={dim.icon} strokeWidth={1.9} />
     </span>
-  );
-}
-
-// tx-row spec — shared/ui/groo/ledger.tsx 의 LedgerRow 계열 공용화.
-export function TxRow({ tx, onClick }: { tx: Tx; onClick?: (tx: Tx) => void }) {
-  const c = CATEGORIES[tx.cat];
-  const isIncome = tx.amt > 0;
-  return (
-    <LedgerRow onClick={onClick ? () => onClick(tx) : undefined}>
-      <CatIcon cat={tx.cat} />
-      <LedgerRowMain as={onClick ? "button" : "div"}>
-        <LedgerRowTitle>{tx.title}</LedgerRowTitle>
-        <LedgerRowSub>
-          <span>{c?.label}</span>
-          <LedgerRowSep />
-          <span>{tx.account}</span>
-          {tx.time && (
-            <>
-              <LedgerRowSep />
-              <span>{tx.time}</span>
-            </>
-          )}
-        </LedgerRowSub>
-      </LedgerRowMain>
-      <div>
-        <LedgerRowAmt>
-          <MaskAmount
-            card="ledger.txList"
-            kind={isIncome ? "income" : "expense"}
-          >
-            {isIncome ? "+" : "-"}
-            {isEn() ? "₩" : ""}
-            {KRW(tx.amt, { abs: true })}
-          </MaskAmount>
-          <HideUnit>{isEn() ? "" : "원"}</HideUnit>
-        </LedgerRowAmt>
-      </div>
-    </LedgerRow>
   );
 }
 
