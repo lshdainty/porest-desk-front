@@ -367,10 +367,16 @@ export function NamuStocksView({
     ...stateOf("kr", desk ? t("market.krFull") : t("market.krShort"), reps.kr),
     ...stateOf("us", desk ? t("market.usFull") : t("market.usShort"), reps.us),
   ];
-  const marketFailed = fxQ.isError && (repSymbols.length === 0 || repQ.isError);
+  // 대표 종목을 기다리는 동안(보유 · 관심 · 대표 시세 중 하나라도 오는 중) 장 상태 줄 자리는 값 Skeleton 이다.
+  // 보유 질의가 실패했거나 보유가 0 이어도 관심 첫 종목이 대표라 줄은 나온다.
+  // 실패 한 벌은 기다림이 끝난 뒤 환율과 대표 시세가 둘 다 실패했을 때만(대표를 기다리느라 실패로 보이면 안 된다).
+  const statesWaiting = loading || watchQ.isLoading || repQ.isLoading;
+  const marketFailed =
+    !statesWaiting && fxQ.isError && (repSymbols.length === 0 || repQ.isError);
   const marketBand = (
     <MarketBand
       markets={marketStates}
+      statesLoading={statesWaiting}
       indices={[]}
       fx={{
         value: fxRate != null && fxRate > 0 ? fmtFxRate(fxRate) : null,

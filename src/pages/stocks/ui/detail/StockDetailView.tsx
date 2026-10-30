@@ -15,6 +15,7 @@ import { formatDateLong } from "@/shared/lib/date";
 import {
   fmtByCurrency,
   fmtCapKRW,
+  fmtCapUsd,
   fmtShares,
   num,
 } from "@/features/stock/lib/format";
@@ -728,15 +729,18 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     const sector = textOrNull(q.sector);
     if (sector)
       infoRows.push({ key: "sector", name: t("info.sector"), value: sector });
-    // 시가총액 — 국내는 원 단위로 온다. 미국은 달러 총액이라 환율이 있을 때만 원으로 바꿔 같은 꼴(fmtCapKRW)로 보인다
+    // 시가총액 — 국내는 원 단위로 온다. 미국은 달러 총액이라 환율이 있으면 원으로 바꿔 같은 꼴(fmtCapKRW),
+    // 없으면 줄을 지우지 않고 달러로 보인다(환율 없이 원으로 지어내지 않는다)
     const cap = numOrNull(q.marketCap);
-    const capKrw =
-      cap == null ? null : isUs ? (fxRate != null ? cap * fxRate : null) : cap;
-    if (capKrw != null && capKrw > 0)
+    if (cap != null && cap > 0)
       infoRows.push({
         key: "cap",
         name: t("info.marketCap"),
-        value: fmtCapKRW(capKrw),
+        value: !isUs
+          ? fmtCapKRW(cap)
+          : fxRate != null && fxRate > 0
+            ? fmtCapKRW(cap * fxRate)
+            : fmtCapUsd(cap),
       });
     const listed = textOrNull(q.listingDate);
     if (listed)

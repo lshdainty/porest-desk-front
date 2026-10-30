@@ -2,7 +2,13 @@
 // 옮기면서 값이 바뀌면 같은 금액이 화면마다 다르게 보인다 — 그 회귀를 여기서 막는다.
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { i18n } from "@/shared/i18n/config";
-import { fmtByCurrency, fmtCapKRW, fmtShares, num } from "./format";
+import {
+  fmtByCurrency,
+  fmtCapKRW,
+  fmtCapUsd,
+  fmtShares,
+  num,
+} from "./format";
 
 describe("num", () => {
   it("서버가 String 으로 주는 금액을 숫자로 읽는다", () => {
@@ -145,5 +151,39 @@ describe("fmtCapKRW / fmtShares (en)", () => {
   it("주식수는 단위를 붙이지 않는다 — 행 라벨이 들고 있다", () => {
     expect(fmtShares(500_000_000)).toBe("500M");
     expect(fmtShares(12_345_678)).not.toContain("주");
+  });
+});
+
+describe("fmtCapUsd — 환율 없는 미국 시가총액(달러, 혼합 표기 없음)", () => {
+  const orig = i18n.language;
+  afterEach(async () => {
+    await i18n.changeLanguage(orig);
+  });
+
+  it("1만 달러 미만은 외화 규칙대로 소수 둘째 자리", async () => {
+    await i18n.changeLanguage("ko");
+    expect(fmtCapUsd(1234.5)).toBe("$1,234.50");
+    expect(fmtCapUsd(9999.99)).toBe("$9,999.99");
+    expect(fmtCapUsd(0)).toBe("$0.00");
+  });
+
+  it("그 위는 줄여서 한국어 '억 달러' — '$9,900억' 같은 혼합이 없다", async () => {
+    await i18n.changeLanguage("ko");
+    const v = fmtCapUsd(990_000_000_000);
+    expect(v).toBe("9,900억 달러");
+    expect(v).not.toContain("$");
+    expect(fmtCapUsd(3_500_000_000_000)).toBe("3.5조 달러");
+  });
+
+  it("영어는 $990B 꼴", async () => {
+    await i18n.changeLanguage("en");
+    const v = fmtCapUsd(990_000_000_000);
+    expect(v).toBe("$990B");
+    expect(v).not.toContain("억");
+  });
+
+  it("경계 — 정확히 1만 달러부터 줄인다", async () => {
+    await i18n.changeLanguage("ko");
+    expect(fmtCapUsd(10_000)).toBe("1만 달러");
   });
 });

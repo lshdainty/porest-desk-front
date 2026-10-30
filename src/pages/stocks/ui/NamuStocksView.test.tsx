@@ -16,6 +16,8 @@ const st = vi.hoisted(() => ({
   krwError: false,
   margin: "ok" as "ok" | "null" | "error",
   watch: [] as { symbol: string; countryCode: string }[],
+  holdingsMode: "ok" as "ok" | "loading" | "error" | "empty",
+  pricesLoading: false,
   pricesCalls: [] as string[][],
 }));
 
@@ -51,29 +53,44 @@ vi.mock("@/features/stock/model/useNamu", () => {
       symbol: string | null,
     ) => quotes?.find((x) => x.symbol === symbol)?.marketState ?? null,
     useNamuHoldings: (cur: string) =>
-      cur === "KRW"
-        ? st.krwError
+      st.holdingsMode === "loading"
+        ? q(undefined, { isLoading: true })
+        : st.holdingsMode === "error"
           ? q(undefined, { isError: true })
-          : q({
-              accountNo: "1",
-              currency: "KRW",
-              totalEvalAmount: "1100",
-              totalProfitLoss: "100",
-              profitRate: "10",
-              items: [item("K1", "KRW")],
-              deposit: "1500000000",
-              orderableAmount: st.krwOrderable,
-            })
-        : q({
-            accountNo: "1",
-            currency: "USD",
-            totalEvalAmount: "1100",
-            totalProfitLoss: "100",
-            profitRate: "10",
-            items: [item("U1", "USD")],
-            deposit: null,
-            orderableAmount: null,
-          }),
+          : st.holdingsMode === "empty"
+            ? q({
+                accountNo: "1",
+                currency: cur,
+                totalEvalAmount: "0",
+                totalProfitLoss: "0",
+                profitRate: "0",
+                items: [],
+                deposit: null,
+                orderableAmount: null,
+              })
+            : cur === "KRW"
+              ? st.krwError
+                ? q(undefined, { isError: true })
+                : q({
+                    accountNo: "1",
+                    currency: "KRW",
+                    totalEvalAmount: "1100",
+                    totalProfitLoss: "100",
+                    profitRate: "10",
+                    items: [item("K1", "KRW")],
+                    deposit: "1500000000",
+                    orderableAmount: st.krwOrderable,
+                  })
+              : q({
+                  accountNo: "1",
+                  currency: "USD",
+                  totalEvalAmount: "1100",
+                  totalProfitLoss: "100",
+                  profitRate: "10",
+                  items: [item("U1", "USD")],
+                  deposit: null,
+                  orderableAmount: null,
+                }),
     useNamuExchangeRate: () =>
       st.fx === "error"
         ? q(undefined, { isError: true })
@@ -91,6 +108,8 @@ vi.mock("@/features/stock/model/useNamu", () => {
           }),
     useNamuPrices: (symbols: string[]) => {
       st.pricesCalls.push(symbols);
+      if (symbols.length === 0) return q(undefined);
+      if (st.pricesLoading) return q(undefined, { isLoading: true });
       if (st.prices === "error") return q(undefined, { isError: true });
       return q(
         symbols.map((s) => ({
@@ -155,6 +174,8 @@ beforeEach(() => {
     krwError: false,
     margin: "ok",
     watch: [],
+    holdingsMode: "ok",
+    pricesLoading: false,
     pricesCalls: [],
   });
   container = document.createElement("div");
@@ -262,6 +283,60 @@ describe("나무 시장 띠 (I-13b 17)", () => {
     render();
     // 보유(K1 · U1)가 있으니 관심 종목은 대표가 되지 않는다
     expect(st.pricesCalls[st.pricesCalls.length - 1]).toEqual(["K1", "U1"]);
+  });
+});
+
+describe("나무 시장 띠 — 기다림 · 보유 실패 · 보유 0 (I-13b 17 · 27)", () => {
+  const states = () =>
+    section("market").querySelector("[data-slot=market-states]");
+  const skeleton = () =>
+    section("market").querySelector("[data-slot=market-states-loading]");
+  it("대표 시세를 기다리는 동안은 줄 자리에 Skeleton 이고 실패 한 벌이 아니다", () => {
+    st.pricesLoading = true;
+    st.fx = "error";
+    render();
+    expect(skeleton()).not.toBeNull();
+    expect(states()).toBeNull();
+    expect(section("market").textContent).not.toContain("market.failTitle");
+  });
+  it("보유 질의가 오는 중이어도 Skeleton(대표를 아직 모른다)이고 실패 한 벌이 아니다", () => {
+    st.holdingsMode = "loading";
+    st.fx = "error";
+    render();
+    expect(skeleton()).not.toBeNull();
+    expect(section("market").textContent).not.toContain("market.failTitle");
+  });
+  it("보유 질의가 실패해도 관심 첫 종목이 대표라 장 상태 줄이 나온다", () => {
+    st.holdingsMode = "error";
+    st.watch = [
+      { symbol: "W1", countryCode: "KR" },
+      { symbol: "U1", countryCode: "US" },
+    ];
+    render();
+    expect(states()).not.toBeNull();
+    expect(skeleton()).toBeNull();
+    expect(st.pricesCalls[st.pricesCalls.length - 1]).toEqual(["W1", "U1"]);
+  });
+  it("보유가 0 이어도 관심 첫 종목이 대표라 줄이 나온다", () => {
+    st.holdingsMode = "empty";
+    st.watch = [{ symbol: "W1", countryCode: "KR" }];
+    render();
+    expect(states()).not.toBeNull();
+    expect(states()!.textContent).toContain("market.krShort");
+    expect(states()!.textContent).not.toContain("market.usShort");
+  });
+  it("보유도 관심도 없으면(대표 없음) 장 상태 줄 없이 환율 줄만 — Skeleton 도 없다", () => {
+    st.holdingsMode = "empty";
+    render();
+    expect(states()).toBeNull();
+    expect(skeleton()).toBeNull();
+    expect(section("market").textContent).toContain("summary.fxRate");
+  });
+  it("실패 한 벌은 기다림이 끝난 뒤 환율과 대표 시세가 둘 다 실패했을 때만", () => {
+    st.fx = "error";
+    st.prices = "error";
+    render();
+    expect(section("market").textContent).toContain("market.failTitle");
   });
 });
 

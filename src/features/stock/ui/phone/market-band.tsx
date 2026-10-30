@@ -79,6 +79,7 @@ const lineColor = (pct: number | null) =>
 
 export function MarketBand({
   markets,
+  statesLoading,
   indices,
   fx,
   loading,
@@ -86,6 +87,8 @@ export function MarketBand({
   onRetry,
 }: {
   markets: MarketState[];
+  /** 장 상태 줄을 기다리는 중(나무 — 대표 종목 시세가 오기 전) — 줄 자리에 값 Skeleton */
+  statesLoading?: boolean;
   indices: IndexLine[];
   fx: FxLine | null;
   loading?: boolean;
@@ -106,6 +109,15 @@ export function MarketBand({
         </div>
       ) : (
         <div className="pb-x6">
+          {statesLoading && markets.length === 0 && (
+            <div
+              aria-busy
+              data-slot="market-states-loading"
+              className="px-x6 pb-x1 pt-x1"
+            >
+              <Skeleton text="t4" className="w-48 max-w-full" />
+            </div>
+          )}
           {markets.length > 0 && (
             <ul
               className="m-0 flex list-none flex-wrap gap-x-x4 gap-y-x1 px-x6 pb-x1 pt-x1 text-t4 text-fg-neutral-subtle"
