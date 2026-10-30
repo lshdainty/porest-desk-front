@@ -16,7 +16,7 @@ import type { ClosedCycleSpan } from "@/entities/expense";
 import { ClosedCycleNote } from "@/features/expense/ui/ClosedCycleNote";
 
 /**
- * 고른 거래 일괄 삭제 확인창 (I-07 36) — ds Alert Dialog. 제목 "거래 {n}건을 삭제할까요?" · 설명 "지운 거래는 되돌릴 수 없어요.
+ * 고른 거래 일괄 삭제 확인창 (I-07 36) — ds Alert Dialog. 제목 "거래 {n}건을 삭제할까요?" · 설명 "삭제한 거래는 되돌릴 수 없어요.
  * 합계 {금액}이 {달}에서 빠져요." [취소] `neutralWeak` · [삭제] `criticalSolid`. 고른 거래 중 결제가 끝난 회차의 카드 거래가 있으면
  * 닫힌 회차 안내를 한 번 더한다(Q7-A). 요청 중에는 열린 채 로딩한다. 실패하면 호출처(runDelete)가 이 창을 닫고 스낵바 + 다시 시도로 알린다(서버가 전부 아니면 전무).
  */

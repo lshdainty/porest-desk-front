@@ -682,7 +682,7 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
 
     const dialog = document.querySelector("[role=alertdialog]")!;
     expect(dialog.textContent).toContain("거래 1건을 삭제할까요?");
-    expect(dialog.textContent).toContain("지운 거래는 되돌릴 수 없어요.");
+    expect(dialog.textContent).toContain("삭제한 거래는 되돌릴 수 없어요.");
     expect(dialog.textContent).toContain("−12,000원이 10월에서 빠져요");
     const confirm = Array.from(dialog.querySelectorAll("button")).find(
       (b) => b.textContent === "삭제",
