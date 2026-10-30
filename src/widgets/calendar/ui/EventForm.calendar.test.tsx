@@ -13,6 +13,14 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
+import {
+  click,
+  lastButton,
+  row,
+  rowText,
+  setValue,
+  setupFormDom,
+} from "./event-form/test-utils";
 import type {
   CalendarEvent,
   CalendarEventFormValues,
@@ -33,7 +41,6 @@ vi.mock("react-i18next", () => ({
 vi.mock("@/features/user-calendar", () => ({
   useUserCalendars: () => ({ data: mocks.calendars }),
 }));
-vi.mock("@/shared/hooks", () => ({ useIsMobile: () => false }));
 
 const { EventForm } = await import("./EventForm");
 
@@ -95,85 +102,41 @@ beforeEach(() => {
   // 모달이 닫히면 그 뒤 POINTER_BLOCK_MS 동안 클릭이 삼켜진다(오클릭 방어) — 케이스끼리 옮지 않게 푼다.
   __resetPointerBlockForTest();
   // jsdom 엔 ResizeObserver 가 없다 — radix ToggleGroup(roving focus)이 이걸 부른다.
-  if (!globalThis.ResizeObserver) {
-    globalThis.ResizeObserver = class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    };
-  }
-  // radix Select 가 포인터 캡처·스크롤을 만진다 — jsdom 에 없는 것만 채운다.
-  const proto = Element.prototype as unknown as Record<string, unknown>;
-  proto.hasPointerCapture ??= () => false;
-  proto.setPointerCapture ??= () => {};
-  proto.releasePointerCapture ??= () => {};
-  proto.scrollIntoView ??= () => {};
+  setupFormDom();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
   mocks.calendars = [];
 });
 
-afterEach(() => {
+afterEach(async () => {
   act(() => root.unmount());
   container.remove();
+  document.body.removeAttribute("style");
+  await new Promise((r) => setTimeout(r, 50));
 });
 
-/** 라벨 문구로 그 칸의 블록을 집는다 — `t` 는 키를 그대로 돌려주게 mock 해 뒀다. */
-function block(labelKey: string): HTMLElement | null {
-  const label = [...document.body.querySelectorAll("label")].find((el) =>
-    el.textContent?.includes(labelKey),
-  );
-  return label?.parentElement ?? null;
-}
+/** 줄에 보이는 값 = 지금 선택된 캘린더 */
+const triggerText = () => rowText("form.calendar");
 
-function calendarBlock(): HTMLElement {
-  const el = block("form.calendar");
-  if (!el) throw new Error("캘린더 칸이 화면에 없다");
-  return el;
-}
-
-/** 트리거에 보이는 글자 = 지금 선택된 캘린더. */
-const triggerText = () =>
-  calendarBlock()
-    .querySelector<HTMLElement>("[role='combobox']")
-    ?.textContent?.trim() ?? "";
-
-/**
- * 캘린더 선택칸을 열고 항목을 읽는다. 트리거는 포인터로도 열리지만 jsdom 에선
- * 키보드가 확실하다 — 라디스가 `PointerEvent` 를 기대하기 때문이다.
- */
+/** 캘린더 줄을 눌러 고르기 시트를 열고 항목(하나 고르기 줄)을 읽는다 */
 function openCalendarOptions(): HTMLElement[] {
-  const trigger =
-    calendarBlock().querySelector<HTMLElement>("[role='combobox']");
-  if (!trigger) throw new Error("캘린더 선택칸을 찾지 못했다");
-  act(() =>
-    trigger.dispatchEvent(
-      new KeyboardEvent("keydown", { bubbles: true, key: " " }),
-    ),
-  );
-  return [...document.body.querySelectorAll<HTMLElement>("[role='option']")];
+  click(row("form.calendar"));
+  return [...document.body.querySelectorAll<HTMLElement>("[role='radio']")];
 }
 
 const optionTexts = () => openCalendarOptions().map((o) => o.textContent ?? "");
 
-/** 열린 목록에서 체크된 항목 — radix 는 선택을 `data-state="checked"` 로 표시한다. */
+/** 열린 목록에서 고른 줄 — 체크 줄은 aria-checked 로 알린다 */
 const checkedOptionText = () =>
-  openCalendarOptions().find((o) => o.dataset.state === "checked")
+  openCalendarOptions().find((o) => o.getAttribute("aria-checked") === "true")
     ?.textContent ?? null;
 
-/** 제목은 필수라 저장이 안 나간다 — 네이티브 setter 로 넣고 `input` 을 쏜다. */
+/** 제목은 필수라 저장이 안 나간다 */
 function typeTitle(value: string) {
   const el = document.body.querySelector<HTMLInputElement>(`[name="title"]`);
   if (!el) throw new Error("제목 입력칸을 찾지 못했다");
-  const setter = Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
-    "value",
-  )!.set!;
-  act(() => {
-    setter.call(el, value);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
+  setValue(el, value);
 }
 
 let sent: CalendarEventFormValues | null;
@@ -194,10 +157,7 @@ function render(event: CalendarEvent | null) {
 }
 
 async function save(): Promise<CalendarEventFormValues> {
-  const btn = [...document.body.querySelectorAll("button")].find(
-    (b) => b.textContent?.trim() === "save",
-  );
-  if (!btn) throw new Error("저장 버튼을 찾지 못했다");
+  const btn = lastButton("save");
   // react-hook-form 의 handleSubmit 은 비동기다 — 넘어가면 페이로드가 아직 없다.
   await act(async () => {
     btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -298,10 +258,14 @@ describe("경계", () => {
     expect(optionTexts().join("|")).toContain("값없음");
   });
 
-  // 이미 있던 계약과 같은 자리다 — 고를 게 없으면 값을 지어내지 않는다.
-  it("전부 숨기면 캘린더 칸 자체가 안 나온다", () => {
-    mocks.calendars = [calendar(1, "업무", { isVisible: false })];
+  // 이미 있던 계약과 같은 자리다 — 고를 게 없으면 값을 지어내지 않는다. 줄은 남고 "불러오지 못했어요" 를 알린다(I-09 24).
+  it("전부 숨겨도 줄은 남고 값은 지어내지 않는다", () => {
+    mocks.calendars = [
+      calendar(1, "업무", { isDefault: true, isVisible: false }),
+    ];
+    // 기본 캘린더는 꺼져 있어도 목록에 남으니(위) 고를 게 아예 없는 경우는 캘린더가 0 개일 때다
+    mocks.calendars = [];
     render(null);
-    expect(block("form.calendar")).toBeNull();
+    expect(triggerText()).toContain("form.calendarLoadFailed");
   });
 });

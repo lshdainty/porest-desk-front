@@ -93,7 +93,11 @@ export function useEventForm({
   selectedEndDate,
   onSubmit,
 }: UseEventFormArgs) {
-  const { data: userCalendars = [] } = useUserCalendars();
+  const {
+    data: userCalendars = [],
+    isLoading: calendarsLoading,
+    refetch: refetchCalendars,
+  } = useUserCalendars();
 
   const defaultDate = selectedDate
     ? format(selectedDate, "yyyy-MM-dd")
@@ -337,6 +341,8 @@ export function useEventForm({
     handleSubmit,
     onFormSubmit,
     selectableCalendars,
+    calendarsLoading,
+    refetchCalendars,
     recurrence,
     selectedReminders,
     handleRecurrenceChange,

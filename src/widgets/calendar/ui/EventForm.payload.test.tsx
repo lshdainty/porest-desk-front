@@ -14,6 +14,17 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
+import {
+  choice,
+  click,
+  lastButton,
+  row,
+  rowText,
+  setValue,
+  setupFormDom,
+  stepInput,
+  tick,
+} from "./event-form/test-utils";
 import type {
   CalendarEvent,
   CalendarEventFormValues,
@@ -31,8 +42,6 @@ vi.mock("react-i18next", () => ({
 vi.mock("@/features/user-calendar", () => ({
   useUserCalendars: () => ({ data: [] }),
 }));
-vi.mock("@/shared/hooks", () => ({ useIsMobile: () => false }));
-
 const { EventForm } = await import("./EventForm");
 
 /** 알림 15분·1일 전이 걸린 일정. 널 허용 칸은 전부 비어 있다. */
@@ -98,88 +107,18 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   // 모달이 닫히면 그 뒤 POINTER_BLOCK_MS 동안 클릭이 삼켜진다(오클릭 방어) — 케이스끼리 옮지 않게 푼다.
   __resetPointerBlockForTest();
-  // jsdom 엔 ResizeObserver 가 없다 — radix ToggleGroup(roving focus)이 이걸 부른다.
-  if (!globalThis.ResizeObserver) {
-    globalThis.ResizeObserver = class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    };
-  }
-  // radix Select 가 포인터 캡처·스크롤을 만진다 — jsdom 에 없는 것만 채운다.
-  const proto = Element.prototype as unknown as Record<string, unknown>;
-  proto.hasPointerCapture ??= () => false;
-  proto.setPointerCapture ??= () => {};
-  proto.releasePointerCapture ??= () => {};
-  proto.scrollIntoView ??= () => {};
+  setupFormDom();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
 });
 
-afterEach(() => {
+afterEach(async () => {
   act(() => root.unmount());
   container.remove();
+  document.body.removeAttribute("style");
+  await new Promise((r) => setTimeout(r, 50));
 });
-
-/** 라벨 문구로 그 칸의 블록을 집는다 — `t` 는 키를 그대로 돌려주게 mock 해 뒀다. */
-function block(labelKey: string): HTMLElement {
-  const label = [...document.body.querySelectorAll("label")].find((el) =>
-    el.textContent?.includes(labelKey),
-  );
-  if (!label?.parentElement) throw new Error(`${labelKey} 블록을 찾지 못했다`);
-  return label.parentElement;
-}
-
-/** 그 블록의 토글 묶음 — 화면에 토글이 여럿이라 `data-state` 만으로는 못 가른다. */
-const toggles = (labelKey: string) => [
-  ...block(labelKey).querySelectorAll("button"),
-];
-
-/** 켜져 있는 것 — radix 는 선택 상태를 `data-state="on"` 으로 표시한다. */
-const onToggles = (labelKey: string) =>
-  toggles(labelKey).filter((b) => b.dataset.state === "on");
-
-const click = (el: HTMLElement) =>
-  act(() => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-
-/**
- * 입력칸을 비운다. React 는 값 변화를 자체 트래커로 보므로 `.value = ""` 만으로는
- * `onChange` 가 안 뜬다 — 네이티브 setter 로 넣고 `input` 을 쏜다.
- */
-function clear(name: "description" | "location") {
-  const el = document.body.querySelector<HTMLElement>(`[name="${name}"]`);
-  if (!el) throw new Error(`${name} 입력칸을 찾지 못했다`);
-  const proto =
-    el instanceof HTMLTextAreaElement
-      ? HTMLTextAreaElement.prototype
-      : HTMLInputElement.prototype;
-  const setter = Object.getOwnPropertyDescriptor(proto, "value")!.set!;
-  act(() => {
-    setter.call(el, "");
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
-
-/**
- * radix Select 에서 항목을 고른다. 트리거는 포인터로도 열리지만 jsdom 에선
- * 키보드가 확실하다 — 라디스가 `PointerEvent` 를 기대하기 때문이다.
- */
-function pick(labelKey: string, optionText: string) {
-  const trigger =
-    block(labelKey).querySelector<HTMLElement>("[role='combobox']");
-  if (!trigger) throw new Error(`${labelKey} 선택칸을 찾지 못했다`);
-  act(() =>
-    trigger.dispatchEvent(
-      new KeyboardEvent("keydown", { bubbles: true, key: " " }),
-    ),
-  );
-  const option = [...document.body.querySelectorAll("[role='option']")].find(
-    (o) => o.textContent?.includes(optionText),
-  );
-  if (!option) throw new Error(`${optionText} 항목을 찾지 못했다`);
-  click(option as HTMLElement);
-}
 
 async function submit(
   target: CalendarEvent,
@@ -199,25 +138,42 @@ async function submit(
     ),
   );
   before?.();
-  const save = [...document.body.querySelectorAll("button")].find(
-    (b) => b.textContent?.trim() === "save",
-  );
-  if (!save) throw new Error("저장 버튼을 찾지 못했다");
   // react-hook-form 의 handleSubmit 은 비동기다 — 넘어가면 페이로드가 아직 없다.
   await act(async () => {
-    save.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    lastButton("save").dispatchEvent(
+      new MouseEvent("click", { bubbles: true }),
+    );
   });
   if (!sent) throw new Error("onSubmit 이 불리지 않았다");
   return sent;
 }
 
+/** 장소 · 설명 — 줄을 눌러 한 단계 들어가 글을 바꾸고 "완료" 로 넣는다 */
+function editStep(
+  titleKey: "form.location" | "form.description",
+  value: string,
+) {
+  click(row(titleKey));
+  setValue(stepInput(), value);
+  click(lastButton("done"));
+}
+
+/** 하나 고르기 시트 — 줄을 누르고 항목을 누르면 바로 넣고 닫힌다 */
+function pick(titleKey: string, optionKey: string) {
+  click(row(titleKey));
+  click(choice(optionKey));
+}
+
 describe("알림 (QA #109)", () => {
   it("전부 끄면 빈 배열이 나간다 — 키를 빼면 옛 알림이 남는다", async () => {
     const sent = await submit(event, () => {
-      const on = onToggles("form.reminder");
+      click(row("form.reminder"));
+      const on = [
+        ...document.body.querySelectorAll<HTMLElement>("[role=checkbox]"),
+      ].filter((c) => c.getAttribute("aria-checked") === "true");
       expect(on).toHaveLength(2); // 15분 · 1일
       for (const el of on) click(el);
-      expect(onToggles("form.reminder")).toHaveLength(0);
+      click(lastButton("done"));
     });
     expect(sent.reminderMinutes).toEqual([]);
   });
@@ -226,6 +182,19 @@ describe("알림 (QA #109)", () => {
     const sent = await submit(event);
     expect(sent.reminderMinutes).toEqual([15, 1440]);
   });
+
+  it('고르는 동안 줄 값은 그대로이고 "완료" 에 들어간다', async () => {
+    await submit(event, () => {
+      click(row("form.reminder"));
+      const first = document.body.querySelector<HTMLElement>(
+        "[role=checkbox][aria-checked=false]",
+      )!;
+      click(first);
+      expect(rowText("form.reminder")).not.toContain("reminder.5min");
+      click(lastButton("done"));
+      expect(rowText("form.reminder")).toContain("reminder.5min");
+    });
+  });
 });
 
 // desk-back #325 가 이 칸들을 `Optional` 로 옮겼다 — 그전엔 서버가 무조건 덮어써
@@ -233,36 +202,52 @@ describe("알림 (QA #109)", () => {
 // 바람에 비우고 저장해도 안 지워졌다.
 describe("비운 칸은 지워진다 (QA #112)", () => {
   it("설명을 비우면 null 이 나간다 — 키를 빼면 옛 설명이 남는다", async () => {
-    const sent = await submit(filled, () => clear("description"));
+    const sent = await submit(filled, () => editStep("form.description", ""));
     expect(sent).toHaveProperty("description", null);
   });
 
   it("장소를 비우면 null 이 나간다 — 키를 빼면 옛 장소가 남는다", async () => {
-    const sent = await submit(filled, () => clear("location"));
+    const sent = await submit(filled, () => editStep("form.location", ""));
     expect(sent).toHaveProperty("location", null);
   });
 
   it("'반복 안 함' 을 고르면 null 이 나간다 — 키를 빼면 반복이 안 풀린다", async () => {
     const sent = await submit(filled, () => {
-      expect(onToggles("form.recurrence")[0]?.textContent).toContain(
-        "recurrence.weekly",
-      );
-      const none = toggles("form.recurrence").find((b) =>
-        b.textContent?.includes("recurrence.none"),
-      )!;
-      click(none);
+      expect(rowText("form.recurrence")).toContain("recurrence.weekly");
+      pick("form.recurrence", "recurrence.none");
     });
     expect(sent).toHaveProperty("rrule", null);
   });
 
   it("'라벨 없음' 을 고르면 null 이 나간다 — 키를 빼면 옛 라벨이 붙어 있다", async () => {
-    const sent = await submit(filled, () => pick("form.label", "noLabels"));
+    const sent = await submit(filled, () => pick("form.label", "form.noLabel"));
     expect(sent).toHaveProperty("labelRowId", null);
   });
 
   it("라벨이 없던 일정도 null 을 싣는다 — 키를 빼면 계약이 갈린다", async () => {
     const sent = await submit(event);
     expect(sent).toHaveProperty("labelRowId", null);
+  });
+});
+
+describe("고른 값을 싣는다", () => {
+  it("반복을 고르면 rrule 이 나간다", async () => {
+    const sent = await submit(event, () =>
+      pick("form.recurrence", "recurrence.monthly"),
+    );
+    expect(sent).toHaveProperty("rrule", "FREQ=MONTHLY");
+  });
+
+  it("라벨을 고르면 labelRowId 가 나간다", async () => {
+    const sent = await submit(event, () => pick("form.label", "출장"));
+    expect(sent).toHaveProperty("labelRowId", 9);
+  });
+
+  it('장소를 넣고 "완료" 하면 그 글이 나간다', async () => {
+    const sent = await submit(event, () =>
+      editStep("form.location", "치과 3층"),
+    );
+    expect(sent).toHaveProperty("location", "치과 3층");
   });
 });
 
@@ -296,7 +281,7 @@ describe("캘린더는 미전달 그대로다", () => {
 // 일정마다 고르는 색 칸은 없다(사용자 결정 2026-09-25) — 화면은 라벨·캘린더 색으로 칠해서
 // 고른 색이 한 번도 보이지 않았다(QA 30 12).
 describe("색상 칸 (QA 30 12)", () => {
-  it("일정 폼에 색상 칸이 없다", () => {
+  it("일정 폼에 색상 칸이 없다", async () => {
     act(() =>
       root.render(
         <EventForm
@@ -307,6 +292,7 @@ describe("색상 칸 (QA 30 12)", () => {
         />,
       ),
     );
+    await tick();
     expect(document.body.textContent).not.toContain("form.color");
   });
 });

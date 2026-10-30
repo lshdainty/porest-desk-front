@@ -1,41 +1,40 @@
-import { useId } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MapPin, Repeat, Bell, Tag, Check } from "lucide-react";
-import { cn } from "@/shared/lib";
-import { Form } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Switch } from "@/shared/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { InputDatePicker } from "@/shared/ui/input-date-picker";
-import { InputTimePicker } from "@/shared/ui/input-time-picker";
-import { ModalShell } from "@/shared/ui/groo/dialogs";
-import { ModalFooter } from "@/shared/ui/groo/modal-footer";
-import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
-import { useIsMobile } from "@/shared/hooks";
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetContent,
+  BottomSheetFooter,
+} from "@/shared/ds/bottom-sheet";
+import { Button } from "@/shared/ds/button";
+import {
+  Dialog,
+  DialogBody,
+  DialogCancel,
+  DialogContent,
+  DialogFooter,
+} from "@/shared/ds/dialog";
+import { Field } from "@/shared/ds/field";
+import { Input } from "@/shared/ds/input";
+import { useWideSurface } from "@/shared/ds/overlay";
+import { Textarea } from "@/shared/ds/textarea";
+import {
+  CONTENT_MAX,
+  LOCATION_MAX,
+  useEventForm,
+} from "@/widgets/calendar/model/use-event-form";
+import { EventFormDialogBody } from "./event-form/dialog-body";
+import { EventFormSheetBody } from "./event-form/sheet-body";
+import { SheetStepDone } from "./event-form/step-header";
+import { useStepBack } from "@/widgets/calendar/model/use-step-back";
+import type { EventFormView } from "./event-form/types";
+
 import type {
   CalendarEvent,
   CalendarEventFormValues,
 } from "@/entities/calendar";
 import type { EventLabel } from "@/entities/event-label";
-import {
-  CONTENT_MAX,
-  RECURRENCE_OPTIONS,
-  REMINDER_OPTIONS,
-  TITLE_MAX,
-  useEventForm,
-  type RecurrenceOption,
-} from "@/widgets/calendar/model/use-event-form";
-
-const NO_LABEL_VALUE = "__none__";
 
 interface EventFormProps {
   event?: CalendarEvent | null;
@@ -45,10 +44,18 @@ interface EventFormProps {
   onSubmit: (data: CalendarEventFormValues) => void;
   onClose: () => void;
   isLoading?: boolean;
-  /** 수정 모드 삭제 — 제공 시 footer 좌측 danger 버튼 노출(앱 PSheetFooter 미러). */
+  /** 수정 모드 삭제 — 제공 시 바닥 왼쪽에 [삭제](ghost critical)를 둔다. 확인창은 부르는 쪽이 연다. */
   onDelete?: () => void;
 }
 
+type Step = "list" | "location" | "description";
+
+/**
+ * 일정 추가 · 수정 폼 (I-09 21 ~ 32) — 1280 미만은 ds Bottom Sheet 입력 폼(제목 칸 + List 줄 칸 · 장소 · 설명은 같은 시트 안 한 단계),
+ * 1280 이상은 "자세히" ds Dialog 480(Field 칸). 상태는 이 컴포넌트가 한 번 들고(`useEventForm`) 두 표면이 읽으므로 1280 을 넘나들어도
+ * 값이 남는다. [저장] 은 켜 두고 누를 때 비거나 틀린 칸마다 오류를 보이며 첫 오류 칸으로 초점을 옮긴다.
+ * 바깥 누르기 · 끌어내리기로는 닫히지 않고, 바뀐 값이 있으면 닫기 전에 "작성한 내용이 사라져요" 를 묻는다.
+ */
 export const EventForm = ({
   event,
   selectedDate,
@@ -59,329 +66,179 @@ export const EventForm = ({
   isLoading,
   onDelete,
 }: EventFormProps) => {
-  const uid = useId(); // 선택 칸 이름 잇기 — 보이는 라벨 + 값을 aria-labelledby 로
   const { t } = useTranslation("calendar");
   const { t: tc } = useTranslation("common");
-  const isMobile = useIsMobile();
-  const {
-    form,
-    handleSubmit,
-    onFormSubmit,
-    selectableCalendars,
-    recurrence,
-    selectedReminders,
-    handleRecurrenceChange,
-    handleRemindersChange,
-    handleCalendarChange,
-    handleAllDayChange,
-    setStartDay,
-    setStartTime,
-    setEndDay,
-    setEndTime,
-    startDate,
-    endDate,
-    isAllDay,
-    dateRangeInvalid,
-    selectedLabelRowId,
-    selectedCalendarRowId,
-  } = useEventForm({ event, selectedDate, selectedEndDate, onSubmit });
-  const {
-    register,
-    setValue,
-    formState: { errors },
-  } = form;
+  const wide = useWideSurface();
+  const ctrl = useEventForm({ event, selectedDate, selectedEndDate, onSubmit });
+  const { form, title, dateRangeInvalid, onFormSubmit, handleSubmit } = ctrl;
 
-  const getReminderLabel = (minutes: number): string => {
-    if (minutes < 60) return t(`reminder.${minutes}min`);
-    if (minutes === 60) return t("reminder.1hour");
-    if (minutes === 1440) return t("reminder.1day");
-    return `${minutes}min`;
+  const [showErrors, setShowErrors] = useState(false);
+  const [step, setStep] = useState<Step>("list");
+  const [draft, setDraft] = useState("");
+  const endRef = useRef<HTMLButtonElement>(null);
+
+  const titleEmpty = !title;
+  const rangeError = showErrors && dateRangeInvalid;
+  const dirty = form.formState.isDirty;
+
+  const view: EventFormView = {
+    ctrl,
+    labels,
+    showErrors,
+    titleEmpty,
+    rangeError,
+    endRef,
   };
 
-  const Footer = (
-    <ModalFooter
-      onSave={handleSubmit(onFormSubmit)}
-      saveLabel={tc("save")}
-      saving={isLoading}
-      saveDisabled={dateRangeInvalid}
-      onDelete={event && onDelete ? onDelete : undefined}
-      deleteLabel={tc("delete")}
-    />
-  );
+  const save = () => {
+    if (isLoading) return;
+    setShowErrors(true);
+    // 첫 오류 칸으로 — 제목 → 종료
+    if (titleEmpty) {
+      form.setFocus("title");
+      return;
+    }
+    if (dateRangeInvalid) {
+      endRef.current?.focus();
+      return;
+    }
+    void handleSubmit(onFormSubmit)();
+  };
 
-  return (
-    <ModalShell
-      title={event ? t("editEvent") : t("addEvent")}
-      onClose={onClose}
-      mobile={isMobile}
-      size="sm"
-      footer={Footer}
-    >
-      <Form {...form}>
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-          <div className="flex flex-col gap-2">
-            <Label>{t("form.title")}</Label>
-            <Input
-              {...register("title", {
-                required: t("form.titleRequired"),
-                maxLength: TITLE_MAX,
-              })}
-              className={cn(errors.title && "border-stroke-critical-solid")}
-              placeholder={t("form.titlePlaceholder")}
-              maxLength={TITLE_MAX}
-            />
-            {errors.title && (
-              <p className="text-xs text-fg-critical">{errors.title.message}</p>
+  const heading = event ? t("editEvent") : t("addEvent");
+  const del = event && onDelete ? onDelete : undefined;
+
+  // 장소 · 설명 한 단계
+  const enterStep = (next: "location" | "description") => {
+    setDraft((next === "location" ? ctrl.location : ctrl.description) ?? "");
+    setStep(next);
+  };
+  const confirmStep = () => {
+    if (step !== "list") {
+      form.setValue(step, draft, { shouldDirty: true });
+    }
+    setStep("list");
+  };
+  const cancelStep = () => setStep("list");
+  useStepBack(!wide && step !== "list", cancelStep);
+
+  if (wide) {
+    return (
+      <Dialog
+        open
+        form
+        dirty={dirty}
+        onOpenChange={(next) => {
+          if (!next) onClose();
+        }}
+      >
+        <DialogContent
+          title={heading}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            form.setFocus("title");
+          }}
+        >
+          <DialogBody scrollFog>
+            <EventFormDialogBody view={view} />
+          </DialogBody>
+          <DialogFooter>
+            {del && (
+              <Button
+                variant="ghost"
+                ghostColor="critical"
+                className="mr-auto"
+                onClick={del}
+              >
+                {tc("delete")}
+              </Button>
             )}
-          </div>
+            <DialogCancel>{tc("cancel")}</DialogCancel>
+            <Button loading={isLoading} onClick={save}>
+              {tc("save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-          <div className="flex flex-col gap-2">
-            <Label>{t("form.description")}</Label>
-            <Textarea
-              {...register("description", { maxLength: CONTENT_MAX })}
-              rows={2}
-              className="resize-none"
-              placeholder={t("form.descriptionPlaceholder")}
-              maxLength={CONTENT_MAX}
-            />
-          </div>
-
-          {/* Calendar selector */}
-          {selectableCalendars.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <Label id={`${uid}cal-label`}>{t("form.calendar")}</Label>
-              <Select
-                value={
-                  selectedCalendarRowId
-                    ? String(selectedCalendarRowId)
-                    : undefined
-                }
-                onValueChange={(v) => handleCalendarChange(Number(v))}
-              >
-                <SelectTrigger
-                  id={`${uid}cal`}
-                  aria-labelledby={`${uid}cal-label ${uid}cal`}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectableCalendars.map((cal) => (
-                    <SelectItem key={cal.rowId} value={String(cal.rowId)}>
-                      <span className="flex items-center gap-2">
-                        <span
-                          className="h-3 w-3 rounded-full"
-                          style={{
-                            backgroundColor: getPaletteByColor(cal.color).color,
-                          }}
-                        />
-                        {cal.calendarName}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+  const inStep = step !== "list";
+  return (
+    <BottomSheet
+      open
+      form
+      // 장소 · 설명 단계의 Esc · 뒤로 가기는 친 글을 버리고 줄 칸으로 돌아간다 — 시트를 닫는 물음은 줄 칸 단계에서만
+      dirty={dirty && !inStep}
+      onOpenChange={(next) => {
+        if (next) return;
+        if (inStep) cancelStep();
+        else onClose();
+      }}
+    >
+      <BottomSheetContent
+        title={inStep ? t(`form.${step}`) : heading}
+        aria-describedby={undefined}
+        showCloseButton={!inStep}
+        onBack={inStep ? cancelStep : undefined}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          if (!event) form.setFocus("title");
+        }}
+      >
+        {inStep && <SheetStepDone onClick={confirmStep} />}
+        <BottomSheetBody scrollFog>
+          {step === "list" && (
+            <EventFormSheetBody view={view} onStep={enterStep} />
+          )}
+          {step === "location" && (
+            <div className="pb-x2 pt-x3">
+              <Input
+                size="large"
+                autoFocus
+                aria-label={t("form.location")}
+                value={draft}
+                placeholder={t("form.locationPlaceholder")}
+                maxLength={LOCATION_MAX}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    confirmStep();
+                  }
+                }}
+              />
             </div>
           )}
-
-          {/* Label selector */}
-          {labels.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <Label id={`${uid}lbl-label`}>
-                <Tag size={14} className="inline mr-1" />
-                {t("form.label")}
-              </Label>
-              <Select
-                value={
-                  selectedLabelRowId
-                    ? String(selectedLabelRowId)
-                    : NO_LABEL_VALUE
-                }
-                onValueChange={(v) =>
-                  setValue(
-                    "labelRowId",
-                    v === NO_LABEL_VALUE ? undefined : Number(v),
-                    {
-                      shouldDirty: true,
-                    },
-                  )
-                }
-              >
-                <SelectTrigger
-                  id={`${uid}lbl`}
-                  aria-labelledby={`${uid}lbl-label ${uid}lbl`}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_LABEL_VALUE}>
-                    <span className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-muted-foreground/30" />
-                      {t("noLabels")}
-                    </span>
-                  </SelectItem>
-                  {labels.map((label) => (
-                    <SelectItem key={label.rowId} value={String(label.rowId)}>
-                      <span className="flex items-center gap-2">
-                        <span
-                          className="h-3 w-3 rounded-full"
-                          style={{
-                            backgroundColor: getPaletteByColor(label.color)
-                              .color,
-                          }}
-                        />
-                        {label.labelName}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {step === "description" && (
+            <Field
+              label={t("form.description")}
+              maxGraphemeCount={CONTENT_MAX}
+              className="pb-x2 pt-x3 [&_label]:sr-only"
+            >
+              <Textarea
+                autoFocus
+                rows={3}
+                value={draft}
+                placeholder={t("form.descriptionPlaceholder")}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+            </Field>
           )}
-
-          {/* 일정마다 고르는 색 칸은 두지 않는다(사용자 결정 2026-09-25) — 화면은 라벨·캘린더
-              색으로 칠해서 고른 색이 한 번도 보이지 않았다(QA 30 12). 저장값은 캘린더를 고를 때
-              그 캘린더 색으로 채운 그대로다. */}
-          {/* All-day switch */}
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={isAllDay}
-              onCheckedChange={handleAllDayChange}
-              id="event-all-day"
-            />
-            <Label
-              htmlFor="event-all-day"
-              className="font-normal cursor-pointer"
-            >
-              {t("form.allDay")}
-            </Label>
-          </div>
-
-          {/* allDay=true 는 시작/종료 같은 row, false 는 row stack — date input width 확보 */}
-          {/* 날짜·시각 칸은 다 친 값만 받는다(commitOnComplete). 받은 값에 시각을 이어 붙이고
-              종료를 보정하는데, 키를 누를 때마다 미완성 값이 들어오면 `2T10:00` 이 칸에 되써져
-              입력이 깨지고 종료는 NaN 이 됐다(2026-09-28 QA). */}
-          <div className={isAllDay ? "grid grid-cols-2 gap-3" : "space-y-3"}>
-            <div className="flex flex-col gap-2">
-              <Label>{t("form.startDate")}</Label>
-              {isAllDay ? (
-                <InputDatePicker
-                  commitOnComplete
-                  value={startDate}
-                  onValueChange={setStartDay}
-                />
-              ) : (
-                <div className="grid grid-cols-[1fr_116px] gap-2">
-                  <InputDatePicker
-                    commitOnComplete
-                    value={startDate.substring(0, 10)}
-                    onValueChange={setStartDay}
-                  />
-                  <InputTimePicker
-                    commitOnComplete
-                    value={startDate.substring(11, 16)}
-                    onValueChange={setStartTime}
-                    minuteStep={5}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>{t("form.endDate")}</Label>
-              {isAllDay ? (
-                <InputDatePicker
-                  commitOnComplete
-                  value={endDate}
-                  onValueChange={setEndDay}
-                />
-              ) : (
-                <div className="grid grid-cols-[1fr_116px] gap-2">
-                  <InputDatePicker
-                    commitOnComplete
-                    value={endDate.substring(0, 10)}
-                    onValueChange={setEndDay}
-                  />
-                  <InputTimePicker
-                    commitOnComplete
-                    value={endDate.substring(11, 16)}
-                    onValueChange={setEndTime}
-                    minuteStep={5}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="flex flex-col gap-2">
-            <Label>
-              <MapPin size={14} className="inline mr-1" />
-              {t("form.location")}
-            </Label>
-            <Input
-              {...register("location")}
-              placeholder={t("form.locationPlaceholder")}
-            />
-          </div>
-
-          {/* Recurrence — single select */}
-          <div className="flex flex-col gap-2">
-            <Label>
-              <Repeat size={14} className="inline mr-1" />
-              {t("form.recurrence")}
-            </Label>
-            <ToggleGroup
-              type="single"
-              size="sm"
-              value={recurrence}
-              onValueChange={(v) =>
-                v && handleRecurrenceChange(v as RecurrenceOption)
-              }
-              className="justify-start flex-wrap"
-            >
-              {RECURRENCE_OPTIONS.map((option) => (
-                <ToggleGroupItem key={option} value={option}>
-                  {t(`recurrence.${option}`)}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-
-          {/* Reminder — multi select */}
-          <div className="flex flex-col gap-2">
-            <Label>
-              <Bell size={14} className="inline mr-1" />
-              {t("form.reminder")}
-            </Label>
-            <ToggleGroup
-              type="multiple"
-              size="sm"
-              value={selectedReminders.map(String)}
-              onValueChange={(v) => handleRemindersChange(v.map(Number))}
-              className="justify-start flex-wrap"
-            >
-              {REMINDER_OPTIONS.map((minutes) => (
-                <ToggleGroupItem key={minutes} value={String(minutes)}>
-                  {selectedReminders.includes(minutes) && (
-                    <Check size={12} className="inline mr-1" />
-                  )}
-                  {getReminderLabel(minutes)}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-          {dateRangeInvalid && (
-            <p
-              style={{
-                margin: 0,
-                fontSize: "var(--text-caption)",
-                color: "var(--color-fg-critical)",
-              }}
-            >
-              {t("form.endBeforeStart")}
-            </p>
-          )}
-        </form>
-      </Form>
-    </ModalShell>
+        </BottomSheetBody>
+        {!inStep && (
+          <BottomSheetFooter>
+            {del && (
+              <Button variant="ghost" ghostColor="critical" onClick={del}>
+                {tc("delete")}
+              </Button>
+            )}
+            <Button loading={isLoading} onClick={save}>
+              {tc("save")}
+            </Button>
+          </BottomSheetFooter>
+        )}
+      </BottomSheetContent>
+    </BottomSheet>
   );
 };
