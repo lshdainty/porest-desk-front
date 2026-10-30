@@ -362,10 +362,8 @@ function ChoiceRow({
       suffixIcon={<ChevronDown aria-hidden />}
       disabled={disabled || loading}
       onClick={wide ? undefined : () => setOpen(true)}
-      // 목록 줄의 뒤 붙이개는 안의 버튼에 relative 를 거는데(작은 버튼 누름 영역용) Input Button 의 누르는 층은 상자를 덮는 absolute 라 되돌린다.
-      // 1280 이상은 보이는 줄 높이를 다른 줄(46)과 같게 상자(medium 40)의 위아래를 줄 여백에 겹친다. 미만(large 52)은 상자가 줄보다 커서
+      // 보이는 줄 높이는 다른 줄(46)과 같게 — 1280 이상은 상자(medium 40)의 위아래를 줄 여백에 겹친다. 미만(large 52)은 상자가 줄보다 커서
       // 겹치면 이웃 줄의 상자와 맞닿으므로 겹치지 않고 줄이 상자를 따라 자란다.
-      className="absolute!"
       rootClassName="w-[200px] lg:-my-[9px]"
     />
   );

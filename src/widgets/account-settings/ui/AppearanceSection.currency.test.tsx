@@ -36,7 +36,13 @@ vi.mock("@/shared/ui/theme-context", () => ({
   useTheme: () => ({ theme: "system", setTheme: () => {} }),
 }));
 vi.mock("@/features/user", () => ({
-  useUserPreferences: () => ({ data: state.prefs }),
+  useUserPreferences: () => ({
+    data: state.prefs,
+    isError: state.prefs === undefined,
+    isLoading: false,
+    refetch: () => {},
+    isRefetching: false,
+  }),
   useUpdateUserPreferences: () => ({
     mutate: (data: Record<string, unknown>, _opts?: unknown) => {
       state.patched.push(data);
@@ -163,5 +169,21 @@ describe("기본 통화는 서버에 저장한다 (QA #124)", () => {
     expect(trigger.disabled).toBe(true);
     expect(trigger.textContent).not.toContain("KRW");
     expect(trigger.textContent).not.toContain("currency.KRW");
+  });
+
+  it("받기에 실패한 상태에서는 지역 · 통화 줄이 [다시 시도]로 바뀌어 저장 요청이 나갈 길이 없다 — 기본값이 서버 값을 덮지 않는다", () => {
+    state.prefs = undefined;
+    render();
+
+    const labels = [...document.body.querySelectorAll("button")].map((b) =>
+      b.textContent?.trim(),
+    );
+    expect(labels.filter((l) => l === "common.retry")).toHaveLength(2);
+    expect(
+      [...document.body.querySelectorAll("button")].some(
+        (b) => b.getAttribute("aria-label") === "currency.label",
+      ),
+    ).toBe(false);
+    expect(state.patched).toEqual([]);
   });
 });
