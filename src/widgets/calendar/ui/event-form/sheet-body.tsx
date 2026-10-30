@@ -149,7 +149,7 @@ export function EventFormSheetBody({
     return (
       <ListItem
         prefix={<Clock className={ROW_ICON} />}
-        title={t(`form.${kind}`)}
+        title={<span className="whitespace-nowrap">{t(`form.${kind}`)}</span>}
         suffixText
         suffix={
           <span className="-mr-x1 flex flex-wrap items-center justify-end gap-x-x2">

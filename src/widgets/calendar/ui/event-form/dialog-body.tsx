@@ -91,7 +91,7 @@ export function EventFormDialogBody({ view }: { view: EventFormView }) {
               onConfirm={setTime}
               trigger={({ open, onClick }) => (
                 <InputButton
-                  rootClassName="w-[144px]"
+                  rootClassName="w-[9rem] max-w-full"
                   aria-label={`${t(`form.${kind}Time`)}, ${timeText(time)}`}
                   value={timeText(time)}
                   suffixIcon={<Clock />}
