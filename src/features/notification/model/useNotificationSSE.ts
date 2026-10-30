@@ -54,7 +54,8 @@ export const useNotificationSSE = () => {
 
     // 밀려난 탭이 다시 보이면 새로 이어 알림을 받는다. 보일 때 한 번뿐 — 계속 밀려나면 그때 또 멈춘다.
     const onVisible = () => {
-      if (!active || !replaced || document.visibilityState !== "visible") return;
+      if (!active || !replaced || document.visibilityState !== "visible")
+        return;
       replaced = false;
       hadErrorRef.current = true; // 끊긴 사이 알림을 이어질 때 한 번 맞춘다
       connect();

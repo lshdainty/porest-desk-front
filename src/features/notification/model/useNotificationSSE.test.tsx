@@ -278,7 +278,10 @@ describe("useNotificationSSE", () => {
 
   // ---- M-E: 상한 초과로 밀려나면 다시 잇지 않는다 ----
   const setVisibility = (v: "visible" | "hidden") => {
-    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => v });
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => v,
+    });
     document.dispatchEvent(new Event("visibilitychange"));
   };
 
