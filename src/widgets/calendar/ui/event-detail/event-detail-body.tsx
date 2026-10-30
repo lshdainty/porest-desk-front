@@ -29,11 +29,6 @@ import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 const ROW_ICON = "size-[22px]";
 
-/** 줄 제목은 줄을 바꾸지 않는다 — 긴 값이 와도 제목이 글자 하나 폭으로 눌리지 않게 값이 줄을 바꾼다 */
-function NoWrap({ children }: { children: ReactNode }) {
-  return <span className="whitespace-nowrap">{children}</span>;
-}
-
 /** 캘린더 · 라벨 값 — 색 점 8 + 사이 6 + 이름(일정 폼 줄과 같은 점) */
 function DotValue({ color, children }: { color: string; children: ReactNode }) {
   return (
@@ -52,7 +47,8 @@ function DotValue({ color, children }: { color: string; children: ReactNode }) {
 /** 값의 조각들 — 자르지 않고 조각 단위로 줄을 바꾼다. 날짜 조각 + 사이 8 + 시각 조각 */
 function Pieces({ children }: { children: ReactNode }) {
   return (
-    <span className="flex flex-wrap items-center justify-end gap-x-x2">
+    // 값은 줄 끝 오른쪽 맞춤(공용 List text-end) — 좁은 줄(200%)에서 제목 아래로 내려가면 왼쪽(list.md:154)
+    <span className="flex flex-wrap items-center justify-end gap-x-x2 @max-[calc(16rem+48px)]/list-item:justify-start">
       {children}
     </span>
   );
@@ -171,7 +167,7 @@ export function EventDetailBody({
         {event.calendarName && (
           <ListItem
             prefix={<Calendar className={ROW_ICON} />}
-            title={<NoWrap>{t("form.calendar")}</NoWrap>}
+            title={t("form.calendar")}
             suffixText
             suffix={
               <DotValue color={calendarDot}>{event.calendarName}</DotValue>
@@ -181,7 +177,7 @@ export function EventDetailBody({
         {event.labelName && (
           <ListItem
             prefix={<Tag className={ROW_ICON} />}
-            title={<NoWrap>{t("form.label")}</NoWrap>}
+            title={t("form.label")}
             suffixText
             suffix={
               <DotValue
@@ -199,7 +195,7 @@ export function EventDetailBody({
         {event.isAllDay ? (
           <ListItem
             prefix={<Sun className={ROW_ICON} />}
-            title={<NoWrap>{t("form.allDay")}</NoWrap>}
+            title={t("form.allDay")}
             suffixText
             suffix={
               <Pieces>
@@ -212,7 +208,7 @@ export function EventDetailBody({
           <>
             <ListItem
               prefix={<Clock className={ROW_ICON} />}
-              title={<NoWrap>{t("form.start")}</NoWrap>}
+              title={t("form.start")}
               suffixText
               suffix={
                 <Pieces>
@@ -223,7 +219,7 @@ export function EventDetailBody({
             />
             <ListItem
               prefix={<Clock className={ROW_ICON} />}
-              title={<NoWrap>{t("form.end")}</NoWrap>}
+              title={t("form.end")}
               suffixText
               suffix={
                 <Pieces>
@@ -237,20 +233,20 @@ export function EventDetailBody({
         )}
         <ListItem
           prefix={<Repeat className={ROW_ICON} />}
-          title={<NoWrap>{t("form.recurrence")}</NoWrap>}
+          title={t("form.recurrence")}
           suffix={t(recurrenceKey(event.rrule))}
         />
         {reminders && (
           <ListItem
             prefix={<Bell className={ROW_ICON} />}
-            title={<NoWrap>{t("form.reminder")}</NoWrap>}
+            title={t("form.reminder")}
             suffix={reminders}
           />
         )}
         {event.location && (
           <ListItem
             prefix={<MapPin className={ROW_ICON} />}
-            title={<NoWrap>{t("form.location")}</NoWrap>}
+            title={t("form.location")}
             suffixText
             suffix={
               <span className="whitespace-pre-wrap">{event.location}</span>
@@ -260,7 +256,7 @@ export function EventDetailBody({
         {event.description && (
           <ListItem
             prefix={<Text className={ROW_ICON} />}
-            title={<NoWrap>{t("form.description")}</NoWrap>}
+            title={t("form.description")}
           />
         )}
       </List>

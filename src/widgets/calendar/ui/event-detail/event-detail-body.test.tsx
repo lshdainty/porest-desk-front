@@ -239,3 +239,47 @@ describe("자리", () => {
     ).toContain("px-x6");
   });
 });
+
+// 값 규칙(I-09b · 28-5 값 맞춤) — 줄 제목은 NoWrap 우회 없이 ds List 가 맡고, 값은 공용 List 의 줄 끝 오른쪽 맞춤을 따른다
+describe("값 맞춤 — 공용 List 규칙", () => {
+  it("줄 제목에 줄바꿈 금지 우회(whitespace-nowrap)가 없다", () => {
+    render(
+      event({
+        labelRowId: 1,
+        labelName: "업무",
+        labelColor: "#8b4dba",
+        location: "본사",
+        description: "d",
+        reminders: [
+          {
+            rowId: 1,
+            eventRowId: 1,
+            reminderType: "P",
+            minutesBefore: 60,
+            isSent: false,
+          },
+        ],
+      }),
+    );
+    for (const t of container.querySelectorAll("[data-slot=list-title]"))
+      expect(t.innerHTML).not.toContain("whitespace-nowrap");
+  });
+
+  it("시작 · 종료 조각은 오른쪽 끝선, 좁은 줄(제목 아래로 내려간 값)에서는 왼쪽", () => {
+    render(event());
+    const piece = container.querySelector("[data-slot=list-suffix] > span")!;
+    expect(piece.className).toContain("justify-end");
+    expect(piece.className).toContain(
+      "@max-[calc(16rem+48px)]/list-item:justify-start",
+    );
+  });
+
+  it("값은 텍스트 값으로 표시해(suffixText) 공용 List 의 text-end 를 받는다", () => {
+    render(event({ location: "본사" }));
+    for (const s of container.querySelectorAll("[data-slot=list-suffix]"))
+      expect(["text", null]).toContain(s.getAttribute("data-value"));
+    expect(
+      container.querySelector("[data-slot=list-suffix][data-value=text]"),
+    ).not.toBeNull();
+  });
+});
