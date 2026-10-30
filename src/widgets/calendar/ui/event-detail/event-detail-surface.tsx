@@ -143,6 +143,18 @@ export function EventDetailSurface({
     onDelete: current ? () => onRequestDelete(current) : undefined,
   });
 
+  // 폼 값이 수정할 일정으로 맞춰진 뒤에 칸을 그린다 — 맞춤(reset)보다 칸이 먼저 붙으면 RHF 가 등록을 비워 칸이 빈 채 값이 안 먹는다
+  // (한 번 맞춰지면 래치한다 — 제목을 고치는 순간 값이 달라져도 칸이 사라지면 안 된다)
+  const [seededRow, setSeededRow] = useState<number | null>(null);
+  if (!snapshot && seededRow !== null) setSeededRow(null);
+  else if (
+    snapshot &&
+    seededRow !== snapshot.rowId &&
+    flow.ctrl.title === snapshot.title
+  )
+    setSeededRow(snapshot.rowId);
+  const formReady = !!snapshot && seededRow === snapshot.rowId;
+
   const leaveEdit = (ref?: EventRef) => {
     const back = ref ?? (step.kind === "edit" ? step.ref : null);
     setSnapshot(null);
@@ -277,7 +289,7 @@ export function EventDetailSurface({
   // ── 1280 미만: 한 시트 안에서 단계가 바뀐다
   const inEdit = step.kind === "edit" && !!current;
   // 폼 값이 수정할 일정으로 맞춰진 뒤에 칸을 그린다 — 맞춤(reset)보다 칸이 먼저 붙으면 RHF 가 등록을 비워 칸이 빈 채 값이 안 먹는다
-  const formReady = !!snapshot && flow.ctrl.title === snapshot.title;
+
   const sheetProps = {
     ref: contentRef as RefObject<HTMLDivElement>,
     "aria-describedby": undefined,
