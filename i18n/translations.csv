@@ -1987,7 +1987,7 @@ stocks,watch.empty,관심 종목이 없어요. 검색해서 별표를 눌러보�
 stocks,watch.failTitle,관심 종목을 불러오지 못했어요,Couldn't load your watchlist
 stocks,watch.loading,관심 종목을 불러오는 중이에요,Loading your watchlist
 stocks,watch.emptyTitle,관심 종목이 없어요,No watchlist stocks
-stocks,watch.emptyDesc,종목을 찾아 ☆ 를 눌러 보세요.,Find a stock and tap the star.
+stocks,watch.emptyDesc,종목을 찾아 ☆ 를 눌러보세요.,Find a stock and tap the star.
 stocks,search.label,종목 검색,Search stocks
 stocks,search.placeholder,종목 검색,Search stocks
 stocks,search.noResults,'{{query}}'에 대한 검색 결과가 없어요,No results for '{{query}}'
