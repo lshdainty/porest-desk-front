@@ -222,7 +222,6 @@ todo,form.memoPlaceholder,추가 메모 (선택),Additional note (optional)
 calendar,title,캘린더,Calendar
 calendar,addEvent,일정 추가,Add event
 calendar,editEvent,일정 수정,Edit event
-calendar,deleteEvent,일정 삭제,Delete Event
 calendar,allDay,종일,All Day
 calendar,noEvents,이 날에 일정이 없어요.,No events on this day.
 calendar,events,일정,Events
@@ -248,6 +247,7 @@ calendar,form.endDate,종료일,End Date
 calendar,form.endBeforeStart,종료가 시작보다 빠를 수 없어요,End cannot be before the start
 calendar,deleteConfirm.title,일정 삭제,Delete event
 calendar,deleteConfirm.message,"""{{name}}"" 일정을 삭제할까요? 삭제한 일정은 되돌릴 수 없어요.","Delete the ""{{name}}"" event? This action cannot be undone."
+calendar,deleteConfirm.messageRecurring,"""{{name}}"" 일정은 반복 일정이라 모든 회차가 함께 삭제돼요. 삭제한 일정은 되돌릴 수 없어요.","""{{name}}"" is a repeating event, so every occurrence will be deleted. This action cannot be undone."
 calendar,deleteConfirm.cancel,취소,Cancel
 calendar,deleteConfirm.confirm,삭제,Delete
 calendar,label,라벨,Label
@@ -2557,15 +2557,12 @@ export,import.failReason.parentHasTx,이 카테고리에는 거래가 직접 달
 export,import.failReason.resolve,카테고리나 자산을 찾지 못했어요,Couldn't match the category or asset
 export,import.failReason.save,저장하는 중에 오류가 나서 가져오지 못했어요,"Something went wrong while saving, so it could not be imported"
 export,import.failReason.unknown,알 수 없는 이유로 가져오지 못했어요,Couldn't import it for an unknown reason
-calendar,detail.start,시작,Start
-calendar,detail.end,종료,End
 calendar,detail.dday,D-DAY,D-DAY
 calendar,detail.ddayLeft,D-{{n}},D-{{n}}
 calendar,detail.ddayPast,{{n}}일 지남,{{n}}d ago
 calendar,detail.durationH,{{h}}시간,{{h}}h
 calendar,detail.durationHM,{{h}}시간 {{m}}분,{{h}}h {{m}}m
 calendar,detail.durationM,{{m}}분,{{m}}m
-calendar,detail.memo,메모,Memo
 category,reorderEdit,순서 바꾸기,Reorder
 category,reorderDone,완료,Done
 category,reorderHint,"손잡이를 끌어 순서를 바꿔요. 상위는 상위끼리, 하위는 같은 상위 안에서 옮겨요.",Drag the handle to reorder. Parents move among parents; subcategories move within their parent.
@@ -3197,6 +3194,7 @@ calendar,view.year,연,Year
 calendar,view.agenda,목록,List
 calendar,panel.count,일정 {{count}}개,{{count}} events
 calendar,panel.today,오늘,Today
+calendar,panel.backToList,{{date}} 일정 목록으로,Back to events on {{date}}
 calendar,loadFailed,일정을 불러오지 못했어요,Couldn't load events
 calendar,loadFailedDesc,잠시 뒤 다시 시도해주세요.,Please try again in a moment.
 calendar,form.none,없음,None

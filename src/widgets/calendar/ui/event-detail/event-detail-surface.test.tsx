@@ -1,0 +1,480 @@
+// 일정 상세가 든 표면 (I-09b 5 · 7 · 8 · 9 · 18) — 그날 시트 안 한 단계(목록 → 상세 → 수정 폼), 태블릿 480 시트, 읽기 전용, 지운 뒤
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { __resetPointerBlockForTest } from "@/shared/lib/groo/pointer-block";
+import { click, setValue, setupFormDom } from "../event-form/test-utils";
+
+import type { CalendarEventFormValues } from "@/entities/calendar";
+import type { IEvent } from "@/widgets/calendar/model/interfaces";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
+}
+
+vi.mock("react-i18next", () => ({
+  initReactI18next: { type: "3rdParty", init: () => {} },
+  useTranslation: () => ({
+    t: (k: string) => k,
+    i18n: { language: "ko" },
+  }),
+}));
+
+const updates = vi.hoisted(
+  () => [] as { id: number; data: CalendarEventFormValues }[],
+);
+const mocks = vi.hoisted(() => ({
+  me: 7,
+  roles: { 1: "READ" } as Record<number, string>,
+  calendars: [] as unknown[],
+}));
+vi.mock("@/features/user", () => ({
+  useCurrentUser: () => ({ data: { rowId: mocks.me } }),
+}));
+vi.mock("@/features/user-calendar", () => ({
+  useUserCalendars: () => ({ data: mocks.calendars }),
+}));
+vi.mock("@/features/event-label", () => ({
+  useEventLabels: () => ({ data: [] }),
+}));
+vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
+  useUpdateEvent: () => ({
+    mutate: (
+      v: { id: number; data: CalendarEventFormValues },
+      o?: { onSuccess?: () => void },
+    ) => {
+      updates.push(v);
+      o?.onSuccess?.();
+    },
+    isPending: false,
+  }),
+}));
+
+const { EventDetailSurface } = await import("./event-detail-surface");
+const { i18n: appI18n } = await import("@/shared/i18n/config");
+
+let container: HTMLDivElement;
+let root: Root;
+
+beforeEach(async () => {
+  await appI18n.changeLanguage("ko");
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  setupFormDom(false);
+  __resetPointerBlockForTest();
+  updates.length = 0;
+  mocks.me = 7;
+  mocks.calendars = [
+    {
+      rowId: 1,
+      myRole: "READ",
+      color: "#2c70bf",
+      calendarName: "내 캘린더",
+      isDefault: true,
+      isVisible: true,
+      isOwner: false,
+    },
+    {
+      rowId: 2,
+      myRole: "EDIT",
+      color: "#5e60c8",
+      calendarName: "팀",
+      isDefault: false,
+      isVisible: true,
+      isOwner: false,
+    },
+  ];
+  container = document.createElement("div");
+  document.body.appendChild(container);
+  root = createRoot(container);
+});
+afterEach(async () => {
+  act(() => root.unmount());
+  container.remove();
+  document.body.removeAttribute("style");
+  // 시트가 닫히며 되감는 히스토리 popstate 가 이 시험 안에서 다 도착하게 한다 — 다음 시험의 뒤로 가기 셈에 번지지 않게
+  await new Promise((r) => setTimeout(r, 200));
+});
+
+const event = (id: number, over: Partial<IEvent> = {}): IEvent => ({
+  id,
+  userRowId: 7,
+  startDate: "2026-10-22T10:00:00",
+  endDate: "2026-10-22T11:00:00",
+  title: `일정 ${id}`,
+  description: "",
+  color: "#2c70bf",
+  isAllDay: false,
+  sourceType: "calendar",
+  eventType: "PERSONAL",
+  calendarRowId: 1,
+  calendarName: "내 캘린더",
+  calendarColor: "#2c70bf",
+  labelRowId: null,
+  labelName: null,
+  labelColor: null,
+  location: null,
+  rrule: null,
+  recurrenceId: null,
+  reminders: [],
+  ...over,
+});
+
+const fns = () => ({
+  onClose: vi.fn(),
+  onAdd: vi.fn(),
+  onRequestDelete: vi.fn(),
+});
+
+const phone = (events: IEvent[], f = fns()) => {
+  const ui = (list: IEvent[]) => (
+    <EventDetailSurface listDate={new Date(2026, 9, 22)} events={list} {...f} />
+  );
+  act(() => root.render(ui(events)));
+  return { f, rerender: (list: IEvent[]) => act(() => root.render(ui(list))) };
+};
+
+const sheet = () =>
+  document.querySelector<HTMLElement>("[data-slot=bottom-sheet-content]")!;
+const dialogs = () => document.querySelectorAll("[role=dialog]");
+const title = () =>
+  sheet().querySelector("[data-slot=bottom-sheet-title]")!.textContent;
+const rows = () => [...sheet().querySelectorAll("button[data-slot=list-body]")];
+const press = (el: Element) => click(el);
+const pressEsc = () =>
+  act(() => {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  });
+const footerButtons = () => [
+  ...sheet().querySelectorAll("[data-slot=bottom-sheet-footer] button"),
+];
+
+describe("폰 그날 시트 — 목록 → 상세 (5)", () => {
+  it('제목은 "M월 d일 (요)", 바닥 "일정 추가", 줄 사이 선 · 꺾쇠 없음, 공휴일 줄은 누르지 못한다', () => {
+    phone([
+      event(1, { sourceType: "holiday", title: "한글날", isAllDay: true }),
+      event(2),
+    ]);
+    expect(title()).toBe("10월 22일 (목)");
+    expect(footerButtons().map((b) => b.textContent)).toEqual(["addEvent"]);
+    expect(sheet().querySelector("[data-slot=list-divider]")).toBeNull();
+    expect(sheet().querySelector("[data-slot=list-suffix] svg")).toBeNull();
+    expect(rows()).toHaveLength(1);
+  });
+
+  it("일정 줄을 누르면 같은 시트가 상세로 바뀐다 — 열린 대화상자 수 1, 머리 ← + 일정 상세", () => {
+    phone([event(1), event(2)]);
+    expect(dialogs()).toHaveLength(1);
+    press(rows()[1]!);
+    expect(dialogs()).toHaveLength(1);
+    expect(title()).toBe("eventDetail");
+    expect(
+      sheet().querySelector("[data-slot=bottom-sheet-back]"),
+    ).not.toBeNull();
+    expect(sheet().textContent).toContain("일정 2");
+    // 상세에는 일정 색 막대 · 옛 상세 Drawer 가 없다
+    expect(document.querySelector("[data-vaul-drawer]")).not.toBeNull();
+    expect(
+      document.querySelectorAll("[data-slot=bottom-sheet-content]"),
+    ).toHaveLength(1);
+  });
+
+  it("← 는 그날 목록으로 — 초점은 연 줄에 있다. 닫기는 시트 전체", () => {
+    const { f } = phone([event(1), event(2)]);
+    press(rows()[1]!);
+    press(sheet().querySelector("[data-slot=bottom-sheet-back]")!);
+    expect(title()).toBe("10월 22일 (목)");
+    expect(dialogs()).toHaveLength(1);
+    expect((document.activeElement as HTMLElement).dataset.eventKey).toBe(
+      "2|2026-10-22",
+    );
+    expect(f.onClose).not.toHaveBeenCalled();
+    press(rows()[0]!);
+    press(sheet().querySelector("[data-slot=bottom-sheet-close]")!);
+    expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("Esc 는 상세에서 목록으로, 목록에서 닫기", () => {
+    const { f } = phone([event(1)]);
+    press(rows()[0]!);
+    pressEsc();
+    expect(title()).toBe("10월 22일 (목)");
+    expect(f.onClose).not.toHaveBeenCalled();
+    pressEsc();
+    expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("수정 · 삭제 버튼은 서버가 허락하는 사람에게만 (7)", () => {
+  const open = (e: IEvent) => {
+    phone([e]);
+    press(rows()[0]!);
+  };
+  it("읽기 전용 캘린더의 내가 만든 일정에는 있다", () => {
+    open(event(1));
+    expect(footerButtons().map((b) => b.textContent)).toEqual([
+      "delete",
+      "edit",
+    ]);
+  });
+  it("읽기 전용 캘린더의 남이 만든 일정에는 바닥 자체가 없다", () => {
+    open(event(1, { userRowId: 99 }));
+    expect(sheet().querySelector("[data-slot=bottom-sheet-footer]")).toBeNull();
+  });
+  it("편집 가능 캘린더에서는 남이 만든 일정에도 있다", () => {
+    open(event(1, { userRowId: 99, calendarRowId: 2 }));
+    expect(footerButtons()).toHaveLength(2);
+  });
+});
+
+describe("삭제 · 사라진 일정 (8)", () => {
+  it("[삭제] 는 부르는 쪽 확인창을 요청한다 — 지워져 목록에서 빠지면 그날 목록 단계로", () => {
+    const { f, rerender } = phone([event(1), event(2)]);
+    press(rows()[0]!);
+    press(footerButtons()[0]!);
+    expect(f.onRequestDelete).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1 }),
+    );
+    // 서버가 지운 뒤 목록이 다시 온다
+    rerender([event(2)]);
+    expect(title()).toBe("10월 22일 (목)");
+    expect(rows()).toHaveLength(1);
+    expect(f.onClose).not.toHaveBeenCalled();
+  });
+
+  it("마지막 일정을 지우면 목록 단계가 빈 날 글을 보인다", () => {
+    const { rerender } = phone([event(1)]);
+    press(rows()[0]!);
+    rerender([]);
+    expect(
+      sheet().querySelector("[data-slot=day-sheet-empty]")!.textContent,
+    ).toBe("noEvents");
+  });
+});
+
+describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
+  const toEdit = (events = [event(1, { rrule: "FREQ=WEEKLY" })]) => {
+    const r = phone(events);
+    press(rows()[0]!);
+    press(footerButtons()[1]!);
+    return r;
+  };
+
+  it("새 시트를 띄우지 않는다 — 열린 대화상자 수 1, 머리 일정 수정, 입력 폼 규칙", () => {
+    toEdit();
+    expect(dialogs()).toHaveLength(1);
+    expect(title()).toBe("editEvent");
+    expect(sheet().getAttribute("data-form")).not.toBeNull();
+    // 바닥 [삭제][저장]
+    expect(footerButtons().map((b) => b.textContent)).toEqual([
+      "delete",
+      "save",
+    ]);
+  });
+
+  it("딤을 눌러도 닫히지 않는다 — 조회가 아니라 입력", () => {
+    const { f } = toEdit();
+    const overlay = document.querySelector("[data-slot=bottom-sheet-overlay]")!;
+    act(() => {
+      overlay.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
+      overlay.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(f.onClose).not.toHaveBeenCalled();
+    expect(title()).toBe("editEvent");
+  });
+
+  it("바뀐 값이 있으면 Esc 가 먼저 묻고, [나가기] 면 상세로 돌아간다", () => {
+    toEdit();
+    setValue(
+      sheet().querySelector<HTMLInputElement>("[name=title]")!,
+      "바꾼 제목",
+    );
+    pressEsc();
+    const alert = document.querySelector("[role=alertdialog]");
+    expect(alert).not.toBeNull();
+    const leave = [...alert!.querySelectorAll("button")].find(
+      (b) => b.textContent === "나가기",
+    )!;
+    press(leave);
+    expect(title()).toBe("eventDetail");
+    // 바꾼 제목은 저장되지 않았다
+    expect(sheet().textContent).toContain("일정 1");
+    expect(updates).toHaveLength(0);
+  });
+
+  it("바뀐 값이 없으면 Esc 가 바로 상세로 돌아간다", () => {
+    toEdit();
+    pressEsc();
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+    expect(title()).toBe("eventDetail");
+  });
+
+  it("[저장] 은 반복 일정이면 연 회차를 싣고, 성공하면 상세로 돌아와 새 값을 보인다", async () => {
+    const { rerender } = toEdit();
+    setValue(
+      sheet().querySelector<HTMLInputElement>("[name=title]")!,
+      "바꾼 제목",
+    );
+    await act(async () => {
+      (footerButtons()[1] as HTMLButtonElement).click();
+    });
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.id).toBe(1);
+    expect(updates[0]!.data.title).toBe("바꾼 제목");
+    expect(updates[0]!.data.occurrenceStartDate).toBe("2026-10-22T10:00:00");
+    expect(title()).toBe("eventDetail");
+    // 다시 받은 목록의 새 값
+    rerender([event(1, { rrule: "FREQ=WEEKLY", title: "바꾼 제목" })]);
+    expect(sheet().textContent).toContain("바꾼 제목");
+  });
+
+  it("날짜를 옮겨 저장해 그 날 목록에 없으면 그날 목록 단계로", async () => {
+    const { rerender } = toEdit([event(1)]);
+    await act(async () => {
+      (footerButtons()[1] as HTMLButtonElement).click();
+    });
+    rerender([]);
+    expect(title()).toBe("10월 22일 (목)");
+  });
+
+  it("폼 바닥 [삭제] 는 삭제 확인을 요청한다", () => {
+    const { f } = toEdit();
+    press(footerButtons()[0]!);
+    expect(f.onRequestDelete).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1 }),
+    );
+  });
+});
+
+describe("태블릿 480 시트 (18) — 돌아갈 목록이 없다", () => {
+  const tablet = (e: IEvent[]) => {
+    const f = fns();
+    act(() =>
+      root.render(
+        <EventDetailSurface
+          events={e}
+          start={{ id: 1, day: "2026-10-22" }}
+          {...f}
+        />,
+      ),
+    );
+    return f;
+  };
+  it("머리에 ← 가 없고 제목 일정 상세 · 닫기 원이 있다", () => {
+    tablet([event(1)]);
+    expect(title()).toBe("eventDetail");
+    expect(sheet().querySelector("[data-slot=bottom-sheet-back]")).toBeNull();
+    expect(
+      sheet().querySelector("[data-slot=bottom-sheet-close]"),
+    ).not.toBeNull();
+  });
+  it("Esc 는 시트를 닫는다", () => {
+    const f = tablet([event(1)]);
+    pressEsc();
+    expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+  it("[수정] 은 같은 시트가 폼으로 — 열린 대화상자 수 1", () => {
+    tablet([event(1)]);
+    press(footerButtons()[1]!);
+    expect(dialogs()).toHaveLength(1);
+    expect(title()).toBe("editEvent");
+  });
+  it("지워져 목록에서 사라지면 시트를 닫는다", () => {
+    const f = tablet([event(1)]);
+    act(() =>
+      root.render(
+        <EventDetailSurface
+          events={[]}
+          start={{ id: 1, day: "2026-10-22" }}
+          {...f}
+        />,
+      ),
+    );
+    expect(f.onClose).toHaveBeenCalled();
+  });
+});
+
+describe("1280 이상 주 · 일 · 목록 보기 — 가운데 대화상자 480 (17)", () => {
+  const wideOpen = (
+    over: Partial<IEvent> = {},
+    wideDetail: "dialog" | "none" = "dialog",
+  ) => {
+    setupFormDom(true);
+    const f = fns();
+    act(() =>
+      root.render(
+        <EventDetailSurface
+          events={[event(1, over)]}
+          start={{ id: 1, day: "2026-10-22" }}
+          wideDetail={wideDetail}
+          {...f}
+        />,
+      ),
+    );
+    return f;
+  };
+  const dialog = () =>
+    document.querySelector<HTMLElement>("[data-slot=dialog-content]");
+  const btn = (text: string) =>
+    [...dialog()!.querySelectorAll("button")].find(
+      (b) => b.textContent === text,
+    ) as HTMLButtonElement;
+
+  it("칩 옆 팝오버가 아니라 대화상자다 — 제목 일정 상세 · 머리 닫기", () => {
+    wideOpen();
+    expect(
+      document.querySelector("[data-radix-popper-content-wrapper]"),
+    ).toBeNull();
+    expect(dialog()).not.toBeNull();
+    expect(
+      dialog()!.querySelector("[data-slot=dialog-title]")!.textContent,
+    ).toBe("eventDetail");
+    expect(dialog()!.querySelector("[data-slot=dialog-close]")).not.toBeNull();
+    expect(dialog()!.textContent).toContain("일정 1");
+  });
+
+  it("바닥 [삭제][수정] — 읽기 전용(남이 만든 읽기 전용 캘린더)이면 바닥이 없다", () => {
+    wideOpen();
+    expect(btn("delete")).toBeTruthy();
+    expect(btn("edit")).toBeTruthy();
+    act(() => root.unmount());
+    root = createRoot(container);
+    wideOpen({ userRowId: 99 });
+    expect(dialog()!.querySelector("[data-slot=dialog-footer]")).toBeNull();
+  });
+
+  it("[삭제] 는 확인창을 요청한다", () => {
+    const f = wideOpen();
+    press(btn("delete"));
+    expect(f.onRequestDelete).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1 }),
+    );
+  });
+
+  it('[수정] 은 이 대화상자가 닫히고 "자세히" 대화상자 480 — 열린 대화상자 수 1', () => {
+    wideOpen();
+    press(btn("edit"));
+    expect(document.querySelectorAll("[role=dialog]")).toHaveLength(1);
+    expect(
+      dialog()!.querySelector("[data-slot=dialog-title]")!.textContent,
+    ).toBe("editEvent");
+    expect(dialog()!.querySelector('[name="title"]')).not.toBeNull();
+  });
+
+  it("월 보기(wideDetail none)는 그날 패널이 그리므로 표면을 그리지 않는다", () => {
+    wideOpen({}, "none");
+    expect(document.querySelector("[role=dialog]")).toBeNull();
+  });
+
+  it("Esc 로 닫힌다", () => {
+    const f = wideOpen();
+    pressEsc();
+    expect(f.onClose).toHaveBeenCalledTimes(1);
+  });
+});

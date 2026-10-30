@@ -105,7 +105,7 @@ interface EventDetailBodyProps {
 /**
  * 일정 상세 본문 (I-09b 6 · 1-2B) — 제목 + D-day 배지 아래 List 줄. 일정 폼 줄과 같은 차례 · 같은 아이콘이고 꺾쇠만 없다.
  * 없는 값(라벨 · 알림 · 장소 · 설명)은 줄을 두지 않고 반복은 늘 둔다. 색은 캘린더 · 라벨 줄의 점으로만 — 일정 색은 그리지 않는다.
- * 폰 그날 시트 · 데스크톱 그날 패널 · 480 시트 / 대화상자가 이 부품 하나를 같이 쓴다. 바닥 버튼은 `EventDetailActions`.
+ * 폰 그날 시트 · 데스크톱 그날 패널 · 480 시트 / 대화상자가 이 부품 하나를 같이 쓴다. 바닥 [삭제][수정]은 표면이 그린다(`EventDetailSurface` · `DayPanel`).
  */
 export function EventDetailBody({
   event,
