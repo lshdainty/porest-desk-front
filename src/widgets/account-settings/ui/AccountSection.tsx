@@ -143,7 +143,7 @@ export function AccountSection({
       {mobile ? (
         <div
           data-account-head
-          className="flex flex-col items-center px-global-gutter pb-x2 pt-x6 text-center"
+          className="flex flex-col items-center px-global-gutter pt-x6 text-center"
         >
           <Avatar name={name} size={80} />
           <div className="mt-x3 max-w-full break-keep font-sans text-t7 font-bold text-fg-neutral [overflow-wrap:anywhere]">
