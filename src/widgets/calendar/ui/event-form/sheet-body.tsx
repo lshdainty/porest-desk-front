@@ -38,6 +38,11 @@ import { NO_LABEL, reminderKey, type EventFormView } from "./types";
 
 const ROW_ICON = "size-[22px]";
 
+/** 줄 제목은 줄을 바꾸지 않는다 — 긴 값(장소 · 설명)이 와도 제목이 글자 하나 폭으로 눌려 세로로 깨지지 않게 값이 줄을 바꾼다 */
+function NoWrap({ children }: { children: ReactNode }) {
+  return <span className="whitespace-nowrap">{children}</span>;
+}
+
 /** 날짜 · 시각 조각 — 누르는 자리 44 이상, 글은 자르지 않고 줄을 바꾼다(time-picker.md:71) */
 function Piece({
   label,
@@ -149,7 +154,7 @@ export function EventFormSheetBody({
     return (
       <ListItem
         prefix={<Clock className={ROW_ICON} />}
-        title={<span className="whitespace-nowrap">{t(`form.${kind}`)}</span>}
+        title={<NoWrap>{t(`form.${kind}`)}</NoWrap>}
         suffixText
         suffix={
           <span className="-mr-x1 flex flex-wrap items-center justify-end gap-x-x2">
@@ -221,7 +226,7 @@ export function EventFormSheetBody({
               trigger={({ onClick }) => (
                 <ListButtonItem
                   prefix={<Calendar className={ROW_ICON} />}
-                  title={t("form.calendar")}
+                  title={<NoWrap>{t("form.calendar")}</NoWrap>}
                   suffixText
                   suffix={
                     cal ? (
@@ -239,7 +244,7 @@ export function EventFormSheetBody({
           ) : (
             <ListButtonItem
               prefix={<Calendar className={ROW_ICON} />}
-              title={t("form.calendar")}
+              title={<NoWrap>{t("form.calendar")}</NoWrap>}
               suffix={calendarsLoading ? "" : t("form.calendarLoadFailed")}
               onClick={() => void refetchCalendars()}
             />
@@ -263,7 +268,7 @@ export function EventFormSheetBody({
             trigger={({ onClick }) => (
               <ListButtonItem
                 prefix={<Tag className={ROW_ICON} />}
-                title={t("form.label")}
+                title={<NoWrap>{t("form.label")}</NoWrap>}
                 suffixText
                 suffix={
                   label ? (
@@ -281,7 +286,7 @@ export function EventFormSheetBody({
 
           <ListSwitchItem
             prefix={<Sun className={ROW_ICON} />}
-            title={t("form.allDay")}
+            title={<NoWrap>{t("form.allDay")}</NoWrap>}
             checked={isAllDay}
             onCheckedChange={ctrl.handleAllDayChange}
           />
@@ -312,7 +317,7 @@ export function EventFormSheetBody({
             trigger={({ onClick }) => (
               <ListButtonItem
                 prefix={<Repeat className={ROW_ICON} />}
-                title={t("form.recurrence")}
+                title={<NoWrap>{t("form.recurrence")}</NoWrap>}
                 suffix={t(`recurrence.${recurrence}`)}
                 onClick={onClick}
               />
@@ -330,7 +335,7 @@ export function EventFormSheetBody({
             trigger={({ onClick }) => (
               <ListButtonItem
                 prefix={<Bell className={ROW_ICON} />}
-                title={t("form.reminder")}
+                title={<NoWrap>{t("form.reminder")}</NoWrap>}
                 suffix={reminderText}
                 onClick={onClick}
               />
@@ -339,7 +344,7 @@ export function EventFormSheetBody({
 
           <ListButtonItem
             prefix={<MapPin className={ROW_ICON} />}
-            title={t("form.location")}
+            title={<NoWrap>{t("form.location")}</NoWrap>}
             suffixText
             suffix={
               <>
@@ -351,7 +356,7 @@ export function EventFormSheetBody({
           />
           <ListButtonItem
             prefix={<Text className={ROW_ICON} />}
-            title={t("form.description")}
+            title={<NoWrap>{t("form.description")}</NoWrap>}
             suffixText
             suffix={
               <>
