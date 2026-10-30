@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -126,26 +126,16 @@ export const EventForm = ({
     </Callout>
   ) : null;
 
-  // 새 일정은 제목에 초점(Text Field focused — 안쪽 2px 짙은 테두리 + 캐럿). 표면의 열림 모션 · 초점 가둠이 열 때의 초점 호출을 덮는 일이 있어(운영 번들 시트)
-  // 열린 뒤 한 번 더 건다 — 초점이 아직 표면 자신이나 body 에 있을 때만(사용자가 다른 칸을 눌렀으면 건드리지 않는다)
-  useEffect(() => {
+  // 새 일정은 제목에 초점(Text Field focused — 안쪽 2px 짙은 테두리 + 캐럿). 정식 길: 표면의 열림 초점(Radix onOpenAutoFocus)에서 기본(표면 자신)을 막고
+  // 제목 칸에 직접 초점을 준다 — 타이머 없음. 수정으로 열 때는 주지 않는다(표면이 받는다)
+  const focusTitleOnOpen = (e: Event) => {
+    e.preventDefault();
     if (event) return;
-    const tryFocus = () => {
-      const a = document.activeElement;
-      const idle =
-        !a ||
-        a === document.body ||
-        a.getAttribute("role") === "dialog" ||
-        (a instanceof HTMLElement && /content$/.test(a.dataset.slot ?? ""));
-      if (idle) form.setFocus("title");
-    };
-    const t1 = setTimeout(tryFocus, 80);
-    const t2 = setTimeout(tryFocus, 450);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [event, form]);
+    const root = e.target instanceof HTMLElement ? e.target : document;
+    const input = root.querySelector<HTMLInputElement>('input[name="title"]');
+    if (input) input.focus({ preventScroll: true });
+    else form.setFocus("title");
+  };
 
   const heading = event ? t("editEvent") : t("addEvent");
   const del = event && onDelete ? onDelete : undefined;
@@ -174,14 +164,7 @@ export const EventForm = ({
           if (!next) onClose();
         }}
       >
-        <DialogContent
-          title={heading}
-          onOpenAutoFocus={(e) => {
-            e.preventDefault();
-            // 새 일정은 제목에 초점, 수정으로 열 때는 주지 않는다(표면이 받는다)
-            if (!event) form.setFocus("title");
-          }}
-        >
+        <DialogContent title={heading} onOpenAutoFocus={focusTitleOnOpen}>
           <DialogBody scrollFog>
             {errorCallout}
             <EventFormDialogBody view={view} />
@@ -225,10 +208,7 @@ export const EventForm = ({
         aria-describedby={undefined}
         showCloseButton={!inStep}
         onBack={inStep ? cancelStep : undefined}
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          if (!event) form.setFocus("title");
-        }}
+        onOpenAutoFocus={focusTitleOnOpen}
       >
         {inStep && <SheetStepDone onClick={confirmStep} />}
         <BottomSheetBody scrollFog>

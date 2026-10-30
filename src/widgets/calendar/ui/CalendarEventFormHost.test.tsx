@@ -253,36 +253,36 @@ describe("처음 초점", () => {
   it("새 일정(대화상자)은 제목에 초점이 간다", async () => {
     setupFormDom(true);
     show(false);
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 30));
-    });
+    await act(async () => {});
     expect(document.activeElement).toBe(field("title"));
   });
 
-  it("새 일정(시트)도 열린 뒤 제목에 초점이 간다 — 열림 모션 · 초점 가둠이 덮어도 다시 건다", async () => {
+  // 타이머를 진행시키지 않는다 — 열림 초점(onOpenAutoFocus)이 곧바로 제목 칸에 건다
+  it("새 일정(시트)도 열리는 즉시 제목에 초점이 간다", async () => {
     setupFormDom(false);
     show(false);
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 600));
-    });
+    await act(async () => {});
     expect(document.activeElement).toBe(field("title"));
+  });
+
+  it("다른 칸에 초점이 가 있으면 열림 초점이 덮지 않는다 — 수정은 어느 칸에도 주지 않는다", async () => {
+    setupFormDom(false);
+    show(false, saved);
+    await act(async () => {});
+    expect(document.activeElement).not.toBe(field("title"));
   });
 
   it("빠른 추가는 제목에 초점이 간다", async () => {
     setupFormDom(true);
     show(true);
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 100));
-    });
+    await act(async () => {});
     expect(document.activeElement).toBe(quickTitle());
   });
 
   it("수정으로 열면 제목에 초점을 주지 않는다", async () => {
     setupFormDom(true);
     show(false, saved);
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 30));
-    });
+    await act(async () => {});
     expect(document.activeElement).not.toBe(field("title"));
   });
 });
