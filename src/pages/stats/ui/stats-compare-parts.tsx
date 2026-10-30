@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { CompareBar } from "./compare-bar";
 import { Sparkles } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardStat } from "@/shared/ds/card";
@@ -58,50 +59,6 @@ const compareLoading = (m: StatsModel) =>
   m.rangeQ.isLoading || m.prevRangeQ.isLoading;
 
 // ── 요약 ────────────────────────────────────────────────────────
-function CompareBar({
-  label,
-  amount,
-  max,
-  current,
-}: {
-  label: string;
-  amount: string;
-  /** 막대 길이 비율 0 ~ 1 */
-  max: number;
-  current: boolean;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-x2_5 gap-y-x1">
-      <span className="min-w-[44px] shrink-0 text-t2 font-bold text-fg-neutral-subtle">
-        {label}
-      </span>
-      {/* 막대가 양보한다 — 금액은 한 줄 · 고정폭 · 오른쪽 끝(고정 폭을 두지 않는다) */}
-      <div
-        aria-hidden
-        className="h-2 min-w-[4rem] flex-1 overflow-hidden rounded-full"
-      >
-        <div
-          className={cn(
-            "h-full rounded-full",
-            current
-              ? "bg-fg-brand"
-              : "box-border border border-solid border-stroke-neutral-weak bg-bg-neutral-weak",
-          )}
-          style={{ width: `${max * 100}%` }}
-        />
-      </div>
-      <span
-        className={cn(
-          "ms-auto shrink-0 whitespace-nowrap text-end text-t3 font-bold tabular-nums",
-          current ? "text-fg-neutral" : "text-fg-neutral-muted",
-        )}
-      >
-        {amount}
-      </span>
-    </div>
-  );
-}
-
 export function CompareSummarySection({
   m,
   place,
@@ -163,7 +120,7 @@ export function CompareSummarySection({
             {mask(won(Math.abs(m.cmpDiff)))}{" "}
             {less ? t("compare.dirLess") : t("compare.dirMore")}
           </span>{" "}
-          {t("compare.spentSuffix", { prev: m.periodPrev })}
+          {t("compare.spentSuffix", { prev: m.periodPrevInline })}
         </p>
       ) : (
         <p className="m-0 mt-x3 text-t3 text-fg-neutral-subtle">
@@ -500,11 +457,11 @@ export function CompareWeekdaySection({
         {
           dow: t(dk),
           amt: mask(KRW(Math.abs(m.wkDelta.delta))),
-          prev: m.periodPrev,
+          prev: m.periodPrevInline,
         },
       )
     : t("compare.weekdayInsightSame", {
-        prev: m.periodPrev,
+        prev: m.periodPrevInline,
         josa: withBatchim(m.periodPrev) ? "과" : "와",
       });
   const insight: ReactNode = (
