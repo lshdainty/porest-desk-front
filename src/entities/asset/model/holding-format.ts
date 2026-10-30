@@ -87,5 +87,5 @@ export function formatQty(
   const int = (intRaw || "0").replace(/^0+(?=\d)/, "");
   const frac = fracRaw.slice(0, QTY_MAX_DECIMALS[type]).replace(/0+$/, "");
   const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `${neg ? "-" : ""}${grouped}${frac ? `.${frac}` : ""}`;
+  return `${neg ? "−" : ""}${grouped}${frac ? `.${frac}` : ""}`;
 }

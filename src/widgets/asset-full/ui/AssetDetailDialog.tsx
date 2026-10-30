@@ -69,6 +69,7 @@ import {
 } from "@/shared/ui/chart";
 import {
   KRW,
+  MINUS,
   money,
   formatChartAxis,
   isEn,
@@ -1082,7 +1083,8 @@ function CardDetailBody({
                 }}
               >
                 <MaskAmount card="asset.detail">
-                  -{money(st.alreadyPaid!)}
+                  {MINUS}
+                  {money(st.alreadyPaid!)}
                 </MaskAmount>
               </span>
             </div>
