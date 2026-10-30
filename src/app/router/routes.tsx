@@ -166,6 +166,23 @@ export const AppRouter = () => {
                   </SecuritiesGate>
                 }
               />
+              {/* 포트폴리오 구성(정적 — 먼저) · 종목 상세. 심볼은 encodeURIComponent("BRK.B") */}
+              <Route
+                path="/desk/stocks/:broker/portfolio"
+                element={
+                  <SecuritiesGate>
+                    <StocksPage view="portfolio" />
+                  </SecuritiesGate>
+                }
+              />
+              <Route
+                path="/desk/stocks/:broker/:symbol"
+                element={
+                  <SecuritiesGate>
+                    <StocksPage view="detail" />
+                  </SecuritiesGate>
+                }
+              />
               <Route path="/desk/expense" element={<ExpensePage />} />
               <Route path="/desk/stats" element={<StatsPage />} />
               <Route path="/desk/budget" element={<BudgetPage />} />

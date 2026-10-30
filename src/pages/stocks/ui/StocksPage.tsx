@@ -1,15 +1,20 @@
 import { useTranslation } from "react-i18next";
 import {
-  Link,
   Navigate,
   useNavigate,
   useOutletContext,
   useParams,
 } from "react-router-dom";
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { MobileBackHeader } from "@/shared/ui/groo/mobile-back-header";
+import { Plug } from "lucide-react";
+import { cn } from "@/shared/lib/cn";
+import { PageBanner } from "@/shared/ds/page-banner";
+import { ResultSection } from "@/shared/ds/result-section";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ds/tabs";
+import {
+  TopNavigation,
+  TopNavigationBackButton,
+  TopNavigationTitle,
+} from "@/shared/ds/top-navigation";
 import { useMyFeatures } from "@/features/subscription/model/useSubscription";
 import {
   brokerFromSlug,
@@ -19,6 +24,8 @@ import {
 } from "@/features/stock/lib/broker";
 import { TossStocksPage } from "./TossStocksPage";
 import { NamuStocksPage } from "./NamuStocksPage";
+import { StockDetailMobile } from "./detail/StockDetailMobile";
+import { PortfolioMobile } from "./detail/PortfolioMobile";
 
 interface OutletCtx {
   mobile: boolean;
@@ -42,10 +49,16 @@ interface OutletCtx {
  *
  * 가계부 자산은 반대다 — 필요한 게 시세뿐이라 사용자가 고른 기본 소스 하나로 통합돼 있다.
  */
-export function StocksPage() {
+export function StocksPage({
+  view = "list",
+}: {
+  /** list = 증권사 목록 · detail = 종목 상세 페이지 · portfolio = 포트폴리오 구성 페이지(I-13 17) */
+  view?: "list" | "detail" | "portfolio";
+}) {
+  const { t } = useTranslation("stocks");
   const { mobile } = useOutletContext<OutletCtx>();
   const navigate = useNavigate();
-  const { broker: brokerSlug } = useParams();
+  const { broker: brokerSlug, symbol } = useParams();
   const { data: features, isLoading } = useMyFeatures();
   const brokerLabelOf = useBrokerLabel();
 
@@ -71,15 +84,16 @@ export function StocksPage() {
   // **모바일엔 사이드바가 없다** — 탭을 지우면 증권사를 바꿀 길이 사라진다. 그래서 데스크톱만
   // 탭을 접고(사이드바 하위 메뉴가 그 일을 한다) 모바일은 그대로 둔다. 다만 상태가 아니라
   // 경로를 바꾼다 — 선택이 사는 곳이 한 군데여야 뒤로가기가 말이 된다.
+  // 증권사 고르기 = ds Tabs 1차 Line · Fill · medium 44 — 상단 바 바로 아래 화면 폭(I-13 6). 연결이 하나면 줄이 없다.
   const header =
-    mobile && connected.length > 1 ? (
+    mobile && connected.length > 1 && view === "list" ? (
       <Tabs
         value={requested}
         onValueChange={(b) => navigate(brokerPath(b), { replace: true })}
       >
-        <TabsList style={{ width: "100%" }}>
+        <TabsList layout="fill" size="medium" aria-label={t("broker.tabsAria")}>
           {connected.map((b) => (
-            <TabsTrigger key={b} value={b} style={{ flex: 1 }}>
+            <TabsTrigger key={b} value={b}>
               {brokerLabelOf(b)}
             </TabsTrigger>
           ))}
@@ -87,12 +101,30 @@ export function StocksPage() {
       </Tabs>
     ) : undefined;
 
+  // 포트폴리오 구성은 폰의 페이지다 — 768 이상은 같은 내용이 목록 화면의 카드로 있다(13-2 전까지는 목록 화면으로 돌려보낸다)
+  if (view === "portfolio" && !mobile)
+    return <Navigate to={brokerPath(requested)} replace />;
+  if (view === "portfolio" && (requested === "TOSS" || requested === "NAMU"))
+    return <PortfolioMobile broker={requested} />;
+  // 상세 주소: 폰은 상세 페이지, 768 이상은 지금 데스크톱 화면에 그 종목을 고른 채로 그린다(13-1 다리 — 13-2 가 걷는다)
+  if (view === "detail" && symbol && mobile) {
+    if (requested === "TOSS" || requested === "NAMU")
+      return <StockDetailMobile broker={requested} symbol={symbol} />;
+  }
+  const initialSelected = view === "detail" ? symbol : undefined;
+
   // 모르는 증권사 코드는 서버가 앞서 나갔다는 뜻이다 — 빈 화면 대신 안내를 띄운다.
-  if (requested === "NAMU") return <NamuStocksPage header={header} />;
-  if (requested === "TOSS") return <TossStocksPage header={header} />;
+  if (requested === "NAMU")
+    return <NamuStocksPage header={header} initialSelected={initialSelected} />;
+  if (requested === "TOSS")
+    return <TossStocksPage header={header} initialSelected={initialSelected} />;
   return <UnsupportedBroker mobile={mobile} header={header} />;
 }
 
+/**
+ * 모르는(서버가 앞서 나간) 증권사 — Page Banner 가 그 화면 맨 위에 서고 본문은 비어 있다(Q4 결정 10-23: 새 표면을 만들지 않는다).
+ * 연결이 끊긴 증권사도 같은 자리의 배너다 — 그 증권사 화면 맨 위(끊김 판정은 서버 응답을 확인한 뒤 붙인다).
+ */
 function UnsupportedBroker({
   mobile,
   header,
@@ -104,80 +136,62 @@ function UnsupportedBroker({
   const body = (
     <>
       {header}
-      <div
-        style={{
-          padding: "40px 24px",
-          textAlign: "center",
-          color: "var(--fg-tertiary)",
-          fontSize: "var(--text-body-sm)",
-        }}
-      >
-        {t("broker.unsupported")}
-      </div>
+      <PageBanner tone="warning">{t("broker.unsupported")}</PageBanner>
     </>
   );
   return mobile ? (
     <>
-      <MobileBackHeader title={t("nav.title")} />
-      <div style={{ padding: "16px 24px 24px" }}>{body}</div>
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" />
+        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
+      </TopNavigation>
+      {body}
     </>
   ) : (
-    <div style={{ padding: 24 }}>{body}</div>
+    body
   );
 }
 
-/** 개인키 미연결: 전 화면 연결 유도. */
+/**
+ * 연결된 증권사가 없다 — Result Section empty "처음"(Q4 결정 10-23). 증권 연결은 설정의 계정 절에 있다
+ * (SecuritiesGate 와 같은 자리) — 절 없이 보내면 첫 절(카테고리 관리)이 열렸다(QA 30 16).
+ */
 function ConnectGate({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("stocks");
-  const gateBody = (
+  const navigate = useNavigate();
+  // 흰 면 위에 둔다 — 회색 바닥 위의 neutralWeak 단추는 채움이 사라져 글만 남는다(button.md "놓는 바탕").
+  // 세로는 가운데(result-section.yaml root.alignItems — "놓인 자리의 가로 · 세로 가운데 · 남는 높이를 채운다").
+  const gate = (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-        gap: 8,
-      }}
+      data-slot="connect-gate"
+      className={cn(
+        "flex flex-col justify-center bg-bg-layer-default",
+        // 남는 높이를 채운다 — 폰은 상단 바(56) 아래 화면 끝까지, 넓은 화면은 카드 높이
+        mobile ? "min-h-[calc(100dvh-3.5rem)]" : "min-h-[70dvh] rounded-[16px]",
+      )}
     >
-      <div
-        style={{
-          fontSize: "var(--text-body-md)",
-          fontWeight: 700,
-          color: "var(--fg-primary)",
+      <ResultSection
+        kind="empty"
+        icon={<Plug aria-hidden />}
+        title={t("connect.firstTitle")}
+        description={t("connect.firstDesc")}
+        primaryAction={{
+          label: t("connect.firstAction"),
+          onClick: () => navigate("/desk/settings?section=account"),
         }}
-      >
-        {t("connect.title")}
-      </div>
-      <div
-        style={{
-          fontSize: "var(--text-body-sm)",
-          color: "var(--fg-tertiary)",
-          lineHeight: 1.5,
-        }}
-      >
-        {t("connect.gateDesc")}
-      </div>
-      <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-        {/* 증권 연결은 설정의 계정 절에 있다(SecuritiesGate 와 같은 자리) — 절 없이 보내면
-            첫 절(카테고리 관리)이 열렸다(QA 30 16). */}
-        <Link to="/desk/settings?section=account">{t("connect.action")}</Link>
-      </Button>
+        className="px-x6 py-x6"
+      />
     </div>
-  );
-  // 모바일 카드 다이어트 — 안내도 배경 위 플랫.
-  const gate = mobile ? (
-    <div style={{ padding: "40px 24px" }}>{gateBody}</div>
-  ) : (
-    <Card style={{ padding: "40px 24px", maxWidth: 430, margin: "0 auto" }}>
-      {gateBody}
-    </Card>
   );
   return mobile ? (
     <>
-      <MobileBackHeader title={t("nav.title")} />
-      <div style={{ padding: "16px 24px 24px" }}>{gate}</div>
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" />
+        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
+      </TopNavigation>
+      {gate}
     </>
   ) : (
-    <div style={{ padding: 24 }}>{gate}</div>
+    gate
   );
 }

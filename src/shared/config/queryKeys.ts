@@ -171,8 +171,9 @@ export const stockKeys = {
     [...stockKeys.all, "orderbook", symbol] as const,
   trades: (symbol: string) => [...stockKeys.all, "trades", symbol] as const,
   exchangeRate: () => [...stockKeys.all, "exchange-rate"] as const,
-  marketCalendar: (market: "KR" | "US") =>
-    [...stockKeys.all, "market-calendar", market] as const,
+  // `day` = 그 시장 달력의 오늘 — 날이 바뀌면 키가 바뀌어 어제 달력을 쓰지 않는다
+  marketCalendar: (market: "KR" | "US", day?: string) =>
+    [...stockKeys.all, "market-calendar", market, day ?? ""] as const,
   accounts: () => [...stockKeys.all, "accounts"] as const,
   holdings: (accountSeq: number) =>
     [...stockKeys.all, "holdings", accountSeq] as const,
@@ -183,8 +184,9 @@ export const stockKeys = {
   candles: (symbol: string, interval: string) =>
     [...stockKeys.all, "candles", symbol, interval] as const,
   warnings: (symbol: string) => [...stockKeys.all, "warnings", symbol] as const,
-  prevClose: (symbol: string) =>
-    [...stockKeys.all, "prev-close", symbol] as const,
+  // `tz` = 전일을 가르는 시장 시간대(국내 Asia/Seoul · 미국 America/New_York)
+  prevClose: (symbol: string, tz?: string) =>
+    [...stockKeys.all, "prev-close", symbol, tz ?? "Asia/Seoul"] as const,
   rankings: (type: string, market: string, duration: string) =>
     [...stockKeys.all, "rankings", type, market, duration] as const,
   indicators: (symbols: string[]) =>

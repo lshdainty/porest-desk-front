@@ -13,6 +13,10 @@ describe("screenFloor", () => {
     ["/desk/calendar", "white"],
     ["/desk/more", "white"],
     ["/desk/search", "strip"],
+    // 증권은 띠 화면이다(I-13 5) — 상세 · 포트폴리오 주소도 같다
+    ["/desk/stocks", "bands"],
+    ["/desk/stocks/toss", "bands"],
+    ["/desk/stocks/toss/A900001", "bands"],
   ])("%s → %s", (path, floor) => {
     expect(screenFloor(path)).toBe(floor);
   });
@@ -36,6 +40,15 @@ describe("screenTitleKey", () => {
     expect(screenTitleKey("/desk/todo/night-sky")).toBe("nightSky");
     expect(screenTitleKey("/desk/todo/night-sky/report")).toBe("forestReport");
     expect(isFullscreenPath("/desk/todo/night-sky/report")).toBe(true);
+  });
+  it("증권 상세 · 포트폴리오 구성은 화면 이름이 문서 제목이고 풀스크린이다(I-13 17)", () => {
+    expect(screenTitleKey("/desk/stocks/toss/A900001")).toBe("stockDetail");
+    expect(screenTitleKey("/desk/stocks/toss/BRK.B")).toBe("stockDetail");
+    expect(screenTitleKey("/desk/stocks/toss/portfolio")).toBe(
+      "stockPortfolio",
+    );
+    expect(screenTitleKey("/desk/stocks/toss")).toBe("stocks");
+    expect(isFullscreenPath("/desk/stocks/toss/A900001")).toBe(true);
   });
   it("그 밖 할 일 하위 주소는 여전히 할 일이다", () => {
     expect(screenTitleKey("/desk/todo")).toBe("todoNav");

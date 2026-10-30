@@ -24,6 +24,9 @@ export function trendColor(pct: number): string {
  * en `₩10,000`). 여기서 `toLocaleString()+'원'` 으로 손수 만들면 영어 화면에만 원이 붙는다.
  */
 export function fmtByCurrency(price: number, currency: string): string {
+  // 통화를 모르면 숫자만 — KRW 로 추정해 $185.42 를 "185원" 으로 보이지 않는다(검수 M6)
+  if (!currency)
+    return price.toLocaleString(undefined, { maximumFractionDigits: 2 });
   // 달러도 천단위를 끊는다. `toFixed(2)` 만 쓰면 `$11514.30` 이 되는데, 요약 스트립처럼
   // 큰 금액이 서는 자리에서는 자릿수를 눈으로 못 센다(원화는 money() 가 이미 끊는다).
   if (currency === "USD")
@@ -59,4 +62,15 @@ export function fmtCapKRW(v: number): string {
 export function fmtShares(n: number): string {
   if (isEn()) return formatChartAxis(n);
   return `${formatChartAxis(n)} 주`;
+}
+
+/**
+ * 환율 줄 값 — 소수 둘째 자리까지("1,385.20원"). 원 표기는 `fmtByCurrency` 의 원화와 같은 규칙(ko `…원` / en `₩…`)이다.
+ */
+export function fmtFxRate(rate: number): string {
+  const body = rate.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return isEn() ? `₩${body}` : `${body}원`;
 }

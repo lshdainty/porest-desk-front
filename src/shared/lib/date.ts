@@ -89,6 +89,31 @@ export const formatMonthDay = (
  * <p>올해가 아니면 연도를 붙인다 — 반복거래는 내년치를 미리 만들어 두는데, 연도가
  * 없으면 2027-01-01 이 그냥 "1월 1일" 로 보여 올해 것과 구분되지 않는다.
  */
+/**
+ * 표준 날짜 — 한국어 "2026년 9월 30일" · 영어 "Sep 30, 2026"(DESIGN.md International Design 날짜 "표준").
+ * 화면에 `2026-09-30` 을 그대로 보이지 않는다(입력칸 값 · 내보내기 · API 는 그대로).
+ */
+export const formatDateLong = (input: Date | string): string => {
+  // 읽을 수 없는 글은 원문 그대로(날짜를 지어내지 않는다)
+  if (typeof input === "string" && !/^\d{4}-\d{2}-\d{2}/.test(input))
+    return input;
+  const d = toDate(input);
+  if (isEnLocale()) return format(d, "MMM d, yyyy", { locale: enUS });
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+};
+
+/**
+ * 올해 날짜는 줄임("9월 30일"), 다른 해면 표준("2025년 9월 30일") — International Design 의 날짜 규칙.
+ * `now` 는 시험용(올해를 고정한다).
+ */
+export const formatDateSmart = (
+  input: Date | string,
+  now: Date = new Date(),
+): string =>
+  toDate(input).getFullYear() === now.getFullYear()
+    ? formatMonthDay(input)
+    : formatDateLong(input);
+
 export const formatMonthDayDow = (input: Date | string): string => {
   const d = toDate(input);
   const otherYear = d.getFullYear() !== new Date().getFullYear();

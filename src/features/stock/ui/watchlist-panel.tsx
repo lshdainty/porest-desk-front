@@ -102,7 +102,6 @@ export function WatchlistPanel({
                 stock={{
                   symbol: i.symbol,
                   name: i.nameKr,
-                  countryCode: i.countryCode,
                   currency: i.currency,
                 }}
                 sub={t(`market.${i.marketCode}`, {

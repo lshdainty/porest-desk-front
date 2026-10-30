@@ -7,6 +7,12 @@ import { securitiesApi } from "../api/securitiesApi";
 const COMMON = { retry: false, refetchOnWindowFocus: false } as const;
 
 /**
+ * 관심목록 시세 폴링 주기. 서버 나무 시세 캐시 TTL(20초)보다 길게 잡는다 —
+ * 짧게 잡으면 캐시에 맞는 헛 요청만 늘고 상류 호출은 안 줄어든다.
+ */
+export const WATCH_POLL_MS = 30_000;
+
+/**
  * 보유 종목 현재가. 기본 10초 폴링 — 자산 화면이 라이브로 갱신된다.
  *
  * **폴링 주기를 열어 둔 이유** — 나무는 다건 시세 API 가 없어 서버가 종목마다 1콜을 낸다.
