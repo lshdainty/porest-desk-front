@@ -33,6 +33,7 @@ import {
 import { useTossWatchQuotes } from "@/features/stock/model/useWatchQuotes";
 import { useVisibleIds } from "@/features/stock/model/useVisibleIds";
 import type { WatchGroup } from "@/features/stock/api/stockApi";
+import { Card } from "@/shared/ds/card";
 import { InvestBand } from "@/features/stock/ui/phone/invest-band";
 import {
   MarketBand,
@@ -52,7 +53,10 @@ import {
   WatchGroupForm,
   WatchGroups,
 } from "@/features/stock/ui/phone/watch-groups";
+import { DeskColumns, DeskFrame, DeskSlot } from "./desk/desk-frame";
+import { CompositionCard, StocksCard } from "./desk/desk-cards";
 import {
+  composition,
   directionOf,
   directionOfPct,
   tossHoldingLines,
@@ -70,10 +74,18 @@ const stockPath = (symbol: string) =>
   `${brokerPath("TOSS")}/${encodeURIComponent(symbol)}`;
 
 /**
- * 토스증권 폰 화면(I-13 B) — 상단 바(← 증권) → (증권사 Line) → 띠 ① 내 투자 → 8 → 띠 ② 시장 → 8 → 띠 ③ 종목.
+ * 토스증권 증권 화면. 폰(I-13 B)은 상단 바(← 증권) → (증권사 Line) → 띠 ① 내 투자 → 8 → 띠 ② 시장 → 8 → 띠 ③ 종목.
+ * 데스크톱 · 태블릿(I 26 ~ 31)은 같은 값을 카드로 — 1280 이상 왼쪽 열 내 투자 + 종목 · 오른쪽 열 시장 + 포트폴리오 구성, 미만은 한 칸.
  * 종목 줄을 누르면 상세 페이지(`/desk/stocks/toss/:symbol`)로 간다. 탭은 `?tab=` 에 둬 돌아오면 그대로다.
  */
-export function TossStocksMobile({ header }: { header?: ReactNode }) {
+export function TossStocksView({
+  header,
+  layout = "phone",
+}: {
+  header?: ReactNode;
+  /** phone = 띠 셋(768 미만) · desk = 카드 2 : 1(1280 이상) / 한 칸 720(768 ~ 1279) */
+  layout?: "phone" | "desk";
+}) {
   const { t } = useTranslation("stocks");
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -153,13 +165,14 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
   const idxCandles = useTossIndicatorCandles(INDEX_SYMBOLS);
   const krQ = useTossMarketCalendarKr();
   const usQ = useTossMarketCalendarUs();
+  const desk = layout === "desk";
   // 장 상태는 달력이 준 것만 그린다 — 못 받았으면(실패) 그 시장을 줄에서 빼고, 아직이면 Skeleton.
   // "휴장" 은 달력이 세션 없음을 줬을 때만이다(검수 H4).
   const states: MarketState[] = [];
   for (const m of [
     {
       key: "kr",
-      name: t("market.krShort"),
+      name: desk ? t("market.krFull") : t("market.krShort"),
       s: marketLookup(krQ, (d) => ({
         session: d.today.integrated?.regularMarket,
         date: d.today.date,
@@ -167,7 +180,7 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
     },
     {
       key: "us",
-      name: t("market.usShort"),
+      name: desk ? t("market.usFull") : t("market.usShort"),
       s: marketLookup(usQ, (d) => ({
         session: d.today.regularMarket,
         date: d.today.date,
@@ -268,91 +281,82 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
     </List>
   );
 
-  return (
+  const investBand = (columns: boolean) => (
+    <InvestBand
+      label={t("summary.title")}
+      amount={mask(won(summary?.evalAmount ?? 0))}
+      delta={investDelta ?? undefined}
+      rows={investRows}
+      loading={investLoading}
+      failed={investFailed}
+      onRetry={retryInvest}
+      columns={columns}
+      onOpenPortfolio={
+        columns ? null : () => navigate(`${brokerPath("TOSS")}/portfolio`)
+      }
+    />
+  );
+  const marketBand = (
+    <MarketBand
+      markets={states}
+      indices={indices}
+      fx={
+        fxRate != null && fxRate > 0
+          ? { value: fmtFxRate(fxRate), base: t("market.fxBase") }
+          : null
+      }
+      loading={idxQ.isLoading}
+      failed={marketFailed}
+      onRetry={() => {
+        void idxQ.refetch();
+        void krQ.refetch();
+        void usQ.refetch();
+        void fxQ.refetch();
+      }}
+    />
+  );
+  const comp = composition(lines);
+  const stocksTabs = (
     <>
-      <TopNavigation type="standard">
-        <TopNavigationBackButton fallbackHref="/desk/more" />
-        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
-      </TopNavigation>
-      {header}
-      <ScreenBands>
-        <div data-band="flush" data-section="invest">
-          <InvestBand
-            label={t("summary.title")}
-            amount={mask(won(summary?.evalAmount ?? 0))}
-            delta={investDelta ?? undefined}
-            rows={investRows}
-            loading={investLoading}
-            failed={investFailed}
-            onRetry={retryInvest}
-            onOpenPortfolio={() => navigate(`${brokerPath("TOSS")}/portfolio`)}
+      <Tabs value={seg} onValueChange={(v) => setSeg(v as Seg)}>
+        <ChipTabsList
+          variant="solid"
+          size="medium"
+          aria-label={t("list.tabsAria")}
+        >
+          <ChipTabsTrigger value="holdings">
+            {t("segments.holdings")}
+          </ChipTabsTrigger>
+          <ChipTabsTrigger value="watch">{t("segments.watch")}</ChipTabsTrigger>
+          <ChipTabsTrigger value="discover">
+            {t("segments.discover")}
+          </ChipTabsTrigger>
+        </ChipTabsList>
+      </Tabs>
+      <div role="tabpanel" aria-labelledby="stocks-list-title">
+        {seg === "holdings" ? (
+          holdingsList
+        ) : seg === "watch" ? (
+          <WatchGroups
+            groups={groups}
+            loading={watchQ.isLoading}
+            failed={isHardError(watchQ)}
+            onRetry={() => void watchQ.refetch()}
+            priceOf={quotes.priceOf}
+            track={track}
+            onOpen={open}
+            onAddGroup={() => setForm({ group: null })}
+            onRenameGroup={(g) => setForm({ group: g })}
+            onDeleteGroup={setDeleting}
           />
-        </div>
-        <div data-band="flush" data-section="market">
-          <MarketBand
-            markets={states}
-            indices={indices}
-            fx={
-              fxRate != null && fxRate > 0
-                ? { value: fmtFxRate(fxRate), base: t("market.fxBase") }
-                : null
-            }
-            loading={idxQ.isLoading}
-            failed={marketFailed}
-            onRetry={() => {
-              void idxQ.refetch();
-              void krQ.refetch();
-              void usQ.refetch();
-              void fxQ.refetch();
-            }}
-          />
-        </div>
-        <div data-band="flush" data-section="stocks">
-          <BandTitle id="stocks-list-title">{t("list.title")}</BandTitle>
-          <StockSearchEntry
-            className="px-x6 pt-x2"
-            onPick={(item) => open(item.symbol)}
-          />
-          <Tabs value={seg} onValueChange={(v) => setSeg(v as Seg)}>
-            <ChipTabsList
-              variant="solid"
-              size="medium"
-              aria-label={t("list.tabsAria")}
-            >
-              <ChipTabsTrigger value="holdings">
-                {t("segments.holdings")}
-              </ChipTabsTrigger>
-              <ChipTabsTrigger value="watch">
-                {t("segments.watch")}
-              </ChipTabsTrigger>
-              <ChipTabsTrigger value="discover">
-                {t("segments.discover")}
-              </ChipTabsTrigger>
-            </ChipTabsList>
-          </Tabs>
-          <div role="tabpanel" aria-labelledby="stocks-list-title">
-            {seg === "holdings" ? (
-              holdingsList
-            ) : seg === "watch" ? (
-              <WatchGroups
-                groups={groups}
-                loading={watchQ.isLoading}
-                failed={isHardError(watchQ)}
-                onRetry={() => void watchQ.refetch()}
-                priceOf={quotes.priceOf}
-                track={track}
-                onOpen={open}
-                onAddGroup={() => setForm({ group: null })}
-                onRenameGroup={(g) => setForm({ group: g })}
-                onDeleteGroup={setDeleting}
-              />
-            ) : (
-              <TossDiscoverMobile onOpen={open} />
-            )}
-          </div>
-          <SourceLine>{t("market.dataNotice")}</SourceLine>
-        </div>
-      </ScreenBands>
+        ) : (
+          <TossDiscoverMobile onOpen={open} />
+        )}
+      </div>
+    </>
+  );
+  const dialogs = (
+    <>
       {form && (
         <WatchGroupForm group={form.group} onClose={() => setForm(null)} />
       )}
@@ -362,6 +366,79 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
           onClose={() => setDeleting(null)}
         />
       )}
+    </>
+  );
+
+  if (desk)
+    return (
+      <>
+        <DeskFrame
+          slot="stocks-desktop"
+          title={t("nav.title")}
+          source={t("market.dataNotice")}
+        >
+          <DeskColumns
+            left={
+              <>
+                <DeskSlot order={1} slot="invest">
+                  <Card className="p-0">{investBand(true)}</Card>
+                </DeskSlot>
+                <DeskSlot order={4} slot="stocks">
+                  <StocksCard onPick={open}>{stocksTabs}</StocksCard>
+                </DeskSlot>
+              </>
+            }
+            right={
+              <>
+                <DeskSlot order={2} slot="market">
+                  <Card className="p-0">{marketBand}</Card>
+                </DeskSlot>
+                <DeskSlot order={3} slot="composition">
+                  <CompositionCard
+                    data={{
+                      items: comp.items,
+                      notice: comp.fxMissing
+                        ? t("namu.donutNeedsFx")
+                        : undefined,
+                    }}
+                    loading={investLoading}
+                    failed={investFailed}
+                    onRetry={retryInvest}
+                  />
+                </DeskSlot>
+              </>
+            }
+          />
+        </DeskFrame>
+        {dialogs}
+      </>
+    );
+
+  return (
+    <>
+      <TopNavigation type="standard">
+        <TopNavigationBackButton fallbackHref="/desk/more" />
+        <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
+      </TopNavigation>
+      {header}
+      <ScreenBands>
+        <div data-band="flush" data-section="invest">
+          {investBand(false)}
+        </div>
+        <div data-band="flush" data-section="market">
+          {marketBand}
+        </div>
+        <div data-band="flush" data-section="stocks">
+          <BandTitle id="stocks-list-title">{t("list.title")}</BandTitle>
+          <StockSearchEntry
+            className="px-x6 pt-x2"
+            onPick={(item) => open(item.symbol)}
+          />
+          {stocksTabs}
+          <SourceLine>{t("market.dataNotice")}</SourceLine>
+        </div>
+      </ScreenBands>
+      {dialogs}
     </>
   );
 }

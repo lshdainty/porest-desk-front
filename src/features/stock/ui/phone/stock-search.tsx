@@ -32,7 +32,7 @@ function SearchEntryButton({
 }: {
   open: boolean;
   onClick: () => void;
-  /** 카드 머리(데스크톱 13-2)용 작은 크기 */
+  /** 카드 머리(13-2 30) — 입구 폭은 둘러싼 상자가 정하고, 1280 이상은 medium 34 · 글 t5 · 돋보기 20 */
   compact?: boolean;
 }) {
   const { t } = useTranslation("stocks");
@@ -46,13 +46,13 @@ function SearchEntryButton({
       onClick={onClick}
       className={
         compact
-          ? "flex min-h-[34px] w-full cursor-pointer items-center gap-x2 py-x1_5 text-t5 text-fg-placeholder shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)]"
+          ? "flex min-h-[40px] w-full cursor-pointer items-center gap-x2_5 py-x2 text-t6 text-fg-placeholder shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)] lg:min-h-[34px] lg:gap-x2 lg:py-x1_5 lg:text-t5"
           : "flex min-h-[40px] w-full cursor-pointer items-center gap-x2_5 py-x2 text-t6 text-fg-placeholder shadow-[inset_0_-1px_0_0_var(--color-stroke-neutral-weak)]"
       }
     >
       <Search
         aria-hidden
-        className={compact ? "size-5 shrink-0" : "size-6 shrink-0"}
+        className={compact ? "size-6 shrink-0 lg:size-5" : "size-6 shrink-0"}
       />
       <span className="min-w-0 truncate text-start">
         {t("search.placeholder")}
@@ -64,16 +64,23 @@ function SearchEntryButton({
 export function StockSearchEntry({
   onPick,
   className,
+  compact,
 }: {
   onPick: (item: StockMasterItem) => void;
   className?: string;
+  /** 종목 카드 머리의 입구(13-2 30) — 팝오버는 입구 오른쪽 끝에 맞춘다 */
+  compact?: boolean;
 }) {
   const { t } = useTranslation("stocks");
   const surface = useInputButtonSurface();
   const [open, setOpen] = useState(false);
   const entry = (
     <div className={className}>
-      <SearchEntryButton open={open} onClick={() => setOpen(true)} />
+      <SearchEntryButton
+        open={open}
+        compact={compact}
+        onClick={() => setOpen(true)}
+      />
     </div>
   );
   const body: ReactNode = open ? (
@@ -99,7 +106,7 @@ export function StockSearchEntry({
       <PopoverTrigger asChild>{entry}</PopoverTrigger>
       <PopoverContent
         aria-label={t("search.label")}
-        align="start"
+        align={compact ? "end" : "start"}
         onOpenAutoFocus={focusSearchableList}
       >
         <div className="flex min-h-0 flex-1 flex-col">{body}</div>

@@ -122,7 +122,10 @@ export function LineValue({
   delta?: ReactNode;
 }) {
   return (
-    <span className="flex max-w-[60cqw] flex-col items-end">
+    <span
+      data-slot="line-value"
+      className="flex max-w-[60cqw] flex-col items-end"
+    >
       <span className="text-end text-t5 font-bold tabular-nums text-fg-neutral">
         {typeof amount === "string" ? withCommaBreaks(amount) : amount}
       </span>

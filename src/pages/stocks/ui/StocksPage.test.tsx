@@ -42,39 +42,25 @@ vi.mock("react-i18next", () => ({
 }));
 // 본문 두 개는 각자 수십 개의 쿼리를 건다 — 여기선 "어느 쪽이 떴나" 만 보면 된다.
 vi.mock("./TossStocksPage", () => ({
-  TossStocksPage: ({
-    header,
-    initialSelected,
-  }: {
-    header?: ReactNode;
-    initialSelected?: string;
-  }) => (
-    <div data-broker="TOSS" data-initial={initialSelected}>
-      {header}
-    </div>
+  TossStocksPage: ({ header }: { header?: ReactNode }) => (
+    <div data-broker="TOSS">{header}</div>
   ),
 }));
 vi.mock("./NamuStocksPage", () => ({
-  NamuStocksPage: ({
-    header,
-    initialSelected,
-  }: {
-    header?: ReactNode;
-    initialSelected?: string;
-  }) => (
-    <div data-broker="NAMU" data-initial={initialSelected}>
-      {header}
-    </div>
+  NamuStocksPage: ({ header }: { header?: ReactNode }) => (
+    <div data-broker="NAMU">{header}</div>
   ),
 }));
-vi.mock("./detail/StockDetailMobile", () => ({
-  StockDetailMobile: ({
+vi.mock("./detail/StockDetailView", () => ({
+  StockDetailView: ({
     broker,
     symbol,
+    layout,
   }: {
     broker: string;
     symbol: string;
-  }) => <div data-detail={`${broker}:${symbol}`} />,
+    layout: string;
+  }) => <div data-detail={`${broker}:${symbol}`} data-layout={layout} />,
 }));
 vi.mock("./detail/PortfolioMobile", () => ({
   PortfolioMobile: ({ broker }: { broker: string }) => (
@@ -268,6 +254,8 @@ describe("StocksPage 증권사 전환 수단", () => {
 describe("상세 · 포트폴리오 주소(I-13 17)", () => {
   const detail = () =>
     container.querySelector("[data-detail]")?.getAttribute("data-detail");
+  const layoutOf = () =>
+    container.querySelector("[data-detail]")?.getAttribute("data-layout");
   it("폰: 심볼 주소는 상세 페이지를 그린다 — 점 심볼도", () => {
     state.connectedBrokers = ["TOSS"];
     renderAt("/desk/stocks/toss/BRK.B", true);
@@ -279,13 +267,16 @@ describe("상세 · 포트폴리오 주소(I-13 17)", () => {
     expect(container.querySelector("[data-portfolio]")).not.toBeNull();
     expect(detail()).toBeUndefined();
   });
-  it("768 이상 다리: 상세 주소는 지금 데스크톱 화면에 그 종목을 고른 채로", () => {
+  it("폰 상세는 phone 틀, 768 이상 상세는 같은 주소의 desk 틀 — 목록 화면에 고른 채로 그리지 않는다(13-1 다리를 걷었다)", () => {
     state.connectedBrokers = ["TOSS"];
+    renderAt("/desk/stocks/toss/A900001", true);
+    expect(layoutOf()).toBe("phone");
+    act(() => root.unmount());
+    root = createRoot(container);
     renderAt("/desk/stocks/toss/A900001", false);
-    expect(shownBroker()).toBe("TOSS");
-    expect(
-      container.querySelector("[data-broker]")?.getAttribute("data-initial"),
-    ).toBe("A900001");
+    expect(detail()).toBe("TOSS:A900001");
+    expect(layoutOf()).toBe("desk");
+    expect(shownBroker()).toBeNull();
   });
   it("768 이상: 포트폴리오 주소는 목록으로 replace", () => {
     state.connectedBrokers = ["TOSS"];

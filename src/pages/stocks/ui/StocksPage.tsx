@@ -24,7 +24,7 @@ import {
 } from "@/features/stock/lib/broker";
 import { TossStocksPage } from "./TossStocksPage";
 import { NamuStocksPage } from "./NamuStocksPage";
-import { StockDetailMobile } from "./detail/StockDetailMobile";
+import { StockDetailView } from "./detail/StockDetailView";
 import { PortfolioMobile } from "./detail/PortfolioMobile";
 
 interface OutletCtx {
@@ -101,23 +101,26 @@ export function StocksPage({
       </Tabs>
     ) : undefined;
 
-  // 포트폴리오 구성은 폰의 페이지다 — 768 이상은 같은 내용이 목록 화면의 카드로 있다(13-2 전까지는 목록 화면으로 돌려보낸다)
+  // 포트폴리오 구성은 폰의 페이지다 — 768 이상은 같은 내용이 목록 화면의 카드로 있다(목록 화면으로 돌려보낸다)
   if (view === "portfolio" && !mobile)
     return <Navigate to={brokerPath(requested)} replace />;
   if (view === "portfolio" && (requested === "TOSS" || requested === "NAMU"))
     return <PortfolioMobile broker={requested} />;
-  // 상세 주소: 폰은 상세 페이지, 768 이상은 지금 데스크톱 화면에 그 종목을 고른 채로 그린다(13-1 다리 — 13-2 가 걷는다)
-  if (view === "detail" && symbol && mobile) {
+  // 상세 주소: 폭이 모양을 정한다 — 폰은 상단 바 + 띠, 768 이상은 "‹ 증권" + 카드(같은 주소 · 같은 데이터, 13-2)
+  if (view === "detail" && symbol) {
     if (requested === "TOSS" || requested === "NAMU")
-      return <StockDetailMobile broker={requested} symbol={symbol} />;
+      return (
+        <StockDetailView
+          broker={requested}
+          symbol={symbol}
+          layout={mobile ? "phone" : "desk"}
+        />
+      );
   }
-  const initialSelected = view === "detail" ? symbol : undefined;
 
   // 모르는 증권사 코드는 서버가 앞서 나갔다는 뜻이다 — 빈 화면 대신 안내를 띄운다.
-  if (requested === "NAMU")
-    return <NamuStocksPage header={header} initialSelected={initialSelected} />;
-  if (requested === "TOSS")
-    return <TossStocksPage header={header} initialSelected={initialSelected} />;
+  if (requested === "NAMU") return <NamuStocksPage header={header} />;
+  if (requested === "TOSS") return <TossStocksPage header={header} />;
   return <UnsupportedBroker mobile={mobile} header={header} />;
 }
 
