@@ -232,7 +232,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
               prefix={
                 <span
                   aria-hidden
-                  className="font-sans text-t5 font-bold text-fg-neutral"
+                  className="inline-grid size-[22px] place-items-center font-sans text-t5 font-bold text-fg-neutral"
                 >
                   {c.symbol}
                 </span>
