@@ -203,6 +203,8 @@ describe("StocksPage 라우팅", () => {
     renderAt("/desk/stocks/kiwoom");
     expect(shownBroker()).toBeNull();
     expect(container.textContent).toContain("broker.unsupported");
+    // Q4 결정 — 새 표면을 만들지 않는다: 그 화면 맨 위 Page Banner
+    expect(container.querySelector("[data-slot=page-banner]")).not.toBeNull();
   });
 });
 
@@ -211,13 +213,20 @@ describe("StocksPage 미연결 사용자", () => {
     state.connectedBrokers = [];
     renderAt("/desk/stocks");
     expect(path()).toBe("/desk/stocks");
-    expect(container.textContent).toContain("connect.title");
+    expect(container.textContent).toContain("connect.firstTitle");
+    // Q4 결정 — 연결 안내는 Result Section empty, 옛 Card · 자물쇠 표면이 아니다
+    const rs = container.querySelector("[data-slot=result-section]");
+    expect(rs).not.toBeNull();
+    expect(rs!.textContent).toContain("connect.firstDesc");
+    expect(rs!.querySelector("button")!.textContent).toBe(
+      "connect.firstAction",
+    );
   });
 
   it("하위 경로로 직접 들어와도 연결 안내가 먼저다", () => {
     state.connectedBrokers = [];
     renderAt("/desk/stocks/toss");
-    expect(container.textContent).toContain("connect.title");
+    expect(container.textContent).toContain("connect.firstTitle");
   });
 
   it("아직 모르는 동안엔 아무것도 그리지 않는다 — URL 을 미리 굳히지 않는다", () => {
@@ -225,7 +234,7 @@ describe("StocksPage 미연결 사용자", () => {
     renderAt("/desk/stocks");
     expect(path()).toBe("/desk/stocks");
     expect(shownBroker()).toBeNull();
-    expect(container.textContent).not.toContain("connect.title");
+    expect(container.textContent).not.toContain("connect.firstTitle");
   });
 });
 

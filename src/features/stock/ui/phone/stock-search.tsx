@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import { BottomSheet, BottomSheetContent } from "@/shared/ds/bottom-sheet";
@@ -113,8 +113,21 @@ function SearchBody({ onPick }: { onPick: (item: StockMasterItem) => void }) {
   const [typed, setTyped] = useState("");
   const [keyword, setKeyword] = useState("");
   const q = useStockSearch(keyword.trim(), 20);
-  const results = q.data ?? [];
   const asked = typed.trim().length > 0;
+  // 받는 동안은 옛 결과를 그대로 둔다 — 첫 글자 뒤 300ms(질의가 아직 안 나간 때)에 "결과 없음" 이 비치지 않게(검수 M2)
+  const [kept, setKept] = useState<StockMasterItem[]>([]);
+  if (q.data && q.data !== kept) setKept(q.data);
+  const results = q.data ?? kept;
+  // 입력과 검색어가 갈리거나(기다리는 300ms) 질의가 도는 중이면 "받는 중" 이다
+  const pending = typed.trim() !== keyword.trim() || q.isFetching;
+  // 받는 중이 1초를 넘으면 옛 결과 대신 Skeleton — 1초를 센 입력값을 기억하고, 입력이 바뀌면 다시 센다
+  const [slowFor, setSlowFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!asked || !pending) return;
+    const id = window.setTimeout(() => setSlowFor(typed), 1000);
+    return () => window.clearTimeout(id);
+  }, [asked, pending, typed]);
+  const slow = pending && slowFor === typed;
   return (
     <SearchableList
       selectionMark="off"
@@ -134,13 +147,13 @@ function SearchBody({ onPick }: { onPick: (item: StockMasterItem) => void }) {
         </p>
       ) : (
         <ScrollFog use="overlayBody" className="min-h-0 flex-1">
-          {q.isError ? (
+          {q.isError && !pending ? (
             <SearchableListError
               title={t("search.failTitle")}
               retrying={q.isFetching}
               onRetry={() => void q.refetch()}
             />
-          ) : q.isFetching && results.length === 0 ? (
+          ) : pending && (slow || results.length === 0) ? (
             <SearchableListSkeleton />
           ) : results.length === 0 ? (
             <SearchableListEmpty />

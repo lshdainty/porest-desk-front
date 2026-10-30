@@ -13,6 +13,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { WatchGroup } from "../api/stockApi";
+import { isHardError } from "../lib/query-state";
 import {
   findWatchEntries,
   useAddWatchItem,
@@ -23,6 +24,11 @@ import {
 
 export interface Watchlist {
   groups: WatchGroup[];
+  /** 그룹 목록을 받았다. 아니면(로딩 · 실패) 별을 눌러도 아무것도 만들지 않는다 — 빈 목록으로 보고 기본 그룹을 새로 만들면 안 된다 */
+  ready: boolean;
+  /** 그룹 목록을 받지 못했고 받아 둔 값도 없다 */
+  failed: boolean;
+  retry: () => void;
   /** 지금 열린 그룹. 그룹이 하나도 없으면 null. */
   activeGroup: WatchGroup | null;
   activeGroupId: number | null;
@@ -56,11 +62,22 @@ export function useWatchlist(): Watchlist {
     [groups],
   );
 
+  const ready = watchQ.data !== undefined;
+
   const toggleWatch = (
     symbol: string,
     marketCode?: string,
     pickedGroupId?: number,
   ) => {
+    // 그룹 질의가 아직이거나 실패했으면 `groups` 는 빈 목록일 뿐이다 — "첫 관심 등록" 으로 읽어 기본 그룹을
+    // 새로 만들면 이미 그룹이 있는 사용자에게 같은 이름 그룹이 하나 더 생긴다(검수 M3)
+    if (!ready) {
+      if (isHardError(watchQ)) {
+        toast.error(t("watch.addFail"));
+        void watchQ.refetch();
+      }
+      return;
+    }
     const entries = findWatchEntries(groups, symbol);
     if (entries.length > 0) {
       // 별 해제 = 모든 그룹에서 제거 (기존 UX 유지)
@@ -85,6 +102,9 @@ export function useWatchlist(): Watchlist {
 
   return {
     groups,
+    ready,
+    failed: isHardError(watchQ),
+    retry: () => void watchQ.refetch(),
     activeGroup,
     activeGroupId,
     setActiveGroupId: setPickedGroupId,

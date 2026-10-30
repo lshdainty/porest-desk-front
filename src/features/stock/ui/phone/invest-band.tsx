@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ChartPie, ChevronRight } from "lucide-react";
 import { CardStat, type DeltaProps } from "@/shared/ds/card";
-import { withCommaBreaks } from "@/shared/ds/i18n";
-import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
+import { List, ListButtonItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
+import { KvListItem } from "./phone-parts";
 
 /*
  * 띠 ① 내 투자(I-13 7 · 8) — 지표(라벨 · 금액 · 증감) + 키-값 줄 + 포트폴리오 구성 줄.
@@ -91,24 +91,11 @@ export function InvestBand({
           </div>
           <List className="mt-x3" aria-label={t("invest.title")}>
             {rows.map((r) => (
-              <ListItem
+              <KvListItem
                 key={r.key}
-                title={r.name}
-                className="[&_[data-slot=list-content]]:py-x2"
-                suffix={
-                  loading ? (
-                    <Skeleton text="t5" className="w-16" />
-                  ) : (
-                    <span
-                      data-slot="kv-value"
-                      className="text-end text-t5 font-bold tabular-nums text-fg-neutral"
-                    >
-                      {typeof r.value === "string"
-                        ? withCommaBreaks(r.value)
-                        : r.value}
-                    </span>
-                  )
-                }
+                name={r.name}
+                value={r.value}
+                loading={loading}
               />
             ))}
             {onOpenPortfolio && <PortfolioLink onOpen={onOpenPortfolio} />}

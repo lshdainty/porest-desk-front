@@ -10,6 +10,8 @@ declare global {
 const wl = vi.hoisted(() => ({
   groups: [] as { rowId: number; groupName: string; items: unknown[] }[],
   watched: false,
+  ready: true,
+  failed: false,
   toggle: vi.fn(),
 }));
 vi.mock("react-i18next", () => ({
@@ -19,6 +21,8 @@ vi.mock("react-i18next", () => ({
 vi.mock("@/features/stock/model/useWatchlist", () => ({
   useWatchlist: () => ({
     groups: wl.groups,
+    ready: wl.ready,
+    failed: wl.failed,
     isWatched: () => wl.watched,
     toggleWatch: wl.toggle,
   }),
@@ -98,6 +102,29 @@ describe("관심 Toggle", () => {
     mount(<WatchToggle symbol="A" />);
     act(() => btn().click());
     expect(wl.toggle).toHaveBeenCalledWith("A", undefined);
+  });
+});
+
+describe("관심 Toggle — 그룹 질의가 아직이거나 실패했을 때(검수 M3)", () => {
+  it("그룹을 아직 받는 중이면 눌림이 막혀 있다(aria-disabled)", () => {
+    wl.groups = [];
+    wl.ready = false;
+    wl.failed = false;
+    mount(<WatchToggle symbol="A" />);
+    expect(btn().getAttribute("aria-disabled")).toBe("true");
+    wl.ready = true;
+  });
+  it("그룹을 못 받았으면 막지 않고 눌러 실패를 알린다 — 훅이 새 그룹을 만들지 않고 안내한다", () => {
+    wl.groups = [];
+    wl.ready = false;
+    wl.failed = true;
+    mount(<WatchToggle symbol="A" marketCode="KOSPI" />);
+    expect(btn().getAttribute("aria-disabled")).toBeNull();
+    act(() => btn().click());
+    // 그룹이 둘 이상인 시트로 가지 않고 훅의 toggleWatch 한 곳으로 간다
+    expect(wl.toggle).toHaveBeenCalledWith("A", "KOSPI");
+    wl.ready = true;
+    wl.failed = false;
   });
 });
 

@@ -17,7 +17,8 @@ import { formatChangeRate } from "@/shared/lib/groo/format";
 import { useMasked, won } from "@/shared/lib/groo/money-text";
 import { brokerPath } from "@/features/stock/lib/broker";
 import { fmtFxRate, num } from "@/features/stock/lib/format";
-import { marketState } from "@/features/stock/lib/market-state";
+import { marketLookup } from "@/features/stock/lib/market-state";
+import { isHardError } from "@/features/stock/lib/query-state";
 import { visibleSymbols } from "@/features/stock/lib/watch-prices";
 import { useWatchGroups } from "@/features/stock/api/watchlistApi";
 import {
@@ -36,6 +37,7 @@ import { InvestBand } from "@/features/stock/ui/phone/invest-band";
 import {
   MarketBand,
   type IndexLine,
+  type MarketState,
 } from "@/features/stock/ui/phone/market-band";
 import {
   BandTitle,
@@ -100,7 +102,7 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
   // (실제 응답은 확인하지 못했다 — 어느 쪽이 와도 맞게 보인다)
   const investLoading =
     accountsQ.isLoading || (accountSeq != null && holdingsQ.isLoading);
-  const investFailed = accountsQ.isError || holdingsQ.isError;
+  const investFailed = isHardError(accountsQ) || isHardError(holdingsQ);
   const retryInvest = () => {
     void accountsQ.refetch();
     if (accountSeq != null) void holdingsQ.refetch();
@@ -151,20 +153,44 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
   const idxCandles = useTossIndicatorCandles(INDEX_SYMBOLS);
   const krQ = useTossMarketCalendarKr();
   const usQ = useTossMarketCalendarUs();
-  const kr = marketState(
-    krQ.data?.today.integrated?.regularMarket,
-    "Asia/Seoul",
-  );
-  const us = marketState(usQ.data?.today.regularMarket, "America/New_York");
-  const states = [
-    { key: "kr", name: t("market.krShort"), ...kr },
-    { key: "us", name: t("market.usShort"), ...us },
-  ].map((m) => ({
-    key: m.key,
-    name: m.name,
-    open: m.open,
-    label: t(m.labelKey, m.time ? { time: m.time } : undefined),
-  }));
+  // 장 상태는 달력이 준 것만 그린다 — 못 받았으면(실패) 그 시장을 줄에서 빼고, 아직이면 Skeleton.
+  // "휴장" 은 달력이 세션 없음을 줬을 때만이다(검수 H4).
+  const states: MarketState[] = [];
+  for (const m of [
+    {
+      key: "kr",
+      name: t("market.krShort"),
+      s: marketLookup(krQ, (d) => ({
+        session: d.today.integrated?.regularMarket,
+        date: d.today.date,
+      })),
+    },
+    {
+      key: "us",
+      name: t("market.usShort"),
+      s: marketLookup(usQ, (d) => ({
+        session: d.today.regularMarket,
+        date: d.today.date,
+      })),
+    },
+  ]) {
+    if (!m.s) continue;
+    if (m.s.pending)
+      states.push({
+        key: m.key,
+        name: m.name,
+        open: false,
+        label: "",
+        pending: true,
+      });
+    else
+      states.push({
+        key: m.key,
+        name: m.name,
+        open: m.s.open,
+        label: t(m.s.labelKey, m.s.time ? { time: m.s.time } : undefined),
+      });
+  }
   const indices: IndexLine[] = [];
   for (const i of idxQ.data ?? []) {
     // 이름 키가 없는 심볼은 "코스닥" 으로 접지 않고 그리지 않는다(I-13 9)
@@ -185,8 +211,13 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
       trendPct,
     });
   }
+  // 구역(상태 줄 · 지수 줄 · 환율 줄)마다 따로 실패한다 — 받은 구역은 그대로 그리고 못 받은 구역만 비운다.
+  // 전부 못 받았을 때만 한 벌 실패(앱과 같은 규칙: 구역별 부분 실패 · 전부일 때만 한 벌).
   const marketFailed =
-    idxQ.isError && krQ.isError && usQ.isError && fxQ.isError;
+    isHardError(idxQ) &&
+    isHardError(krQ) &&
+    isHardError(usQ) &&
+    isHardError(fxQ);
 
   // ---- 종목 ----------------------------------------------------------------
   const watchQ = useWatchGroups();
@@ -270,6 +301,8 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
             failed={marketFailed}
             onRetry={() => {
               void idxQ.refetch();
+              void krQ.refetch();
+              void usQ.refetch();
               void fxQ.refetch();
             }}
           />
@@ -304,7 +337,7 @@ export function TossStocksMobile({ header }: { header?: ReactNode }) {
               <WatchGroups
                 groups={groups}
                 loading={watchQ.isLoading}
-                failed={watchQ.isError}
+                failed={isHardError(watchQ)}
                 onRetry={() => void watchQ.refetch()}
                 priceOf={quotes.priceOf}
                 track={track}

@@ -49,36 +49,67 @@ export function PctDelta({
 }
 
 /**
- * 증감 글 — ▲/▼ + "금액 · 퍼센트" 를 방향 색으로(▲ fg-critical · ▼ fg-informative, 0 이면 화살표 없이 fg-neutral-subtle).
- * 키-값 줄 값(t5 · 700)이면 `strong`, 줄 아래 보조(t3 · 500)면 기본.
+ * 증감 글 — ds `Delta` 그대로(t3 · 500 · ▲ fg-critical · ▼ fg-informative, 변화 없음이면 화살표 없이 "변화 없음").
+ * 크기를 자리마다 다르게 두지 않는다 — 스펙이 이긴다(card.md Delta). `text` 는 "금액 · 퍼센트" 처럼 이미 만든 값이고
+ * 앞 부호는 Delta 가 뗀다.
  */
 export function DeltaText({
   dir,
   text,
-  strong,
 }: {
   dir: "up" | "down" | "flat";
   text: string;
+  /** 예전 자리별 크기 갈래 — 이제 ds 값 하나라 받기만 하고 쓰지 않는다 */
   strong?: boolean;
+  size?: "t4";
 }) {
-  const arrow = dir === "up" ? "▲ " : dir === "down" ? "▼ " : "";
-  const tone =
-    dir === "up"
-      ? "text-fg-critical"
-      : dir === "down"
-        ? "text-fg-informative"
-        : "text-fg-neutral-subtle";
+  return <Delta direction={dir} value={text} />;
+}
+
+/**
+ * 키-값 줄 한 벌(I-13 8 · 18) — 키는 ds List 제목 그대로(list.yaml title), 값은 오른쪽 R13 t5 · 700 · 고정폭.
+ * 줄 여백도 ds List 기본(위아래 12) 그대로다 — 내 투자 띠와 상세의 내 보유 · 기본 정보가 같은 줄을 쓴다(검수 M12).
+ * 지시서의 키 t4 · `fg-neutral-subtle` 은 ds 값이 정해지기 전 판단이라 스펙을 따른다.
+ */
+export function KvListItem({
+  name,
+  value,
+  tone,
+  loading,
+  className,
+}: {
+  name: ReactNode;
+  value: ReactNode;
+  tone?: "critical" | "positive" | "informative";
+  loading?: boolean;
+  className?: string;
+}) {
   return (
-    <span
-      className={cn(
-        "tabular-nums",
-        strong ? "text-t5 font-bold" : "text-t3 font-medium",
-        tone,
-      )}
-    >
-      {arrow}
-      {text}
-    </span>
+    <ListItem
+      className={className}
+      title={name}
+      suffix={
+        loading ? (
+          <Skeleton text="t5" className="w-16" />
+        ) : (
+          <span
+            data-slot="kv-value"
+            className={cn(
+              "text-end text-t5 font-bold tabular-nums",
+              tone === "critical"
+                ? "text-fg-critical"
+                : tone === "informative"
+                  ? "text-fg-informative"
+                  : tone === "positive"
+                    ? "text-fg-positive"
+                    : "text-fg-neutral",
+            )}
+          >
+            {typeof value === "string" ? withCommaBreaks(value) : value}
+          </span>
+        )
+      }
+    />
   );
 }
 

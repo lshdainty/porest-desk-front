@@ -9,8 +9,12 @@ declare global {
 }
 
 const st = vi.hoisted(() => ({
-  holdings: "ok" as "ok" | "error" | "empty",
+  holdings: "ok" as "ok" | "error" | "empty" | "stale-error",
   accounts: "ok" as "ok" | "empty",
+  // 시장 구역 — 달력 · 지수 · 환율을 따로 실패시킨다(I-13 12 · 13-1 검수 H4)
+  cal: "ok" as "ok" | "error" | "pending" | "holiday",
+  idx: "ok" as "ok" | "error",
+  fx: "ok" as "ok" | "error",
 }));
 
 const amt = (n: number) => ({ krw: String(n), usd: null });
@@ -74,36 +78,82 @@ vi.mock("@/features/stock/model/useTossStocks", () => {
         ? q(undefined, { isSuccess: false })
         : st.holdings === "error"
           ? q(undefined, { isError: true, isSuccess: false })
-          : q({
-              totalPurchaseAmount: amt(1500000000),
-              marketValue: {
-                amount: amt(1834567890),
-                amountAfterCost: amt(1834567890),
+          : q(
+              {
+                totalPurchaseAmount: amt(1500000000),
+                marketValue: {
+                  amount: amt(1834567890),
+                  amountAfterCost: amt(1834567890),
+                },
+                profitLoss: {
+                  amount: amt(334567890),
+                  amountAfterCost: amt(0),
+                  rate: "22.30",
+                  rateAfterCost: "0",
+                },
+                dailyProfitLoss: { amount: amt(-12345678), rate: "-0.67" },
+                items:
+                  st.holdings === "empty"
+                    ? []
+                    : [
+                        item("U1", "미국종목", "USD", 6185.55),
+                        item("K1", "한국종목", "KRW", 8760000),
+                      ],
               },
-              profitLoss: {
-                amount: amt(334567890),
-                amountAfterCost: amt(0),
-                rate: "22.30",
-                rateAfterCost: "0",
-              },
-              dailyProfitLoss: { amount: amt(-12345678), rate: "-0.67" },
-              items:
-                st.holdings === "empty"
-                  ? []
-                  : [
-                      item("U1", "미국종목", "USD", 6185.55),
-                      item("K1", "한국종목", "KRW", 8760000),
-                    ],
-            }),
-    useTossExchangeRate: () => q({ rate: "1385.20" }),
+              // 폴링이 한 번 실패해도 받아 둔 값은 남는다 — react-query 는 이때도 isError 를 켠다(검수 M1)
+              st.holdings === "stale-error" ? { isError: true } : {},
+            ),
+    useTossExchangeRate: () =>
+      st.fx === "error"
+        ? q(undefined, { isError: true, isSuccess: false })
+        : q({ rate: "1385.20" }),
     useTossIndicatorPrices: () =>
-      q([
-        { symbol: "KOSPI", timestamp: null, lastPrice: "2651.12" },
-        { symbol: "KR3Y", timestamp: null, lastPrice: "3.1" },
-      ]),
+      st.idx === "error"
+        ? q(undefined, { isError: true, isSuccess: false })
+        : q([
+            { symbol: "KOSPI", timestamp: null, lastPrice: "2651.12" },
+            { symbol: "KR3Y", timestamp: null, lastPrice: "3.1" },
+          ]),
     useTossIndicatorCandles: () => new Map<string, number[]>(),
-    useTossMarketCalendarKr: () => q(undefined),
-    useTossMarketCalendarUs: () => q(undefined),
+    // 서버 응답 꼴 그대로 — `+09:00` 오프셋 ISO date-time(미국 정규장은 한국 시각 22:30 ~ 다음 날 05:00, 자정을 넘는다)
+    useTossMarketCalendarKr: () =>
+      st.cal === "error"
+        ? q(undefined, { isError: true, isSuccess: false })
+        : st.cal === "pending"
+          ? q(undefined, { isLoading: true, isSuccess: false })
+          : q({
+              today: {
+                date: "2026-10-29",
+                integrated:
+                  st.cal === "holiday"
+                    ? null
+                    : {
+                        preMarket: null,
+                        regularMarket: {
+                          startTime: "2026-10-29T09:00:00+09:00",
+                          endTime: "2026-10-29T15:30:00+09:00",
+                        },
+                        afterMarket: null,
+                      },
+              },
+            }),
+    useTossMarketCalendarUs: () =>
+      st.cal === "error"
+        ? q(undefined, { isError: true, isSuccess: false })
+        : st.cal === "pending"
+          ? q(undefined, { isLoading: true, isSuccess: false })
+          : q({
+              today: {
+                date: "2026-10-29",
+                regularMarket:
+                  st.cal === "holiday"
+                    ? null
+                    : {
+                        startTime: "2026-10-29T22:30:00+09:00",
+                        endTime: "2026-10-30T05:00:00+09:00",
+                      },
+              },
+            }),
     useTossRankings: () => q({ rankings: [] }),
     useTossStockInfo: () => q([]),
   };
@@ -153,11 +203,18 @@ beforeEach(() => {
   })) as unknown as typeof window.matchMedia;
   st.holdings = "ok";
   st.accounts = "ok";
+  st.cal = "ok";
+  st.idx = "ok";
+  st.fx = "ok";
+  // 2026-10-29 13:00 한국 — 달력 시각 판정이 벽시계를 타지 않게 고정한다
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-10-29T04:00:00Z"));
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
 });
 afterEach(() => {
+  vi.useRealTimers();
   act(() => root.unmount());
   container.remove();
 });
@@ -231,5 +288,69 @@ describe("토스 폰 화면", () => {
     render();
     expect(container.textContent).not.toContain("invest.failTitle");
     expect(container.textContent).toContain("holdings.empty");
+  });
+
+  // ---- 시장 띠 — 달력 · 지수 · 환율은 구역마다 따로 실패한다(검수 H4) ------------------
+  const states = () =>
+    container.querySelector("[data-slot=market-states]")?.textContent ?? "";
+
+  it("달력을 받았으면 두 시장 모두 판정한다 — 국내 장중 · 미국 개장 전(22:30)", () => {
+    render();
+    expect(states()).toContain("market.live");
+    expect(states()).toContain("market.preopen");
+    expect(
+      container.querySelectorAll("[data-slot=market-states] li"),
+    ).toHaveLength(2);
+  });
+  it("달력이 아직이면 '휴장' 이 아니라 Skeleton 이다", () => {
+    st.cal = "pending";
+    render();
+    expect(states()).not.toContain("market.holiday");
+    expect(
+      container.querySelectorAll("[data-slot=market-state-pending]"),
+    ).toHaveLength(2);
+  });
+  it("달력이 실패하면 그 시장 칸을 줄에서 뺀다 — '휴장' 으로 지어내지 않고, 지수 · 환율은 그대로", () => {
+    st.cal = "error";
+    render();
+    expect(container.querySelector("[data-slot=market-states]")).toBeNull();
+    expect(container.textContent).not.toContain("market.holiday");
+    expect(container.textContent).not.toContain("market.failTitle");
+    const m = container.querySelector("[data-section=market]")!.textContent!;
+    expect(m).toContain("코스피");
+    expect(m).toContain("1,385.20");
+  });
+  it("달력이 '세션 없음' 을 줬을 때만 휴장이다", () => {
+    st.cal = "holiday";
+    render();
+    expect(states()).toContain("market.holiday");
+  });
+  it("지수만 실패하면 지수 줄만 비고 상태 줄 · 환율은 남는다(띠 전체 실패 아님)", () => {
+    st.idx = "error";
+    render();
+    const m = container.querySelector("[data-section=market]")!.textContent!;
+    expect(m).not.toContain("market.failTitle");
+    expect(m).not.toContain("코스피");
+    expect(states()).toContain("market.live");
+    expect(m).toContain("1,385.20");
+  });
+  it("구역이 전부 실패할 때만 '시장 정보를 불러오지 못했어요' 한 벌", () => {
+    st.cal = "error";
+    st.idx = "error";
+    st.fx = "error";
+    render();
+    expect(
+      container.querySelector("[data-section=market]")!.textContent,
+    ).toContain("market.failTitle");
+  });
+
+  // ---- 폴링 실패 — 받아 둔 값은 실패 화면으로 바뀌지 않는다(검수 M1) -------------------
+  it("보유가 폴링에서 실패해도 받아 둔 내 투자 · 보유 목록이 그대로다", () => {
+    st.holdings = "stale-error";
+    render();
+    expect(container.textContent).not.toContain("invest.failTitle");
+    expect(container.textContent).not.toContain("holdings.failTitle");
+    expect(container.textContent).toContain("$6,185.55");
+    expect(container.textContent).toContain("한국종목");
   });
 });

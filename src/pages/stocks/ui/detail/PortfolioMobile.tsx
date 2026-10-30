@@ -1,3 +1,4 @@
+import { isHardError } from "@/features/stock/lib/query-state";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -59,7 +60,7 @@ function TossComposition() {
     <CompositionBody
       data={data}
       loading={accountsQ.isLoading || (seq != null && holdingsQ.isLoading)}
-      failed={accountsQ.isError || holdingsQ.isError}
+      failed={isHardError(accountsQ) || isHardError(holdingsQ)}
       onRetry={() => {
         void accountsQ.refetch();
         void holdingsQ.refetch();
@@ -86,7 +87,7 @@ function NamuComposition() {
           view.fxMissing || c.fxMissing ? t("namu.donutNeedsFx") : undefined,
       }}
       loading={krwQ.isLoading || usdQ.isLoading}
-      failed={krwQ.isError && usdQ.isError}
+      failed={isHardError(krwQ) && isHardError(usdQ)}
       onRetry={() => {
         void krwQ.refetch();
         void usdQ.refetch();

@@ -15,8 +15,10 @@ export interface MarketState {
   key: string;
   name: string;
   open: boolean;
-  /** 이미 번역한 상태 글 — "장마감" · "개장 22:30" */
+  /** 이미 번역한 상태 글 — "장마감" · "개장 오후 10:30"(한국 시각). 달력이 아직이면(pending) 비어 있다 */
   label: string;
+  /** 달력을 아직 못 받았다 — 글 자리에 Skeleton. 못 받고 실패했으면 이 칸을 부르는 쪽이 아예 빼서 넘긴다 */
+  pending?: boolean;
 }
 
 export interface IndexLine {
@@ -117,7 +119,15 @@ export function MarketBand({
                   />
                   <span>
                     <b className="font-bold text-fg-neutral">{m.name}</b>{" "}
-                    {m.label}
+                    {m.pending ? (
+                      <Skeleton
+                        text="t4"
+                        className="inline-block w-16 align-middle"
+                        data-slot="market-state-pending"
+                      />
+                    ) : (
+                      m.label
+                    )}
                   </span>
                 </li>
               ))}

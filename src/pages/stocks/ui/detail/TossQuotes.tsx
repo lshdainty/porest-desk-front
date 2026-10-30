@@ -20,7 +20,7 @@ function liveTradeFills(
   return trades.slice(0, 12).map((t, i, arr) => {
     const p = Number.parseFloat(t.price);
     const prev = i + 1 < arr.length ? Number.parseFloat(arr[i + 1]!.price) : p;
-    const raw = /(\d{2}:\d{2}:\d{2})/.exec(t.timestamp)?.[1];
+    const raw = /(\d{2}:\d{2}):\d{2}/.exec(t.timestamp)?.[1];
     const time = raw ? clock12(raw) : t.timestamp;
     return {
       time,

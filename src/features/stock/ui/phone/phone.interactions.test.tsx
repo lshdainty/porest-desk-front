@@ -12,6 +12,10 @@ declare global {
 
 const mocks = vi.hoisted(() => ({
   results: [] as unknown[],
+  // 검색 질의 상태 — 입력 뒤 300ms 동안 질의는 꺼져 있다(data 없음). keyword 가 올 때까지 undefined 로 준다
+  search: "data" as "data" | "off" | "error",
+  fetching: false,
+  seen: [] as string[],
   create: vi.fn(),
   rename: vi.fn(),
 }));
@@ -24,12 +28,19 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 vi.mock("../../model/useStockMaster", () => ({
-  useStockSearch: () => ({
-    data: mocks.results,
-    isError: false,
-    isFetching: false,
-    refetch: () => {},
-  }),
+  useStockSearch: (keyword: string) => {
+    mocks.seen.push(keyword);
+    return {
+      // 키워드가 비면 질의가 꺼져 있다 — react-query 는 data 를 주지 않는다
+      data:
+        mocks.search === "data" && keyword.trim() !== ""
+          ? mocks.results
+          : undefined,
+      isError: mocks.search === "error" && keyword.trim() !== "",
+      isFetching: mocks.fetching,
+      refetch: () => {},
+    };
+  },
 }));
 vi.mock("../../api/watchlistApi", () => ({
   useCreateWatchGroup: () => ({ isPending: false, mutate: mocks.create }),
@@ -59,6 +70,9 @@ beforeEach(() => {
     removeEventListener() {},
   })) as unknown as typeof window.matchMedia;
   mocks.results = [];
+  mocks.search = "data";
+  mocks.fetching = false;
+  mocks.seen = [];
   mocks.create.mockClear();
   mocks.rename.mockClear();
   container = document.createElement("div");
@@ -208,7 +222,118 @@ describe("종목 찾기 입구", () => {
   });
 });
 
+describe("찾기 — 받는 동안 '결과 없음' 이 비치지 않는다(검수 M2)", () => {
+  const open = async () => {
+    render(<StockSearchEntry onPick={() => {}} />);
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>("[data-slot=stock-search-entry]")!
+        .click();
+    });
+    return document.querySelector<HTMLInputElement>('input[role="combobox"]')!;
+  };
+  const type = async (input: HTMLInputElement, v: string) => {
+    const set = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )!.set!;
+    await act(async () => {
+      set.call(input, v);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  };
+  it("첫 글자를 친 직후(질의가 아직 안 나간 300ms)에는 '결과 없음' 이 아니라 Skeleton", async () => {
+    const input = await open();
+    await type(input, "가");
+    expect(
+      document.querySelector("[data-slot=searchable-list-empty]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-slot=searchable-list-skeleton]"),
+    ).not.toBeNull();
+  });
+  it("300ms 뒤 질의가 나가고 진짜 0건이면 그때 '결과 없음'", async () => {
+    mocks.results = [];
+    const input = await open();
+    await type(input, "가");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 350));
+    });
+    expect(
+      document.querySelector("[data-slot=searchable-list-empty]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-slot=searchable-list-skeleton]"),
+    ).toBeNull();
+  });
+  it("검색어를 바꾸면 새 결과가 올 때까지 옛 결과를 둔다(1초 안에는 Skeleton 으로 바꾸지 않는다)", async () => {
+    mocks.results = [
+      {
+        rowId: 1,
+        marketCode: "KOSPI",
+        symbol: "005930",
+        nameKr: "삼성전자",
+        securityType: "STOCK",
+      },
+    ];
+    const input = await open();
+    await type(input, "삼");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 350));
+    });
+    expect(document.querySelectorAll('[role="option"]').length).toBe(1);
+    // 글자를 더 치면 받는 중 — 옛 결과가 그대로 서 있다
+    await type(input, "삼성");
+    expect(document.querySelectorAll('[role="option"]').length).toBe(1);
+    expect(
+      document.querySelector("[data-slot=searchable-list-skeleton]"),
+    ).toBeNull();
+  });
+  it("받는 중이 1초를 넘으면 옛 결과 대신 Skeleton", async () => {
+    mocks.results = [
+      {
+        rowId: 1,
+        marketCode: "KOSPI",
+        symbol: "005930",
+        nameKr: "삼성전자",
+        securityType: "STOCK",
+      },
+    ];
+    const input = await open();
+    await type(input, "삼");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 350));
+    });
+    mocks.fetching = true;
+    await type(input, "삼성");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 1100));
+    });
+    expect(
+      document.querySelector("[data-slot=searchable-list-skeleton]"),
+    ).not.toBeNull();
+    expect(document.querySelectorAll('[role="option"]').length).toBe(0);
+  });
+  it("실패하면 실패 한 벌(받는 중이 아닐 때)", async () => {
+    mocks.search = "error";
+    const input = await open();
+    await type(input, "가");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 350));
+    });
+    expect(
+      document.querySelector("[data-slot=searchable-list-error]"),
+    ).not.toBeNull();
+  });
+});
+
 describe("그룹 폼", () => {
+  it("열리면 이름 칸에 초점이 간다(검수 M11)", async () => {
+    render(<WatchGroupForm group={null} onClose={() => {}} />);
+    await act(async () => {});
+    const input = dlg()!.querySelector<HTMLInputElement>("input")!;
+    expect(document.activeElement).toBe(input);
+  });
   it("삭제 단추가 없다 · 빈 이름이면 저장이 막힌다", async () => {
     render(<WatchGroupForm group={null} onClose={() => {}} />);
     await act(async () => {});

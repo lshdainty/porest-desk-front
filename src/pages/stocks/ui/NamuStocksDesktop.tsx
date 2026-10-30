@@ -1,3 +1,4 @@
+import { isHardError } from "@/features/stock/lib/query-state";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router-dom";
@@ -117,7 +118,7 @@ export function NamuStocksDesktop({
 
   const loading = krwQ.isLoading || usdQ.isLoading;
   // 둘 다 실패해야 오류다 — 한쪽만 실패하면 나머지는 보여준다(부분 표시는 통화별로 정확하다).
-  const bothFailed = krwQ.isError && usdQ.isError;
+  const bothFailed = isHardError(krwQ) && isHardError(usdQ);
 
   const visibleRows = useMemo(
     () =>

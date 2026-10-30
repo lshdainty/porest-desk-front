@@ -34,7 +34,9 @@ import {
   useTossStockInfo,
   useTossStockWarnings,
 } from "@/features/stock/model/useTossStocks";
-import { DeltaText } from "@/features/stock/ui/phone/phone-parts";
+import { BandTitle, DeltaText } from "@/features/stock/ui/phone/phone-parts";
+import { isHardError } from "@/features/stock/lib/query-state";
+import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { directionOf, directionOfPct } from "../../model/invest";
 import {
   DailyBand,
@@ -115,6 +117,11 @@ function TossBody({ symbol }: { symbol: string }) {
       : null;
   const fxRate = fxQ.data ? num(fxQ.data.rate) : null;
   const changePct = changePctOf(last, prevCloseQ.data);
+  // 머리 증감의 금액 — 전일 종가를 못 받았으면 둘 다 없다(0.00% 를 지어내지 않는다)
+  const changeAmount =
+    last != null && prevCloseQ.data != null && prevCloseQ.data > 0
+      ? last - prevCloseQ.data
+      : null;
   const marketName = master
     ? t(`market.${master.marketCode}`, { defaultValue: master.marketCode })
     : (info?.market ?? "");
@@ -282,6 +289,8 @@ function TossBody({ symbol }: { symbol: string }) {
           detail={`${symbol} · ${marketName} · ${kind}`}
           priceText={last != null ? fmtByCurrency(last, currency) : "—"}
           pct={changePct}
+          changeAmount={changeAmount}
+          currency={currency}
           approx={
             isUs && last != null && fxRate != null
               ? `≈ ${won(Math.round(last * fxRate))}`
@@ -315,17 +324,31 @@ function TossBody({ symbol }: { symbol: string }) {
           symbol={symbol}
           currency={currency}
           lastPrice={last}
-          changePct={changePct ?? 0}
+          changePct={changePct}
         />,
       )}
       {flush(
         "info",
-        <KvBand
-          id="stock-info"
-          title={t("info.title")}
-          rows={infoRows}
-          loading={infoQ.isLoading}
-        />,
+        // 정보 조회가 실패했는데 "정상" 으로 그리면 거래정지 종목이 멀쩡해 보인다 — 실패 한 벌(검수 H2)
+        isHardError(infoQ) ? (
+          <section aria-labelledby="stock-info">
+            <BandTitle id="stock-info">{t("info.title")}</BandTitle>
+            <div className="pb-x6 pt-x3">
+              <BandFailure
+                band
+                title={t("info.failTitle")}
+                onRetry={() => void infoQ.refetch()}
+              />
+            </div>
+          </section>
+        ) : (
+          <KvBand
+            id="stock-info"
+            title={t("info.title")}
+            rows={infoRows}
+            loading={infoQ.isLoading}
+          />
+        ),
       )}
       {flush(
         "daily",
@@ -360,6 +383,10 @@ function NamuBody({ symbol }: { symbol: string }) {
   const quote = quoteQ.data?.[0];
   const last = holding ? num(holding.currentPrice) : (quote?.price ?? null);
   const prevClose = holding ? null : (quote?.previousClose ?? null);
+  const changeAmount =
+    prevClose != null && prevClose > 0 && last != null
+      ? last - prevClose
+      : null;
   const changePct =
     prevClose != null && prevClose > 0 && last != null
       ? ((last - prevClose) / prevClose) * 100
@@ -449,6 +476,8 @@ function NamuBody({ symbol }: { symbol: string }) {
             last != null && last > 0 ? fmtByCurrency(last, currency) : "—"
           }
           pct={changePct}
+          changeAmount={changeAmount}
+          currency={currency}
           unavailable={
             (last == null || last === 0) && !quoteQ.isLoading
               ? t("namu.priceEmpty")

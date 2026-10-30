@@ -1,3 +1,4 @@
+import { isHardError } from "@/features/stock/lib/query-state";
 import { useMemo, useState } from "react";
 import { amountText } from "@/features/stock/lib/amount-text";
 import { useTranslation } from "react-i18next";
@@ -84,7 +85,7 @@ export function TossDiscoverMobile({
       </div>
       {q.isLoading ? (
         <LineSkeletons rows={10} label={t("discover.loading")} />
-      ) : q.isError ? (
+      ) : isHardError(q) ? (
         <BandFailure
           band
           title={t("discover.failTitle")}

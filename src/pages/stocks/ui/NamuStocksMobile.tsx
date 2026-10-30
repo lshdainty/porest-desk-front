@@ -1,3 +1,4 @@
+import { isHardError } from "@/features/stock/lib/query-state";
 import { useMemo, useState, type ReactNode } from "react";
 import { amountText } from "@/features/stock/lib/amount-text";
 import { useTranslation } from "react-i18next";
@@ -92,7 +93,7 @@ export function NamuStocksMobile({ header }: { header?: ReactNode }) {
   const lines = useMemo(() => namuHoldingLines(view), [view]);
   const loading = krwQ.isLoading || usdQ.isLoading;
   // 둘 다 실패해야 오류다 — 한쪽만 실패하면 남은 통화만 보인다
-  const bothFailed = krwQ.isError && usdQ.isError;
+  const bothFailed = isHardError(krwQ) && isHardError(usdQ);
   const retryInvest = () => {
     void krwQ.refetch();
     void usdQ.refetch();
@@ -330,7 +331,7 @@ export function NamuStocksMobile({ header }: { header?: ReactNode }) {
               <WatchGroups
                 groups={groups}
                 loading={watchQ.isLoading}
-                failed={watchQ.isError}
+                failed={isHardError(watchQ)}
                 onRetry={() => void watchQ.refetch()}
                 priceOf={quotes.priceOf}
                 track={track}

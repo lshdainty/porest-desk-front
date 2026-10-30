@@ -10,19 +10,33 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
-const state = vi.hoisted(() => ({ groups: [] as unknown[] }));
+const state = vi.hoisted(() => ({
+  groups: [] as unknown[],
+  // 그룹 질의 상태 — ok | loading(아직) | error(실패, 받아 둔 값 없음)
+  q: "ok" as "ok" | "loading" | "error",
+  createGroup: vi.fn(),
+  addItem: vi.fn(),
+  removeItem: vi.fn(),
+  refetch: vi.fn(),
+  toastError: vi.fn(),
+}));
 
 vi.mock("../api/watchlistApi", () => ({
-  useWatchGroups: () => ({ data: state.groups }),
-  useCreateWatchGroup: () => ({ mutate: vi.fn() }),
-  useAddWatchItem: () => ({ mutate: vi.fn() }),
-  useRemoveWatchItem: () => ({ mutate: vi.fn() }),
+  useWatchGroups: () => ({
+    data: state.q === "ok" ? state.groups : undefined,
+    isLoading: state.q === "loading",
+    isError: state.q === "error",
+    refetch: state.refetch,
+  }),
+  useCreateWatchGroup: () => ({ mutate: state.createGroup }),
+  useAddWatchItem: () => ({ mutate: state.addItem }),
+  useRemoveWatchItem: () => ({ mutate: state.removeItem }),
   findWatchEntries: () => [],
 }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
-vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { error: state.toastError } }));
 
 const { useWatchlist } = await import("./useWatchlist");
 
@@ -70,6 +84,12 @@ afterEach(() => {
   act(() => root.unmount());
   container.remove();
   state.groups = [];
+  state.q = "ok";
+  state.createGroup.mockClear();
+  state.addItem.mockClear();
+  state.removeItem.mockClear();
+  state.refetch.mockClear();
+  state.toastError.mockClear();
 });
 
 describe("useWatchlist 의 열린 그룹", () => {
@@ -110,5 +130,45 @@ describe("useWatchlist 의 열린 그룹", () => {
     expect(seen.watchedSymbols).toEqual(new Set(["005930", "AAPL"]));
     expect(seen.isWatched("AAPL")).toBe(true);
     expect(seen.isWatched("000660")).toBe(false);
+  });
+});
+
+describe("그룹 질의가 아직이거나 실패했을 때 별 — 기본 그룹을 새로 만들지 않는다(검수 M3)", () => {
+  it("로딩 중에는 별을 눌러도 아무것도 만들지 않고 ready 가 false", () => {
+    state.q = "loading";
+    render(<Probe />);
+    expect(seen.ready).toBe(false);
+    expect(seen.failed).toBe(false);
+    act(() => seen.toggleWatch("005930", "KOSPI"));
+    expect(state.createGroup).not.toHaveBeenCalled();
+    expect(state.addItem).not.toHaveBeenCalled();
+    expect(state.toastError).not.toHaveBeenCalled();
+  });
+
+  it("실패했으면 아무것도 만들지 않고 실패를 알리며 다시 받는다", () => {
+    state.q = "error";
+    render(<Probe />);
+    expect(seen.failed).toBe(true);
+    act(() => seen.toggleWatch("005930", "KOSPI"));
+    expect(state.createGroup).not.toHaveBeenCalled();
+    expect(state.addItem).not.toHaveBeenCalled();
+    expect(state.toastError).toHaveBeenCalledWith("watch.addFail");
+    expect(state.refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("받았고 그룹이 정말 0 개일 때만 기본 그룹부터 만든다", () => {
+    state.groups = [];
+    render(<Probe />);
+    expect(seen.ready).toBe(true);
+    act(() => seen.toggleWatch("005930", "KOSPI"));
+    expect(state.createGroup).toHaveBeenCalledTimes(1);
+  });
+
+  it("그룹이 있으면 새로 만들지 않고 그 그룹에 넣는다", () => {
+    state.groups = [group(1, "관심", [])];
+    render(<Probe />);
+    act(() => seen.toggleWatch("005930", "KOSPI"));
+    expect(state.createGroup).not.toHaveBeenCalled();
+    expect(state.addItem).toHaveBeenCalledTimes(1);
   });
 });

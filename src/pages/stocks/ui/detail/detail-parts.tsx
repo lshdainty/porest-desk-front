@@ -1,3 +1,4 @@
+import { isHardError } from "@/features/stock/lib/query-state";
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LineChart, Star } from "lucide-react";
@@ -16,7 +17,8 @@ import { TopNavigationIconButton } from "@/shared/ds/top-navigation";
 import { cn } from "@/shared/lib/cn";
 import { formatMonthDay } from "@/shared/lib/date";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
-import { fmtByCurrency, trendColor } from "@/features/stock/lib/format";
+import { fmtByCurrency } from "@/features/stock/lib/format";
+import { formatChangeRate } from "@/shared/lib/groo/format";
 import { clock12 } from "@/features/stock/lib/market-state";
 import { useWatchlist } from "@/features/stock/model/useWatchlist";
 import {
@@ -31,7 +33,12 @@ import {
   useCandleAvailability,
   type Range,
 } from "@/features/stock/model/chart-range";
-import { BandTitle, PctDelta } from "@/features/stock/ui/phone/phone-parts";
+import {
+  BandTitle,
+  DeltaText,
+  KvListItem,
+  PctDelta,
+} from "@/features/stock/ui/phone/phone-parts";
 
 /*
  * 폰 종목 상세 페이지의 조각(I-13 18 ~ 20) — 머리 · 관심 Toggle · 차트 · 키-값 · 호가 · 일별 시세 · 매매.
@@ -59,6 +66,7 @@ export function WatchToggle({
       <TopNavigationIconButton
         aria-label={t("watch.add")}
         aria-pressed={watched}
+        aria-disabled={!wl.ready && !wl.failed ? true : undefined}
         onClick={onPress}
       >
         <Star aria-hidden strokeWidth={watched ? 2.5 : 2} />
@@ -90,6 +98,8 @@ export function HeadBand({
   detail,
   priceText,
   pct,
+  changeAmount,
+  currency,
   approx,
   unavailable,
   warnings,
@@ -101,6 +111,9 @@ export function HeadBand({
   detail: string;
   priceText: string;
   pct: number | null;
+  /** 전일 종가 대비 변화 금액(부호 있음) — 머리 증감 "▲ 45,200원 · 0.30%". 없으면 퍼센트만 */
+  changeAmount?: number | null;
+  currency?: string;
   approx?: string;
   unavailable?: string;
   warnings?: string[];
@@ -112,7 +125,7 @@ export function HeadBand({
     <section aria-labelledby="stock-name">
       <h2
         id="stock-name"
-        className="m-0 text-t7 font-bold text-fg-neutral [overflow-wrap:anywhere]"
+        className="m-0 text-t7 font-bold text-fg-neutral [overflow-wrap:break-word]"
       >
         {name}
       </h2>
@@ -126,8 +139,15 @@ export function HeadBand({
           </p>
         )}
         {pct != null && (
-          <div className="mt-x1 text-t4 font-medium">
-            <PctDelta pct={pct} />
+          <div className="mt-x1">
+            {changeAmount != null && currency ? (
+              <DeltaText
+                dir={Math.abs(pct) < 0.005 ? "flat" : pct > 0 ? "up" : "down"}
+                text={`${fmtByCurrency(Math.abs(changeAmount), currency)} · ${formatChangeRate(Math.abs(pct), { sign: "none" })}`}
+              />
+            ) : (
+              <PctDelta pct={pct} />
+            )}
           </div>
         )}
         {approx && (
@@ -219,34 +239,12 @@ export function KvBand({
       <BandTitle id={id}>{title}</BandTitle>
       <List aria-labelledby={id} className="pb-x6">
         {rows.map((r) => (
-          <ListItem
+          <KvListItem
             key={r.key}
-            title={
-              <span className="text-t4 text-fg-neutral-subtle">{r.name}</span>
-            }
-            className="[&_[data-slot=list-content]]:py-x2"
-            suffix={
-              loading ? (
-                <Skeleton text="t5" className="w-16" />
-              ) : (
-                <span
-                  className={cn(
-                    "text-end text-t5 font-bold tabular-nums",
-                    r.tone === "critical"
-                      ? "text-fg-critical"
-                      : r.tone === "informative"
-                        ? "text-fg-informative"
-                        : r.tone === "positive"
-                          ? "text-fg-positive"
-                          : "text-fg-neutral",
-                  )}
-                >
-                  {typeof r.value === "string"
-                    ? withCommaBreaks(r.value)
-                    : r.value}
-                </span>
-              )
-            }
+            name={r.name}
+            value={r.value}
+            tone={r.tone}
+            loading={loading}
           />
         ))}
       </List>
@@ -269,7 +267,8 @@ export function QuotesBand({
   symbol: string;
   currency: string;
   lastPrice: number | null;
-  changePct: number;
+  /** 전일 종가를 못 받았으면 null — 가운데 띠에 등락률을 지어내지 않는다(0.00% 금지) */
+  changePct: number | null;
 }) {
   const { t } = useTranslation("stocks");
   const [tab, setTab] = useState<"book" | "tape">("book");
@@ -297,7 +296,7 @@ export function QuotesBand({
     const prev = i + 1 < arr.length ? num(arr[i + 1]!.price) : p;
     return {
       time: ((r) => (r ? clock12(r) : x.timestamp))(
-        /(\d{2}:\d{2}:\d{2})/.exec(x.timestamp)?.[1],
+        /(\d{2}:\d{2}):\d{2}/.exec(x.timestamp)?.[1],
       ),
       p,
       q: Math.round(num(x.volume)),
@@ -385,7 +384,7 @@ export function QuotesBand({
           {tab === "book" ? (
             bookQ.isLoading ? (
               <TableSkeleton label={t("quotes.orderbookLoading")} />
-            ) : bookQ.isError ? (
+            ) : isHardError(bookQ) ? (
               <BandFailure
                 title={t("quotes.orderbookFail")}
                 onRetry={() => void bookQ.refetch()}
@@ -411,12 +410,23 @@ export function QuotesBand({
                         className="border-y border-dashed border-stroke-neutral-subtle p-0 text-center"
                       >
                         <span
-                          className="text-t4 font-bold tabular-nums"
-                          style={{ color: trendColor(changePct) }}
+                          className={cn(
+                            "text-t4 font-bold tabular-nums",
+                            changePct == null || changePct === 0
+                              ? "text-fg-neutral"
+                              : changePct > 0
+                                ? "text-fg-critical"
+                                : "text-fg-informative",
+                          )}
                         >
                           {lastPrice != null ? fmt(lastPrice) : "—"}
-                        </span>{" "}
-                        <PctDelta pct={changePct} />
+                        </span>
+                        {changePct != null && (
+                          <>
+                            {" "}
+                            <PctDelta pct={changePct} />
+                          </>
+                        )}
                       </td>
                     </tr>
                     {bids.map((b) => bookRow(b, "bid"))}
@@ -426,7 +436,7 @@ export function QuotesBand({
             )
           ) : tradesQ.isLoading ? (
             <TableSkeleton label={t("quotes.tradesLoading")} />
-          ) : tradesQ.isError ? (
+          ) : isHardError(tradesQ) ? (
             <BandFailure
               title={t("quotes.tradesFail")}
               onRetry={() => void tradesQ.refetch()}
@@ -451,8 +461,12 @@ export function QuotesBand({
                         {f.time}
                       </td>
                       <td
-                        className="p-0 text-end text-t4 font-bold tabular-nums"
-                        style={{ color: trendColor(f.dir) }}
+                        className={cn(
+                          "p-0 text-end text-t4 font-bold tabular-nums",
+                          f.dir > 0
+                            ? "text-fg-critical"
+                            : "text-fg-informative",
+                        )}
                       >
                         {fmt(f.p)}
                       </td>
@@ -533,7 +547,7 @@ export function DailyBand({
             />
           ))}
         </List>
-      ) : q.isError ? (
+      ) : isHardError(q) ? (
         <BandFailure
           band
           title={t("daily.failTitle")}

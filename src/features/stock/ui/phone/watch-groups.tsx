@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EllipsisVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -222,6 +222,7 @@ export function WatchGroupForm({
   const { t: tc } = useTranslation("common");
   const initial = group?.groupName ?? "";
   const [name, setName] = useState(initial);
+  const nameRef = useRef<HTMLInputElement>(null);
   const createMut = useCreateWatchGroup();
   const renameMut = useRenameWatchGroup();
   const busy = createMut.isPending || renameMut.isPending;
@@ -252,10 +253,16 @@ export function WatchGroupForm({
     >
       <ResponsiveDialogContent
         title={group ? t("watch.groupRename") : t("watch.groupAdd")}
+        // 열리면 이름 칸에 초점 — 폰에서 키보드가 바로 올라온다(옛 autoFocus. 검수 M11)
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          nameRef.current?.focus({ preventScroll: true });
+        }}
       >
         <ResponsiveDialogBody>
           <Field label={t("watch.groupNameLabel")}>
             <Input
+              ref={nameRef}
               value={name}
               autoComplete="off"
               onChange={(e) => setName(e.target.value)}

@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next";
 import {
-  Link,
   Navigate,
   useNavigate,
   useOutletContext,
   useParams,
 } from "react-router-dom";
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
+import { Plug } from "lucide-react";
+import { PageBanner } from "@/shared/ds/page-banner";
+import { ResultSection } from "@/shared/ds/result-section";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ds/tabs";
 import {
   TopNavigation,
@@ -120,6 +120,10 @@ export function StocksPage({
   return <UnsupportedBroker mobile={mobile} header={header} />;
 }
 
+/**
+ * 모르는(서버가 앞서 나간) 증권사 — Page Banner 가 그 화면 맨 위에 서고 본문은 비어 있다(Q4 결정 10-23: 새 표면을 만들지 않는다).
+ * 연결이 끊긴 증권사도 같은 자리의 배너다 — 그 증권사 화면 맨 위(끊김 판정은 서버 응답을 확인한 뒤 붙인다).
+ */
 function UnsupportedBroker({
   mobile,
   header,
@@ -131,16 +135,7 @@ function UnsupportedBroker({
   const body = (
     <>
       {header}
-      <div
-        style={{
-          padding: "40px 24px",
-          textAlign: "center",
-          color: "var(--fg-tertiary)",
-          fontSize: "var(--text-body-sm)",
-        }}
-      >
-        {t("broker.unsupported")}
-      </div>
+      <PageBanner tone="warning">{t("broker.unsupported")}</PageBanner>
     </>
   );
   return mobile ? (
@@ -149,63 +144,32 @@ function UnsupportedBroker({
         <TopNavigationBackButton fallbackHref="/desk/more" />
         <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
       </TopNavigation>
-      <div
-        className="bg-bg-layer-default"
-        style={{ padding: "16px 24px 24px" }}
-      >
-        {body}
-      </div>
+      {body}
     </>
   ) : (
-    <div style={{ padding: 24 }}>{body}</div>
+    body
   );
 }
 
-/** 개인키 미연결: 전 화면 연결 유도. */
+/**
+ * 연결된 증권사가 없다 — Result Section empty "처음"(Q4 결정 10-23). 증권 연결은 설정의 계정 절에 있다
+ * (SecuritiesGate 와 같은 자리) — 절 없이 보내면 첫 절(카테고리 관리)이 열렸다(QA 30 16).
+ */
 function ConnectGate({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("stocks");
-  const gateBody = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-        gap: 8,
+  const navigate = useNavigate();
+  const gate = (
+    <ResultSection
+      kind="empty"
+      icon={<Plug aria-hidden />}
+      title={t("connect.firstTitle")}
+      description={t("connect.firstDesc")}
+      primaryAction={{
+        label: t("connect.firstAction"),
+        onClick: () => navigate("/desk/settings?section=account"),
       }}
-    >
-      <div
-        style={{
-          fontSize: "var(--text-body-md)",
-          fontWeight: 700,
-          color: "var(--fg-primary)",
-        }}
-      >
-        {t("connect.title")}
-      </div>
-      <div
-        style={{
-          fontSize: "var(--text-body-sm)",
-          color: "var(--fg-tertiary)",
-          lineHeight: 1.5,
-        }}
-      >
-        {t("connect.gateDesc")}
-      </div>
-      <Button variant="outline" size="sm" style={{ marginTop: 8 }} asChild>
-        {/* 증권 연결은 설정의 계정 절에 있다(SecuritiesGate 와 같은 자리) — 절 없이 보내면
-            첫 절(카테고리 관리)이 열렸다(QA 30 16). */}
-        <Link to="/desk/settings?section=account">{t("connect.action")}</Link>
-      </Button>
-    </div>
-  );
-  // 모바일 카드 다이어트 — 안내도 배경 위 플랫.
-  const gate = mobile ? (
-    <div style={{ padding: "40px 24px" }}>{gateBody}</div>
-  ) : (
-    <Card style={{ padding: "40px 24px", maxWidth: 430, margin: "0 auto" }}>
-      {gateBody}
-    </Card>
+      className="px-x6 py-x6"
+    />
   );
   return mobile ? (
     <>
@@ -213,14 +177,9 @@ function ConnectGate({ mobile }: { mobile: boolean }) {
         <TopNavigationBackButton fallbackHref="/desk/more" />
         <TopNavigationTitle>{t("nav.title")}</TopNavigationTitle>
       </TopNavigation>
-      <div
-        className="bg-bg-layer-default"
-        style={{ padding: "16px 24px 24px" }}
-      >
-        {gate}
-      </div>
+      {gate}
     </>
   ) : (
-    <div style={{ padding: 24 }}>{gate}</div>
+    gate
   );
 }

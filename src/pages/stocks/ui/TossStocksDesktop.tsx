@@ -33,7 +33,7 @@ import {
   SummaryStrip,
   type StatTile,
 } from "@/features/stock/ui/summary-strip";
-import { marketState } from "@/features/stock/lib/market-state";
+import { marketLookup } from "@/features/stock/lib/market-state";
 import { WatchlistPanel } from "@/features/stock/ui/watchlist-panel";
 import { useWatchlist } from "@/features/stock/model/useWatchlist";
 import type {
@@ -84,15 +84,27 @@ function MarketOpenState({ mobile }: { mobile: boolean }) {
   const { t } = useTranslation("stocks");
   const krQ = useTossMarketCalendarKr();
   const usQ = useTossMarketCalendarUs();
-  const kr = marketState(
-    krQ.data?.today.integrated?.regularMarket,
-    "Asia/Seoul",
-  );
-  const us = marketState(usQ.data?.today.regularMarket, "America/New_York");
+  // 달력을 못 받았으면 "휴장" 으로 지어내지 않는다 — 실패한 시장은 줄에서 빼고, 아직이면 "…" (검수 H4)
+  const kr = marketLookup(krQ, (d) => ({
+    session: d.today.integrated?.regularMarket,
+    date: d.today.date,
+  }));
+  const us = marketLookup(usQ, (d) => ({
+    session: d.today.regularMarket,
+    date: d.today.date,
+  }));
   const markets = [
-    { name: mobile ? t("market.krShort") : t("market.krFull"), ...kr },
-    { name: mobile ? t("market.usShort") : t("market.usFull"), ...us },
-  ];
+    { name: mobile ? t("market.krShort") : t("market.krFull"), s: kr },
+    { name: mobile ? t("market.usShort") : t("market.usFull"), s: us },
+  ].flatMap((m) =>
+    m.s
+      ? [
+          m.s.pending
+            ? { name: m.name, open: false, labelKey: "", pending: true }
+            : { name: m.name, pending: false, ...m.s },
+        ]
+      : [],
+  );
   return (
     <>
       {markets.map((m) => (
@@ -138,7 +150,12 @@ function MarketOpenState({ mobile }: { mobile: boolean }) {
               color: m.open ? "var(--fg-secondary)" : "var(--fg-tertiary)",
             }}
           >
-            {t(m.labelKey, m.time ? { time: m.time } : undefined)}
+            {m.pending
+              ? "…"
+              : t(
+                  m.labelKey,
+                  "time" in m && m.time ? { time: m.time } : undefined,
+                )}
           </span>
         </div>
       ))}
