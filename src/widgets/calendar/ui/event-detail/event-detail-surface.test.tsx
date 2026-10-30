@@ -450,6 +450,23 @@ describe("[수정] → 같은 시트가 수정 폼으로 (9)", () => {
     expect(title()).toBe("editEvent");
   });
 
+  // 렌더에서만 보이던 회귀 — 폼 칸이 reset 보다 먼저 붙으면 RHF 가 등록을 비워 제목 칸이 빈 채로 열리고 친 값도 안 먹었다
+  it("수정 폼은 일정의 제목 · 장소가 채워진 칸으로 열린다 — 빈 칸이 아니다", () => {
+    toEdit([event(1, { title: "치과 정기 검진", location: "본사" })]);
+    expect(titleInput().value).toBe("치과 정기 검진");
+    expect(sheet().textContent).toContain("본사");
+  });
+
+  it("열자마자 친 제목이 저장 본문에 실린다", async () => {
+    toEdit([event(1)]);
+    setValue(titleInput(), "바뀐 제목");
+    await act(async () => {
+      (footerButtons()[1] as HTMLButtonElement).click();
+    });
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.data.title).toBe("바뀐 제목");
+  });
+
   // W3 — 저장에 실패한 뒤 나갔다 다시 [수정] 하면 시도도 안 했는데 빨간 Callout 이 남던 것
   it("저장 실패 뒤 ← 로 나갔다 다시 [수정] 하면 지난 실패 알림이 없다", async () => {
     const { rerender } = toEdit([event(1)]);
