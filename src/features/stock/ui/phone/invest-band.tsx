@@ -29,6 +29,7 @@ export function InvestBand({
   extraLinks,
   loading,
   failed,
+  failDescription,
   onRetry,
   emptyNote,
 }: {
@@ -44,6 +45,8 @@ export function InvestBand({
   extraLinks?: ReactNode;
   loading?: boolean;
   failed?: boolean;
+  /** 실패 설명 — 없으면 "잠시 뒤 다시 시도해주세요." */
+  failDescription?: string;
   onRetry?: () => void;
   /** 보유가 없을 때 지표 아래 글(나무) */
   emptyNote?: string;
@@ -59,6 +62,7 @@ export function InvestBand({
           <BandFailure
             band
             title={t("invest.failTitle")}
+            description={failDescription}
             onRetry={onRetry ?? (() => {})}
           />
         </div>

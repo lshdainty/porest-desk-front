@@ -47,15 +47,17 @@ export function CompositionBody({
   const { t } = useTranslation("stocks");
   if (failed)
     return (
-      <BandFailure
-        band
-        title={t("portfolio.failTitle")}
-        onRetry={onRetry ?? (() => {})}
-      />
+      <div className="py-x6">
+        <BandFailure
+          band
+          title={t("portfolio.failTitle")}
+          onRetry={onRetry ?? (() => {})}
+        />
+      </div>
     );
   if (loading)
     return (
-      <div aria-busy className="flex flex-col items-center gap-x3">
+      <div aria-busy className="flex flex-col items-center gap-x3 px-x6 py-x6">
         <Skeleton radius="full" className="size-28" />
         <Skeleton text="t5" className="w-full" />
         <Skeleton text="t5" className="w-full" />
@@ -63,31 +65,35 @@ export function CompositionBody({
     );
   if (data.notice)
     return (
-      <ResultSection
-        kind="empty"
-        size="medium"
-        as="h3"
-        icon={<ChartPie aria-hidden />}
-        title={data.notice}
-      />
+      <div className="px-x6 py-x6">
+        <ResultSection
+          kind="empty"
+          size="medium"
+          as="h3"
+          icon={<ChartPie aria-hidden />}
+          title={data.notice}
+        />
+      </div>
     );
   if (data.items.length === 0)
     return (
-      <ResultSection
-        kind="empty"
-        size="medium"
-        as="h3"
-        icon={<ChartPie aria-hidden />}
-        title={t("holdings.empty")}
-      />
+      <div className="px-x6 py-x6">
+        <ResultSection
+          kind="empty"
+          size="medium"
+          as="h3"
+          icon={<ChartPie aria-hidden />}
+          title={t("holdings.empty")}
+        />
+      </div>
     );
   const colored = data.items.map((it, i) => ({
     ...it,
     color: PALETTE[i % PALETTE.length]!,
   }));
   return (
-    <>
-      <div className="flex justify-center">
+    <div className="pb-x6 pt-x6">
+      <div className="flex justify-center px-x6">
         <Donut
           size={112}
           stroke={20}
@@ -98,7 +104,7 @@ export function CompositionBody({
           </span>
         </Donut>
       </div>
-      <List className="-mx-x6 mt-x3" aria-label={t("portfolio.title")}>
+      <List className="mt-x3" aria-label={t("portfolio.title")}>
         {colored.map((c) => (
           <ListItem
             key={c.key}
@@ -121,6 +127,6 @@ export function CompositionBody({
           />
         ))}
       </List>
-    </>
+    </div>
   );
 }

@@ -284,6 +284,7 @@ export function NamuStocksMobile({ header }: { header?: ReactNode }) {
             rows={investRows}
             loading={loading}
             failed={bothFailed}
+            failDescription={t("namu.failDesc")}
             onRetry={retryInvest}
             emptyNote={
               !loading && !bothFailed && summary.count === 0

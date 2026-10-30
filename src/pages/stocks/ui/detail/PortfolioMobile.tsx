@@ -33,7 +33,7 @@ export function PortfolioMobile({ broker }: { broker: "TOSS" | "NAMU" }) {
         <TopNavigationTitle>{t("portfolio.title")}</TopNavigationTitle>
       </TopNavigation>
       <ScreenBands>
-        <div>
+        <div data-band="flush">
           {broker === "TOSS" ? <TossComposition /> : <NamuComposition />}
         </div>
       </ScreenBands>

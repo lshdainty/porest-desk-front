@@ -311,7 +311,7 @@ export function QuotesBand({
             key={c}
             scope="col"
             className={cn(
-              "px-x0 pb-x1 font-medium",
+              "whitespace-nowrap px-x1 pb-x1 font-medium first:pl-0 last:pr-0",
               i === 0 ? "text-start" : "text-end",
               cols.length === 3 && i === 1 && "text-center",
             )}
@@ -340,7 +340,7 @@ export function QuotesBand({
       </td>
       <td
         className={cn(
-          "p-0 text-center text-t4 font-bold tabular-nums",
+          "whitespace-nowrap px-x1 text-center text-t4 font-bold tabular-nums",
           side === "ask" ? "text-fg-informative" : "text-fg-critical",
         )}
       >
@@ -393,13 +393,8 @@ export function QuotesBand({
                 {t("quotes.orderbookEmpty")}
               </p>
             ) : (
-              <table className="w-full table-fixed border-collapse">
+              <table className="w-full border-collapse">
                 <caption className="sr-only">{t("quotes.orderbook")}</caption>
-                <colgroup>
-                  <col />
-                  <col style={{ width: 96 }} />
-                  <col />
-                </colgroup>
                 {head([
                   t("orderbook.bidVolume"),
                   t("quotes.tradePrice"),
