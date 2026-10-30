@@ -66,9 +66,9 @@ export const switchmarkThumbVariants = cva(
   {
     variants: {
       size: {
-        "16": "size-[12px] data-[state=checked]:translate-x-[0.625rem]",
-        "24": "size-[20px] data-[state=checked]:translate-x-[0.875rem]",
-        "32": "size-[26px] data-[state=checked]:translate-x-5",
+        "16": "size-[12px] data-[state=checked]:translate-x-[10px]",
+        "24": "size-[20px] data-[state=checked]:translate-x-[14px]",
+        "32": "size-[26px] data-[state=checked]:translate-x-[20px]",
       },
       tone: {
         neutral: "bg-fg-neutral-inverted",
