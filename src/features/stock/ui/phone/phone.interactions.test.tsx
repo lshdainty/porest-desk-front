@@ -4,6 +4,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { WatchGroup } from "../../api/stockApi";
+
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
@@ -73,7 +75,7 @@ const render = (n: ReactNode) =>
   act(() => root.render(<MemoryRouter>{n}</MemoryRouter>));
 const dlg = () => document.querySelector('[role="dialog"]');
 
-const group = (id: number, name: string, n: number) => ({
+const group = (id: number, name: string, n: number): WatchGroup => ({
   rowId: id,
   groupName: name,
   sortOrder: id,
@@ -85,7 +87,7 @@ const group = (id: number, name: string, n: number) => ({
     symbol: `S${id}${i}`,
     nameKr: `종목${i}`,
     nameEn: null,
-    securityType: "STOCK",
+    securityType: "STOCK" as const,
     currency: "KRW",
   })),
 });
