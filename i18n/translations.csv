@@ -2144,7 +2144,6 @@ stocks,broker.toss,토스증권,Toss Securities
 stocks,broker.namu,나무증권,NAMUH Securities
 stocks,broker.tabsAria,증권사,Brokerages
 stocks,broker.unsupported,아직 지원하지 않는 증권사예요. 잠시 후 다시 확인해주세요.,That provider isn't supported yet. Please check back shortly.
-stocks,namu.scopeNotice,나무증권은 호가·체결을 주지 않아 이 화면엔 없어요.,Namu doesn't provide order book or trade tape so they're not shown here.
 stocks,namu.priceEmpty,현재가가 없는 종목이에요,No current price for this instrument
 stocks,namu.tabDomestic,국내,Domestic
 stocks,namu.tabOverseas,해외,Overseas
@@ -2877,6 +2876,32 @@ stocks,portfolio.colReturn,수익률,Return
 stocks,market.indexPoint,지수,Index
 stocks,market.fxBase,매매기준율,Base rate
 stocks,search.failTitle,검색 결과를 불러오지 못했어요,Couldn't load search results
+stocks,invest.orderableKrw,주문 가능 · 원화,Orderable · KRW
+stocks,invest.orderableUsd,주문 가능 · 달러,Orderable · USD
+stocks,invest.depositUsd,예수금 · 달러,Deposit · USD
+stocks,today.title,오늘 시세,Today's quotes
+stocks,today.open,시가,Open
+stocks,today.high,고가,High
+stocks,today.low,저가,Low
+stocks,today.volume,거래량,Volume
+stocks,today.failTitle,오늘 시세를 불러오지 못했어요,Couldn't load today's quotes
+stocks,investor.title,투자자별 매매동향,Net buying by investor
+stocks,investor.unit,▲ 순매수 · ▼ 순매도 · 주,▲ Net buy · ▼ Net sell · shares
+stocks,investor.individual,개인,Individual
+stocks,investor.foreigner,외국인,Foreign
+stocks,investor.institution,기관,Institution
+stocks,investor.empty,집계된 매매동향이 없어요,No investor trading data
+stocks,investor.loading,투자자별 매매동향을 불러오는 중이에요,Loading investor trading
+stocks,investor.failTitle,투자자별 매매동향을 불러오지 못했어요,Couldn't load investor trading
+stocks,info.sector,업종,Sector
+stocks,info.listedShares,상장주식수,Listed shares
+stocks,warning.INVESTMENT_ATTENTION,투자유의,Investment attention
+stocks,market.state.PRE,프리마켓,Pre-market
+stocks,market.state.AFTER,애프터마켓,After-market
+stocks,market.state.DAYTIME,주간거래,Daytime trading
+stocks,market.state.SINGLE_PRICE,단일가,Single-price session
+stocks,market.state.HALTED,일시 마감,Temporarily closed
+stocks,market.state.BEFORE_OPEN,개장 전,Before open
 expense,fixed.switch.expense,고정 지출,Fixed expense
 expense,fixed.switch.income,고정 수입,Fixed income
 expense,fixed.hint.expense,월세·통신비처럼 매달 나가는 돈이에요. 통계에서 따로 나눠 볼 수 있어요,Money that goes out every month like rent or phone bills. You can view it separately in statistics

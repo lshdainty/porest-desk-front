@@ -21,13 +21,20 @@ import { ScreenBands } from "@/shared/ui/groo/screen-bands";
 import { formatChangeRate } from "@/shared/lib/groo/format";
 import { useMasked, won } from "@/shared/lib/groo/money-text";
 import { brokerPath } from "@/features/stock/lib/broker";
-import { fmtFxRate } from "@/features/stock/lib/format";
+import { fmtByCurrency, fmtFxRate, num } from "@/features/stock/lib/format";
+import { namuMarketStatus } from "@/features/stock/lib/market-state";
+import { Skeleton } from "@/shared/ds/skeleton";
 import { mergeNamuHoldings } from "@/features/stock/lib/holdings";
 import { visibleSymbols } from "@/features/stock/lib/watch-prices";
 import { useWatchGroups } from "@/features/stock/api/watchlistApi";
 import type { WatchGroup } from "@/features/stock/api/stockApi";
-import { useNamuHoldings } from "@/features/stock/model/useNamu";
-import { useSecuritiesExchangeRate } from "@/features/stock/model/useSecuritiesPrices";
+import {
+  marketStateOf,
+  useNamuExchangeRate,
+  useNamuHoldings,
+  useNamuMargin,
+  useNamuPrices,
+} from "@/features/stock/model/useNamu";
 import { useVisibleIds } from "@/features/stock/model/useVisibleIds";
 import { useNamuWatchQuotes } from "@/features/stock/model/useWatchQuotes";
 import { Card } from "@/shared/ds/card";
@@ -53,6 +60,7 @@ import {
   composition,
   directionOf,
   namuHoldingLines,
+  namuMarketReps,
   namuInvestSummary,
 } from "../model/invest";
 
@@ -63,7 +71,9 @@ const stockPath = (symbol: string) =>
   `${brokerPath("NAMU")}/${encodeURIComponent(symbol)}`;
 
 /**
- * 나무증권 증권 화면(I-13 8 · 10 · 26 ~ 31) — 토스와 같은 틀(폰은 띠 · 768 이상은 카드). 나무에 없는 것(지수 · 호가 · 발견 · 일간 손익)은 그리지 않는다.
+ * 나무증권 증권 화면(I-13 8 · 10 · 26 ~ 31, I-13b 17 · 18) — 토스와 같은 틀(폰은 띠 · 768 이상은 카드).
+ * 나무에 없는 것(지수 · 발견 · 일간 손익)은 그리지 않고, 다른 증권사를 권하는 글도 없다.
+ * 시장 띠 = 장 상태 줄(대표 종목의 시세에 딸려 오는 장 상태) + 환율 줄(`/v1/namu/exchange-rate`).
  * 국내 · 해외 두 응답은 한 목록으로 합쳐 보이고, 통화를 나눠 보려면 목록 위 Segmented 로 거른다.
  */
 export function NamuStocksView({
@@ -88,14 +98,16 @@ export function NamuStocksView({
       { replace: true },
     );
   const [filter, setFilter] = useState<MarketFilter>("ALL");
+  const desk = layout === "desk";
   const open = (symbol: string) => navigate(stockPath(symbol));
   const mask = useMasked("stocks.holdings");
 
   // ---- 내 투자 ---------------------------------------------------------------
   const krwQ = useNamuHoldings("KRW");
   const usdQ = useNamuHoldings("USD");
-  const fxQ = useSecuritiesExchangeRate();
+  const fxQ = useNamuExchangeRate();
   const fxRate = fxQ.data?.rate ?? null;
+  const marginQ = useNamuMargin();
   const view = useMemo(
     () => mergeNamuHoldings(krwQ.data, usdQ.data, fxRate),
     [krwQ.data, usdQ.data, fxRate],
@@ -165,6 +177,33 @@ export function NamuStocksView({
       },
     };
   })();
+  const dash = "—";
+  const hasValue = (v: string | null | undefined): v is string =>
+    v != null && v.trim() !== "";
+  function orderableRows() {
+    const out: { key: string; name: string; value: ReactNode }[] = [];
+    const orderable = krwQ.data?.orderableAmount;
+    if (isHardError(krwQ) || hasValue(orderable))
+      out.push({
+        key: "orderable-krw",
+        name: t("invest.orderableKrw"),
+        value: hasValue(orderable) ? mask(won(num(orderable))) : dash,
+      });
+    const deposit = marginQ.data?.foreignDeposit;
+    if (isHardError(marginQ) || marginQ.isLoading || hasValue(deposit))
+      out.push({
+        key: "deposit-usd",
+        name: t("invest.depositUsd"),
+        value: marginQ.isLoading ? (
+          <Skeleton text="t5" className="w-16" />
+        ) : hasValue(deposit) ? (
+          mask(fmtByCurrency(num(deposit), "USD"))
+        ) : (
+          dash
+        ),
+      });
+    return out;
+  }
   const investRows = [
     // 합계가 지표일 때는 두 통화를 줄로 풀어 보이고, 하나가 지표일 때는 다른 통화가 있으면 그것만 줄로
     ...(summary.krw && (main?.kind === "total" || main?.kind === "usd")
@@ -195,6 +234,8 @@ export function NamuStocksView({
           },
         ]
       : []),
+    // 주문 가능 · 예수금(I-13b 18) — 값이 없으면(null) 줄을 그리지 않고, 질의가 실패하면 값 "—"
+    ...orderableRows(),
     {
       key: "count",
       name: t("summary.holdingsCount"),
@@ -279,7 +320,6 @@ export function NamuStocksView({
     </>
   );
 
-  const desk = layout === "desk";
   const investBand = (columns: boolean) => (
     <InvestBand
       label={metric.label}
@@ -302,14 +342,56 @@ export function NamuStocksView({
       }
     />
   );
-  const marketBand =
-    fxRate != null && fxRate > 0 ? (
-      <MarketBand
-        markets={[]}
-        indices={[]}
-        fx={{ value: fmtFxRate(fxRate), base: t("namu.fxBase") }}
-      />
-    ) : null;
+  // 시장 띠 — 시장마다 대표 종목 하나(보유 첫 종목, 없으면 관심 첫 종목)의 시세로 장 상태를 읽는다. 최대 2종목 · 60초
+  const reps = namuMarketReps(
+    lines,
+    groups.flatMap((g) => g.items),
+  );
+  const repSymbols = [reps.kr, reps.us].filter((s): s is string => !!s);
+  const repQ = useNamuPrices(repSymbols);
+  const stateOf = (key: string, name: string, rep: string | null) => {
+    const st = marketStateOf(repQ.data, rep);
+    const m = st ? namuMarketStatus(st) : null;
+    return m
+      ? [
+          {
+            key,
+            name,
+            open: m.open,
+            label: t(m.labelKey, m.time ? { time: m.time } : undefined),
+          },
+        ]
+      : [];
+  };
+  const marketStates = [
+    ...stateOf("kr", desk ? t("market.krFull") : t("market.krShort"), reps.kr),
+    ...stateOf("us", desk ? t("market.usFull") : t("market.usShort"), reps.us),
+  ];
+  // 대표 종목을 기다리는 동안(보유 · 관심 · 대표 시세 중 하나라도 오는 중) 장 상태 줄 자리는 값 Skeleton 이다.
+  // 보유 질의가 실패했거나 보유가 0 이어도 관심 첫 종목이 대표라 줄은 나온다.
+  // 실패 한 벌은 기다림이 끝난 뒤 환율과 대표 시세가 둘 다 실패했을 때만(대표를 기다리느라 실패로 보이면 안 된다).
+  const statesWaiting = loading || watchQ.isLoading || repQ.isLoading;
+  const marketFailed =
+    !statesWaiting &&
+    isHardError(fxQ) &&
+    (repSymbols.length === 0 || isHardError(repQ));
+  const marketBand = (
+    <MarketBand
+      markets={marketStates}
+      statesLoading={statesWaiting}
+      indices={[]}
+      fx={{
+        value: fxRate != null && fxRate > 0 ? fmtFxRate(fxRate) : null,
+        loading: fxQ.isLoading,
+        base: t("namu.fxBase"),
+      }}
+      failed={marketFailed}
+      onRetry={() => {
+        void fxQ.refetch();
+        void repQ.refetch();
+      }}
+    />
+  );
   const comp = composition(lines);
   const stocksTabs = (
     <>
@@ -380,11 +462,9 @@ export function NamuStocksView({
             }
             right={
               <>
-                {marketBand && (
-                  <DeskSlot order={2} slot="market">
-                    <Card className="p-0">{marketBand}</Card>
-                  </DeskSlot>
-                )}
+                <DeskSlot order={2} slot="market">
+                  <Card className="p-0">{marketBand}</Card>
+                </DeskSlot>
                 <DeskSlot order={3} slot="composition">
                   <CompositionCard
                     data={{
@@ -418,11 +498,9 @@ export function NamuStocksView({
         <div data-band="flush" data-section="invest">
           {investBand(false)}
         </div>
-        {marketBand && (
-          <div data-band="flush" data-section="market">
-            {marketBand}
-          </div>
-        )}
+        <div data-band="flush" data-section="market">
+          {marketBand}
+        </div>
         <div data-band="flush" data-section="stocks">
           <BandTitle id="stocks-list-title">{t("list.title")}</BandTitle>
           <StockSearchEntry

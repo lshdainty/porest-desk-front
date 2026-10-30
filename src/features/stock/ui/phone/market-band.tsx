@@ -8,6 +8,7 @@ import { BandTitle, PctDelta } from "./phone-parts";
 /*
  * 띠 ② 시장(I-13 9) — 구역 제목 · 장 상태 줄 · 지수 줄 · 환율 줄.
  * 장 상태 줄: ● 국내 장마감   ● 미국 개장 22:30 — t4 · 점 6 · 열림 fg-positive / 닫힘 stroke-neutral-solid, 줄바꿈 허용.
+ * 나무는 지수 줄이 없다(`indices` 비움) — 장 상태 줄(대표 종목의 장 상태) + 환율 줄만 있고, 다른 증권사를 권하는 글 · 빈 자리를 두지 않는다.
  * 지수 줄은 추이선이 있는 짧은 줄이라 위아래 10(List 12 와 다르다 — 그림 값). 모르는 심볼은 그리지 않는다.
  */
 
@@ -31,8 +32,10 @@ export interface IndexLine {
 }
 
 export interface FxLine {
-  /** 이미 만든 값 글 — "1,385.20원" */
-  value: string;
+  /** 이미 만든 값 글 — "1,385.20원". 못 구했으면 null("환율 없음") */
+  value: string | null;
+  /** 값 자리만 Skeleton */
+  loading?: boolean;
   /** 설명 — "매매기준율" */
   base: string;
 }
@@ -76,6 +79,7 @@ const lineColor = (pct: number | null) =>
 
 export function MarketBand({
   markets,
+  statesLoading,
   indices,
   fx,
   loading,
@@ -83,6 +87,8 @@ export function MarketBand({
   onRetry,
 }: {
   markets: MarketState[];
+  /** 장 상태 줄을 기다리는 중(나무 — 대표 종목 시세가 오기 전) — 줄 자리에 값 Skeleton */
+  statesLoading?: boolean;
   indices: IndexLine[];
   fx: FxLine | null;
   loading?: boolean;
@@ -103,6 +109,15 @@ export function MarketBand({
         </div>
       ) : (
         <div className="pb-x6">
+          {statesLoading && markets.length === 0 && (
+            <div
+              aria-busy
+              data-slot="market-states-loading"
+              className="px-x6 pb-x1 pt-x1"
+            >
+              <Skeleton text="t4" className="w-48 max-w-full" />
+            </div>
+          )}
           {markets.length > 0 && (
             <ul
               className="m-0 flex list-none flex-wrap gap-x-x4 gap-y-x1 px-x6 pb-x1 pt-x1 text-t4 text-fg-neutral-subtle"
@@ -181,9 +196,17 @@ export function MarketBand({
                 detail={fx.base}
                 className="[&_[data-slot=list-content]]:py-x2_5"
                 suffix={
-                  <span className="text-end text-t5 font-bold tabular-nums text-fg-neutral">
-                    {fx.value}
-                  </span>
+                  fx.loading ? (
+                    <Skeleton text="t5" className="w-20" />
+                  ) : fx.value == null ? (
+                    <span className="text-end text-t4 text-fg-neutral-subtle">
+                      {t("namu.fxUnavailableShort")}
+                    </span>
+                  ) : (
+                    <span className="text-end text-t5 font-bold tabular-nums text-fg-neutral">
+                      {fx.value}
+                    </span>
+                  )
                 }
               />
             )}

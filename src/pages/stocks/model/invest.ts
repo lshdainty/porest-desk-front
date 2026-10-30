@@ -195,3 +195,24 @@ export function composition(lines: HoldingLine[]): Composition {
     }));
   return { items, fxMissing: false };
 }
+
+// ---- 나무 시장 띠의 대표 종목 ---------------------------------------------------
+
+/**
+ * 시장마다 장 상태를 읽을 **대표 종목 하나**(I-13b 17) — 보유 첫 종목, 없으면 관심 첫 종목. 국내 · 미국 각각.
+ * 나무는 장 상태를 시세에 실어 주므로 그 시장 종목이 하나도 없으면 그 시장은 그리지 않는다.
+ */
+export function namuMarketReps(
+  lines: Pick<HoldingLine, "symbol" | "currency">[],
+  watch: { symbol: string; countryCode: string }[],
+): { kr: string | null; us: string | null } {
+  const kr =
+    lines.find((l) => l.currency === "KRW")?.symbol ??
+    watch.find((w) => w.countryCode === "KR")?.symbol ??
+    null;
+  const us =
+    lines.find((l) => l.currency === "USD")?.symbol ??
+    watch.find((w) => w.countryCode === "US")?.symbol ??
+    null;
+  return { kr, us };
+}

@@ -14,30 +14,40 @@ import { formatDateLong } from "@/shared/lib/date";
 import {
   fmtByCurrency,
   fmtCapKRW,
+  fmtCapUsd,
   fmtShares,
   num,
 } from "@/features/stock/lib/format";
 import { mergeNamuHoldings } from "@/features/stock/lib/holdings";
-import { useNamuHoldings } from "@/features/stock/model/useNamu";
 import {
-  useSecuritiesExchangeRate,
-  useSecuritiesPrices,
-  WATCH_POLL_MS,
-} from "@/features/stock/model/useSecuritiesPrices";
+  useNamuExchangeRate,
+  useNamuHoldings,
+  useNamuInvestors,
+  useNamuQuote,
+} from "@/features/stock/model/useNamu";
 import { useStockBySymbol } from "@/features/stock/model/useStockMaster";
 import {
   changePctOf,
   usePrevClose,
   useTossAccounts,
   useTossExchangeRate,
+  useTossCandles,
   useTossHoldings,
+  useTossInvestors,
   useTossPriceLimits,
   useTossPrices,
   useTossStockInfo,
   useTossStockWarnings,
 } from "@/features/stock/model/useTossStocks";
 import { BandTitle, DeltaText } from "@/features/stock/ui/phone/phone-parts";
+import {
+  KR_TZ,
+  US_TZ,
+  dateKeyIn,
+  marketTzOfCurrency,
+} from "@/features/stock/lib/prev-close";
 import { isHardError } from "@/features/stock/lib/query-state";
+import { useDayKey } from "@/features/stock/model/useDayKey";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { Card } from "@/shared/ds/card";
 import { DeskColumns, DeskFrame, DeskSlot } from "../desk/desk-frame";
@@ -46,6 +56,8 @@ import {
   DailyBand,
   DailyCard,
   HeadBand,
+  InvestorBand,
+  InvestorCard,
   KvBand,
   NamuNotice,
   QuotesBand,
@@ -56,9 +68,10 @@ import {
 
 /**
  * 종목 상세 페이지(I-13 18 ~ 21 · 33 ~ 35). 폰은 상단 바(← "종목 상세" + 관심 Toggle) 아래 띠:
- * ① 머리 · 차트 ② 내 보유(보유일 때만) ③ 호가 · 체결(토스) ④ 기본 정보 ⑤ 일별 시세(+ 토스는 끝에 매매).
- * 768 이상은 같은 구역을 카드로 — 제목 줄 위 "‹ 증권", 1280 이상 2 : 1(왼쪽 머리 · 차트 → 일별 시세, 오른쪽 내 보유 → 호가 · 체결 → 기본 정보),
- * 미만은 폰 띠 차례의 한 칸 720. 주소만으로 열린다 — 보유 종목인지는 같은 보유 질의에서 찾는다.
+ * ① 머리 · 차트 ② 내 보유(보유일 때만) ③ 오늘 시세 ④ 호가 · 체결 ⑤ 투자자별 매매동향(국내 종목) ⑥ 기본 정보 ⑦ 일별 시세(+ 토스는 끝에 매매)
+ * — 두 증권사 공통(I-13b U3). 768 이상은 같은 구역을 카드로 — 제목 줄 위 "‹ 증권", 1280 이상 2 : 1
+ * (왼쪽 머리 · 차트 → 투자자별 → 일별 시세, 오른쪽 내 보유 → 오늘 시세 → 호가 · 체결 → 기본 정보), 미만은 폰 띠 차례의 한 칸 720.
+ * 주소만으로 열린다 — 보유 종목인지는 같은 보유 질의에서 찾는다.
  */
 export function StockDetailView({
   broker,
@@ -124,10 +137,7 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   // 미국 종목은 전일을 뉴욕 날짜로 가른다 — 시세 · 정보 · 마스터 어디서든 통화를 알면 쓴다(아래 currency 와 같은 근거)
   const knownCurrency =
     pricesQ.data?.[0]?.currency ?? info?.currency ?? master?.currency ?? null;
-  const prevCloseQ = usePrevClose(
-    symbol,
-    knownCurrency === "USD" ? "America/New_York" : "Asia/Seoul",
-  );
+  const prevCloseQ = usePrevClose(symbol, marketTzOfCurrency(knownCurrency));
   const fxQ = useTossExchangeRate();
   const warningsQ = useTossStockWarnings(symbol);
   const accountsQ = useTossAccounts();
@@ -234,8 +244,18 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     );
   }
 
-  // 기본 정보 — 상한가 · 하한가는 13b 가 "오늘 시세" 띠로 옮길 때까지 여기에 둔다
+  // 오늘 시세(I-13b 20) — 시가 · 고가 · 저가 · 거래량 = 일봉 오늘 봉(마지막 봉 날짜가 오늘일 때만), 상하한가 = 한도(국내만)
+  const todayQ = useTossCandles(symbol, "1d", 3);
   const limits = limitsQ.data;
+  // 오늘 봉 — "오늘" 은 그 시장의 거래일이다(미국은 뉴욕 날짜). 한국 날짜로 가르면 한국 자정 뒤 미국 장중에 띠가 사라진다(검수 M7).
+  // 순서를 가정하지 않는다 — 날짜로 찾는다. 날이 바뀌면 `useDayKey` 가 다시 판정하게 한다
+  const dayKey = useDayKey(isUs ? US_TZ : KR_TZ);
+  // 통화를 아직 모르면 시장(= 날짜 기준)을 모른다 — 한국 날짜로 가르지 않고 기다린다(아래 todayLoading)
+  const marketPending = !currency && (pricesQ.isLoading || infoQ.isLoading);
+  const todayBar =
+    (currency ? (todayQ.data?.candles ?? []) : []).find(
+      (c) => dateKeyIn(c.timestamp, isUs ? US_TZ : KR_TZ) === dayKey,
+    ) ?? null;
   const shares = num(info?.sharesOutstanding);
   const priceInKrw =
     last == null
@@ -270,26 +290,6 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     ...(mcKRW != null
       ? [{ key: "cap", name: t("info.marketCap"), value: fmtCapKRW(mcKRW) }]
       : []),
-    ...(isKr && upper != null
-      ? [
-          {
-            key: "up",
-            name: t("info.upperLimit"),
-            value: money(upper),
-            tone: "critical" as const,
-          },
-        ]
-      : []),
-    ...(isKr && lower != null
-      ? [
-          {
-            key: "low",
-            name: t("info.lowerLimit"),
-            value: money(lower),
-            tone: "informative" as const,
-          },
-        ]
-      : []),
     ...(info?.listDate
       ? [
           {
@@ -321,8 +321,94 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       : []),
   ];
 
+  const todayRows: KvLine[] = [
+    ...(todayBar
+      ? (
+          [
+            ["open", "today.open", todayBar.openPrice],
+            ["high", "today.high", todayBar.highPrice],
+            ["low", "today.low", todayBar.lowPrice],
+          ] as const
+        )
+          .filter(([, , v]) => Number.isFinite(Number.parseFloat(v)))
+          .map(([key, label, v]) => ({
+            key,
+            name: t(label),
+            value: fmtByCurrency(Number.parseFloat(v), currency),
+          }))
+      : []),
+    ...(todayBar && Number.isFinite(Number.parseFloat(todayBar.volume))
+      ? [
+          {
+            key: "volume",
+            name: t("today.volume"),
+            value: t("holding.sharesUnit", {
+              count: Math.round(
+                Number.parseFloat(todayBar.volume),
+              ).toLocaleString(),
+            }),
+          },
+        ]
+      : []),
+    ...(isKr && upper != null
+      ? [
+          {
+            key: "up",
+            name: t("info.upperLimit"),
+            value: money(upper),
+            tone: "critical" as const,
+          },
+        ]
+      : []),
+    ...(isKr && lower != null
+      ? [
+          {
+            key: "low-limit",
+            name: t("info.lowerLimit"),
+            value: money(lower),
+            tone: "informative" as const,
+          },
+        ]
+      : []),
+  ];
+  const todayLoading = marketPending || todayQ.isLoading || limitsQ.isLoading;
+  const todayFailed = isHardError(todayQ) && isHardError(limitsQ);
+  const todayBand =
+    todayLoading || todayFailed || todayRows.length > 0 ? (
+      <KvBand
+        id="stock-today"
+        title={t("today.title")}
+        rows={
+          todayLoading
+            ? (["open", "high", "low", "volume"] as const).map((k) => ({
+                key: k,
+                name: t(`today.${k}`),
+                value: "",
+              }))
+            : todayRows
+        }
+        loading={todayLoading}
+        failed={
+          todayFailed
+            ? {
+                title: t("today.failTitle"),
+                onRetry: () => {
+                  void todayQ.refetch();
+                  void limitsQ.refetch();
+                },
+              }
+            : undefined
+        }
+      />
+    ) : null;
+  // 투자자별 매매동향 — 국내 종목만(시장을 알기 전엔 부르지 않는다). 미국이면 띠 · 카드가 없다
+  const marketKnown = !!(info || master || holding);
+  const investorsQ = useTossInvestors(symbol, marketKnown && isKr);
+  const showInvestors = marketKnown && isKr;
+
   const head = (
     <HeadBand
+      broker="TOSS"
       name={name}
       detail={`${symbol} · ${marketLabel} · ${kind}`}
       priceText={last != null ? fmtByCurrency(last, currency) : "—"}
@@ -360,6 +446,8 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   );
   const quotesBand = (
     <QuotesBand
+      broker="TOSS"
+      market={isKr ? "KR" : "US"}
       symbol={symbol}
       currency={currency}
       lastPrice={last}
@@ -395,9 +483,15 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
             <DeskSlot order={1} slot="head">
               <Card>{head}</Card>
             </DeskSlot>
-            <DeskSlot order={5} slot="daily">
+            {showInvestors && (
+              <DeskSlot order={5} slot="investor">
+                <InvestorCard q={investorsQ} />
+              </DeskSlot>
+            )}
+            <DeskSlot order={7} slot="daily">
               <DailyCard
                 symbol={symbol}
+                broker="TOSS"
                 currency={currency}
                 tail={<TradeTail isUs={isUs} />}
               />
@@ -411,10 +505,15 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
                 <Card className="p-0">{holdBand}</Card>
               </DeskSlot>
             )}
-            <DeskSlot order={3} slot="quotes">
+            {todayBand && (
+              <DeskSlot order={3} slot="today">
+                <Card className="p-0">{todayBand}</Card>
+              </DeskSlot>
+            )}
+            <DeskSlot order={4} slot="quotes">
               <Card className="p-0">{quotesBand}</Card>
             </DeskSlot>
-            <DeskSlot order={4} slot="info">
+            <DeskSlot order={6} slot="info">
               <Card className="p-0">{infoBand}</Card>
             </DeskSlot>
           </>
@@ -426,12 +525,15 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     <>
       <div>{head}</div>
       {holdBand && flush("holding", holdBand)}
+      {flush("today", todayBand)}
       {flush("quotes", quotesBand)}
+      {showInvestors && flush("investor", <InvestorBand q={investorsQ} />)}
       {flush("info", infoBand)}
       {flush(
         "daily",
         <DailyBand
           symbol={symbol}
+          broker="TOSS"
           currency={currency}
           tail={<TradeTail isUs={isUs} />}
         />,
@@ -440,27 +542,59 @@ function TossBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   );
 }
 
+/** 빈 문자열 · 없는 칸 → null (나무는 문자열로 주고 모든 칸이 null 일 수 있다) */
+const numOrNull = (v: string | null | undefined): number | null => {
+  if (v == null || v.trim() === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const textOrNull = (v: string | null | undefined): string | null =>
+  v != null && v.trim() !== "" ? v.trim() : null;
+/** 20231227 → 2023-12-27 (이미 날짜 꼴이면 그대로) */
+const dateText = (v: string): string =>
+  /^\d{8}$/.test(v) ? `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6)}` : v;
+
 function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   const { t } = useTranslation("stocks");
   const mask = useMasked("stocks.detail");
-  const master = useStockBySymbol(symbol).data ?? null;
+  const masterQ = useStockBySymbol(symbol);
+  const master = masterQ.data ?? null;
   const krwQ = useNamuHoldings("KRW");
   const usdQ = useNamuHoldings("USD");
-  const fxQ = useSecuritiesExchangeRate();
+  const fxQ = useNamuExchangeRate();
   const view = mergeNamuHoldings(krwQ.data, usdQ.data, fxQ.data?.rate ?? null);
   const holding = view.rows.find((r) => r.symbol === symbol) ?? null;
-  const name = master?.nameKr ?? holding?.name ?? symbol;
-  const currency: string = holding
-    ? holding.currency
-    : (master?.currency ?? "KRW");
-  const isUs = currency === "USD";
-  const quoteQ = useSecuritiesPrices(
-    holding == null ? [symbol] : [],
-    WATCH_POLL_MS,
-  );
-  const quote = quoteQ.data?.[0];
-  const last = holding ? num(holding.currentPrice) : (quote?.price ?? null);
-  const prevClose = holding ? null : (quote?.previousClose ?? null);
+
+  // 국내 · 미국 — 마스터가 먼저(보유 질의를 기다리지 않는다), 마스터에 없으면 보유 통화, 그것도 모르면 국내
+  const market: "KR" | "US" | null = master
+    ? master.countryCode === "KR"
+      ? "KR"
+      : "US"
+    : holding
+      ? holding.currency === "USD"
+        ? "US"
+        : "KR"
+      : masterQ.isLoading
+        ? null
+        : "KR";
+  // 상세 시세 하나(13b-0 3) — 머리 · 오늘 시세 · 호가 · 기본 정보가 이 응답이다. 보유 종목도 부른다. 10초 · 상세가 보일 때만
+  const quoteQ = useNamuQuote(market, symbol);
+  const q = quoteQ.data ?? null;
+  const quoteFailed = isHardError(quoteQ);
+  // 나무 초당 5회 한도 — 상세 시세가 끝난 뒤(성공 · 실패 모두) 투자자별 · 일별 시세를 연다
+  const afterQuote = quoteQ.isFetched;
+  const investorsQ = useNamuInvestors(symbol, market === "KR" && afterQuote);
+
+  const name = master?.nameKr ?? q?.name ?? holding?.name ?? symbol;
+  const currency: string =
+    q?.currency ??
+    holding?.currency ??
+    master?.currency ??
+    // 어디서도 통화를 모르면 시장으로(국내 원 · 미국 달러), 시장도 모르면 빈 값 — 숫자만 보인다(13-1 M6)
+    (market === "KR" ? "KRW" : market === "US" ? "USD" : "");
+  const isUs = market === "US" || currency === "USD";
+  const last = numOrNull(q?.price);
+  const prevClose = numOrNull(q?.previousClose);
   const changeAmount =
     prevClose != null && prevClose > 0 && last != null
       ? last - prevClose
@@ -469,6 +603,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     prevClose != null && prevClose > 0 && last != null
       ? ((last - prevClose) / prevClose) * 100
       : null;
+  const fxRate = fxQ.data?.rate ?? null;
 
   const holdRows: KvLine[] = [];
   if (holding) {
@@ -476,6 +611,7 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     const pnl = num(holding.profitLoss);
     const cost = ev - pnl;
     const pct = cost > 0 ? (pnl / cost) * 100 : 0;
+    const sellable = numOrNull(holding.sellableQuantity);
     holdRows.push(
       {
         key: "ev",
@@ -521,8 +657,64 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
         name: t("holding.purchaseAmount"),
         value: mask(fmtByCurrency(cost, currency)),
       },
+      // 매도가능은 미국 잔고만 준다 — 국내는 줄이 없다
+      ...(sellable != null
+        ? [
+            {
+              key: "sell",
+              name: t("holding.sellable"),
+              value: t("holding.sharesUnit", {
+                count: sellable.toLocaleString(),
+              }),
+            },
+          ]
+        : []),
     );
   }
+
+  // 오늘 시세 — 값이 없는 줄은 그리지 않고, 다 없으면 띠가 없다. 상한가 critical · 하한가 informative
+  const todayRows: KvLine[] = [];
+  if (q) {
+    const px = (label: string, key: string, v: string | null) => {
+      const n = numOrNull(v);
+      if (n != null)
+        todayRows.push({
+          key,
+          name: t(label),
+          value: fmtByCurrency(n, currency),
+        });
+    };
+    px("today.open", "open", q.open);
+    px("today.high", "high", q.high);
+    px("today.low", "low", q.low);
+    const vol = numOrNull(q.volume);
+    if (vol != null)
+      todayRows.push({
+        key: "volume",
+        name: t("today.volume"),
+        value: t("holding.sharesUnit", {
+          count: Math.round(vol).toLocaleString(),
+        }),
+      });
+    const up = numOrNull(q.upperLimit);
+    if (up != null)
+      todayRows.push({
+        key: "up",
+        name: t("info.upperLimit"),
+        value: fmtByCurrency(up, currency),
+        tone: "critical",
+      });
+    const low = numOrNull(q.lowerLimit);
+    if (low != null)
+      todayRows.push({
+        key: "low-limit",
+        name: t("info.lowerLimit"),
+        value: fmtByCurrency(low, currency),
+        tone: "informative",
+      });
+  }
+
+  // 기본 정보 — 시장 · 종목 유형 · 통화는 마스터, 업종 · 시가총액 · 상장일 · 상장(발행)주식수는 상세 시세. "거래상태" 줄은 나무에 없다
   const infoRows: KvLine[] = [
     {
       key: "market",
@@ -533,15 +725,49 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
           ? t("market.usShort")
           : t("market.krShort"),
     },
-    { key: "cur", name: t("info.currency"), value: currency },
     {
       key: "type",
       name: t("info.securityType"),
       value: master?.securityType === "ETF" ? "ETF" : t("info.stock"),
     },
+    { key: "cur", name: t("info.currency"), value: currency },
   ];
+  if (q) {
+    const sector = textOrNull(q.sector);
+    if (sector)
+      infoRows.push({ key: "sector", name: t("info.sector"), value: sector });
+    // 시가총액 — 국내는 원 단위로 온다. 미국은 달러 총액이라 환율이 있으면 원으로 바꿔 같은 꼴(fmtCapKRW),
+    // 없으면 줄을 지우지 않고 달러로 보인다(환율 없이 원으로 지어내지 않는다)
+    const cap = numOrNull(q.marketCap);
+    if (cap != null && cap > 0)
+      infoRows.push({
+        key: "cap",
+        name: t("info.marketCap"),
+        value: !isUs
+          ? fmtCapKRW(cap)
+          : fxRate != null && fxRate > 0
+            ? fmtCapKRW(cap * fxRate)
+            : fmtCapUsd(cap),
+      });
+    const listed = textOrNull(q.listingDate);
+    if (listed)
+      infoRows.push({
+        key: "list",
+        name: t("info.listDate"),
+        value: formatDateLong(dateText(listed)),
+      });
+    const shares = numOrNull(q.listedShares);
+    if (shares != null && shares > 0)
+      infoRows.push({
+        key: "shares",
+        name: isUs ? t("info.sharesOutstanding") : t("info.listedShares"),
+        value: fmtShares(shares),
+      });
+  }
+
   const head = (
     <HeadBand
+      broker="NAMU"
       name={name}
       detail={
         master ? `${symbol} · ${marketName(t, master.marketCode)}` : symbol
@@ -551,11 +777,16 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
       changeAmount={changeAmount}
       currency={currency}
       unavailable={
-        (last == null || last === 0) && !quoteQ.isLoading
+        !quoteFailed && !quoteQ.isPending && (last == null || last === 0)
           ? t("namu.priceEmpty")
           : undefined
       }
-      loading={krwQ.isLoading && usdQ.isLoading}
+      loading={quoteQ.isPending}
+      failed={quoteFailed}
+      onRetry={() => void quoteQ.refetch()}
+      warnings={(q?.warnings ?? []).map((w) =>
+        t(`warning.${w.warningType}`, { defaultValue: w.warningType }),
+      )}
       symbol={symbol}
       isUs={isUs}
       watch={
@@ -569,9 +800,43 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
   const holdBand = holding && (
     <KvBand id="stock-holding" title={t("holding.title")} rows={holdRows} />
   );
+  const todayBand =
+    !quoteFailed && (quoteQ.isPending || todayRows.length > 0) ? (
+      <KvBand
+        id="stock-today"
+        title={t("today.title")}
+        rows={
+          quoteQ.isPending
+            ? (["open", "high", "low", "volume"] as const).map((k) => ({
+                key: k,
+                name: t(`today.${k}`),
+                value: "",
+              }))
+            : todayRows
+        }
+        loading={quoteQ.isPending}
+      />
+    ) : null;
+  const quotesBand = quoteFailed ? null : (
+    <QuotesBand
+      broker="NAMU"
+      market={market}
+      symbol={symbol}
+      currency={currency}
+      lastPrice={last}
+      changePct={changePct}
+      namuBook={{
+        data: q?.orderbook ?? null,
+        isPending: quoteQ.isPending,
+        isError: false,
+        refetch: () => void quoteQ.refetch(),
+      }}
+    />
+  );
   const infoBand = (
     <KvBand id="stock-info" title={t("info.title")} rows={infoRows} />
   );
+  const showInvestors = market === "KR";
 
   if (desk)
     return (
@@ -581,9 +846,16 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
             <DeskSlot order={1} slot="head">
               <Card>{head}</Card>
             </DeskSlot>
-            <DeskSlot order={5} slot="daily">
+            {showInvestors && (
+              <DeskSlot order={5} slot="investor">
+                <InvestorCard q={investorsQ} />
+              </DeskSlot>
+            )}
+            <DeskSlot order={7} slot="daily">
               <DailyCard
                 symbol={symbol}
+                broker="NAMU"
+                enabled={afterQuote}
                 currency={currency}
                 tail={<NamuNotice />}
               />
@@ -597,7 +869,17 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
                 <Card className="p-0">{holdBand}</Card>
               </DeskSlot>
             )}
-            <DeskSlot order={4} slot="info">
+            {todayBand && (
+              <DeskSlot order={3} slot="today">
+                <Card className="p-0">{todayBand}</Card>
+              </DeskSlot>
+            )}
+            {quotesBand && (
+              <DeskSlot order={4} slot="quotes">
+                <Card className="p-0">{quotesBand}</Card>
+              </DeskSlot>
+            )}
+            <DeskSlot order={6} slot="info">
               <Card className="p-0">{infoBand}</Card>
             </DeskSlot>
           </>
@@ -609,10 +891,19 @@ function NamuBody({ symbol, desk }: { symbol: string; desk: boolean }) {
     <>
       <div>{head}</div>
       {holdBand && flush("holding", holdBand)}
+      {flush("today", todayBand)}
+      {flush("quotes", quotesBand)}
+      {showInvestors && flush("investor", <InvestorBand q={investorsQ} />)}
       {flush("info", infoBand)}
       {flush(
         "daily",
-        <DailyBand symbol={symbol} currency={currency} tail={<NamuNotice />} />,
+        <DailyBand
+          symbol={symbol}
+          broker="NAMU"
+          enabled={afterQuote}
+          currency={currency}
+          tail={<NamuNotice />}
+        />,
       )}
     </>
   );

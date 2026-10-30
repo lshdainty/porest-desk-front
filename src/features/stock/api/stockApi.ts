@@ -197,6 +197,23 @@ export interface TossPriceLimit {
   currency: string;
 }
 
+/**
+ * 투자자별 순매수(주) 하루 — 토스 · 나무가 같은 모양(서버가 맞춘다). 최신이 먼저.
+ * 토스는 당일 잠정 기록의 개인이 null 이다 — 그대로 둔다("—").
+ */
+export interface InvestorTradingDay {
+  date: string;
+  individual: string | null;
+  foreigner: string | null;
+  institution: string | null;
+}
+
+/** 주문 가능 금액 — KRW 는 정수(원), USD 는 소수 문자열 */
+export interface TossBuyingPower {
+  currency: string;
+  cashBuyingPower: string | null;
+}
+
 // ---- 종목 마스터 (서버 stock_master, KIS daily 동기화) ----------------------
 
 export type StockSecurityType = "STOCK" | "ETF" | "INDEX" | "WARRANT";
@@ -433,6 +450,18 @@ export const stockApi = {
     return resp.data;
   },
 
+  /** 투자자별 매매동향(국내 종목만 — 미국이면 서버가 빈 목록) */
+  getInvestorTrading: async (
+    symbol: string,
+    count = 5,
+  ): Promise<InvestorTradingDay[]> => {
+    const resp: ApiResponse<InvestorTradingDay[]> = await apiClient.get(
+      `${BASE}/stocks/${encodeURIComponent(symbol)}/investor-trading`,
+      { params: { count } },
+    );
+    return resp.data ?? [];
+  },
+
   getStockWarnings: async (symbol: string): Promise<TossStockWarning[]> => {
     const resp: ApiResponse<TossStockWarning[]> = await apiClient.get(
       `${BASE}/stocks/${encodeURIComponent(symbol)}/warnings`,
@@ -570,6 +599,18 @@ export const stockApi = {
   getAccounts: async (): Promise<TossAccount[]> => {
     const resp: ApiResponse<TossAccount[]> = await apiClient.get(
       `${BASE}/accounts`,
+    );
+    return resp.data;
+  },
+
+  /** 주문 가능 금액(원화 · 달러) — 보유 조회와 같은 계좌 */
+  getBuyingPower: async (
+    accountSeq: number,
+    currency: "KRW" | "USD",
+  ): Promise<TossBuyingPower> => {
+    const resp: ApiResponse<TossBuyingPower> = await apiClient.get(
+      `${BASE}/buying-power`,
+      { params: { accountSeq, currency } },
     );
     return resp.data;
   },

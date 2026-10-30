@@ -67,6 +67,31 @@ export interface BrokerExchangeRate {
   rate: number | null;
 }
 
+/** 캔들을 부를 증권사 — 지정하지 않으면 사용자의 기본 증권사(`/v1/securities/candles`) */
+export type CandleBroker = "TOSS" | "NAMU";
+
+/**
+ * 임베드 차트의 `broker=toss|namu` 쿼리(대소문자 무시). 없거나 모르는 값이면 `undefined` 라
+ * 증권사 무관 경로(`/v1/securities/candles`)로 간다 — 쿼리를 모르는 옛 앱이 그렇게 돈다.
+ */
+export const candleBrokerFromParam = (
+  v: string | null,
+): CandleBroker | undefined => {
+  const u = v?.toUpperCase();
+  return u === "TOSS" || u === "NAMU" ? u : undefined;
+};
+
+/**
+ * 증권 화면의 차트 · 일별 시세는 **그 탭의 증권사**로 부른다(I-13b 16). 응답 모양은 세 경로가 같다.
+ * 증권사를 안 주는 경로(`/v1/securities/candles`)는 옛 앱 임베드 · 가계부처럼 증권사를 모르는 호출이 쓴다.
+ */
+export const candlesPath = (broker?: CandleBroker | null): string =>
+  broker === "TOSS"
+    ? "/v1/toss/candles"
+    : broker === "NAMU"
+      ? "/v1/namu/candles"
+      : "/v1/securities/candles";
+
 export const securitiesApi = {
   getPrices: async (symbols: string[]): Promise<BrokerQuote[]> => {
     if (symbols.length === 0) return [];
@@ -92,10 +117,16 @@ export const securitiesApi = {
   getCandles: async (
     symbol: string,
     interval: "1m" | "1d",
-    opts?: { count?: number; before?: string; adjusted?: boolean },
+    opts?: {
+      count?: number;
+      before?: string;
+      adjusted?: boolean;
+      /** 그 탭의 증권사 — 없으면 기본 증권사 */
+      broker?: CandleBroker | null;
+    },
   ): Promise<BrokerCandlePage> => {
     const resp: ApiResponse<BrokerCandleCursorPage> = await apiClient.get(
-      "/v1/securities/candles",
+      candlesPath(opts?.broker),
       {
         params: {
           symbol,

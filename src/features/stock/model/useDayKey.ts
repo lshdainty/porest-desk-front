@@ -1,20 +1,36 @@
-import { useEffect, useState } from "react";
-import { todayKeyIn } from "../lib/prev-close";
+import { useEffect, useMemo, useState } from "react";
+import { KR_TZ, US_TZ, todayKeyIn } from "../lib/prev-close";
 
 /**
  * 그 시간대의 오늘('YYYY-MM-DD') — 탭을 띄워 둔 채 날이 바뀌면 값이 바뀐다.
- * 달력 질의 키에 넣어, 어제 달력으로 오늘 장 상태를 판정하지 않게 한다(검수 M2). 1분마다 · 탭이 다시 보일 때 확인한다.
+ * 달력 질의 키에 넣어, 어제 달력으로 오늘 장 상태를 판정하지 않게 한다(검수 M2). 1분마다 · 탭이 다시 보일 때 다시 읽는다.
+ *
+ * **시간대가 바뀌면 타이머를 기다리지 않고 그 렌더에서 바로 다시 계산한다.** 예전엔 값을 상태로 들고 있어 처음 시간대(통화를 알기 전의
+ * 한국)로 굳었고, 통화가 USD 로 정해져 시간대가 뉴욕으로 바뀌어도 다음 타이머까지 한국 날짜가 남았다 — 한국 날짜가 뉴욕보다 앞선
+ * 시각에 미국 "오늘 시세" 띠가 약 60초 안 보였다. 값은 `[tz, tick]` 으로만 다시 계산한다(같은 시간대에서는 타이머 전에 다시 읽지 않는다).
  */
 export function useDayKey(tz: string): string {
-  const [key, setKey] = useState(() => todayKeyIn(tz));
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    const check = () => setKey(todayKeyIn(tz));
-    const id = window.setInterval(check, 60_000);
-    document.addEventListener("visibilitychange", check);
+    const bump = () => setTick((n) => n + 1);
+    const id = window.setInterval(bump, 60_000);
+    document.addEventListener("visibilitychange", bump);
     return () => {
       window.clearInterval(id);
-      document.removeEventListener("visibilitychange", check);
+      document.removeEventListener("visibilitychange", bump);
     };
   }, [tz]);
-  return key;
+  // tick 은 값이 아니라 "다시 읽어라" 신호다
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => todayKeyIn(tz), [tz, tick]);
+}
+
+/**
+ * 시간대마다 그 시장의 오늘을 돌려주는 함수 — 여러 심볼이 시장이 섞여 있을 때 쓴다(훅은 심볼 수만큼 못 부르니 두 시장을 한 번씩).
+ * 국내 · 미국이 아닌 시간대는 렌더마다 읽는다.
+ */
+export function useDayKeyOf(): (tz: string) => string {
+  const kr = useDayKey(KR_TZ);
+  const us = useDayKey(US_TZ);
+  return (tz) => (tz === KR_TZ ? kr : tz === US_TZ ? us : todayKeyIn(tz));
 }

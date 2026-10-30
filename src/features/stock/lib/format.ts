@@ -69,3 +69,13 @@ export function fmtFxRate(rate: number): string {
   });
   return isEn() ? `₩${body}` : `${body}원`;
 }
+
+/**
+ * 미국 시가총액을 환율 없이 달러로 — 1만 달러 미만은 외화 규칙대로 `$1,234.50`(소수 둘째 자리),
+ * 그 위는 줄여서 ko `9,900억 달러` / en `$990B`(`$9,900억` 같은 혼합 없음). 환율이 있으면 {@link fmtCapKRW} 로 원 환산한다.
+ */
+export function fmtCapUsd(v: number): string {
+  if (Math.abs(v) < 10_000) return fmtByCurrency(v, "USD");
+  if (isEn()) return `$${formatChartAxis(v)}`;
+  return `${formatChartAxis(v)} 달러`;
+}

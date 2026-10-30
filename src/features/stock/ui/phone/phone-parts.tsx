@@ -58,7 +58,7 @@ export function DeltaText({
   text,
 }: {
   dir: "up" | "down" | "flat";
-  text: string;
+  text: ReactNode;
   /** 예전 자리별 크기 갈래 — 이제 ds 값 하나라 받기만 하고 쓰지 않는다 */
   strong?: boolean;
   size?: "t4";

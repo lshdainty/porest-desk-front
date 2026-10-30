@@ -7,6 +7,7 @@ import { mergeNamuHoldings } from "@/features/stock/lib/holdings";
 import {
   composition,
   directionOfPct,
+  namuMarketReps,
   namuHoldingLines,
   namuInvestSummary,
   tossHoldingLines,
@@ -136,5 +137,20 @@ describe("directionOfPct", () => {
     expect(directionOfPct(0.004)).toBe("flat");
     expect(directionOfPct(0.01)).toBe("up");
     expect(directionOfPct(-0.2)).toBe("down");
+  });
+});
+
+describe("나무 시장 대표 종목 (I-13b 17)", () => {
+  it("보유 첫 종목 → 없으면 관심 첫 종목 · 시장마다", () => {
+    expect(
+      namuMarketReps(
+        [{ symbol: "A", currency: "KRW" }],
+        [
+          { symbol: "K2", countryCode: "KR" },
+          { symbol: "U1", countryCode: "US" },
+        ],
+      ),
+    ).toEqual({ kr: "A", us: "U1" });
+    expect(namuMarketReps([], [])).toEqual({ kr: null, us: null });
   });
 });

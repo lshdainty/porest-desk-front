@@ -184,9 +184,20 @@ export const stockKeys = {
   candles: (symbol: string, interval: string) =>
     [...stockKeys.all, "candles", symbol, interval] as const,
   warnings: (symbol: string) => [...stockKeys.all, "warnings", symbol] as const,
+  investors: (symbol: string) =>
+    [...stockKeys.all, "investors", symbol] as const,
+  buyingPower: (accountSeq: number, currency: string) =>
+    [...stockKeys.all, "buying-power", accountSeq, currency] as const,
   // `tz` = 전일을 가르는 시장 시간대(국내 Asia/Seoul · 미국 America/New_York)
-  prevClose: (symbol: string, tz?: string) =>
-    [...stockKeys.all, "prev-close", symbol, tz ?? "Asia/Seoul"] as const,
+  // `day` = 그 시장의 오늘 — 날이 바뀌면 키가 바뀌어 어제 기준의 전일 종가를 쓰지 않는다
+  prevClose: (symbol: string, tz?: string, day?: string) =>
+    [
+      ...stockKeys.all,
+      "prev-close",
+      symbol,
+      tz ?? "Asia/Seoul",
+      day ?? "",
+    ] as const,
   rankings: (type: string, market: string, duration: string) =>
     [...stockKeys.all, "rankings", type, market, duration] as const,
   indicators: (symbols: string[]) =>

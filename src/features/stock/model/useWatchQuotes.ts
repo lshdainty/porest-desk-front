@@ -7,11 +7,11 @@
 import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { stockKeys } from "@/shared/config";
-import { securitiesApi } from "../api/securitiesApi";
 import { stockApi } from "../api/stockApi";
+import { marketTzOfCurrency } from "../lib/prev-close";
 import { chunkSymbols } from "../lib/watch-prices";
 import { changePctOf, usePrevCloses } from "./useTossStocks";
-import { WATCH_POLL_MS } from "./useSecuritiesPrices";
+import { namuPricesQuery, NAMU_WATCH_POLL_MS } from "./useNamu";
 
 /** 한 종목의 표시용 시세. 못 구한 값은 null — 행이 '—' 로 접는다. */
 export interface RowQuote {
@@ -52,7 +52,15 @@ export function useTossWatchQuotes(symbols: string[]) {
       refetchInterval: 10_000,
     })),
   });
-  const prevCloses = usePrevCloses(symbols);
+  // 전일 종가는 시장 날짜로 가른다 — 시세 응답의 통화로 시장을 정한다(미국은 뉴욕). 통화를 모르는 심볼(시세 전)은 아직 부르지 않아
+  // 한국 날짜로 잘못 집지 않는다(검수 N1)
+  const currencyBySymbol = new Map<string, string>();
+  for (const r of results)
+    for (const p of r.data ?? []) currencyBySymbol.set(p.symbol, p.currency);
+  const prevCloses = usePrevCloses(
+    symbols.filter((s) => currencyBySymbol.has(s)),
+    (s) => marketTzOfCurrency(currencyBySymbol.get(s)),
+  );
   const freshPrices = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of results)
@@ -78,17 +86,14 @@ export function useTossWatchQuotes(symbols: string[]) {
   };
 }
 
-/** 나무 — 서버 대리 조회(상한 50 · 캐시 20초 · 예산 4초), 30초 주기. 전일 종가는 시세에 실려 온다 */
+/**
+ * 나무 — `/v1/namu/prices`(상한 50 · 서버 캐시 20초 · 예산 4초), 30초 주기. 전일 종가는 시세에 실려 온다.
+ * 기본 증권사가 아니라 나무로 부른다(I-13b 16) — 경로만 바뀌고 묶음 · 주기 · 규칙은 I-13 22 그대로다.
+ */
 export function useNamuWatchQuotes(symbols: string[]) {
   const chunks = useMemo(() => chunkSymbols(symbols), [symbols]);
   const results = useQueries({
-    queries: chunks.map((c) => ({
-      queryKey: ["securities", "prices", [...c].sort()],
-      queryFn: () => securitiesApi.getPrices(c),
-      retry: false,
-      refetchOnWindowFocus: false,
-      refetchInterval: WATCH_POLL_MS,
-    })),
+    queries: chunks.map((c) => namuPricesQuery(c, NAMU_WATCH_POLL_MS)),
   });
   const fresh = useMemo(() => {
     const map = new Map<string, RowQuote>();
