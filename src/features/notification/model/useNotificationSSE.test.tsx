@@ -275,4 +275,87 @@ describe("useNotificationSSE", () => {
     unmount();
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  // ---- M-E: 상한 초과로 밀려나면 다시 잇지 않는다 ----
+  const setVisibility = (v: "visible" | "hidden") => {
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => v });
+    document.dispatchEvent(new Event("visibilitychange"));
+  };
+
+  it("REPLACED 를 받으면 스트림을 닫고 다시 잇지 않는다(오래 기다려도)", async () => {
+    setup();
+    const es = first();
+    act(() => es.emit("REPLACED", "replaced"));
+    expect(es.closed).toBe(true);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(120000);
+    });
+    expect(FakeEventSource.all).toHaveLength(1);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("REPLACED 뒤에 서버가 닫아 생긴 onerror 도 재연결을 만들지 않는다", async () => {
+    setup();
+    const es = first();
+    act(() => es.emit("REPLACED"));
+    act(() => es.onerror?.());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(120000);
+    });
+    expect(FakeEventSource.all).toHaveLength(1);
+  });
+
+  it("일반 오류는 REPLACED 가 없으면 지금처럼 계속 잇는다(회귀)", async () => {
+    setup();
+    act(() => first().onerror?.());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(open()).toHaveLength(1);
+  });
+
+  it("REPLACED 뒤 탭이 다시 보이면 한 번 새로 잇고, 이어지면 알림 질의를 맞춘다", async () => {
+    const { spy } = setup();
+    act(() => first().emit("REPLACED"));
+    act(() => setVisibility("hidden"));
+    expect(FakeEventSource.all).toHaveLength(1);
+    act(() => setVisibility("visible"));
+    expect(FakeEventSource.all).toHaveLength(2);
+    act(() => first().emit("CONNECT"));
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("밀려나지 않았다면 보이게 돼도 새 스트림을 열지 않는다", () => {
+    setup();
+    act(() => setVisibility("visible"));
+    expect(FakeEventSource.all).toHaveLength(1);
+  });
+
+  it("보이기를 여러 번 반복해도 연결은 하나만 열린다", () => {
+    setup();
+    act(() => first().emit("REPLACED"));
+    act(() => setVisibility("visible"));
+    act(() => setVisibility("visible"));
+    expect(open()).toHaveLength(1);
+  });
+
+  it("다시 이은 뒤 또 밀려나면 또 멈춘다", async () => {
+    setup();
+    act(() => first().emit("REPLACED"));
+    act(() => setVisibility("visible"));
+    act(() => first().emit("REPLACED"));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+    expect(open()).toHaveLength(0);
+    expect(FakeEventSource.all).toHaveLength(2);
+  });
+
+  it("떠난 뒤(unmount) 보이게 돼도 연결하지 않는다", () => {
+    const { unmount } = setup();
+    act(() => first().emit("REPLACED"));
+    unmount();
+    act(() => setVisibility("visible"));
+    expect(FakeEventSource.all).toHaveLength(1);
+  });
 });

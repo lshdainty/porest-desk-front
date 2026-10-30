@@ -17,6 +17,8 @@ export const STABLE_MS = 30000;
  * (사용자 결정 I-28 D5 B — migration-shell-notice.md). 셸(AppLayout)이 로그인 뒤 한 번 단다.
  * 인증은 쿠키(withCredentials) — EventSource 가 헤더를 못 보내므로 쿠키로 푼다.
  * 로그아웃은 페이지 전체 이동이라 스트림이 함께 닫히고, 다시 로그인한 셸이 새로 연다.
+ * 서버가 연결 상한(5)을 넘겨 이 연결을 밀어내면 REPLACED 를 보내고 닫는다 — 받으면 재연결을 멈춘다
+ * (다시 이으면 다음 탭을 밀어내는 순환이 된다). 그 탭이 다시 보이면(visibilitychange) 한 번 새로 잇는다.
  * 세션이 끝난 뒤(401)에는 다시 잇지 않는다. 재연결 지연은 연결이 STABLE_MS 이상 유지된 뒤에만 처음으로 돌아온다.
  */
 export const useNotificationSSE = () => {
@@ -48,6 +50,17 @@ export const useNotificationSSE = () => {
       }
     };
 
+    let replaced = false;
+
+    // 밀려난 탭이 다시 보이면 새로 이어 알림을 받는다. 보일 때 한 번뿐 — 계속 밀려나면 그때 또 멈춘다.
+    const onVisible = () => {
+      if (!active || !replaced || document.visibilityState !== "visible") return;
+      replaced = false;
+      hadErrorRef.current = true; // 끊긴 사이 알림을 이어질 때 한 번 맞춘다
+      connect();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     const connect = () => {
       if (!active) return;
 
@@ -72,9 +85,17 @@ export const useNotificationSSE = () => {
         queryClient.invalidateQueries({ queryKey: notificationKeys.all });
       });
 
-      eventSource.onerror = () => {
-        // cleanup이 실행된 후 stale 콜백은 무시
+      eventSource.addEventListener("REPLACED", () => {
         if (!active) return;
+        replaced = true;
+        clearStable();
+        eventSource?.close(); // 닫으면 뒤따르는 onerror 는 오지 않는다
+        eventSource = null;
+      });
+
+      eventSource.onerror = () => {
+        // cleanup이 실행된 후 stale 콜백은 무시. 밀려난 연결의 뒤늦은 오류도 무시
+        if (!active || replaced) return;
 
         clearStable();
         hadErrorRef.current = true;
@@ -100,6 +121,7 @@ export const useNotificationSSE = () => {
     return () => {
       // cleanup: active 플래그를 먼저 내려서 이후 콜백 차단
       active = false;
+      document.removeEventListener("visibilitychange", onVisible);
       clearStable();
       eventSource?.close();
       eventSource = null;
