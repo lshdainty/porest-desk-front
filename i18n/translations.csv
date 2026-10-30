@@ -441,6 +441,7 @@ asset,assetType.creditcard,신용카드,Credit Card
 asset,assetType.checkcard,체크카드,Check Card
 asset,assetType.cash,현금,Cash
 asset,assetType.savings,적금,Savings
+asset,assetType.savingsDeposit,예적금,Savings / deposit
 asset,assetType.loan,대출,Loan
 asset,assetType.investment,투자,Investment
 asset,assetType.checking,입출금,Checking
@@ -510,10 +511,9 @@ asset,addAction,추가,Add
 asset,editAction,수정,Edit
 asset,tab.accountDeposit,계좌·예금,Accounts & Deposits
 asset,manager.title,계좌·카드 관리,Manage accounts & cards
-asset,manager.description,"연결된 자산을 관리합니다. 계좌, 카드, 투자 상품을 추가하거나 편집할 수 있어요.","Manage your linked assets. You can add or edit accounts, cards, and investment products."
-asset,manager.totalPrefix,총,Total
-asset,addToGroup,{{group}} 추가,Add {{group}}
-asset,noneInGroup,등록된 {{group}}이 없어요.,No {{group}} registered.
+asset,manager.description,계좌 · 카드 · 투자를 추가하거나 고칠 수 있어요.,"Add or edit your accounts, cards, and investments."
+asset,manager.loadFailed,계좌·카드를 불러오지 못했어요,"Couldn't load your accounts and cards"
+asset,manager.emptyHint,[추가]를 눌러 첫 계좌나 카드를 등록해 보세요.,Tap [Add] to register your first account or card.
 asset,excludedFromTotal,총액 제외,Excluded from total
 asset,deleteConfirm.titleAccount,계좌 삭제,Delete account
 asset,deleteConfirm.titleCard,카드 삭제,Delete card

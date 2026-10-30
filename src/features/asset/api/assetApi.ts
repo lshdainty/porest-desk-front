@@ -28,9 +28,16 @@ export const assetApi = {
     return resp.data;
   },
 
-  getAssets: async (): Promise<{ assets: Asset[] }> => {
-    const resp: ApiResponse<{ assets: Asset[] }> =
-      await apiClient.get("/v1/assets");
+  /** silent — 실패를 호출처가 화면 안에서 말한다(전역 오류 토스트를 띄우지 않는다: 계좌·카드 관리, I-17 후속) */
+  getAssets: async (opts?: {
+    silent?: boolean;
+  }): Promise<{ assets: Asset[] }> => {
+    const resp: ApiResponse<{ assets: Asset[] }> = await apiClient.get(
+      "/v1/assets",
+      { silent: opts?.silent } as import("axios").AxiosRequestConfig & {
+        silent?: boolean;
+      },
+    );
     return resp.data;
   },
 

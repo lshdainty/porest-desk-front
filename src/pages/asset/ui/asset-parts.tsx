@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Eye, EyeOff, Landmark, Target } from "lucide-react";
+import { Eye, EyeOff, Landmark, Target } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import {
   CartesianGrid,
@@ -29,12 +29,10 @@ import {
   formatAxisWon,
   type ChartColor,
 } from "@/shared/ds/chart";
-import { withCommaBreaks, dsLocale, useDsText } from "@/shared/ds/i18n";
+import { withCommaBreaks } from "@/shared/ds/i18n";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { ResultSection } from "@/shared/ds/result-section";
 import { Skeleton } from "@/shared/ds/skeleton";
-import { TagGroup, TagGroupItem } from "@/shared/ds/tag-group";
-import { LogoTile } from "@/shared/ds/logo-tile";
 import { cn } from "@/shared/lib/cn";
 import { isIconName } from "@/shared/lib";
 import {
@@ -49,10 +47,6 @@ import {
   chartColorOf,
   getPaletteByColor,
 } from "@/shared/lib/groo/chart-palette";
-import {
-  formatOriginalAmount,
-  isForeignCurrency,
-} from "@/shared/lib/groo/currency";
 import { MINUS, formatChangeRate } from "@/shared/lib/groo/format";
 import type { HideCardKey } from "@/shared/lib/groo/hide-amounts-cards";
 import { useHideAmounts } from "@/shared/lib/groo/hide-amounts-core";
@@ -62,7 +56,6 @@ import {
   BandEmpty,
   BandFailure,
   BandHead,
-  BarCaption,
   BarredItem,
   HeadNote,
   KeyValueRows,
@@ -71,25 +64,18 @@ import {
   StatGrid,
   type KeyValue,
 } from "@/shared/ui/groo/band-parts";
-import {
-  useNetWorthTrend,
-  holdingsOf,
-  type InvestValuation,
-} from "@/features/asset";
-import { useStockSymbolName } from "@/features/stock/model/useStockMaster";
+import { useNetWorthTrend, type InvestValuation } from "@/features/asset";
 import { useRecurringTransactions } from "@/features/recurring-transaction";
 import { useSavingGoals } from "@/features/savingGoal";
 import type { Asset } from "@/entities/asset";
 import type { SavingGoal } from "@/entities/savingGoal";
 import {
-  CARD_TYPES,
-  cardUsageOf,
   krwOf,
-  useAssetHidden,
   useAssetMask,
   useFitLimit,
   type AssetGroups,
 } from "./asset-model";
+import { AssetRow, GroupRowsSkeleton } from "@/widgets/asset-full";
 
 /*
  * 자산 화면의 구역 부품(I-05 54 ~ 63) — 폰 띠(band)와 데스크톱 카드(card)가 같은 내용을 같은 부품으로 그린다.
@@ -751,204 +737,6 @@ export function UpcomingBillsSection() {
 }
 
 // ── 자산 묶음 ───────────────────────────────────────────────────
-// 투자 행 서브텍스트 — design: "{첫 보유명} 외 N종목" / "보유 종목 없음".
-// 연동 항목은 이름이 마스터에 있으므로 첫 항목이 linked 면 심볼→이름 1건 조회(캐시됨).
-function InvestHoldingsSub({ asset }: { asset: Asset }) {
-  const { t } = useTranslation("asset");
-  const hs = holdingsOf(asset);
-  const first = hs[0];
-  const firstSymbol = first?.linked ? (first.tossSymbol ?? "") : "";
-  const { data: firstName } = useStockSymbolName(firstSymbol);
-  if (hs.length === 0) {
-    return <>{t("holdings.emptySub")}</>;
-  }
-  const label = first?.linked
-    ? (firstName ?? first.tossSymbol ?? "")
-    : (first?.holdingName ?? "");
-  return (
-    <>
-      {hs.length > 1
-        ? t("holdings.firstAndMore", { name: label, n: hs.length - 1 })
-        : label}
-    </>
-  );
-}
-
-/**
- * 자산 줄(56) — ds List 줄: 앞 Logo Tile 40 · 제목 · 설명 Tag Group(기관 · 보유 요약 · 결제일) · 뒤 금액 + 작은 글(사용액 · 등락 · 배지) · ›.
- * 카드 사용 막대는 ds Progress limit(8, 넘으면 끝까지 fg-critical + "N원 초과", 70 · 90% 경고 색 없음) 을 줄 아래에 둔다.
- * 외화는 원화로 환산한 금액이 주 표기, 원 통화 잔액이 아래 한 줄. 이 자산만 가렸으면 금액을 전부 가린다.
- */
-export function AssetRow({
-  asset,
-  card,
-  onOpenDetail,
-  investVal,
-}: {
-  asset: Asset;
-  card: HideCardKey;
-  onOpenDetail: (asset: Asset) => void;
-  /** 투자 자산 라이브 평가(등락) — 투자 그룹에서만 전달, 없으면 등락 미표시 */
-  investVal?: InvestValuation | null;
-}) {
-  const { t } = useTranslation("asset");
-  const dsT = useDsText();
-  const m = useAssetMask(card, asset.isAmountHidden === "Y");
-  const hiddenNow = useAssetHidden(card, asset.isAmountHidden === "Y");
-  const neg = asset.balance < 0;
-  const isCard = CARD_TYPES.includes(asset.assetType);
-  // 연결계좌형 체크카드는 결제가 계좌에서 즉시 빠져 잔액이 늘 0 이다 — 행 금액은 "이번 달 얼마 썼나"(서버 계산 당월 합계)로 바꾼다.
-  const checkCardMonthly =
-    asset.assetType === "CHECK_CARD" && asset.paymentAssetRowId != null
-      ? (asset.monthlyUsedAmount ?? 0)
-      : null;
-  const usage = cardUsageOf(asset);
-  const krw = krwOf(asset);
-  const foreign = isForeignCurrency(asset.currency);
-
-  const tags: ReactNode[] = [];
-  if (asset.institution) {
-    tags.push(
-      <TagGroupItem key="inst" shrink={2}>
-        {asset.institution}
-      </TagGroupItem>,
-    );
-  }
-  if (asset.assetType === "INVESTMENT") {
-    tags.push(
-      <TagGroupItem key="hold" shrink={1}>
-        <InvestHoldingsSub asset={asset} />
-      </TagGroupItem>,
-    );
-  } else if (asset.memo && !isCard) {
-    tags.push(
-      <TagGroupItem key="memo" shrink={1}>
-        {asset.memo}
-      </TagGroupItem>,
-    );
-  }
-  if (asset.assetType === "CREDIT_CARD" && asset.paymentDay != null) {
-    tags.push(
-      <TagGroupItem key="pay" shrink={0}>
-        {t("paymentDayLabel", { day: asset.paymentDay })}
-      </TagGroupItem>,
-    );
-  }
-  if (checkCardMonthly != null) {
-    tags.push(
-      <TagGroupItem key="month" shrink={0}>
-        {t("checkCardMonthLabel")}
-      </TagGroupItem>,
-    );
-  }
-
-  const main =
-    checkCardMonthly != null
-      ? won(checkCardMonthly)
-      : (neg ? MINUS : "") + won(Math.abs(krw));
-  const small = "text-t3 font-medium tabular-nums text-fg-neutral-subtle";
-  const suffix = (
-    <>
-      <span className="flex min-w-0 flex-col items-end gap-x0_5">
-        <span className="text-end text-t5 font-bold tabular-nums text-fg-neutral">
-          {withCommaBreaks(m(main))}
-        </span>
-        {foreign && checkCardMonthly == null && (
-          <span className={small}>
-            {m(
-              (asset.balance < 0 ? MINUS : "") +
-                formatOriginalAmount(
-                  Math.abs(asset.balance),
-                  asset.currency,
-                  dsLocale(),
-                ),
-            )}
-          </span>
-        )}
-        {investVal?.changePct != null && (
-          <Delta
-            direction={investVal.changePct >= 0 ? "up" : "down"}
-            // 가림이 켜져도 줄은 둔다 — 값만 "•••"(다른 금액 가림과 같은 규칙)
-            value={
-              hiddenNow
-                ? "•••"
-                : `${formatChangeRate(investVal.changePct, { sign: "none" })}${
-                    investVal.changeAmt != null
-                      ? ` (${investVal.changeAmt >= 0 ? "+" : MINUS}${won(Math.abs(investVal.changeAmt))})`
-                      : ""
-                  }`
-            }
-            className="text-t3"
-          />
-        )}
-        {(asset.isIncludedInTotal === "N" || asset.isAmountHidden === "Y") && (
-          <span className="flex flex-wrap justify-end gap-x1">
-            {asset.isIncludedInTotal === "N" && (
-              <Badge variant="weak" tone="neutral" size="medium">
-                {t("excludedFromTotal")}
-              </Badge>
-            )}
-            {asset.isAmountHidden === "Y" && (
-              <Badge variant="weak" tone="neutral" size="medium">
-                {t("amountHiddenBadge")}
-              </Badge>
-            )}
-          </span>
-        )}
-      </span>
-      <ChevronRight aria-hidden size={18} className="text-fg-neutral-subtle" />
-    </>
-  );
-
-  const row = (
-    <ListButtonItem
-      as={usage ? "div" : undefined}
-      align={tags.length > 0 ? "top" : undefined}
-      prefix={
-        <LogoTile
-          name={asset.institution || asset.assetName}
-          face={asset.institution ? "institution" : "name"}
-          size={40}
-        />
-      }
-      title={asset.assetName}
-      detail={
-        tags.length > 0 ? (
-          <TagGroup size="t3" truncate>
-            {tags}
-          </TagGroup>
-        ) : undefined
-      }
-      suffix={suffix}
-      onClick={() => onOpenDetail(asset)}
-    />
-  );
-  if (!usage) return row;
-  const over = usage.over > 0;
-  return (
-    <BarredItem
-      row={row}
-      bar={
-        <>
-          <MeterBar
-            label={t("cardLimitName", { name: asset.assetName })}
-            value={usage.used}
-            max={usage.limit}
-            formatValue={(n) => m(won(n))}
-          />
-          <BarCaption
-            left={m(`${won(usage.used)} / ${won(usage.limit)}`)}
-            right={
-              over ? dsT("progress.over", { value: m(won(usage.over)) }) : null
-            }
-            critical={over}
-          />
-        </>
-      }
-    />
-  );
-}
-
 export function GroupSection({
   place,
   title,
@@ -1039,31 +827,6 @@ export function GroupSection({
   );
 }
 
-/** 자산 줄 스켈레톤 — 실제 줄(두 줄 66)과 같은 높이 */
-export function GroupRowsSkeleton({
-  rows,
-  band,
-}: {
-  rows: number;
-  band?: boolean;
-}) {
-  return (
-    <div aria-hidden className={band ? "pb-x3" : undefined}>
-      {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex items-center gap-x3 px-x6 py-x3">
-          <Skeleton radius="12" className="size-x10 shrink-0" />
-          <div className="flex min-w-0 flex-1 flex-col gap-x0_5">
-            <Skeleton text="t5" className="w-1/2" />
-            <Skeleton text="t3" className="w-1/3" />
-          </div>
-          <Skeleton text="t5" className="w-x10 shrink-0" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── 저축 목표 ───────────────────────────────────────────────────
 function formatDeadline(deadline: string | null): string | null {
   const d = parseLocalDate(deadline);
   if (!d) return null;

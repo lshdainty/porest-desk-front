@@ -6,9 +6,9 @@
 // 자산의 폼을 연다. (QA 12차엔 "편집은 설정 목록에서만" 으로 이 주소를 걷었는데, D9 가
 // 그 결정을 대체했다. 폼은 여전히 이 화면 하나에만 있다 — 여는 주소가 하나 늘었을 뿐이다.)
 //
-// 잠그는 것: ① 그 자산의 폼이 열린다 ② 그 자산이 있는 탭으로 옮긴다(다른 탭이면 폼 뒤로
-// 엉뚱한 목록이 깔린다) ③ 쓰고 나면 주소에서 지운다(남으면 섹션을 다녀올 때마다 다시
-// 열린다) ④ 목록이 늦게 와도 연다 ⑤ 없는 자산이면 목록만 ⑥ 목록의 연필로도 연다.
+// 잠그는 것: ① 그 자산의 폼이 열린다 ② 탭이 없어 묶음 넷이 한 목록에 있다(I-17 25) ③ 쓰고 나면 주소에서
+// 지운다(남으면 섹션을 다녀올 때마다 다시 열린다) ④ 목록이 늦게 와도 연다 ⑤ 없는 자산이면 목록만
+// ⑥ 줄을 누르면 상세가 열리고 상세의 [수정] 이 폼을 연다(줄에 연필 · ⋮ 는 없다 — 10-25).
 import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, useLocation } from "react-router-dom";
@@ -30,10 +30,15 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-vi.mock("@/features/asset", () => ({
+vi.mock("@/features/asset", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/features/asset")>()),
+  // 라이브 평가는 이 시험 밖 — 빈 맵(연결 없음)
+  useInvestValuation: () => new Map(),
   useAssets: () => ({
     data: { assets: state.assets },
     isLoading: state.isLoading,
+    isError: false,
+    refetch: () => {},
   }),
   useCreateAsset: () => ({ mutate: () => {}, isPending: false }),
   useUpdateAsset: () => ({ mutate: () => {}, isPending: false }),
@@ -46,7 +51,18 @@ vi.mock("./AssetEditDialog", () => ({
     return null;
   },
 }));
-vi.mock("./AssetDetailDialog", () => ({ AssetDetailDialog: () => null }));
+vi.mock("./AssetDetailDialog", () => ({
+  AssetDetailDialog: (p: {
+    asset: { rowId: number };
+    onEdit: (a: { rowId: number }) => void;
+  }) => (
+    <button
+      type="button"
+      data-detail={p.asset.rowId}
+      onClick={() => p.onEdit(p.asset)}
+    />
+  ),
+}));
 
 const { AccountManager } = await import("./AccountManager");
 
@@ -123,13 +139,13 @@ describe("자산 수정 폼 바로 가기(D9)", () => {
     expect(state.opened).toEqual({ rowId: 7 });
   });
 
-  it("그 자산이 있는 탭으로 옮긴다 — 폼 뒤로 엉뚱한 목록이 보이면 안 된다", () => {
+  it("탭이 없다 — 어느 자산의 폼이 열려도 뒤에는 묶음 넷이 한 목록으로 있다", () => {
     render(editAssetPath(9));
     expect(state.opened).toEqual({ rowId: 9 });
-    // 기본 탭은 계좌다 — 안 옮기면 카드 폼 뒤에 계좌 목록이 깔린다.
     const list = document.body.textContent ?? "";
     expect(list).toContain("신용카드");
-    expect(list).not.toContain("주거래");
+    expect(list).toContain("주거래");
+    expect(document.body.querySelector('[role="tab"]')).toBeNull();
   });
 
   it("쓰고 나면 주소에서 지운다 — 남으면 섹션을 다녀올 때마다 다시 열린다", () => {
@@ -156,15 +172,26 @@ describe("자산 수정 폼 바로 가기(D9)", () => {
     expect(document.body.textContent ?? "").toContain("주거래");
   });
 
-  it("주소가 없으면 목록으로 들어오고, 목록의 연필이 그 자산의 폼을 연다", () => {
+  it("주소가 없으면 목록으로 들어오고, 줄 → 상세 → [수정] 이 그 자산의 폼을 연다", () => {
     render("/desk/settings?section=accounts");
     expect(state.opened).toBeNull();
-    const pencil = document.body.querySelector<HTMLButtonElement>(
-      'button[title="editAction"]',
-    );
-    expect(pencil).not.toBeNull();
+    expect(
+      document.body.querySelector('button[title="editAction"]'),
+    ).toBeNull();
+    const rowBtn = [
+      ...document.body.querySelectorAll<HTMLButtonElement>(
+        "[data-list-action]",
+      ),
+    ].find((b) => b.textContent?.includes("주거래"));
+    expect(rowBtn).toBeDefined();
     act(() =>
-      pencil!.dispatchEvent(new MouseEvent("click", { bubbles: true })),
+      rowBtn!.dispatchEvent(new MouseEvent("click", { bubbles: true })),
+    );
+    const detail =
+      document.body.querySelector<HTMLButtonElement>('[data-detail="7"]');
+    expect(detail).not.toBeNull();
+    act(() =>
+      detail!.dispatchEvent(new MouseEvent("click", { bubbles: true })),
     );
     expect(state.opened).toEqual({ rowId: 7 });
   });

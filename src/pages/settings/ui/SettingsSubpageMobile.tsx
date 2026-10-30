@@ -25,10 +25,11 @@ interface Props {
 
 /**
  * 머리 오른쪽 글 버튼 "추가" 를 두는 섹션(I-16 11) — 카테고리는 늘, 반복 · 프리셋은 비어 있으면 두지 않는다
- * (I-20 C 13 · D 21 — 앱 `presetsNonEmpty` 와 같은 조건). 계좌 "추가" 는 I-17 26 이 한 줄 더한다.
+ * (I-20 C 13 · D 21 — 앱 `presetsNonEmpty` 와 같은 조건). 계좌는 늘 둔다(I-17 26).
  */
 const HEAD_ACTION_SECTIONS: SectionId[] = [
   "categories",
+  "accounts",
   "recurring",
   "presets",
 ];

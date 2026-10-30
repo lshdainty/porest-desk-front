@@ -61,6 +61,10 @@ describe("폰 머리 추가 버튼", () => {
     expect(hasAddButton("categories")).toBe(true);
   });
 
+  it("계좌·카드 관리도 늘 있다(I-17 26)", () => {
+    expect(hasAddButton("accounts")).toBe(true);
+  });
+
   it.each([
     ["recurring", "recurring"],
     ["presets", "presets"],
