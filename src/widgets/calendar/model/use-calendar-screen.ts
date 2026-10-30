@@ -11,6 +11,7 @@ import type { IEvent } from "@/widgets/calendar/model/interfaces";
 function iEventToCalendarEvent(event: IEvent): CalendarEvent {
   return {
     rowId: event.id,
+    userRowId: event.userRowId,
     title: event.title,
     description: event.description || null,
     // 종류는 서버가 준 값 그대로다. 종전엔 여기서 "PERSONAL" 을 지어냈고 그 값이
