@@ -157,7 +157,7 @@ export function EventFormSheetBody({
         title={<NoWrap>{t(`form.${kind}`)}</NoWrap>}
         suffixText
         suffix={
-          <span className="-mr-x1 flex flex-wrap items-center justify-end gap-x-x2">
+          <span className="-mr-x1 flex flex-wrap items-center justify-end">
             <DayPickSurface
               title={dayName}
               value={day}
@@ -201,7 +201,7 @@ export function EventFormSheetBody({
         label={t("form.title")}
         invalid={showErrors && titleEmpty}
         errorMessage={t("form.titleRequired")}
-        className="pb-x2 pt-x3 [&_label]:sr-only"
+        className="pb-x2 pt-x1 [&_label]:sr-only"
       >
         <Input
           size="large"

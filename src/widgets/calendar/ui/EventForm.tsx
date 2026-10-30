@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -126,6 +126,27 @@ export const EventForm = ({
     </Callout>
   ) : null;
 
+  // 새 일정은 제목에 초점(Text Field focused — 안쪽 2px 짙은 테두리 + 캐럿). 표면의 열림 모션 · 초점 가둠이 열 때의 초점 호출을 덮는 일이 있어(운영 번들 시트)
+  // 열린 뒤 한 번 더 건다 — 초점이 아직 표면 자신이나 body 에 있을 때만(사용자가 다른 칸을 눌렀으면 건드리지 않는다)
+  useEffect(() => {
+    if (event) return;
+    const tryFocus = () => {
+      const a = document.activeElement;
+      const idle =
+        !a ||
+        a === document.body ||
+        a.getAttribute("role") === "dialog" ||
+        (a instanceof HTMLElement && /content$/.test(a.dataset.slot ?? ""));
+      if (idle) form.setFocus("title");
+    };
+    const t1 = setTimeout(tryFocus, 80);
+    const t2 = setTimeout(tryFocus, 450);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [event, form]);
+
   const heading = event ? t("editEvent") : t("addEvent");
   const del = event && onDelete ? onDelete : undefined;
 
@@ -238,7 +259,7 @@ export const EventForm = ({
             <Field
               label={t("form.description")}
               maxGraphemeCount={CONTENT_MAX}
-              className="pb-x2 pt-x3 [&_label]:sr-only"
+              className="pb-x2 pt-x1 [&_label]:sr-only"
             >
               <Textarea
                 autoFocus

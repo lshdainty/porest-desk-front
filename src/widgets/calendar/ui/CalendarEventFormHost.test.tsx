@@ -259,6 +259,24 @@ describe("처음 초점", () => {
     expect(document.activeElement).toBe(field("title"));
   });
 
+  it("새 일정(시트)도 열린 뒤 제목에 초점이 간다 — 열림 모션 · 초점 가둠이 덮어도 다시 건다", async () => {
+    setupFormDom(false);
+    show(false);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 600));
+    });
+    expect(document.activeElement).toBe(field("title"));
+  });
+
+  it("빠른 추가는 제목에 초점이 간다", async () => {
+    setupFormDom(true);
+    show(true);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100));
+    });
+    expect(document.activeElement).toBe(quickTitle());
+  });
+
   it("수정으로 열면 제목에 초점을 주지 않는다", async () => {
     setupFormDom(true);
     show(false, saved);
