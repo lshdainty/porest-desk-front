@@ -44,6 +44,7 @@ import {
   parseLocalDate,
 } from "@/shared/lib/date";
 import { niceAxis } from "@/shared/lib/groo/chartAxis";
+import { useAxisWidth } from "@/shared/lib/groo/axisWidth";
 import {
   chartColorOf,
   getPaletteByColor,
@@ -134,14 +135,8 @@ export function NetWorthChart({ height = 180 }: { height?: number }) {
   const vals = data.map((d) => d.netWorth);
   const yAxis = niceAxis(Math.min(0, ...vals), Math.max(0, ...vals));
   const tick = (v: number) => (hidden ? MASK : formatAxisWon(v));
-  // 음수 축 글자가 잘리지 않게 가장 긴 눈금 글자 폭에 맞춘다(D6)
-  const axisWidth =
-    Math.max(
-      ...yAxis.ticks.map((v) =>
-        [...tick(v)].reduce((w, c) => w + (c > "\u1100" ? 11 : 7), 0),
-      ),
-      1,
-    ) + 16;
+  // 음수 축 글자가 잘리지 않게 가장 긴 눈금 글자를 재서 폭을 잡는다(D6).
+  const axisWidth = useAxisWidth(yAxis.ticks.map(tick));
 
   if (trendQ.isLoading) {
     return <Skeleton className="w-full" radius="8" style={{ height }} />;

@@ -76,6 +76,7 @@ import {
   formatDay,
   formatChangeRate,
 } from "@/shared/lib/groo/format";
+import { useAxisWidth } from "@/shared/lib/groo/axisWidth";
 import { DateGroupHeader } from "@/shared/ui/date-group-header";
 import { niceAxis } from "@/shared/lib/groo/chartAxis";
 import { getPaletteByColor } from "@/shared/lib/groo/chart-palette";
@@ -2270,6 +2271,9 @@ export function AssetDetailDialog({
     const vals = chartData.map((d) => d.balance);
     return niceAxis(Math.min(0, ...vals), Math.max(0, ...vals));
   }, [chartData]);
+  const yAxisWidth = useAxisWidth(
+    yAxis.ticks.map((v) => (hidden ? "••••" : formatChartAxis(v))),
+  );
   const periodLabel =
     period === "3m"
       ? t("assetDetail.weekLabel", { n: 12 })
@@ -2689,7 +2693,7 @@ export function AssetDetailDialog({
                             fontSize: "var(--text-badge)",
                             fill: "var(--fg-tertiary)",
                           }}
-                          width={44}
+                          width={yAxisWidth}
                         />
                         <ChartTooltip
                           cursor={{
