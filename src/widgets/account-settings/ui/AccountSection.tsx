@@ -407,8 +407,9 @@ function GoogleRow() {
   else if (failed) detail = t("account.providersError");
   else detail = linked ? t("account.linked") : t("account.notLinked");
 
-  // 보이는 줄 높이를 다른 줄(46)과 같게 — 버튼(36)의 위아래 7 을 줄 여백에 겹치고, 글 끝이 줄 안 24 에 닿게 오른쪽 14 를 겹친다.
-  const buttonClass = "-mr-x3_5 -my-[7px]";
+  // 보이는 줄 높이를 다른 줄(46)과 같게 — 버튼(36)의 위아래 7 을 줄 여백에 겹친다. 바탕이 보이는 버튼이라 오른쪽은 겹치지 않는다:
+  // 상자 끝이 줄 안 끝선(24)에 닿아 줄의 값 끝과 같다(글만 보이는 버튼의 글 끝 맞춤 블리드를 쓰지 않는다).
+  const buttonClass = "-my-[7px]";
   let action: React.ReactNode;
   if (failed) {
     action = (

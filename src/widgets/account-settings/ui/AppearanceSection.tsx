@@ -317,7 +317,7 @@ function ChoiceRow({
           <Button
             variant="neutralWeak"
             size="small"
-            className="-mr-x3_5 -my-[7px]"
+            className="-my-[7px]"
             loading={retrying}
             onClick={onRetry}
           >
