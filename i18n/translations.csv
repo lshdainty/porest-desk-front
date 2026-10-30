@@ -2038,7 +2038,6 @@ stocks,discover.kindAria,순위 종류,Ranking type
 stocks,discover.marketAria,순위 시장,Ranking market
 stocks,discover.failTitle,순위를 불러오지 못했어요,Couldn't load rankings
 stocks,portfolio.title,포트폴리오 구성,Portfolio breakdown
-stocks,portfolio.stocksLabel,종목,Stocks
 stocks,unit.count,{{count}}개,{{count}}
 stocks,unit.stocksCount,{{count}}종목,{{count}} stocks
 stocks,holding.title,내 보유,My holdings

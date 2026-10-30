@@ -56,24 +56,9 @@ export function PortfolioDonut({ slices }: { slices: DonutSlice[] }) {
           stroke={20}
           segments={rows.map((r) => ({ value: r.value, color: r.color }))}
         >
-          <div
-            style={{
-              fontSize: "var(--text-badge)",
-              color: "var(--fg-tertiary)",
-            }}
-          >
-            {t("portfolio.stocksLabel")}
-          </div>
-          <div
-            className="num"
-            style={{
-              fontSize: 15,
-              fontWeight: 800,
-              color: "var(--fg-primary)",
-            }}
-          >
-            {t("unit.count", { count: rows.length })}
-          </div>
+          <span className="text-t4 font-bold tabular-nums text-fg-neutral">
+            {t("unit.stocksCount", { count: rows.length })}
+          </span>
         </Donut>
         <div
           style={{
