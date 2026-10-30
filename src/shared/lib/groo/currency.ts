@@ -1,4 +1,4 @@
-import { isEn } from "@/shared/lib/groo/format";
+import { MINUS, isEn } from "@/shared/lib/groo/format";
 
 /**
  * 지원 통화 — 외화통장·해외 결제에서 쓴다.
@@ -77,10 +77,12 @@ export const formatOriginalAmount = (
   locale: string,
 ): string => {
   const digits = code === "JPY" || code === "KRW" || code === "VND" ? 0 : 2;
-  return `${currencySymbol(code)}${amount.toLocaleString(locale, {
+  // 음수는 부호를 통화 기호 앞에 — `−$5.50`(en money() 와 같은 규칙, 빼기는 U+2212).
+  const body = Math.abs(amount).toLocaleString(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  })}`;
+  });
+  return `${amount < 0 ? MINUS : ""}${currencySymbol(code)}${body}`;
 };
 
 /**

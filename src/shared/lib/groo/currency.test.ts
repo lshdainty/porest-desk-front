@@ -124,4 +124,10 @@ describe("formatOriginalAmount", () => {
   it("셋째 자리는 반올림한다", () => {
     expect(formatOriginalAmount(0.126, "USD", "ko-KR")).toBe("$0.13");
   });
+
+  it("음수는 부호가 통화 기호 앞 U+2212 — −$5.50 · −¥1,280 (I-31)", () => {
+    expect(formatOriginalAmount(-5.5, "USD", "ko-KR")).toBe("\u2212$5.50");
+    expect(formatOriginalAmount(-1280, "JPY", "en-US")).toBe("\u2212¥1,280");
+    expect(formatOriginalAmount(-5.5, "USD", "ko-KR")).not.toContain("-");
+  });
 });
