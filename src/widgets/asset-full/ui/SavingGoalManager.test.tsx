@@ -7,6 +7,11 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
+const show = vi.hoisted(() => vi.fn());
+vi.mock("@/shared/ds/snackbar", () => ({
+  useSnackbar: () => ({ show, dismiss: vi.fn() }),
+}));
+const deleteAsync = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (k: string, o?: Record<string, unknown>) =>
@@ -31,7 +36,7 @@ vi.mock("@/features/savingGoal", () => ({
   useSavingGoals: () => goalsState.q,
   useDeleteSavingGoal: () => ({
     mutate: vi.fn(),
-    mutateAsync: vi.fn(),
+    mutateAsync: deleteAsync,
     isPending: false,
   }),
 }));
@@ -160,5 +165,55 @@ describe("저축 목표 데스크톱 — 줄 끝 수정 · 삭제 아이콘", ()
     expect(names.some((n) => n?.startsWith("savingGoal.deleteNamed"))).toBe(
       true,
     );
+  });
+});
+
+describe("저축 목표 삭제 확인창 — ds Alert Dialog (I-28 3-6)", () => {
+  it("제목이 이름을 짚고 확정은 criticalSolid, 끝나면 닫는다", async () => {
+    deleteAsync.mockClear();
+    render(false);
+    await act(async () => {
+      (
+        container.querySelector(
+          "[aria-label^='savingGoal.deleteNamed']",
+        ) as HTMLElement
+      ).click();
+    });
+    const d = document.querySelector("[role=alertdialog]");
+    expect(d?.getAttribute("aria-modal")).toBe("true");
+    expect(d?.textContent).toContain("savingGoal.deleteTitle");
+    expect(d?.textContent).toContain("목표 1");
+    const ok = document.querySelector("[data-slot=alert-dialog-action]");
+    expect(ok?.className).toContain("bg-bg-critical-solid");
+    await act(async () => {
+      (ok as HTMLElement).click();
+    });
+    expect(deleteAsync).toHaveBeenCalledWith(1);
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+  });
+
+  it("삭제가 실패하면 확인창을 닫고 critical 스낵바 + 다시 시도", async () => {
+    show.mockClear();
+    deleteAsync.mockClear();
+    deleteAsync.mockRejectedValueOnce(new Error("x"));
+    render(false);
+    await act(async () => {
+      (
+        container.querySelector(
+          "[aria-label^='savingGoal.deleteNamed']",
+        ) as HTMLElement
+      ).click();
+    });
+    await act(async () => {
+      (
+        document.querySelector("[data-slot=alert-dialog-action]") as HTMLElement
+      ).click();
+    });
+    expect(document.querySelector("[role=alertdialog]")).toBeNull();
+    const opt = show.mock.calls[0]![0];
+    expect(opt.tone).toBe("critical");
+    expect(opt.message).toBe("savingGoal.deleteFailed");
+    await act(async () => opt.action.onClick());
+    expect(deleteAsync).toHaveBeenCalledTimes(2);
   });
 });

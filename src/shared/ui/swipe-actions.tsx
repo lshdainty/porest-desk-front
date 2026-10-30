@@ -205,10 +205,16 @@ interface SwipeActionBase extends VariantProps<typeof swipeActionVariants> {
  *
  * spec 이 "파괴적 액션은 확인을 받는다" 를 규정하지만 문서로만 두면 새어 나간다 —
  * 되돌리기가 없어 회복 불가능한 실수다.
+ *
+ * 예외 하나 — `confirm: false`. 화면이 `onSelect` 에서 직접 ds Alert Dialog 를 띄워 묻는다(예산 · 저축 목표, I-28-3 ⑥).
+ * 공용 확인창(옛 ConfirmDialog)을 거치지 않을 뿐 묻지 않는 것이 아니다 — 확인 없이 지우는 자리에 쓰지 않는다.
  */
 export type SwipeAction =
   | (SwipeActionBase & { kind?: "neutral" | "primary"; confirm?: never })
-  | (SwipeActionBase & { kind: "destructive"; confirm: SwipeConfirm });
+  | (SwipeActionBase & {
+      kind: "destructive";
+      confirm: SwipeConfirm | false;
+    });
 
 export interface SwipeActionsProps extends Omit<
   React.ComponentProps<"div">,

@@ -14,7 +14,8 @@ import { Card, CardContent } from "@/shared/ds/card";
 import { List, ListButtonItem, ListItem, ListTile } from "@/shared/ds/list";
 import { Skeleton } from "@/shared/ds/skeleton";
 import { withCommaBreaks } from "@/shared/ds/i18n";
-import { ConfirmDialog } from "@/shared/ui/groo/dialogs";
+import { useSnackbar } from "@/shared/ds/snackbar";
+import { AlertConfirm } from "@/shared/ui/groo/alert-confirm";
 import { ManagerHead, ManagerShell } from "@/shared/ui/groo/manager-layout";
 import {
   BandEmpty,
@@ -37,15 +38,12 @@ function GoalRow({
   mobile,
   onEdit,
   onDelete,
-  onDeleteConfirmed,
 }: {
   goal: SavingGoal;
   mobile: boolean;
   onEdit: (g: SavingGoal) => void;
-  /** 확인창을 연다 — 데스크톱 삭제 버튼. */
+  /** 확인창을 연다 — 데스크톱 삭제 버튼 · 스와이프의 삭제 모두(밀기의 옛 확인 메시지는 걷었다) */
   onDelete: (g: SavingGoal) => void;
-  /** 이미 물었다 — 스와이프의 confirm 뒤. 여기서 또 확인창을 열면 두 번 묻는다(QA 30 15). */
-  onDeleteConfirmed: (g: SavingGoal) => Promise<unknown>;
 }) {
   const { t } = useTranslation("asset");
   const { t: tc } = useTranslation("common");
@@ -104,12 +102,9 @@ function GoalRow({
               label: tc("delete"),
               icon: <Trash2 />,
               kind: "destructive",
-              // 아래 ConfirmDialog 와 같은 키 — 같은 삭제인데 경로에 따라 문구가 갈리면 안 된다.
-              confirm: {
-                title: t("savingGoal.deleteTitle"),
-                message: t("savingGoal.deleteConfirm", { title: goal.title }),
-              },
-              onSelect: () => onDeleteConfirmed(goal),
+              confirm: false,
+              // 밀기의 확인 메시지(옛 ConfirmDialog 경로)는 걷었다 — 화면이 ds Alert Dialog 를 띄운다(삭제 버튼과 같은 확인창)
+              onSelect: () => onDelete(goal),
             },
           ]}
         >
@@ -262,6 +257,19 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
   const { t: tCommon } = useTranslation("common");
   const goalsQ = useSavingGoals();
   const deleteMut = useDeleteSavingGoal();
+  const snackbar = useSnackbar();
+  // 실패는 확인창을 닫고 Snackbar 로 — "다시 시도" 는 같은 삭제를 다시 한다
+  const deleteFailed = (goal: SavingGoal) =>
+    snackbar.show({
+      message: t("savingGoal.deleteFailed"),
+      tone: "critical",
+      action: {
+        label: tCommon("retry"),
+        onClick: () => {
+          deleteMut.mutateAsync(goal.rowId).catch(() => deleteFailed(goal));
+        },
+      },
+    });
 
   const [editing, setEditing] = useState<SavingGoal | "new" | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<SavingGoal | null>(null);
@@ -301,7 +309,6 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
           mobile={mobile}
           onEdit={setEditing}
           onDelete={setConfirmDelete}
-          onDeleteConfirmed={(goal) => deleteMut.mutateAsync(goal.rowId)}
         />
       ))}
     </List>
@@ -367,20 +374,13 @@ export function SavingGoalManager({ mobile }: { mobile: boolean }) {
         />
       )}
       {confirmDelete && (
-        <ConfirmDialog
-          title={t("savingGoal.deleteTitle")}
-          message={t("savingGoal.deleteConfirm", {
-            title: confirmDelete.title,
-          })}
+        <AlertConfirm
+          title={t("savingGoal.deleteTitle", { title: confirmDelete.title })}
+          message={t("savingGoal.deleteConfirm")}
           confirmLabel={tCommon("delete")}
-          danger
-          loading={deleteMut.isPending}
-          onCancel={() => setConfirmDelete(null)}
-          onConfirm={() =>
-            deleteMut.mutate(confirmDelete.rowId, {
-              onSuccess: () => setConfirmDelete(null),
-            })
-          }
+          onConfirm={() => deleteMut.mutateAsync(confirmDelete.rowId)}
+          onError={() => deleteFailed(confirmDelete)}
+          onClose={() => setConfirmDelete(null)}
         />
       )}
     </>

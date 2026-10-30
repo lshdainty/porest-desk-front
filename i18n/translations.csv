@@ -4,6 +4,7 @@ common,save,저장,Save
 common,newTab,새 탭,new tab
 common,cancel,취소,Cancel
 common,delete,삭제,Delete
+common,retry,다시 시도,Try again
 common,edit,수정,Edit
 common,create,생성,Create
 common,search,검색,Search
@@ -645,8 +646,9 @@ asset,savingGoal.done,완료,Done
 asset,savingGoal.optional,선택,Optional
 asset,savingGoal.titleEdit,저축 목표 수정,Edit saving goal
 asset,savingGoal.titleAdd,저축 목표 추가,Add saving goal
-asset,savingGoal.deleteTitle,저축 목표 삭제,Delete saving goal
-asset,savingGoal.deleteConfirm,"""{{title}}"" 목표를 삭제할까요? 이 작업은 되돌릴 수 없어요.","Delete the ""{{title}}"" goal? This can't be undone."
+asset,savingGoal.deleteTitle,"""{{title}}"" 목표를 삭제할까요?","Delete the ""{{title}}"" goal?"
+asset,savingGoal.deleteConfirm,삭제한 저축 목표는 되돌릴 수 없어요.,A deleted saving goal can't be restored.
+asset,savingGoal.deleteFailed,저축 목표를 삭제하지 못했어요.,Couldn't delete the saving goal.
 asset,savingGoal.overallProgress,전체 진행률,Overall progress
 asset,savingGoal.goalCount,목표 목록 · {{n}}개,Goals · {{n}}
 asset,savingGoal.emptyManager,아직 저축 목표가 없어요. ‘목표 추가’로 시작해보세요.,No saving goals yet. Start with ‘Add goal’.
@@ -1328,7 +1330,7 @@ budget,add,추가,Add
 budget,copy,복사,Copy
 budget,copyLastMonth,지난달 복사,Copy Last Month
 budget,addBudget,예산 추가,Add Budget
-budget,deleteTitle,예산 삭제,Delete budget
+budget,deleteTitle,"""{{name}}"" 예산을 삭제할까요?","Delete the ""{{name}}"" budget?"
 budget,manager.title,예산 설정,Budget settings
 budget,manager.description,달마다 총 예산과 카테고리별 한도를 정해요. 예산의 85% 이상을 쓰면 알림을 보내요.,Set your total monthly budget and per-category limits. We'll notify you when you use 85% or more of a budget.
 budget,manager.noPrevBudget,복사할 지난달 예산이 없어요,No previous month budget to copy
@@ -1345,10 +1347,17 @@ budget,manager.emptyCategory,설정된 카테고리 예산이 없어요,No categ
 budget,manager.categoryFallback,카테고리 #{{id}},Category #{{id}}
 budget,manager.overLimitAmt,한도 초과 {{amount}},Over limit by {{amount}}
 budget,manager.remaining,남은 예산,Remaining
-budget,deleteMessage,"""{{name}}"" 카테고리 예산을 삭제할까요?","Delete the budget for the ""{{name}}"" category?"
+budget,deleteMessage,삭제한 예산은 되돌릴 수 없어요.,A deleted budget can't be restored.
 budget,thisFallback,이,this
-budget,copyTitle,지난달 예산 복사,Copy last month's budget
-budget,copyMessage,{{prevYear}}년 {{prevMonth}}월 예산 한도({{count}}개)를 {{year}}년 {{month}}월로 복사해요. 이번 달에 이미 있는 예산은 덮어써집니다.,Copy {{count}} budget limits from {{prevYear}}-{{prevMonth}} to {{year}}-{{month}}. Existing budgets this month will be overwritten.
+budget,copyTitle,지난달 예산을 복사할까요?,Copy last month's budget?
+budget,copyOverwriteMessage,이번 달 예산 {{count}}개가 지난달 예산으로 바뀌어요. 바꾼 뒤에는 되돌릴 수 없어요.,{{count}} budgets this month will be replaced with last month's. This can't be undone once it's changed.
+budget,copyPartial_one,가져오지 못한 예산이 {{count}}개 있어요.,1 budget couldn't be copied.
+budget,copyPartial_other,가져오지 못한 예산이 {{count}}개 있어요.,{{count}} budgets couldn't be copied.
+budget,copiedDone,지난달 예산을 가져왔어요.,Last month's budget was copied.
+budget,copyUndo,되돌리기,Undo
+budget,copyUndoFailed_one,되돌리지 못한 예산이 {{count}}개 남았어요.,1 budget couldn't be undone.
+budget,copyUndoFailed_other,되돌리지 못한 예산이 {{count}}개 남았어요.,{{count}} budgets couldn't be undone.
+budget,deleteFailed,예산을 삭제하지 못했어요.,Couldn't delete the budget.
 budget,edit.addTitle,카테고리 예산 추가,Add category budget
 budget,edit.editTitle,카테고리 예산 수정,Edit category budget
 budget,edit.selectCategory,카테고리 선택,Select Category
