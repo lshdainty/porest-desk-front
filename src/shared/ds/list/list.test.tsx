@@ -2057,3 +2057,27 @@ describe("List — 값이 글인데 안에 버튼이 든 뒤 붙이개(일정 �
     );
   });
 });
+
+describe("List — 글 값은 줄 수와 상관없이 줄 끝 오른쪽 맞춤", () => {
+  it("글 값 뒤 붙이개(data-value=text)에 text-end, 금액 노드에는 없다", () => {
+    act(() =>
+      root.render(
+        <List aria-label="값">
+          <ListItem
+            title="장소"
+            suffixText
+            suffix="서울시 강남구 테헤란로 123 한국빌딩 7층"
+          />
+          <ListItem title="금액" suffix={<b>1,000원</b>} />
+        </List>,
+      ),
+    );
+    const [text, node] = [
+      ...container.querySelectorAll<HTMLElement>("[data-slot=list-suffix]"),
+    ] as [HTMLElement, HTMLElement];
+    expect(text.dataset.value).toBe("text");
+    expect(text.className).toContain("text-end");
+    expect(node.dataset.value).toBe("node");
+    expect(node.className).not.toContain("text-end");
+  });
+});
