@@ -247,7 +247,7 @@ calendar,form.startDate,시작일,Start Date
 calendar,form.endDate,종료일,End Date
 calendar,form.endBeforeStart,종료가 시작보다 빠를 수 없어요,End cannot be before the start
 calendar,deleteConfirm.title,일정 삭제,Delete event
-calendar,deleteConfirm.message,"""{{name}}"" 일정을 지울까요? 지운 일정은 되돌릴 수 없어요.","Delete the ""{{name}}"" event? This action cannot be undone."
+calendar,deleteConfirm.message,"""{{name}}"" 일정을 삭제할까요? 삭제한 일정은 되돌릴 수 없어요.","Delete the ""{{name}}"" event? This action cannot be undone."
 calendar,deleteConfirm.cancel,취소,Cancel
 calendar,deleteConfirm.confirm,삭제,Delete
 calendar,label,라벨,Label
@@ -520,7 +520,7 @@ asset,excludedFromTotal,총액 제외,Excluded from total
 asset,deleteConfirm.titleAccount,계좌 삭제,Delete account
 asset,deleteConfirm.titleCard,카드 삭제,Delete card
 asset,deleteConfirm.titleInvest,투자 삭제,Delete investment
-asset,deleteConfirm.messageDetail,"""{{name}}""을(를) 목록에서 지워요. 연결된 거래 내역은 그대로 남아요. 삭제한 자산은 되돌릴 수 없어요.","""{{name}}"" will be removed from the list. Linked transactions are kept."
+asset,deleteConfirm.messageDetail,"""{{name}}""을(를) 목록에서 삭제해요. 연결된 거래 내역은 그대로 남아요. 삭제한 자산은 되돌릴 수 없어요.","""{{name}}"" will be removed from the list. Linked transactions are kept."
 asset,editDialog.firstTitle,무엇을 추가할까요?,What would you like to add?
 asset,editDialog.pickKindError,추가할 종류를 골라주세요.,Choose what to add.
 asset,editDialog.titleAddKind,{{kind}} 추가,Add {{kind}}
@@ -2123,8 +2123,8 @@ stocks,watch.groupNameLabel,그룹 이름,Group name
 stocks,watch.groupRename,그룹 이름 바꾸기,Rename group
 stocks,watch.groupDelete,그룹 삭제,Delete group
 stocks,watch.groupNamePlaceholder,그룹 이름,Group name
-stocks,watch.groupDeleteConfirm,"""{{name}}"" 그룹과 담긴 종목 {{count}}개가 함께 지워져요. 지운 그룹은 되돌릴 수 없어요.","The ""{{name}}"" group and its {{count}} stocks will be deleted."
-stocks,watch.groupDeleteConfirmEmpty,"""{{name}}"" 그룹을 지워요. 지운 그룹은 되돌릴 수 없어요.","The ""{{name}}"" group will be deleted."
+stocks,watch.groupDeleteConfirm,"""{{name}}"" 그룹과 담긴 종목 {{count}}개가 함께 삭제돼요. 삭제한 그룹은 되돌릴 수 없어요.","The ""{{name}}"" group and its {{count}} stocks will be deleted."
+stocks,watch.groupDeleteConfirmEmpty,"""{{name}}"" 그룹을 삭제해요. 삭제한 그룹은 되돌릴 수 없어요.","The ""{{name}}"" group will be deleted."
 stocks,watch.groupSaveFail,관심 그룹을 저장하지 못했어요.,Couldn't save the watchlist group.
 stocks,watch.addFail,관심 등록에 실패했어요,Failed to add to watchlist
 stocks,warning.LIQUIDATION_TRADING,정리매매,Liquidation trading
@@ -2573,7 +2573,7 @@ category,moveTx.mode,옮기는 방법,How to move
 category,moveTx.errChildName,만들 하위 이름을 입력해주세요.,Please enter a name for the new subcategory.
 category,moveTx.errTarget,옮길 카테고리를 골라주세요.,Please choose a category to move to.
 category,loadFailed,카테고리를 불러오지 못했어요,Couldn't load the categories
-category,deleteMessage,이미 기록된 거래는 지워지지 않고 그대로 남아요. 이 카테고리에 걸린 예산은 함께 지워져요.,Recorded transactions stay as they are. Budgets set for this category are deleted too.
+category,deleteMessage,이미 기록된 거래는 삭제되지 않고 그대로 남아요. 이 카테고리에 걸린 예산은 함께 삭제돼요.,Recorded transactions stay as they are. Budgets set for this category are deleted too.
 category,deleteRecurring,이 카테고리를 쓰는 반복 거래 {{count}}개는 계속 이 카테고리로 기록돼요.,{{count}} recurring transactions that use this category keep being recorded under it.
 category,expandOf,{{name}} 하위 카테고리,{{name}} subcategories
 category,moreOf,{{name}} 더보기,More for {{name}}
@@ -3170,7 +3170,7 @@ expense,bulk.limit,한 번에 500건까지 할 수 있어요,Up to 500 at a time
 expense,bulk.fixedDone,{{count}}건을 고정으로 바꿨어요.,Marked {{count}} as fixed.
 expense,bulk.fixedFailed,고정으로 표시하지 못했어요.,Couldn't mark them as fixed.
 expense,bulk.deleteTitle,거래 {{count}}건을 삭제할까요?,Delete {{count}} transactions?
-expense,bulk.deleteMessage,지운 거래는 되돌릴 수 없어요. 합계 {{amount}}이 {{month}}에서 빠져요.,Deleted transactions can't be restored. The total {{amount}} will be removed from {{month}}.
+expense,bulk.deleteMessage,삭제한 거래는 되돌릴 수 없어요. 합계 {{amount}}이 {{month}}에서 빠져요.,Deleted transactions can't be restored. The total {{amount}} will be removed from {{month}}.
 expense,bulk.deleted,{{count}}건을 삭제했어요.,Deleted {{count}} transactions.
 expense,bulk.deleteFailed,거래를 삭제하지 못했어요.,Couldn't delete the transactions.
 expense,bulk.refundTitle,미리 낸 돈이 돌아왔어요,Your advance payment came back
