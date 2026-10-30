@@ -186,4 +186,26 @@ describe("기본 통화는 서버에 저장한다 (QA #124)", () => {
     ).toBe(false);
     expect(state.patched).toEqual([]);
   });
+
+  it("지역 고르기만 끝 흐림을 켜고 통화 고르기는 켜지 않는다", () => {
+    render();
+    const open = (label: string) => {
+      const t = [
+        ...document.body.querySelectorAll<HTMLButtonElement>("button"),
+      ].find((b) => b.getAttribute("aria-label") === label)!;
+      act(() => t.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    };
+    open("currency.label");
+    expect(document.body.querySelector("[data-scroll-fog]")).toBeNull();
+    // 통화 시트를 닫고(Esc) 지역을 연다
+    act(() =>
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      ),
+    );
+    open("region.label");
+    expect(
+      document.body.querySelector("[data-scroll-fog=overlayBody]"),
+    ).not.toBeNull();
+  });
 });

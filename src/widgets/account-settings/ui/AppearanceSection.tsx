@@ -177,6 +177,7 @@ export function AppearanceSection({ mobile }: { mobile: boolean }) {
       icon={<MapPin aria-hidden />}
       title={t("region.label")}
       detail={t("region.desc")}
+      scrollFog
       value={regionName(prefs?.timezone)}
       disabled={prefsBusy}
       failedText={t("prefs.regionLoadError")}
@@ -273,6 +274,7 @@ function ChoiceRow({
   value,
   showValue = true,
   disabled,
+  scrollFog,
   loading,
   failed,
   failedText,
@@ -292,6 +294,8 @@ function ChoiceRow({
   failedText?: string;
   retrying?: boolean;
   onRetry?: () => void;
+  /** 목록이 길어 스크롤되는 고르기(지역 18개)만 끝 흐림을 켠다 — 위 20 · 아래 80(스펙 overlayBody) */
+  scrollFog?: boolean;
   children: (close: () => void) => React.ReactNode;
 }) {
   const { t: tDs } = useTranslation("ds");
@@ -347,7 +351,7 @@ function ChoiceRow({
         />
         <BottomSheet open={open} onOpenChange={setOpen}>
           <BottomSheetContent title={title}>
-            <BottomSheetBody>{body}</BottomSheetBody>
+            <BottomSheetBody scrollFog={scrollFog}>{body}</BottomSheetBody>
           </BottomSheetContent>
         </BottomSheet>
       </>
@@ -381,7 +385,7 @@ function ChoiceRow({
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>{trigger}</PopoverTrigger>
               <PopoverContent aria-label={title} align="end">
-                <PopoverBody>{body}</PopoverBody>
+                <PopoverBody scrollFog={scrollFog}>{body}</PopoverBody>
               </PopoverContent>
             </Popover>
           ) : (
@@ -392,7 +396,7 @@ function ChoiceRow({
       {!wide && (
         <BottomSheet open={open} onOpenChange={setOpen}>
           <BottomSheetContent title={title}>
-            <BottomSheetBody>{body}</BottomSheetBody>
+            <BottomSheetBody scrollFog={scrollFog}>{body}</BottomSheetBody>
           </BottomSheetContent>
         </BottomSheet>
       )}
