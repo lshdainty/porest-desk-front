@@ -1,3 +1,5 @@
+import { useScrollToError } from "../model/useScrollToError";
+import { Callout } from "@/shared/ds/callout";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/ds/button";
@@ -48,6 +50,8 @@ export function FixedBulkPage({
     groups,
     apply,
   } = useFixedBulk({ startDate, endDate, onClose });
+  // 실패하면 Callout 이 보이게 본문을 맨 위로(스크롤 컨테이너는 아래 flex-1 overflow-y-auto)
+  const errorRef = useScrollToError<HTMLDivElement>(mut.isError, mut.error);
   const page = (
     <div
       role="dialog"
@@ -64,6 +68,13 @@ export function FixedBulkPage({
         <TopNavigationTitle>{t("fixed.bulk.title")}</TopNavigationTitle>
       </TopNavigation>
       <div className="min-h-0 flex-1 overflow-y-auto pb-x4">
+        {mut.isError && (
+          <div ref={errorRef} className="px-x6 pt-x2 pb-x2">
+            <Callout tone="critical" role="alert">
+              {t("fixed.bulk.failed")}
+            </Callout>
+          </div>
+        )}
         <p className="m-0 px-x6 pt-x2 text-t3 text-fg-neutral-muted">
           {t("fixed.bulk.desc", { start: startDate, end: endDate })}
         </p>

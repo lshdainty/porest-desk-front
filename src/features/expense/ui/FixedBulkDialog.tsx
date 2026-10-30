@@ -4,6 +4,8 @@ import { MaskAmount, WonUnit } from "@/shared/lib/groo/hide-amounts";
 import { wonPre } from "@/shared/lib/groo/hide-amounts-core";
 import { ModalShell } from "@/shared/ui/groo/dialogs";
 import { ModalFooter } from "@/shared/ui/groo/modal-footer";
+import { useScrollToError } from "../model/useScrollToError";
+import { Callout } from "@/shared/ds/callout";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Skeleton } from "@/shared/ui/skeleton";
 import {
@@ -153,6 +155,7 @@ function FixedBulkModal({
     groups,
     apply,
   } = useFixedBulk({ startDate, endDate, onClose });
+  const errorRef = useScrollToError<HTMLDivElement>(mut.isError, mut.error);
 
   return (
     <ModalShell
@@ -171,6 +174,15 @@ function FixedBulkModal({
         />
       }
     >
+      {mut.isError && (
+        // 적용이 실패했다 — 폼 맨 위 critical Callout(고정 문구), 폼은 열린 채 · 고른 것 그대로. 다시 시도는 [적용].
+        // 본문은 스크롤되고 [적용] 은 바닥이라 내려서 고른 뒤 실패하면 Callout 이 화면 밖이다 — ref 로 맨 위로 올린다
+        <div ref={errorRef} style={{ marginBottom: 16 }}>
+          <Callout tone="critical" role="alert">
+            {t("fixed.bulk.failed")}
+          </Callout>
+        </div>
+      )}
       <p
         style={{
           margin: "0 0 14px",

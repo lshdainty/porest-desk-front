@@ -1,12 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { Card } from "@/shared/ds/card";
 import { useWideSurface } from "@/shared/ds/overlay";
 import { Skeleton } from "@/shared/ds/skeleton";
+import { useSnackbar } from "@/shared/ds/snackbar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/shared/ds/alert-dialog";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { money } from "@/shared/lib/groo/format";
+import {
+  HIDE_AMOUNTS_MASK,
+  useHideAmounts,
+} from "@/shared/lib/groo/hide-amounts-core";
 import { formatMonthShort } from "@/shared/lib/date";
 import type { Expense } from "@/entities/expense";
 import {
@@ -112,6 +124,7 @@ export function ExpenseDesktopSkeleton() {
  */
 export function ExpenseDesktop() {
   const { t } = useTranslation("expense");
+  const { t: tc } = useTranslation("common");
   const navigate = useNavigate();
   const wide = useWideSurface();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -164,6 +177,8 @@ export function ExpenseDesktop() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const bulkFixed = useBulkMarkFixed();
   const bulkDelete = useBulkDeleteExpenses();
+  const snackbar = useSnackbar();
+  const hideAmount = useHideAmounts("ledger.txList", "net");
 
   // ── 달 · 필터를 바꾸면 고른 것을 모두 푼다(모드는 그대로) ──
   const goMonth = (m: string) => {
@@ -233,16 +248,24 @@ export function ExpenseDesktop() {
     clearPicked();
     focusAction();
   };
-  const markFixed = async () => {
+  const markFixed = async (ids: number[] = chosenIds) => {
     try {
       const res = await bulkFixed.mutateAsync({
-        ids: chosenIds,
+        ids,
         isFixed: true,
+        silent: true,
       });
-      toast.success(t("bulk.fixedDone", { count: res.updatedCount }));
+      snackbar.show({
+        message: t("bulk.fixedDone", { count: res.updatedCount }),
+      });
       clearPickedAndFocus();
     } catch {
-      // 실패하면 고른 것을 그대로 둔다 — 오류는 전역 알림이 말한다(처리 안 된 오류를 남기지 않는다)
+      // 실패하면 고른 것을 그대로 두고 critical 스낵바 + [다시 시도](같은 요청을 바로)
+      snackbar.show({
+        message: t("bulk.fixedFailed"),
+        tone: "critical",
+        action: { label: tc("retry"), onClick: () => void markFixed(ids) },
+      });
     }
   };
   const assets = useMemo(() => assetsQ.data?.assets ?? [], [assetsQ.data]);
@@ -272,29 +295,57 @@ export function ExpenseDesktop() {
       closedCards === 1 && payAccounts.size === 1 ? [...payAccounts][0]! : null;
     return { span, fixTarget };
   }, [chosen, assets]);
-  const confirmDelete = async () => {
-    const res = await bulkDelete.mutateAsync(chosenIds);
+  // 삭제가 끝난 뒤 환급이 있으면 알림 창(Alert Dialog single)을 먼저 띄우고, 닫으면 스낵바를 띄운다(I-28 D4 B).
+  // 열림(boolean)과 내용(금액)을 나눈다 — 닫히는 동안(사라지는 모션) 내용을 지우면 "0원이 돌아왔어요" 가 비친다.
+  // 내용은 다음에 열 때까지 마지막 값을 그대로 둔다.
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundNotice, setRefundNotice] = useState<{
+    amount: number;
+    after: () => void;
+  } | null>(null);
+  // 확정한 삭제를 실행한다 — 실패하면 확인창을 닫고 critical 스낵바 + [다시 시도](다시 묻지 않고 같은 삭제를 바로)
+  const runDelete = async (ids: number[]) => {
+    let res: Awaited<ReturnType<typeof bulkDelete.mutateAsync>>;
+    try {
+      res = await bulkDelete.mutateAsync(ids);
+    } catch {
+      setDeleteOpen(false);
+      snackbar.show({
+        message: t("bulk.deleteFailed"),
+        tone: "critical",
+        action: { label: tc("retry"), onClick: () => void runDelete(ids) },
+      });
+      return;
+    }
     setDeleteOpen(false);
     clearPickedAndFocus();
     const refunded = res.refundedAmount ?? 0;
     const fixTarget = closedInfo.fixTarget;
-    // 두 문장을 한 줄에 잇지 않는다 — 제목 "{n}건을 삭제했어요" 아래 설명으로 환급 글을 둔다
-    toast.success(t("bulk.deleted", { count: res.deletedCount }), {
-      description:
-        refunded > 0
-          ? t("closedCycle.prepaidRefunded", { amount: money(refunded) })
-          : undefined,
-      ...(fixTarget != null
-        ? {
-            action: {
-              label: t("closedCycle.fixBalance"),
-              onClick: () => navigate(editAssetPath(fixTarget)),
-            },
-            duration: 6000,
-          }
-        : {}),
-    });
-    return res;
+    const deletedCount = res.deletedCount;
+    // 삭제 띠: "N건을 삭제했어요." + (닫힌 회차 카드면) [잔액 고치기] — 액션 조건은 환급과 무관하다
+    const showSnack = () =>
+      snackbar.show({
+        message: t("bulk.deleted", { count: deletedCount }),
+        ...(fixTarget != null
+          ? {
+              action: {
+                label: t("closedCycle.fixBalance"),
+                onClick: () => navigate(editAssetPath(fixTarget)),
+              },
+            }
+          : {}),
+      });
+    if (refunded > 0) {
+      setRefundNotice({ amount: refunded, after: showSnack });
+      setRefundOpen(true);
+    } else showSnack();
+  };
+  const confirmDelete = () => runDelete(chosenIds);
+  const closeRefundNotice = () => {
+    if (!refundOpen) return;
+    const after = refundNotice?.after;
+    setRefundOpen(false);
+    after?.();
   };
 
   const [y = 1970, m = 1] = month.split("-").map(Number);
@@ -366,7 +417,7 @@ export function ExpenseDesktop() {
               sum={chosenSum}
               overLimit={overLimit}
               busy={bulkFixed.isPending}
-              onMarkFixed={markFixed}
+              onMarkFixed={() => void markFixed()}
               onDelete={() => setDeleteOpen(true)}
               onClear={clearPickedAndFocus}
             />
@@ -407,6 +458,29 @@ export function ExpenseDesktop() {
         onClose={() => setDeleteOpen(false)}
         onConfirm={confirmDelete}
       />
+      <AlertDialog
+        open={refundOpen}
+        onOpenChange={(o) => {
+          if (!o) closeRefundNotice();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>{t("bulk.refundTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t("bulk.refundMessage", {
+              // 금액 가리기가 켜져 있으면 가린다(앞 확인창과 같은 카드 · 종류)
+              amount: hideAmount
+                ? HIDE_AMOUNTS_MASK
+                : money(refundNotice?.amount ?? 0),
+            })}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogAction variant="neutralSolid">
+              {tc("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {transferDetail && !editingTransfer && (
         <TransferDetailDialog
           transfer={transferDetail}
