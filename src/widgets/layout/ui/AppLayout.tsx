@@ -22,6 +22,7 @@ import { EventForm } from "@/widgets/calendar/ui/EventForm";
 import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
 import { useEventLabels } from "@/features/event-label";
 import { useHideCardsSync } from "@/features/hide-amounts";
+import { useNotificationSSE } from "@/features/notification";
 import {
   fabFor,
   isFullscreenPath,
@@ -96,6 +97,8 @@ const Shell = () => {
   const scrollRef = useRef<HTMLElement>(null);
   // 금액 가리기를 계정 설정과 맞춘다 — 아래 mobile 조기 반환보다 위여야 한다(훅 규칙).
   useHideCardsSync();
+  // 서버 알림 도착 — 로그인 뒤 셸에서 한 번(폰 · 데스크톱 모두). 받으면 벨 점만 바뀐다(띠 없음, I-28 D5 B)
+  useNotificationSSE();
 
   if (size === "mobile") {
     // + 가 여는 것과 그걸 부르는 이름은 한 자리에서 나온다 — 동작만 화면별로 갈리고
