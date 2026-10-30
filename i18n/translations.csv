@@ -2072,8 +2072,7 @@ stocks,watch.remove,관심 해제,Remove from watchlist
 stocks,watch.pickGroup,담을 그룹,Add to group
 stocks,trade.sell,매도,Sell
 stocks,trade.buy,매수,Buy
-stocks,trade.sellToast,{{name}} 매도 주문은 아직 지원하지 않아요,Sell orders for {{name}} aren't supported yet
-stocks,trade.buyToast,{{name}} 매수 주문은 아직 지원하지 않아요,Buy orders for {{name}} aren't supported yet
+stocks,trade.pending,주문은 곧 열려요.,Orders are coming soon.
 stocks,fee.us,미국주식 매매수수료 0.1% · 환전 수수료 별도 적용,US stocks: 0.1% trading fee · FX fee applies separately
 stocks,fee.kr,국내주식 매매수수료 무료 (2026.6까지) · 이후 KRX 0.015% / NXT 0.014%,Korean stocks: free trading (until Jun 2026) · then KRX 0.015% / NXT 0.014%
 stocks,disclaimer.line1,토스증권 Open API 연동 시 실시간 호가·체결가가 반영돼요.,Real-time quotes and trades appear when Toss Securities Open API is connected.

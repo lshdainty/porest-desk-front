@@ -332,7 +332,7 @@ function TossBody({ symbol }: { symbol: string }) {
         <DailyBand
           symbol={symbol}
           currency={currency}
-          tail={<TradeTail name={name} isUs={isUs} />}
+          tail={<TradeTail isUs={isUs} />}
         />,
       )}
     </>

@@ -1,5 +1,4 @@
 import { AlertTriangle, Info } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { formatChangeRate, money } from "@/shared/lib/groo/format";
 import { MaskAmount } from "@/shared/lib/groo/hide-amounts";
@@ -332,13 +331,14 @@ export function StockDetailBody({
       {/* 일별 시세 */}
       <DailyQuoteTable symbol={ticker} currency={currency} />
 
-      {/* 매매 (모의) — 매도=primary(파랑), 매수=destructive(빨강) — 국내 통념 */}
+      {/* 매매 — 주문은 아직 없다(D3 B): 단추는 막고 이유 줄을 잇는다. 색 · 자리는 13-2 가 데스크톱 틀로 옮긴다 */}
       <div style={{ display: "flex", gap: 10 }}>
         <Button
           variant="default"
           size="lg"
           style={{ flex: 1 }}
-          onClick={() => toast.info(t("trade.sellToast", { name }))}
+          disabled
+          aria-describedby="stock-trade-pending"
         >
           {t("trade.sell")}
         </Button>
@@ -346,10 +346,21 @@ export function StockDetailBody({
           variant="destructive"
           size="lg"
           style={{ flex: 1 }}
-          onClick={() => toast.info(t("trade.buyToast", { name }))}
+          disabled
+          aria-describedby="stock-trade-pending"
         >
           {t("trade.buy")}
         </Button>
+      </div>
+      <div
+        id="stock-trade-pending"
+        style={{
+          fontSize: "var(--text-badge)",
+          color: "var(--fg-secondary)",
+          textAlign: "center",
+        }}
+      >
+        {t("trade.pending")}
       </div>
 
       {/* 수수료 안내 — 토스증권 Open API 기준 */}

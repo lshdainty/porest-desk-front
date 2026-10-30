@@ -1,7 +1,6 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LineChart, Star } from "lucide-react";
-import { toast } from "sonner";
 import { Badge } from "@/shared/ds/badge";
 import { BottomSheet, BottomSheetContent } from "@/shared/ds/bottom-sheet";
 import { Button } from "@/shared/ds/button";
@@ -567,9 +566,14 @@ export function DailyBand({
   );
 }
 
-/** 매도 · 매수(국내 통념 — 매도 brandSolid · 매수 criticalSolid, large 48 한 줄 반씩 · 사이 8) + 수수료 Callout + 안내 두 줄. 누르면 지금처럼 토스트만 */
-export function TradeTail({ name, isUs }: { name: string; isUs: boolean }) {
+/**
+ * 매도 · 매수(국내 통념 — 매도 brandSolid · 매수 criticalSolid, large 48 한 줄 반씩 · 사이 8) + 이유 줄 + 수수료 Callout + 안내 두 줄.
+ * 주문은 아직 없다 — 사용자 결정 D3 B(10-30): 가짜 완료 · "준비중" 띠를 걷고, 단추는 남기되 막고(disabled — 색은 스펙의 비활성 전용 색)
+ * 그 밑에 이유 줄 "주문은 곧 열려요." 를 둔다. 막힌 단추는 이유 줄을 aria-describedby 로 이어 읽힌다.
+ */
+export function TradeTail({ isUs }: { isUs: boolean }) {
   const { t } = useTranslation("stocks");
+  const reasonId = useId();
   return (
     <div className="px-x6 pt-x5">
       <div className="flex gap-x2">
@@ -577,7 +581,8 @@ export function TradeTail({ name, isUs }: { name: string; isUs: boolean }) {
           variant="brandSolid"
           size="large"
           className="flex-1"
-          onClick={() => toast.info(t("trade.sellToast", { name }))}
+          disabled
+          aria-describedby={reasonId}
         >
           {t("trade.sell")}
         </Button>
@@ -585,11 +590,15 @@ export function TradeTail({ name, isUs }: { name: string; isUs: boolean }) {
           variant="criticalSolid"
           size="large"
           className="flex-1"
-          onClick={() => toast.info(t("trade.buyToast", { name }))}
+          disabled
+          aria-describedby={reasonId}
         >
           {t("trade.buy")}
         </Button>
       </div>
+      <Callout id={reasonId} tone="neutral" className="mt-x3">
+        {t("trade.pending")}
+      </Callout>
       <Callout tone="informative" className="mt-x3">
         {isUs ? t("fee.us") : t("fee.kr")}
       </Callout>
