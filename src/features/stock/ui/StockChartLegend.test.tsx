@@ -41,8 +41,10 @@ describe("StockChartLegend(30)", () => {
     const down = renderToStaticMarkup(
       <StockChartLegend legend={legend(false)} isUs={false} />,
     );
-    expect(up).toMatch(/data-direction="up" class="text-fg-critical"/);
-    expect(down).toMatch(/data-direction="down" class="text-fg-informative"/);
+    expect(up).toMatch(/data-direction="up" class="[^"]*text-fg-critical/);
+    expect(down).toMatch(
+      /data-direction="down" class="[^"]*text-fg-informative/,
+    );
   });
 
   it("VOL 은 fg-neutral-subtle 이고 값은 줄여 쓴다 · 가격은 원까지(미국은 $ 두 자리)", () => {
@@ -51,12 +53,32 @@ describe("StockChartLegend(30)", () => {
     );
     expect(kr).toContain("VOL 9.9M");
     expect(kr).toMatch(
-      /data-slot="chart-legend-vol" class="text-fg-neutral-subtle"/,
+      /data-slot="chart-legend-vol" class="[^"]*text-fg-neutral-subtle/,
     );
     expect(kr).toContain("123,456");
     const us = renderToStaticMarkup(
       <StockChartLegend legend={legend(true)} isUs />,
     );
     expect(us).toContain("$123456.00");
+  });
+
+  it("값 쌍(O · H · L · C · VOL)은 한 덩어리라 쌍 안에서 줄이 바뀌지 않는다", () => {
+    const html = renderToStaticMarkup(
+      <StockChartLegend legend={legend(true)} isUs={false} />,
+    );
+    expect(html.match(/whitespace-nowrap/g)?.length).toBe(5);
+    expect(html).toContain(">O 123,456<");
+    expect(html).toContain(">VOL 9.9M<");
+  });
+
+  it("범례가 비어도 한 줄 높이를 예약한다(채워질 때 차트가 밀리지 않는다)", () => {
+    const html = renderToStaticMarkup(
+      <StockChartLegend legend={null} isUs={false} />,
+    );
+    expect(html).toContain('data-slot="chart-legend"');
+    expect(html).toContain("text-t3");
+    expect(html).toContain("py-x1");
+    expect(html).toContain("\u00a0");
+    expect(html).not.toContain("O ");
   });
 });

@@ -575,7 +575,7 @@ export function LightweightStockChart({
       }}
     >
       {/* 범례는 그림 위 자기 줄이다 — 축 눈금 · 캔들과 겹치지 않는다. */}
-      {legend && <StockChartLegend legend={legend} isUs={isUs} />}
+      <StockChartLegend legend={legend} isUs={isUs} />
       <div
         ref={wrapRef}
         style={{

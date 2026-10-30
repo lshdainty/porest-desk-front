@@ -18,7 +18,8 @@ export function StockChartLegend({
   legend,
   isUs,
 }: {
-  legend: StockChartLegendValue;
+  /** null 이면 값 없이 한 줄 높이만 지킨다(채워질 때 차트가 밀리지 않게). */
+  legend: StockChartLegendValue | null;
   isUs: boolean;
 }) {
   const fmtPrice = (v: number) =>
@@ -30,20 +31,35 @@ export function StockChartLegend({
         ? `${(v / 1_000).toFixed(0)}K`
         : `${Math.round(v)}`;
 
+  // 한 줄 높이는 늘 예약한다 — 범례가 비었다 채워질 때 차트가 밀리지 않는다(글자를 키워도 줄 높이가 따라간다).
+  const cls =
+    "shrink-0 flex flex-wrap gap-x-x2 px-x1_5 py-x1 text-t3 font-normal text-fg-neutral-subtle tabular-nums";
+  if (!legend)
+    return (
+      <div data-slot="chart-legend" data-empty="" aria-hidden className={cls}>
+        <span className="invisible">&nbsp;</span>
+      </div>
+    );
+
+  // 값 쌍("O 70,010")은 한 덩어리다 — 줄이 모자라면 쌍 단위로 다음 줄로 넘어가고 쌍 안에서는 끊기지 않는다.
+  const pair = "whitespace-nowrap";
+  const d = legend.up ? "up" : "down";
   return (
-    <div
-      data-slot="chart-legend"
-      className="shrink-0 flex flex-wrap gap-x-x2 px-x1_5 py-x1 text-t3 font-normal text-fg-neutral-subtle tabular-nums"
-    >
+    <div data-slot="chart-legend" className={cls}>
       <span
         data-slot="chart-legend-ohlc"
-        data-direction={legend.up ? "up" : "down"}
-        className={legend.up ? "text-fg-critical" : "text-fg-informative"}
+        data-direction={d}
+        className={`flex flex-wrap gap-x-x2 ${legend.up ? "text-fg-critical" : "text-fg-informative"}`}
       >
-        O {fmtPrice(legend.o)} H {fmtPrice(legend.h)} L {fmtPrice(legend.l)} C{" "}
-        {fmtPrice(legend.c)}
+        <span className={pair}>O {fmtPrice(legend.o)}</span>
+        <span className={pair}>H {fmtPrice(legend.h)}</span>
+        <span className={pair}>L {fmtPrice(legend.l)}</span>
+        <span className={pair}>C {fmtPrice(legend.c)}</span>
       </span>
-      <span data-slot="chart-legend-vol" className="text-fg-neutral-subtle">
+      <span
+        data-slot="chart-legend-vol"
+        className={`${pair} text-fg-neutral-subtle`}
+      >
         VOL {fmtVol(legend.vol)}
       </span>
     </div>
