@@ -488,7 +488,7 @@ export function QuotesBand({
             key={c}
             scope="col"
             className={cn(
-              // 호가 표는 가격 칸이 먼저(줄지 않는다) 잔량 칸이 줄어든다(max-w-0 + 말줄임) — 200% 에서도 줄 안에 들어온다
+              // 호가 표는 가격 칸이 먼저(줄지 않는다), 잔량 칸은 쉼표 뒤(<wbr>)에서만 줄을 바꿔 남는 폭에 들어온다 — 글자는 줄이지 않고 말줄임 · 축약도 쓰지 않는다(DESIGN.md 돈)
               "px-x1 pb-x1 font-medium first:pl-0 last:pr-0",
               book && i === 1 ? "w-px whitespace-nowrap" : "break-keep",
               i === 0
@@ -506,7 +506,7 @@ export function QuotesBand({
   );
   const bookRow = (e: { p: number; q: number | null }, side: "ask" | "bid") => (
     <tr key={`${side}${e.p}`} className={ROW}>
-      <td className="relative max-w-0 p-0">
+      <td className="relative p-0">
         {side === "bid" && (
           <>
             <span
@@ -514,8 +514,8 @@ export function QuotesBand({
               className="absolute inset-y-x1 right-0 rounded-[4px] bg-bg-critical-weak"
               style={{ width: barWidth(e.q) }}
             />
-            <span className="relative block truncate pr-x1_5 text-end text-t3 tabular-nums text-fg-neutral-subtle">
-              {qtyText(e.q)}
+            <span className="relative block pr-x1 text-end text-t3 tabular-nums text-fg-neutral-subtle">
+              {withCommaBreaks(qtyText(e.q))}
             </span>
           </>
         )}
@@ -528,7 +528,7 @@ export function QuotesBand({
       >
         {fmt(e.p)}
       </td>
-      <td className="relative max-w-0 p-0">
+      <td className="relative p-0">
         {side === "ask" && (
           <>
             <span
@@ -536,8 +536,8 @@ export function QuotesBand({
               className="absolute inset-y-x1 left-0 rounded-[4px] bg-bg-informative-weak"
               style={{ width: barWidth(e.q) }}
             />
-            <span className="relative block truncate pl-x1_5 text-t3 tabular-nums text-fg-neutral-subtle">
-              {qtyText(e.q)}
+            <span className="relative block pl-x1 text-t3 tabular-nums text-fg-neutral-subtle">
+              {withCommaBreaks(qtyText(e.q))}
             </span>
           </>
         )}
