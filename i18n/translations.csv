@@ -2851,8 +2851,8 @@ expense,addTx.rewrite,고쳐 쓰기,Rewrite
 expense,addTx.rewriteConfirmBody,원래 거래는 지워지고 새 거래로 바뀌어요.,The original transaction is deleted and replaced with a new one.
 expense,addTx.rewriteClosedNote,기록만 바뀌고 계좌 잔액은 그대로예요.,"Only the record changes, and your account balance stays the same."
 expense,addTx.rewriteOpenNote,새 거래는 {{date}} 결제에 청구돼요. 원래 거래는 이미 결제된 회차에서 기록만 빠져요.,The new transaction is billed on {{date}}. The original is only removed from the record of the cycle already paid.
-stocks,namu.domesticValue,국내 평가금액 (KRW),Domestic value (KRW)
-stocks,namu.overseasValue,해외 평가금액 (USD),Overseas value (USD)
+stocks,namu.domesticValue,국내 평가금액,Domestic value
+stocks,namu.overseasValue,해외 평가금액,Overseas value
 stocks,namu.countSplit,국내 {{kr}} · 해외 {{us}},KR {{kr}} · US {{us}}
 stocks,namu.krwTotal,원화 환산 합계,Total in KRW
 stocks,namu.fxApplied,환율 {{rate}} 적용,At FX {{rate}}

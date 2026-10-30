@@ -17,6 +17,7 @@ import { cn } from "@/shared/lib/cn";
 import { formatMonthDay } from "@/shared/lib/date";
 import { BandFailure } from "@/shared/ui/groo/band-parts";
 import { fmtByCurrency, trendColor } from "@/features/stock/lib/format";
+import { clock12 } from "@/features/stock/lib/market-state";
 import { useWatchlist } from "@/features/stock/model/useWatchlist";
 import {
   useTossOrderbook,
@@ -295,7 +296,9 @@ export function QuotesBand({
     const p = num(x.price);
     const prev = i + 1 < arr.length ? num(arr[i + 1]!.price) : p;
     return {
-      time: /(\d{2}:\d{2}:\d{2})/.exec(x.timestamp)?.[1] ?? x.timestamp,
+      time: ((r) => (r ? clock12(r) : x.timestamp))(
+        /(\d{2}:\d{2}:\d{2})/.exec(x.timestamp)?.[1],
+      ),
       p,
       q: Math.round(num(x.volume)),
       dir: p >= prev ? 1 : -1,
