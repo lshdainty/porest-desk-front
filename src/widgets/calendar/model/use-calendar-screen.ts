@@ -2,21 +2,10 @@ import { isSameDay, parseISO } from "date-fns";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { useCalendar } from "@/widgets/calendar/model/calendar-context";
-import {
-  useCreateEvent,
-  useDeleteEvent,
-  useUpdateEvent,
-} from "@/widgets/calendar/model/useCalendarEvents";
-import { useEventLabels } from "@/features/event-label";
-import {
-  eventsOnDay,
-  withOpenedOccurrence,
-} from "@/widgets/calendar/lib/helpers";
+import { useDeleteEvent } from "@/widgets/calendar/model/useCalendarEvents";
+import { eventsOnDay } from "@/widgets/calendar/lib/helpers";
 
-import type {
-  CalendarEvent,
-  CalendarEventFormValues,
-} from "@/entities/calendar";
+import type { CalendarEvent } from "@/entities/calendar";
 import type { IEvent } from "@/widgets/calendar/model/interfaces";
 
 function iEventToCalendarEvent(event: IEvent): CalendarEvent {
@@ -66,10 +55,7 @@ export function useCalendarScreen(events: IEvent[]) {
   const [dayDate, setDayDate] = useState<Date | null>(null);
   const [creatingDate, setCreatingDate] = useState<Date | null>(null);
 
-  const createEvent = useCreateEvent();
-  const updateEvent = useUpdateEvent();
   const deleteEvent = useDeleteEvent();
-  const { data: labels = [] } = useEventLabels();
 
   const handleEventClick = useCallback((event: IEvent, el: HTMLElement) => {
     const rect = el.getBoundingClientRect();
@@ -98,39 +84,12 @@ export function useCalendarScreen(events: IEvent[]) {
     setSelectedEvent(null);
   }, [selectedEvent]);
 
-  const handleSubmitEdit = useCallback(
-    (data: CalendarEventFormValues) => {
-      if (!editingEvent) return;
-      // 반복 일정은 연 회차를 함께 알린다 — 안 알리면 서버가 그 회차 날짜를 반복의
-      // 새 시작으로 써서 앞 회차들이 사라졌다(QA 30 2).
-      updateEvent.mutate(
-        {
-          id: editingEvent.rowId,
-          data: withOpenedOccurrence(data, editingEvent),
-        },
-        {
-          onSuccess: () => setEditingEvent(null),
-        },
-      );
-    },
-    [editingEvent, updateEvent],
-  );
-
   const handleConfirmDelete = useCallback(() => {
     if (deletingEventId === null) return;
     deleteEvent.mutate(deletingEventId, {
       onSuccess: () => setDeletingEventId(null),
     });
   }, [deletingEventId, deleteEvent]);
-
-  const handleSubmitCreate = useCallback(
-    (data: CalendarEventFormValues) => {
-      createEvent.mutate(data, {
-        onSuccess: () => setCreatingDate(null),
-      });
-    },
-    [createEvent],
-  );
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
@@ -258,7 +217,6 @@ export function useCalendarScreen(events: IEvent[]) {
   }, [filteredEvents]);
 
   return {
-    labels,
     // 상세
     selectedEvent,
     setSelectedEvent,
@@ -276,12 +234,8 @@ export function useCalendarScreen(events: IEvent[]) {
     setCreatingDate,
     dayDate,
     setDayDate,
-    updateEvent,
-    createEvent,
     deleteEvent,
-    handleSubmitEdit,
     handleConfirmDelete,
-    handleSubmitCreate,
     // 거른 일정
     filteredEvents,
     dayEvents,

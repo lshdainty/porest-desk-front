@@ -1,10 +1,7 @@
 import { useCallback, useState } from "react";
 import { isBefore, startOfDay, isAfter, isSameDay } from "date-fns";
 
-import { useCreateEvent } from "@/widgets/calendar/model/useCalendarEvents";
-import { useEventLabels } from "@/features/event-label";
-import { EventForm } from "../ui/EventForm";
-import type { CalendarEventFormValues } from "@/entities/calendar";
+import { CalendarEventFormHost } from "../ui/CalendarEventFormHost";
 import { DragSelectContext } from "./drag-select-context";
 
 export const DragSelectProvider = ({
@@ -24,10 +21,6 @@ export const DragSelectProvider = ({
     start: Date;
     end: Date;
   } | null>(null);
-
-  // Event (schedule) dependencies
-  const createEvent = useCreateEvent();
-  const { data: labels = [] } = useEventLabels();
 
   const startSelection = useCallback((date: Date) => {
     setIsDragSelecting(true);
@@ -104,15 +97,6 @@ export const DragSelectProvider = ({
     [selectionStart, selectionEnd],
   );
 
-  const handleCreateEvent = useCallback(
-    (data: CalendarEventFormValues) => {
-      createEvent.mutate(data, {
-        onSuccess: () => setDialogDateRange(null),
-      });
-    },
-    [createEvent],
-  );
-
   const handleClose = useCallback(() => setDialogDateRange(null), []);
 
   return (
@@ -130,13 +114,10 @@ export const DragSelectProvider = ({
       {children}
 
       {dialogDateRange && (
-        <EventForm
+        <CalendarEventFormHost
           selectedDate={dialogDateRange.start}
           selectedEndDate={dialogDateRange.end}
-          labels={labels}
-          onSubmit={handleCreateEvent}
           onClose={handleClose}
-          isLoading={createEvent.isPending}
         />
       )}
     </DragSelectContext.Provider>
