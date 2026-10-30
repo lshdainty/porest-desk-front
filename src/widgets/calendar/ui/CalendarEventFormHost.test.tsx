@@ -24,6 +24,7 @@ declare global {
 }
 
 const created = vi.hoisted(() => [] as Record<string, unknown>[]);
+const updated = vi.hoisted(() => [] as Record<string, unknown>[]);
 const fail = vi.hoisted(() => ({ create: false, update: false }));
 
 vi.mock("react-i18next", () => ({
@@ -56,12 +57,14 @@ vi.mock("@/features/event-label", () => ({
 }));
 vi.mock("@/widgets/calendar/model/useCalendarEvents", () => ({
   useCreateEvent: () => ({
-    mutate: (v: CalendarEventFormValues) => created.push({ ...v }),
+    // 변수는 { data, silent } — 호출처가 silent 를 넘기는지 본다
+    mutate: (v: { data: CalendarEventFormValues; silent?: boolean }) =>
+      created.push({ ...v }),
     isPending: false,
     isError: fail.create,
   }),
   useUpdateEvent: () => ({
-    mutate: () => {},
+    mutate: (v: Record<string, unknown>) => updated.push({ ...v }),
     isPending: false,
     isError: fail.update,
   }),
@@ -76,6 +79,7 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   __resetPointerBlockForTest();
   created.length = 0;
+  updated.length = 0;
   closed = 0;
   fail.create = false;
   fail.update = false;
@@ -143,7 +147,7 @@ describe("빠른 추가 → 자세히", () => {
     setValue(quickTitle()!, "치과");
     click(lastButton("save"));
     expect(created).toHaveLength(1);
-    expect(created[0]).toMatchObject({
+    expect(created[0]!.data).toMatchObject({
       title: "치과",
       isAllDay: true,
       startDate: "2026-10-22",
@@ -336,5 +340,61 @@ describe("저장 실패 알림 스크롤", () => {
     expect(
       (spy.mock.contexts[0] as HTMLElement).querySelector("[role=alert]"),
     ).not.toBeNull();
+  });
+});
+
+// 실패는 폼 Callout 이 알린다 — 전역 토스트(서버 글)가 같이 뜨면 Callout 을 가리고 서버 글이 그대로 나온다.
+// silent 는 API 가 아니라 이 호출처가 고른다(다른 useCreateEvent · useUpdateEvent 호출처는 안 넘긴다).
+describe("저장 요청은 silent 로 부른다", () => {
+  it("빠른 추가 [저장] 은 silent: true", () => {
+    setupFormDom(true);
+    show(true);
+    setValue(quickTitle()!, "치과");
+    click(lastButton("save"));
+    expect(created).toHaveLength(1);
+    expect(created[0]!.silent).toBe(true);
+  });
+
+  it("일정 폼 추가 [저장] 은 silent: true", () => {
+    setupFormDom(false);
+    show(false);
+    setValue(field("title"), "치과");
+    click(lastButton("save"));
+    expect(created).toHaveLength(1);
+    expect(created[0]!.silent).toBe(true);
+    expect(updated).toHaveLength(0);
+  });
+
+  it("일정 폼 수정 [저장] 도 silent: true", () => {
+    setupFormDom(false);
+    show(false, saved);
+    setValue(field("title"), "정기 점검 2");
+    click(lastButton("save"));
+    expect(updated).toHaveLength(1);
+    expect(updated[0]).toMatchObject({ id: 5, silent: true });
+    expect(created).toHaveLength(0);
+  });
+});
+
+describe("다른 호출처는 silent 를 넘기지 않는다", () => {
+  it("useCreateEvent · useUpdateEvent 는 Host 밖에서 쓰이지 않는다 — 기본(전역 토스트)이 남는다", async () => {
+    const { readdirSync, readFileSync, statSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const hits: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) walk(full);
+        else if (/\.tsx?$/.test(name) && !/\.test\./.test(name)) {
+          const text = readFileSync(full, "utf8");
+          if (/\buse(Create|Update)Event\(/.test(text)) hits.push(full);
+        }
+      }
+    };
+    walk(join(process.cwd(), "src"));
+    const callers = hits.filter((f) => !f.endsWith("useCalendarEvents.ts"));
+    expect(callers.map((f) => f.split("/").pop())).toEqual([
+      "CalendarEventFormHost.tsx",
+    ]);
   });
 });
