@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { niceAxis } from "./chartAxis";
 
 /**
  * 세로축(Y) 폭 — 눈금 글자 중 **가장 긴 것**을 실제로 재서 잡는다(스펙 chart.md "세로축의 폭은 가장
@@ -48,3 +49,13 @@ export function useAxisWidth(labels: readonly string[]): number {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- key 가 labels 내용을 대신한다
   return useMemo(() => measureTickWidth(labels), [key, fontTick]);
 }
+
+/**
+ * 눈금을 recharts 자동에 맡기는 차트용 — 값 범위에서 nice 눈금 글자를 뽑아 폭 측정에 넘긴다
+ * (자동 눈금은 렌더 전에 알 수 없다). 0 은 늘 포함, 음수가 있으면 음수 눈금도 나온다.
+ */
+export const niceTickLabels = (
+  values: readonly number[],
+  format: (v: number) => string,
+): string[] =>
+  niceAxis(Math.min(0, ...values), Math.max(0, ...values)).ticks.map(format);

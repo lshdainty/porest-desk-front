@@ -169,7 +169,7 @@ describe("formatChartAxis (ko)", () => {
  * 지우고 `formatChartAxis` 하나로 모았다. `StatsPage` 의 `fmtTick` 이 이 함수다.
  *
  * 눈금은 `chartAxis` 의 nice 값(1·2·2.5·5×10ⁿ 배수)만 들어오므로, 여기서 만드는 라벨이
- * 실제로 축에 찍히는 문자열 전부다. 축 폭은 `<YAxis width={52} />` 고정(11px 글자).
+ * 실제로 축에 찍히는 문자열 전부다. 축 폭은 `measureTickWidth` 가 이 글자를 재서 정한다(11px 글자).
  */
 describe("통계 추이 축 눈금 (fmtTick = formatChartAxis)", () => {
   const orig = i18n.language;

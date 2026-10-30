@@ -1,3 +1,4 @@
+import { measureTickWidth, niceTickLabels } from "@/shared/lib/groo/axisWidth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -525,6 +526,12 @@ function IncomeExpenseChart({
               <XAxis dataKey="label" {...chartAxisProps()} />
               <YAxis
                 {...chartAxisProps()}
+                width={measureTickWidth(
+                  niceTickLabels(
+                    data.flatMap((d) => [d.income, d.expense]),
+                    (v) => (hidden ? MASK : formatAxisWon(v)),
+                  ),
+                )}
                 // 금액 숨기기 시 축 · 툴팁 · 타일도 가린다
                 tickFormatter={(v: number) =>
                   hidden ? MASK : formatAxisWon(v)

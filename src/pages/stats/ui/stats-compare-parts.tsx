@@ -1,3 +1,4 @@
+import { measureTickWidth, niceTickLabels } from "@/shared/lib/groo/axisWidth";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { CompareBar } from "./compare-bar";
@@ -499,7 +500,15 @@ export function CompareWeekdaySection({
             <XAxis dataKey="day" {...chartAxisProps()} />
             <YAxis
               tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
-              width={52}
+              width={measureTickWidth(
+                niceTickLabels(
+                  data.flatMap((d) => [
+                    Number(d.now ?? 0),
+                    Number(d.prev ?? 0),
+                  ]),
+                  (v) => mask(formatAxisWon(v)),
+                ),
+              )}
               {...chartAxisProps()}
             />
             <ChartTooltip

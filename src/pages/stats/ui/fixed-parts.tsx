@@ -1,3 +1,4 @@
+import { measureTickWidth } from "@/shared/lib/groo/axisWidth";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
@@ -468,7 +469,9 @@ export function FixedTrendSection({
               domain={[0, axis.max]}
               ticks={axis.ticks}
               tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
-              width={52}
+              width={measureTickWidth(
+                axis.ticks.map((v) => mask(formatAxisWon(v))),
+              )}
               {...chartAxisProps()}
             />
             <ChartTooltip

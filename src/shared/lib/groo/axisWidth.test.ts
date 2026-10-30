@@ -12,3 +12,14 @@ describe("measureTickWidth (D6)", () => {
     expect(measureTickWidth(["0", "−1억", "−3,000만"])).toBe(one);
   });
 });
+
+describe("niceTickLabels", () => {
+  it("값 범위의 nice 눈금 글자를 낸다 — 음수가 있으면 음수 눈금도", async () => {
+    const { niceTickLabels } = await import("./axisWidth");
+    const f = (v: number) => String(v);
+    expect(niceTickLabels([0, 100], f)).not.toContain("-");
+    expect(niceTickLabels([-100, 50], f).some((l) => l.startsWith("-"))).toBe(
+      true,
+    );
+  });
+});

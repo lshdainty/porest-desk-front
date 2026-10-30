@@ -1,3 +1,4 @@
+import { measureTickWidth, niceTickLabels } from "@/shared/lib/groo/axisWidth";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -187,7 +188,9 @@ export function TrendSection({
               domain={[0, incomeScale.max]}
               ticks={incomeScale.ticks}
               tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
-              width={52}
+              width={measureTickWidth(
+                incomeScale.ticks.map((v) => mask(formatAxisWon(v))),
+              )}
               {...chartAxisProps(dual ? { color: "blue" } : {})}
             />
             {dual && (
@@ -197,7 +200,9 @@ export function TrendSection({
                 domain={[0, expenseAxis.max]}
                 ticks={expenseAxis.ticks}
                 tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
-                width={52}
+                width={measureTickWidth(
+                  expenseAxis.ticks.map((v) => mask(formatAxisWon(v))),
+                )}
                 {...chartAxisProps({ color: "red" })}
               />
             )}
@@ -499,7 +504,9 @@ export function SavingsBarsSection({
               domain={[axis.min, axis.max]}
               ticks={axis.ticks}
               tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
-              width={52}
+              width={measureTickWidth(
+                axis.ticks.map((v) => mask(formatAxisWon(v))),
+              )}
               {...chartAxisProps()}
             />
             <ChartTooltip
@@ -618,7 +625,17 @@ export function CatTrendSection({
             <XAxis dataKey="label" {...chartAxisProps()} />
             <YAxis
               tickFormatter={(v) => mask(formatAxisWon(Number(v)))}
-              width={52}
+              width={measureTickWidth(
+                niceTickLabels(
+                  rows.map((r) =>
+                    colored.reduce(
+                      (sum, _, i) => sum + Number(r[`c${i}`] ?? 0),
+                      0,
+                    ),
+                  ),
+                  (v) => mask(formatAxisWon(v)),
+                ),
+              )}
               {...chartAxisProps()}
             />
             <ChartTooltip
