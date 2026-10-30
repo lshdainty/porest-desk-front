@@ -49,6 +49,18 @@ describe("DeskFrame", () => {
     expect(box.className).toContain("lg:max-w-[var(--layout-max-medium)]");
     un();
   });
+  it("출처 줄은 카드 아래 위 16 · 좌우 0", () => {
+    const un = render(
+      <DeskFrame slot="x" title="종목 상세" source="출처 글">
+        <i />
+      </DeskFrame>,
+    );
+    const p = host.querySelector("[data-slot=stocks-source]")!;
+    expect(p.textContent).toBe("출처 글");
+    expect(p.className).toContain("mt-x4");
+    expect(p.className).not.toMatch(/\bpx-/);
+    un();
+  });
   it("목록 화면에는 부모 링크가 없다", () => {
     const un = render(
       <DeskFrame slot="x" title="증권">

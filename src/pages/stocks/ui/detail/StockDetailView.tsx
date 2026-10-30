@@ -82,6 +82,9 @@ export function StockDetailView({
         slot="stock-detail-desktop"
         title={t("detail.sheetTitle")}
         parent={{ to: brokerPath(broker), label: t("nav.title") }}
+        source={
+          broker === "NAMU" ? t("namu.dataNotice") : t("market.dataNotice")
+        }
       >
         {toss}
         {namu}

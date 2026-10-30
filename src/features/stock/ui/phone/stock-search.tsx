@@ -107,6 +107,8 @@ export function StockSearchEntry({
       <PopoverContent
         aria-label={t("search.label")}
         align={compact ? "end" : "start"}
+        // 찾기 Popover 는 최대 폭 480(I-13 24 · popover.yaml 최대) — ds 폭 prop 은 없어 className 으로 준다(최대 480 이 상한이다)
+        className="w-[480px]"
         onOpenAutoFocus={focusSearchableList}
       >
         <div className="flex min-h-0 flex-1 flex-col">{body}</div>
