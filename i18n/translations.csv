@@ -2892,6 +2892,8 @@ stats,fixed.bulk.badgeAll,고정,Fixed
 stats,fixed.bulk.badgeSome,고정 {{fixed}}/{{count}},Fixed {{fixed}}/{{count}}
 stats,fixed.bulk.empty,이 기간에는 정리할 거래가 없어요.,No transactions to organize in this period
 stats,fixed.bulk.apply,{{count}}건 적용,Apply to {{count}}
+stats,fixed.bulk.failed,고정 · 변동을 바꾸지 못했어요.,Couldn't change them.
+stats,fixed.bulk.retry,다시 시도,Try again
 stats,fixed.bulk.doneFixed,{{count}}건을 고정으로 바꿨어요,Marked {{count}} as fixed
 stats,fixed.bulk.doneVariable,{{count}}건을 변동으로 되돌렸어요,Changed {{count}} back to variable
 settings,hideAmounts.card.stats.fixed,고정·변동 탭,Fixed vs. variable tab

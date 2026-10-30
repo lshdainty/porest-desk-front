@@ -48,7 +48,7 @@ const st = vi.hoisted(() => ({
   incomeSum: 450_000,
   expenseSum: 12_000,
   setSearch: [] as string[],
-  fixedCalls: [] as { ids: number[]; isFixed: boolean }[],
+  fixedCalls: [] as { ids: number[]; isFixed: boolean; silent?: boolean }[],
   deleteCalls: [] as number[][],
   deleteFails: false,
   fixedFails: false,
@@ -99,6 +99,11 @@ vi.mock("react-router-dom", () => ({
     st.navigated.push(to);
   },
 }));
+const hide = vi.hoisted(() => ({ on: false }));
+vi.mock("@/shared/lib/groo/hide-amounts-core", async (orig) => ({
+  ...(await orig<typeof import("@/shared/lib/groo/hide-amounts-core")>()),
+  useHideAmounts: () => hide.on,
+}));
 vi.mock("@/shared/ds/snackbar", () => ({
   useSnackbar: () => ({
     show: (o: (typeof st.snacks)[number]) => st.snacks.push(o),
@@ -141,7 +146,11 @@ vi.mock("@/features/expense", () => ({
     ],
   }),
   useBulkMarkFixed: () => ({
-    mutateAsync: async (v: { ids: number[]; isFixed: boolean }) => {
+    mutateAsync: async (v: {
+      ids: number[];
+      isFixed: boolean;
+      silent?: boolean;
+    }) => {
       st.fixedCalls.push(v);
       if (st.fixedFails) throw new Error("fail");
       return { updatedCount: v.ids.length };
@@ -255,6 +264,7 @@ beforeEach(async () => {
   st.snacks = [];
   st.closedCard = false;
   st.navigated = [];
+  hide.on = false;
   st.list = [
     tx(1, 15, 12_000),
     tx(2, 14, 5_000),
@@ -656,7 +666,9 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
     click(checks()[1]!);
     await act(async () => byName("고정으로 표시")!.click());
 
-    expect(st.fixedCalls).toEqual([{ ids: [1, 2], isFixed: true }]);
+    expect(st.fixedCalls).toEqual([
+      { ids: [1, 2], isFixed: true, silent: true },
+    ]);
     expect(st.snacks).toEqual([{ message: "2건을 고정으로 바꿨어요." }]);
     expect(st.toasts).toEqual([]);
     expect(bulk()).toBeNull();
@@ -835,8 +847,8 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
     st.fixedFails = false;
     await act(async () => st.snacks[0]!.action!.onClick());
     expect(st.fixedCalls).toEqual([
-      { ids: [1], isFixed: true },
-      { ids: [1], isFixed: true },
+      { ids: [1], isFixed: true, silent: true },
+      { ids: [1], isFixed: true, silent: true },
     ]);
     expect(st.snacks[1]).toEqual({ message: "1건을 고정으로 바꿨어요." });
     expect(bulk()).toBeNull();
@@ -882,11 +894,19 @@ describe("고르기 모드 · 일괄 작업 바 (I-07 33 ~ 36)", () => {
     const put = vi
       .spyOn(apiClient, "put")
       .mockResolvedValue({ data: { updatedCount: 1 } });
-    await expenseApi.bulkMarkFixed([1], true);
+    await expenseApi.bulkMarkFixed([1], true, { silent: true });
     expect(put).toHaveBeenCalledWith(
       "/v1/expenses/fixed",
       { expenseIds: [1], isFixed: true },
       { silent: true },
+    );
+    // 옵션이 없으면(통계 고정 정리 등) 전역 오류 토스트가 그대로 뜬다 — silent 를 걸지 않는다
+    put.mockClear();
+    await expenseApi.bulkMarkFixed([1], true);
+    expect(put).toHaveBeenCalledWith(
+      "/v1/expenses/fixed",
+      { expenseIds: [1], isFixed: true },
+      undefined,
     );
     put.mockRestore();
   });

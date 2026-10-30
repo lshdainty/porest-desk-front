@@ -15,6 +15,10 @@ import {
 } from "@/shared/ds/alert-dialog";
 import { PageHead } from "@/shared/ui/groo/page-head";
 import { money } from "@/shared/lib/groo/format";
+import {
+  HIDE_AMOUNTS_MASK,
+  useHideAmounts,
+} from "@/shared/lib/groo/hide-amounts-core";
 import { formatMonthShort } from "@/shared/lib/date";
 import type { Expense } from "@/entities/expense";
 import {
@@ -174,6 +178,7 @@ export function ExpenseDesktop() {
   const bulkFixed = useBulkMarkFixed();
   const bulkDelete = useBulkDeleteExpenses();
   const snackbar = useSnackbar();
+  const hideAmount = useHideAmounts("ledger.txList", "net");
 
   // ── 달 · 필터를 바꾸면 고른 것을 모두 푼다(모드는 그대로) ──
   const goMonth = (m: string) => {
@@ -245,7 +250,11 @@ export function ExpenseDesktop() {
   };
   const markFixed = async (ids: number[] = chosenIds) => {
     try {
-      const res = await bulkFixed.mutateAsync({ ids, isFixed: true });
+      const res = await bulkFixed.mutateAsync({
+        ids,
+        isFixed: true,
+        silent: true,
+      });
       snackbar.show({
         message: t("bulk.fixedDone", { count: res.updatedCount }),
       });
@@ -453,7 +462,10 @@ export function ExpenseDesktop() {
           <AlertDialogTitle>{t("bulk.refundTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
             {t("bulk.refundMessage", {
-              amount: money(refundNotice?.amount ?? 0),
+              // 금액 가리기가 켜져 있으면 가린다(앞 확인창과 같은 카드 · 종류)
+              amount: hideAmount
+                ? HIDE_AMOUNTS_MASK
+                : money(refundNotice?.amount ?? 0),
             })}
           </AlertDialogDescription>
           <AlertDialogFooter>

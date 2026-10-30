@@ -29,8 +29,16 @@ export const useBulkMarkFixed = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ ids, isFixed }: { ids: number[]; isFixed: boolean }) =>
-      expenseApi.bulkMarkFixed(ids, isFixed),
+    mutationFn: ({
+      ids,
+      isFixed,
+      silent,
+    }: {
+      ids: number[];
+      isFixed: boolean;
+      /** 실패를 호출처가 자기 스낵바로 알리면 true — 기본(생략)은 전역 오류 토스트 */
+      silent?: boolean;
+    }) => expenseApi.bulkMarkFixed(ids, isFixed, { silent }),
     onSuccess: () => invalidateFor(queryClient, "ledger"),
   });
 };

@@ -189,16 +189,22 @@ export const expenseApi = {
    * 돈·잔액은 안 움직인다. 남의 거래가 섞이면 서버가 전체를 거절한다. 한 번에 500건까지.
    * 응답은 실제로 바뀐 건수다(이미 그 값이던 거래는 세지 않는다).
    */
+  /**
+   * 고정 · 변동 일괄 변경. `silent` 는 **호출처가 고른다**(기본은 전역 토스트가 실패를 알린다) —
+   * 실패를 자기 스낵바로 알리는 화면만 true 로 넘겨 서버 글과 겹치지 않게 한다.
+   */
   bulkMarkFixed: async (
     expenseIds: number[],
     isFixed: boolean,
+    options?: { silent?: boolean },
   ): Promise<{ updatedCount: number }> => {
-    // 실패는 화면(스낵바 + 다시 시도)이 직접 알린다 — 전역 토스트와 겹치지 않게
-    const quiet: QuietRequestConfig = { silent: true };
+    const config: QuietRequestConfig | undefined = options?.silent
+      ? { silent: true }
+      : undefined;
     const resp: ApiResponse<{ updatedCount: number }> = await apiClient.put(
       "/v1/expenses/fixed",
       { expenseIds, isFixed },
-      quiet,
+      config,
     );
     return resp.data;
   },
