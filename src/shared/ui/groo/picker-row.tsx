@@ -217,8 +217,12 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
                   className={sheetClassName}
                   onOpenAutoFocus={onOpenAutoFocus}
                 >
-                  {bodyless ? body : (
-                    <BottomSheetBody scrollFog={scrollFog}>{body}</BottomSheetBody>
+                  {bodyless ? (
+                    body
+                  ) : (
+                    <BottomSheetBody scrollFog={scrollFog}>
+                      {body}
+                    </BottomSheetBody>
                   )}
                   {foot != null && (
                     <BottomSheetFooter>{foot}</BottomSheetFooter>
@@ -235,7 +239,11 @@ export const PickerRow = React.forwardRef<HTMLButtonElement, PickerRowProps>(
                 className={popoverClassName}
                 onOpenAutoFocus={onOpenAutoFocus}
               >
-                {bodyless ? body : <PopoverBody scrollFog={scrollFog}>{body}</PopoverBody>}
+                {bodyless ? (
+                  body
+                ) : (
+                  <PopoverBody scrollFog={scrollFog}>{body}</PopoverBody>
+                )}
                 {foot != null && <PopoverFooter>{foot}</PopoverFooter>}
               </PopoverContent>
             </Popover>
