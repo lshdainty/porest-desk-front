@@ -364,6 +364,7 @@ export function CategoryEditDialog({
                 value={parent ? parent.categoryName : t("rootOption")}
                 dot={parent ? getPaletteByColor(parent.color).color : undefined}
                 surfaceTitle={t("parentCategory")}
+                scrollFog
               >
                 {({ close }) => (
                   <>
