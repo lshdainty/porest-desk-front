@@ -300,7 +300,7 @@ function ChartBlock({
   const availability = useCandleAvailability();
   return (
     <div className="mt-x4">
-      <div style={{ height }}>
+      <div style={availability === "yes" ? undefined : { height }}>
         {availability === "yes" ? (
           <LightweightStockChart
             symbol={symbol}
